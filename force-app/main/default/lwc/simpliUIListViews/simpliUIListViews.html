@@ -1,0 +1,123 @@
+<template>
+    <template if:true={spinner}>
+        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+    </template>
+
+    <lightning-card>
+        <template if:true={hasMainTitle}>
+            <div slot="title">
+                {mainTitle}
+            </div>
+        </template>
+        
+            <lightning-layout>
+                <lightning-layout-item padding="horizontal-small">
+                    <lightning-combobox placeholder="Select Object" 
+                                        label="Object" 
+                                        value={selectedObject} 
+                                        onchange={handleObjectChange} 
+                                        options={objectList}
+                                        variant=label-hidden>
+                    </lightning-combobox>                        
+                </lightning-layout-item>
+                <template if:true={selectedObject}>
+                    <lightning-layout-item style="width: 20%;">
+                        <lightning-combobox placeholder="Select List View" 
+                                            label="List View" 
+                                            value={selectedListView} 
+                                            onchange={handleListViewSelected} 
+                                            options={listViewList}
+                                            variant=label-hidden>
+                        </lightning-combobox>
+                    </lightning-layout-item>
+                </template>
+                <template if:true={displayActions}>
+                    <lightning-layout-item alignment-bump="left" padding="horizontal-small">
+                        <lightning-combobox placeholder="Select an Action"
+                                            label="Action" 
+                                            value={selectedAction} 
+                                            onchange={handleActionSelect} 
+                                            options={objectActionList}
+                                            variant=label-hidden>
+                        </lightning-combobox>
+                    </lightning-layout-item>
+                </template>
+                <template if:true={displayReprocess}>
+                    <lightning-layout-item padding="horizontal-small">
+                        <lightning-button-icon title="List view not showing up or refreshing? Reprocess them by clicking here." 
+                                                size="medium" 
+                                                icon-name="action:new_task" 
+                                                onclick={handleProcessListViewsButtonClick}>
+                        </lightning-button-icon>
+                    </lightning-layout-item>
+                </template>
+            </lightning-layout>
+    </lightning-card>
+
+    <template if:true={listViewData}>
+        <lightning-card>
+            <div style="height: 500px; overflow: scroll">
+                <table aria-multiselectable="true" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" role="grid">
+                    <thead>
+                        <tr class="slds-line-height_reset" style="height: 30px;">
+                            <th class="slds-text-title_caps" scope="col" style="width: 30px;">
+                                <div class="slds-th__action slds-th__action_form">
+                                    <div class="slds-checkbox">
+                                        <lightning-input type="checkbox" 
+                                                        variant="label-hidden" 
+                                                        value="all" 
+                                                        onchange={handleRecordSelectChange}>
+                                        </lightning-input>
+                                    </div>
+                                </div>                        
+                            </th>
+                            <template for:each={listViewData.fieldMetaData} for:item="field">
+                                <th key={field.label} class="slds-text-title_caps" scope="col">
+                                    <div class="slds-truncate" title={field.label}>{field.label}</div>
+                                </th>
+                            </template>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={listViewData.rows} for:item="rowData">
+                            <tr key={rowData.rowId} class="slds-hint-parent" style="height: 30px;">
+                                <td style="width: 30px;">
+                                    <div class="slds-checkbox">
+                                        <lightning-input type="checkbox" 
+                                                        variant="label-hidden" 
+                                                        name={rowData.checkBoxId} 
+                                                        value={rowData.rowId} 
+                                                        onchange={handleRecordSelectChange}>
+                                        </lightning-input>
+                                    </div>
+                                </td>
+                                <template for:each={rowData.fields} for:item="fieldData">
+                                    <td key={fieldData.label} data-label={fieldData.label}>
+                                        <div class="slds-truncate" style="white-space: nowrap;" title={fieldData.value}>
+                                            <template if:true={fieldData.uRL}>
+                                                <lightning-button key={rowData.rowId} variant="base" label={fieldData.value} title={fieldData.value} onclick={handleURLClick} value={rowData.rowId}>TT</lightning-button>
+                                            </template>
+                                            <template if:false={fieldData.uRL}>
+                                                {fieldData.value}
+                                            </template>
+                                        </div>
+                                    </td>
+                                </template>
+                            </tr>
+                        </template>            
+                    </tbody>
+                </table>
+            </div>
+        </lightning-card>
+    </template>
+
+    <!-- The modal view if the action button is pressed and we need to display something -->
+    <c-simpli-u-i-list-views-modal show-modal={showActionModal}
+                                    action-api-name={selectedAction}
+                                    record-count={selectedRecordCount}
+                                    record-ids={selectedRecordIdsStr}
+                                    onprocessed={processModal}
+                                    oncancelled={cancelModal}>
+    </c-simpli-u-i-list-views-modal>
+
+</template>

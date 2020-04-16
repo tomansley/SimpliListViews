@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>47.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+    </targets>
+    <!-- Configuring the design attributes --><targetConfigs>
+        <targetConfig targets="lightning__HomePage,lightning__AppPage">
+            <property name="hasMainTitle" type="Boolean" default="true" label="Has Main Title" description="Indicates whether the main title should be displayed or not."/>
+            <property name="mainTitle" type="String" default="My List Views" label="Main Title" description="String used if the main title is displayed."/>
+            <property name="displayActions" type="Boolean" default="true" label="Display Actions" description="Indicates whether the actions dropdown should be displayed."/>
+            <property name="displayReprocess" type="Boolean" default="true" label="Display List View Reprocessing Button" description="Indicates whether the list view reprocessing button should be displayed."/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
