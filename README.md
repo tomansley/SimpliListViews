@@ -2,7 +2,7 @@
 
 ## Feature Overview
 * A Salesforce lightning app exchange managed package
-* Only for Lightning (uses LWC so My Domain must be set)
+* Only for Lightning (uses LWC therefore My Domain must be set)
 * Reduces number of clicks
 * Customize list view fields beyond standard list view field options
 * Create custom list view actions
@@ -69,7 +69,7 @@ If an action is needed that is not currently available it can be implemented. It
 The following is some example code which implements the ListViewAction interface -
 
 ```
-public with sharing class ListViewActionHelloWorld extends simpli_lv.ListViewAction {
+global with sharing class ListViewActionHelloWorld extends simpli_lv.ListViewAction {
 
     /*
      * This method is required to implement the ListViewAction interface. If processing is successful the
@@ -90,6 +90,7 @@ public with sharing class ListViewActionHelloWorld extends simpli_lv.ListViewAct
 ```
 
 Things to remember during implementation
+* the class must be global, otherwise the app will not be able to see it.
 * the action is performed as a single transaction. This implies that all governor limits must be adhered to.
 * always place processing into a try/catch. The UI component will wait for a valid response before displaying anything to the user.
 
