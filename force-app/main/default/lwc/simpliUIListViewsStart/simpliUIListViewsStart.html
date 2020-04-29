@@ -1,0 +1,101 @@
+<template>
+
+    <lightning-card title="Before You Start!" icon-name="standard:announcement">
+        <div class="slds-m-around_medium">
+            <p>All list views must be processed before being available. Click this button 
+                <lightning-button-icon style="padding: 10px;" title="Process List Views" 
+                    size="medium" 
+                    icon-name="action:new_task" 
+                    onclick={handleProcessListViewsButtonClick}>
+                </lightning-button-icon>
+               to process the list views.
+            </p>
+            <br/>
+            <p>Please note that only list views that all users or groups of users can see will be displayed. <b>Private list views will not be displayed using this app.</b></p>
+        </div>
+    </lightning-card>
+    <br/>
+    <lightning-card title="Feature Overview" icon-name="standard:announcement">
+        <div class="slds-m-around_medium">
+            <div style="padding-left: 20px;">
+                <ol style="list-style-type:circle; list-style-position: inside;">
+                    <li>Reduce number of clicks</li>
+                    <li>Customize list view fields beyond standard list view field options</li>
+                    <li>Create custom list view actions</li>
+                    <li>Configure the list view page at the org, page and list view level</li>
+                </ol>
+            </div>
+            <br/>
+            <p>Users spend lots of time working with lists of data. In Salesforce those lists are spread throughout the application. Depending on user process, this can create unnecessary clicks and page loads. Simpli List Views helps reduce the clicks a user needs when moving from one object list view to another. All list views are displayed on one page.</p>
+            <br/>
+            <p>Salesforce list views could also do with a spruce-up! Ever needed to look deeper into an object hierarchy? Now you can. Move beyond standard list views and add deeper hierarchical custom fields that reference objects multiple levels deeper. For example, on an Account list view you could see the account owners profile by using Owner.Profile.Name in the list views configuration.</p>
+             <br/> 
+            <p>And since you have decided to use Simpli List Views and plan on spending all your time using it, you can create actions for list views (requires Apex development). Select records that need to be processed and choose an action. Actions can be universal (to delete records), object specific (to update object fields) or list view specific (process oriented action). Actions can be configured to have users enter data before processing the action.</p>
+        </div>
+    </lightning-card>
+    <br/>
+    <lightning-card title="Configuration" icon-name="standard:announcement">
+        <div class="slds-m-around_medium">
+
+            <p>There are 3 different levels of configuration that are available in the app.</p>
+            <br/>
+            <div style="padding-left: 20px;">
+                <ol style="list-style-type:circle; list-style-position: inside;">
+                    <li>Org-wide custom settings</li>
+                    <li>Component or page level settings</li>
+                    <li>List view configuration</li>
+                </ol>
+            </div>
+            <br/>
+            <div>
+                <b>Org-Wide Custom Settings</b>
+                <br/><br/>
+                <p>These settings are maintained in the "List View Org Wide Setting" custom metadata type in the org setup. They affect all list views displayed in the SFDC org and are typically set by a system administrator at initial setup.</p>
+                <br/>
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:decimal; list-style-position: inside;">
+                        <li><b>Included Object Types - </b>Indicates those object types that should always be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.</li>
+                        <li><b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.</li>
+                    </ol>
+                </div>
+            </div>
+            <br/><br/>
+            <div>
+                <b>Component/Page Level Settings</b>
+                <br/><br/>
+                <p>These settings are maintained as part of the Lightning app that the component is a part of and deal with the look and feel of the Lightning component. They affect all list views displayed on the component in the page and are typically set by a system administrator when a new page is created. The settings are typically dictated by how the page is being used and perhaps what device.</p>
+                <br/>
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:decimal; list-style-position: inside;">
+                        <li><b>Has Main Title - </b>Indicates whether the main title on the list view component should be displayed.</li>
+                        <li><b>Main Title - </b>Identifies what the title on the component should be if the title is being displayed.</li>
+                        <li><b>Display Actions - </b>Indicates whether the actions dropdown should be displayed.</li>
+                        <li><b>Display List View Reprocessing Button - </b>Indicates whether the list view reprocessing button should be displayed. This button allows the user to refresh the list view data based on core list view configuration that may have been changed.</li>
+                        <li><b>Included Objects - </b>A comma delimited list of API object names that are to be included on the page. If blank, all objects are included.</li>
+                        <li><b>Excluded Objects - </b>A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded.</li>
+                    </ol>
+                </div>
+            </div>
+            <br/><br/>
+            <div>
+               <b>List View Configuration</b>
+               <br/><br/>
+                <p>These settings affect individual list views in the SFDC org. They would typically be set at a user level after the list view has been created. The settings are found in the List View Configs object. Each config has a set of parameters that can be set based on needs.</p>
+                <br/>
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:decimal; list-style-position: inside;">
+                        <li><b>AdditionalFields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </lightning-card>
+    <br>
+    <lightning-card title="Actions" icon-name="standard:announcement">
+        <div class="slds-m-around_medium">
+            <b>High Level</b>
+            <br/>
+        </div>
+    </lightning-card>
+
+</template>

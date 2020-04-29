@@ -1,7 +1,7 @@
-public with sharing class ListViewHelper {
+global with sharing class ListViewHelper {
     
     /*
-     * Method to retrieve a list views describe details including the SOQL statement.
+     * Method to retrieve list view describe details including the SOQL statement.
      * The set passed in is the CUSTOM list view Ids. This method should not be used 
      * for more than 50 list views. If more need to be updated then use the batch job.
      */
@@ -10,15 +10,19 @@ public with sharing class ListViewHelper {
         List<List_View__c> updatedListViews = new List<List_View__c>();
 
         //get the CUSTOM list views.
-        Map<Id, List_View__c> listViews = getListViewsById(lvIds);
+        List<List_View__c> listViews = getListViewsById(lvIds).values();
+        Map<Id, List_View__c> listViewsByCoreId = new Map<Id, List_View__c>();
 
         //get the CORE list view Ids from the CUSTOM list views.
-        Map<Id, List_View__c> listViewsByCoreId = new Map<Id, List_View__c>();
-        for (List_View__c listView: listViews.values())
-            listViewsByCoreId.put(listView.Core_ListView_Id__c, listView);
+        //but only get those that the user is allowed to update
+        for (List_View__c listView: listViews)
+        {
+            if (!isUpdateable(listView))
+                listViewsByCoreId.put(listView.Core_ListView_Id__c, listView);
+        }
 
         //get the CORE list views.
-        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName FROM ListView WHERE Id IN :listViewsByCoreId.keySet()];
+        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE Id IN :listViewsByCoreId.keySet()];
         
         for (ListView listView: coreListViews)
         {
@@ -34,15 +38,22 @@ public with sharing class ListViewHelper {
                 Map<String,Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(callResponse);
 
                 List_View__c simpliListView = new List_View__c();
-                simpliListView.API_Name__c    = listView.DeveloperName;
-                simpliListView.Object_Name__c = listview.SObjectType;
-                simpliListView.Describe__c    = callResponse;
-                simpliListView.Label__c       = listView.Name;
-                simpliListView.Primary_Key__c = listview.SObjectType + ':' + listView.DeveloperName;
+                simpliListView.API_Name__c              = listView.DeveloperName;
+                simpliListView.Object_Name__c           = listview.SObjectType;
+                simpliListView.Describe__c              = callResponse;
+                simpliListView.Label__c                 = listView.Name;
+                simpliListView.Core_ListView_Id__c      = listView.Id;
+                simpliListView.Primary_Key__c           = listview.SObjectType + ':' + listView.DeveloperName;
+                simpliListView.OwnerId                  = listView.CreatedById;
+                simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
+                simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
 
                 updatedListViews.add(simpliListView);
 
                 System.debug(LoggingLevel.DEBUG, 'Updated Simpli List View - ' + simpliListView);
+
+                //use the metadata API to try and enrich the listview data.
+                HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
 
             } catch (Exception e) { 
 
@@ -56,26 +67,51 @@ public with sharing class ListViewHelper {
     }
 
     /*
-        * Method to get all objects that have had their list views processed.
-        * The map is returned as follows - (API Name, Label)
-        */
+    * Method to get all objects that have had their list views processed.
+    * The map is returned as follows - (API Name, Label)
+    */
     public static Map<String, String> getListViewObjects()
+    {
+        return getListViewObjects('', '');
+    }
+    
+    /*
+    * Method to get all objects that have had their list views processed.
+    * if includedObjects is passed in those objects will be returned. If
+    * includedObjects is empty or null all objects are returned.
+    * The map is returned as follows - (API Name, Label)
+    */
+    public static Map<String, String> getListViewObjects(String pageWideIncObjs, String pageWideExcObjs)
     {
         Map<String, String> mappedListviewObjects = new Map<String, String>();
         AggregateResult[] listViewObjects = [SELECT Object_Name__c FROM List_View__c GROUP BY Object_Name__c];
 
-        String excludedObjs = HelperMetadata.getOrgWideSettingValue('Excluded Object Types', '');
+        String orgWideExcObjs = HelperMetadata.getOrgWideSettingValue('Excluded Object Types', '');
+        String orgWideIncObjs = HelperMetadata.getOrgWideSettingValue('Included Object Types', '');
 
         for (AggregateResult result: listViewObjects)
         {
             String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
 
-            //do not add excluded objs
-            if (!excludedObjs.contains(objAPIName))
+            //PAGE - if included objects have been included then check against.
+            if (pageWideIncObjs == null || pageWideIncObjs == '' || pageWideIncObjs.contains(objAPIName))
             {
-                String objLabel = HelperSchema.getObjectSchema(objAPIName).getLabel();
 
-                mappedListviewObjects.put(objAPIName, objLabel);
+                //PAGE - if excluded objects have been included then be sure to remove
+                if (pageWideExcObjs == null || pageWideExcObjs == '' || !pageWideExcObjs.contains(objAPIName))
+                {
+                    //ORG-WIDE - if we are including all objects or have a list then check against it.
+                    if (orgWideIncObjs == '' || orgWideIncObjs.contains(objAPIName))
+                    {
+                        //ORG-WIDE - do not add excluded objs
+                        if (!orgWideExcObjs.contains(objAPIName))
+                        {
+                            String objLabel = HelperSchema.getObjectSchema(objAPIName).getLabel();
+
+                            mappedListviewObjects.put(objAPIName, objLabel);
+                        }
+                    }
+                }
             }
         }
 
@@ -87,14 +123,37 @@ public with sharing class ListViewHelper {
      */
     public static Map<Id, List_View__c> getListViewsById(Set<Id> lvIds)
     {
-        return new Map<Id, List_View__c>([SELECT Label__c,
+        System.debug(LoggingLevel.DEBUG, 'lvIds - ' + lvIds);
+
+        List<List_View__c> listviews = [SELECT Label__c,
                                                  Describe__c,
                                                  Core_ListView_Id__c,
                                                  Object_Name__c,
                                                  Primary_Key__c,
-                                                 API_Name__c
+                                                 API_Name__c,
+                                                 Core_ListView_Columns__c,
+                                                 Core_ListView_Query__c,
+                                                 OwnerId,
+                                                 All_Internal_Users__c,
+                                                 Boolean_Filter__c,
+                                                 Filter_Scope__c,
+                                                 Groups__c,
+                                                 Roles__c,
+                                                 Roles_And_Subordinates__c,
+                                                 Territories__c,
+                                                 Territories_And_Subordinates__c
                                           FROM List_View__c
-                                          WHERE Id IN :lvIds]);
+                                          WHERE Id IN :lvIds];
+
+        Map<Id, List_View__c> lvs = new Map<Id, List_View__c>();
+
+        //now check security
+        for (List_View__c lv: listviews)
+        {
+            if (isVisible(lv))
+                lvs.put(lv.Id, lv);
+        }
+        return lvs;
     }
 
     /*
@@ -103,20 +162,38 @@ public with sharing class ListViewHelper {
         */
     public static Map<String, List_View__c> getListViewsByObject(String objAPIName)
     {
+        System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
+
         //get list view data
         List<List_View__c> listviews = [SELECT Label__c,
                                                 Describe__c,
                                                 Core_ListView_Id__c,
                                                 Object_Name__c,
                                                 Primary_Key__c,
-                                                API_Name__c
+                                                API_Name__c,
+                                                Core_ListView_Columns__c,
+                                                Core_ListView_Query__c,
+                                                OwnerId,
+                                                All_Internal_Users__c,
+                                                Boolean_Filter__c,
+                                                Filter_Scope__c,
+                                                Groups__c,
+                                                Roles__c,
+                                                Roles_And_Subordinates__c,
+                                                Territories__c,
+                                                Territories_And_Subordinates__c
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
                                         ORDER BY Label__c];
 
         Map<String, List_View__c> listviewsByName = new Map<String, List_View__c>();
+
+        //now check security
         for (List_View__c listview: listviews)
-            listViewsByName.put(listview.API_Name__c, listview);
+        {
+            if (isVisible(listview))
+                listViewsByName.put(listview.API_Name__c, listview);
+        }
 
         return listviewsByName;
     }
@@ -130,47 +207,48 @@ public with sharing class ListViewHelper {
         System.debug(LoggingLevel.DEBUG, 'listViewAPIName - ' + listViewAPIName);
 
         //get list view data
-        return new Map<Id, List_View__c>([SELECT Label__c,
-                                                 Describe__c,
-                                                 Core_ListView_Id__c,
-                                                 Object_Name__c,
-                                                 Primary_Key__c,
-                                                 API_Name__c
-                                          FROM List_View__c
-                                          WHERE Object_Name__c = :objAPIName
-                                                AND API_Name__c = :listViewAPIName]);
-    }
+        List<List_View__c> listviews = [SELECT Label__c,
+                                                Describe__c,
+                                                Core_ListView_Id__c,
+                                                Object_Name__c,
+                                                Primary_Key__c,
+                                                API_Name__c,
+                                                Core_ListView_Columns__c,
+                                                Core_ListView_Query__c,
+                                                OwnerId,
+                                                All_Internal_Users__c,
+                                                Boolean_Filter__c,
+                                                Filter_Scope__c,
+                                                Groups__c,
+                                                Roles__c,
+                                                Roles_And_Subordinates__c,
+                                                Territories__c,
+                                                Territories_And_Subordinates__c
+                                        FROM List_View__c
+                                        WHERE Object_Name__c = :objAPIName
+                                            AND API_Name__c = :listViewAPIName];
 
-    /*
-     * Method to get a specific list view given its object and list view API names
-     */
-    public static CustomListView getListView(String objAPIName, String listViewAPIName)
-    {
-        //get list view data
-        List_View__c listView = [SELECT Label__c,
-                                        Describe__c,
-                                        Core_ListView_Id__c,
-                                        Object_Name__c,
-                                        Primary_Key__c,
-                                        API_Name__c
-                                FROM List_View__c
-                                WHERE Object_Name__c = :objAPIName
-                                    AND API_Name__c = :listViewAPIName];
+        Map<Id, List_View__c> listviewsById = new Map<Id, List_View__c>();
 
-        CustomListView lv = new CustomListView(listView.Describe__c);
+        //now check security
+        for (List_View__c listview: listviews)
+        {
+            if (isVisible(listview))
+                listViewsById.put(listview.Id, listview);
+        }
 
-        return lv;
+        return listviewsById;
     }
 
     /*
      * Method to use the SOQL query retrieved from the core listview describe, amend it to include
      * the possible additional fields added by the user and then use it to get the data.
      */ 
-    public static List<SObject> getListViewData(CustomListView listview, Map<String, String> lvConfig)
+    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfig)
     {
 
         //get query from map
-        String query = listview.getQuery();
+        String query = listview.Core_ListView_Query__c;
 
         String selectStr = query.substringBefore(' FROM ');
 
@@ -197,30 +275,114 @@ public with sharing class ListViewHelper {
 
     }
 
-    public static void insertCoreConfiguration()
+    global static void insertCoreConfiguration()
     {
+        List<List_View_Action__c> actions = new List<List_View_Action__c>();
+
+        List_View_Action__c orgDeleteAction = new List_View_Action__c();
+        orgDeleteAction.Apex_Class_Name__c = 'ListViewActionDelete';
+        orgDeleteAction.Label__c           = 'Delete';
+
+        actions.add(orgDeleteAction);
+
+        List_View_Action__c acctUpdateAction = new List_View_Action__c();
+        acctUpdateAction.Apex_Class_Name__c = 'ListViewActionUpdate';
+        acctUpdateAction.Label__c           = 'Update';
+        acctUpdateAction.Object_Type__c = 'Account';
+
+        actions.add(acctUpdateAction);
+
+        insert actions;
+
+        List<List_View_Action_Parameter__c> params = new List<List_View_Action_Parameter__c>();
+
+        List_View_Action_Parameter__c param = new List_View_Action_Parameter__c();
+        param.Field_API_Name__c   = 'Name';
+        param.Label__c            = 'Account Name';
+        param.List_View_Action__c = acctUpdateAction.Id;
+        param.Placeholder_Text__c = 'Account name goes here...';
+        param.Type__c             = 'STRING';
+
+        params.add(param);
+
+        param                     = new List_View_Action_Parameter__c();
+        param.Field_API_Name__c   = 'Industry';
+        param.Label__c            = 'Industry';
+        param.List_View_Action__c = acctUpdateAction.Id;
+        param.Placeholder_Text__c = 'Industry goes here...';
+        param.Type__c             = 'STRING';
+
+        params.add(param);
+
+        insert params;
 
     }
-    
-    public class CustomListView {
 
-        private Map<String,Object> listViewDesc = null;
+    /*
+     * Method to check security and determine whether the list view is visible
+     * to the requesting user. The following security is performed.
+     * 1. if user is owner
+     * 2. if list view allows all internal users.
+     * 3. if user is in allowed roles
+     * 4. if user is in allowed groups
+     * 5. if user is in allowed territories
+     */
+    public static Boolean isVisible(List_View__c lv)
+    {
+        User usr = UserHelper.getCurrentUser();
 
-        public CustomListView(String describe)
-        {
-            listViewDesc = (Map<String, Object>) JSON.deserializeUntyped(describe);
-        }
+        if (lv.OwnerId == UserInfo.getUserId()) return true;
 
-        public String getQuery()
-        {
-            return (String) listViewDesc.get('query');
-        }
+        if (lv.All_Internal_Users__c) return true;
 
-        public List<Object> getColumns()
-        {
-            return (List<Object>) listViewDesc.get('columns');
-        }
+        if (lv.Roles__c.contains(usr.UserRole.Name)) return true;
 
+        return false;
+    }
+
+    /*
+     * Method to check security and determine whether the list view is visible
+     * to the requesting user. The following security is performed.
+     * 1. if user is owner
+     * 2. if list view allows all internal users.
+     * 3. if user is in allowed roles
+     * 4. if user is in allowed groups
+     * 5. if user is in allowed territories
+     */
+    public static Boolean isUpdateable(List_View__c lv)
+    {
+        User usr = UserHelper.getCurrentUser();
+
+        if (lv.OwnerId == UserInfo.getUserId()) return true;
+
+        if (lv.Owner_Name__c == 'Automated Process'
+            && usr.Profile.Name == 'System Administrator') return true;
+
+        return false;
+    }
+
+    /*
+     * Method to check security and determine whether the list view is visible
+     * to the requesting user. The following security is performed.
+     * 1. if user is owner
+     * 2. if list view allows all internal users.
+     * 3. if user is in allowed roles
+     * 4. if user is in allowed groups
+     * 5. if user is in allowed territories
+     */
+    public static Boolean isUpdateable(ListView lv)
+    {
+        User usr = UserHelper.getCurrentUser();
+        User owner = UserHelper.getUserDetails(lv.CreatedById);
+
+        if (lv.CreatedById == UserInfo.getUserId()) return true;
+
+        if ((owner == null
+            || (owner.FirstName == 'Automated' 
+                && owner.LastName == 'Process'))
+            && usr.Profile.Name == 'System Administrator') return true;
+
+        return false;
     }
 
 }

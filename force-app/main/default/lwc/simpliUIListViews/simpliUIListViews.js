@@ -20,6 +20,8 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @api mainTitle = 'List Views';
     @api displayActions = false;
     @api displayReprocess = false;
+    @api includedObjects = '';
+    @api excludedObjects = '';
 
     @track selectedListView;            //holds the selected list view name
     @track selectedObject;              //holds the selected object name
@@ -35,6 +37,10 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track showActionModal;             //indicates whether the action modal form should be displayed.
     @track selectedRecordIdsStr;        //holds the set of record ids that have been selected as a string
     @track selectedRecordCount = 0;     //the number of records selected. Passed into the modal dialog.  
+
+    @track mouseStart;
+    @track oldWidth;
+    @track parentObj;
 
 
     /*
@@ -79,7 +85,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     /*
      * Wiring to get the list of objects in the system
      */
-    @wire (getListViewObjects, { })
+    @wire (getListViewObjects, { includedObjects: '$includedObjects', excludedObjects: '$excludedObjects'  })
     wiredListViewObjects({ error, data }) {
         if (data) { this.objectList = data; this.error = undefined; this.spinner = false; }
         else if (error) { this.error = error; this.objectList = undefined; this.spinner = false; }
@@ -131,13 +137,23 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     
     //called when a URL on the pages table data is clicked
     handleURLClick(event) {
-        console.log('URL clicked! - ' + event.target.value);
 
-        // Navigate to contact record page
+        //this is the URL
+        console.log('URL clicked! - ' + event.target.href);
+
+        //hack to get the record Id from the URL
+        const chars = event.target.href.split('/');
+        console.log('ID - ' + chars[5]);
+
+        //stop the link from ding its usual thing as we will be doing our thing.
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Navigate to record page
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
             attributes: {
-                recordId: event.target.value,
+                recordId: chars[5],
                 actionName: 'view',
             },
         });
@@ -368,5 +384,40 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         refreshApex(this.listViewData);
         console.log('APEX REFRESHED');
     }
+
+    calculateWidth(event) {
+        var childObj = event.target
+        var parObj = childObj.parentNode;
+        while(parObj.tagName != 'TH') {
+            parObj = parObj.parentNode;
+        }
+        console.log('final tag Name'+parObj.tagName);
+        var mouseStart=event.clientX;
+        this.mouseStart = mouseStart;
+        this.oldWidth = parObj.offsetWidth;
+        this.parentObj = parObj;
+        // Stop text selection event so mouse move event works perfectlly.
+        if(event.stopPropagation) event.stopPropagation();
+        if(event.preventDefault) event.preventDefault();
+        event.cancelBubble=true;
+        event.returnValue=false;          
+        //component.set("v.mouseStart",mouseStart);
+        //component.set("v.oldWidth",parObj.offsetWidth);
+    };
+
+    setNewWidth(event) {
+
+        if (this.mouseStart === undefined) return;
+
+        var childObj = event.target
+        var parObj = childObj.parentNode;
+        while(parObj.tagName != 'TH') {
+            parObj = parObj.parentNode;
+        }
+        var newWidth = event.clientX- parseFloat(this.mouseStart)+parseFloat(this.oldWidth);
+        this.parentObj.style.width = newWidth+'px';
+
+        this.mouseStart = undefined;
+    };
 
 }

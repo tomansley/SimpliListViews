@@ -106,11 +106,11 @@ public with sharing class ListViewController
         * Method which returns list of objects names and API names in the system
         */
     @AuraEnabled(cacheable=true)
-    public static List<SelectOption> getListViewObjects()
+    public static List<SelectOption> getListViewObjects(String includedObjects, String excludedObjects)
     {
         List<SelectOption> configListOptions = new List<SelectOption>();
 
-        Map<String, String> listviewObjects = ListViewHelper.getListViewObjects();
+        Map<String, String> listviewObjects = ListViewHelper.getListViewObjects(includedObjects, excludedObjects);
 
         for (String apiName: listviewObjects.keySet())
             configListOptions.add(new SelectOption(apiName, listviewObjects.get(apiName)));         
@@ -147,18 +147,26 @@ public with sharing class ListViewController
     {
         System.debug(LoggingLevel.DEBUG, 'STARTING getListViewData - ' + objectName + ' : ' + listViewName);
         
-        //get the core SFDC list view data
-        ListViewHelper.CustomListView lv = ListViewHelper.getListView(objectName, listViewName);
-
         //get the custom list view config
         Map<String, String> lvConfig = getListViewConfig(objectName, listViewName);
 
-        //get list view data
-        List<SObject> objectRows = ListViewHelper.getListViewData(lv, lvConfig);
-        
-        //turn SObjects into wrapper classes.
-        RowsWrapper rowData = handleRowsToWrapper(objectRows, lv, lvConfig);
-        
+        //get the core SFDC list view data
+        Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectName, listViewName);
+
+        RowsWrapper rowData = null;
+
+        if (listviews.size() > 0)
+        {
+
+            List_View__c listview = listviews.values()[0];
+
+            //get list view data
+            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig);
+            
+            //turn SObjects into wrapper classes.
+            rowData = handleRowsToWrapper(objectRows, listview, lvConfig);
+
+        }
         return rowData;
 
     }
@@ -216,12 +224,12 @@ public with sharing class ListViewController
         * Method to take a list of SObjects retrieved using a listviews query and convert the
         * rows into something that front end lightning components can handle.
         */
-    private static RowsWrapper handleRowsToWrapper(List<SObject> dataRows, ListViewHelper.CustomListView listView, Map<String, String> lvConfig)
+    private static RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, Map<String, String> lvConfig)
     {
         RowsWrapper rows = new RowsWrapper();
         
         //get all columns from the list view
-        List<Object> allColumns = listView.getColumns();
+        List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
         List<Object> columns = new List<Object>();
         Boolean addColumn = true;
 
@@ -338,8 +346,10 @@ public with sharing class ListViewController
                                                         String.valueOf(row.get(fieldName)), 
                                                         fieldType);
 
-                    if (fieldName == 'Name')
-                        field.setURL(String.valueOf(row.get('Id')));
+                    if (fieldName == 'Name') {
+                        String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(row.get('Id')) + '/view';
+                        field.setURL(url);
+                    }
 
                     rowWrapper.addField(field);
                 } else {

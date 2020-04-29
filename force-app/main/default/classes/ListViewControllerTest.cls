@@ -6,13 +6,41 @@ private class ListViewControllerTest {
     {
     }
 
+    static testMethod void updateObjectListViewsTest()
+    {
+        HelperTest.createListViews();
+
+        String result = ListViewController.updateObjectListViews('Account');
+
+        System.assert(result == 'success');
+    }
+
+    static testMethod void updateSingleListViewTest()
+    {
+        HelperTest.createListViews();
+
+        String result = ListViewController.updateSingleListView('Account', 'AllAccounts');
+
+        System.assert(result == 'success');
+    }
+
+    static testMethod void updateAllListViewsTest()
+    {
+        HelperTest.createListViews();
+
+        String result = ListViewController.updateAllListViews();
+
+        System.assert(result == 'success');
+    }
+
+
     static testMethod void listViewControllerTest() {
 
         HelperTest.createListViews();
         List<List_View_Action__c> lvActions = HelperTest.createListViewActions();
         Account acct = HelperTest.insertAccount('List View Account');
 
-        List<ListViewController.SelectOption> objs = ListViewController.getListViewObjects();
+        List<ListViewController.SelectOption> objs = ListViewController.getListViewObjects('',''); 
 
         System.assert(objs != null);
         System.assert(objs.size() > 0);
@@ -32,7 +60,7 @@ private class ListViewControllerTest {
         System.assert(rows.getRows() != null);
         System.assert(rows.getRows().size() > 0);
 
-
+        
         List<ListViewController.SelectOption> actions = ListViewController.getListViewsActions('Account');
 
         System.assert(actions != null);
