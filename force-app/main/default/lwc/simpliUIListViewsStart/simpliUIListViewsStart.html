@@ -2,16 +2,14 @@
 
     <lightning-card title="Before You Start!" icon-name="standard:announcement">
         <div class="slds-m-around_medium">
-            <p>All list views must be processed before being available. Click this button 
-                <lightning-button-icon style="padding: 10px;" title="Process List Views" 
-                    size="medium" 
-                    icon-name="action:new_task" 
-                    onclick={handleProcessListViewsButtonClick}>
-                </lightning-button-icon>
-               to process the list views.
-            </p>
+            <p>Please note the following regarding this app -</p>
             <br/>
-            <p>Please note that only list views that all users or groups of users can see will be displayed. <b>Private list views will not be displayed using this app.</b></p>
+            <div style="padding-left: 20px;">
+                <ol style="list-style-type:circle; list-style-position: inside;">
+                    <li>Only list views that all users or groups of users can see will be displayed. <b>Private list views are not displayed.</b></li>
+                    <li>There is a list view processing button available on each page allowing for list views to be reprocessed as needed.</li>
+                </ol>
+            </div>
         </div>
     </lightning-card>
     <br/>
