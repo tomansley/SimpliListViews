@@ -65,6 +65,7 @@ All actions are configured for use by the application. Their configuration is he
 ### Action Implementation
 If an action is needed that is not currently available it can be implemented. It is highly encouraged to submit actions back to the app exchange package developer for addition in later releases if they are of a more abstract nature and can be used by lots of users.
 
+#### ListViewAction Interface
 The following is some example code which implements the ListViewAction interface -
 
 ```
@@ -73,14 +74,14 @@ public with sharing class ListViewActionHelloWorld extends simpli_lv.ListViewAct
     /*
      * This method is required to implement the ListViewAction interface. If processing is successful the
      * UI component expects the string 'Ok' to be returned. Any other string and the UI component assumes
-     * processing has failed and the returned string is the error message to be displayed.
+     * processing has failed and the returned string is used as the error message displayed.
      *
      * @param recordIds a list of recordIds that have been sent for processing.
      * @param fieldValues a list of key/value parameters. These parameters are configured.
      */
     public override String process(List<String> recordIds, Map<String, Object> fieldValues)
     {
-        System.debug('Hello - this is where the processing of the records takes place');
+        System.debug('Hello - ' + (String) fieldValues.get('FirstName') + '. This is where the processing of the records takes place');
 
         return simpli_lv.ListViewAction.RESULT_OK;
     }
@@ -88,3 +89,19 @@ public with sharing class ListViewActionHelloWorld extends simpli_lv.ListViewAct
 }
 ```
 
+Things to remember during implementation
+* the action is performed as a single transaction. This implies that all governor limits must be adhered to.
+* always place processing into a try/catch. The UI component will wait for a valid response before displaying anything to the user.
+
+#### Action Configuration
+Once the action has been implemented it then needs to be configured for use by the list views. A new List View Actions record must be created. To follow on from the example above the record would look like the following - 
+* <b>Label -</b> Hello World
+* <b>Object Type -</b>(leave blank)
+* <b>Apex Class Name -</b>ListViewActionHelloWorld
+
+If there are parameters that need to be returned by the user these need to be configured as well. Using the example above we will create one parameter -
+* <b>Label -</b>First Name
+* <b>Field API Name -</b>FirstName
+* <b>Type -</b>STRING
+* <b>Default Value -</b>(leave blank)
+* <b>Placeholder Text -</b>Put your first name here...
