@@ -19,6 +19,16 @@ And since you have decided to use Simpli List Views and plan on spending all you
 * Only list views that all users or groups of users can see will be displayed. <b>Private list views are not displayed.</b>
 * There is a list view processing button available on each page allowing for list views to be reprocessed as needed.
 
+## Examples
+A number of example lightning pages have been created to showcase the different configuration options available. The following examples can be seen as tabs in the Simpli List View app.
+* List Views Example 1 - displays all available widgets as well as all list views.
+* List Views Example 2 - displays list views with no widgets except header text.
+* List Views Example 3 - displays list views with no widgets or header text. The simplest it gets!
+* List Views Example 4 - displays only those list view objects that have been specified at the page layout level.
+* List Views Example 5 - displays a more mobile centric view with all widgets removed.
+* List Views Example 6 - displays the list view component along with other standard SFDC components.
+* List Views Example 7 - displays two list view components next to each other. Useful for related information viewing.
+
 ## Configuration
 There are 3 different levels of configuration that are available in the app.</p>
 * Org-wide custom settings
@@ -42,3 +52,39 @@ These settings are maintained as part of the Lightning app that the component is
 ### List View Configuration</b>
 These settings affect individual list views in the SFDC org. They would typically be set at a user level after the list view has been created. The settings are found in the List View Configs object. Each config has a set of parameters that can be set based on needs.</p>
 * <b>AdditionalFields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available.
+
+## Actions
+Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. Currently 2 actions have been implemented and made available in the app exchange package. Delete and Account Update.
+
+### Action Configuration
+All actions are configured for use by the application. Their configuration is held in the List View Actions table (simpli_lv__List_View_Action__c). The following described each field - 
+* <b>Label -</b> the label that will be displayed to the user for the action.
+* <b>Object Type -</b> the object type that this action is specific to. If no object type is specified the action is available to be used by all list views.
+* <b>Apex Class Name -</b> the name of the apex class that holds all processing logic for this action. The apex class specified must extend the simpli_lv.ListViewAction interface.
+
+### Action Implementation
+If an action is needed that is not currently available it can be implemented. It is highly encouraged to submit actions back to the app exchange package developer for addition in later releases if they are of a more abstract nature and can be used by lots of users.
+
+The following is some example code which implements the ListViewAction interface -
+
+```
+public with sharing class ListViewActionHelloWorld extends simpli_lv.ListViewAction {
+
+    /*
+     * This method is required to implement the ListViewAction interface. If processing is successful the
+     * UI component expects the string 'Ok' to be returned. Any other string and the UI component assumes
+     * processing has failed and the returned string is the error message to be displayed.
+     *
+     * @param recordIds a list of recordIds that have been sent for processing.
+     * @param fieldValues a list of key/value parameters. These parameters are configured.
+     */
+    public override String process(List<String> recordIds, Map<String, Object> fieldValues)
+    {
+        System.debug('Hello - this is where the processing of the records takes place');
+
+        return simpli_lv.ListViewAction.RESULT_OK;
+    }
+    
+}
+```
+
