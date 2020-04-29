@@ -188,8 +188,17 @@ public with sharing class ListViewController
             return responseStr;
         }
 
-        // Get the Type corresponding to the actions class name
-        Type t = Type.forName(action.Apex_Class_Name__c);
+        // Get the Type corresponding to the class name
+        Type t = null;
+
+		Integer index = action.Apex_Class_Name__c.indexOf('.');
+    	if (index != -1) {
+        	// With namespace "ns.Type"
+        	t = Type.forName(action.Apex_Class_Name__c.substring(index), action.Apex_Class_Name__c.substring(index + 1, action.Apex_Class_Name__c.length()));
+    	} else {
+        	// Just "Type"
+        	t = Type.forName(null, action.Apex_Class_Name__c);
+    	}
 
         if (t == null) {
             responseStr = 'Couldn\'t find apex class "' + action.Apex_Class_Name__c + '" for config with name ' + action.Label__c;
