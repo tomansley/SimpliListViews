@@ -274,53 +274,21 @@ public with sharing class ListViewController
             for (String fieldName: fields)
             {
 
-                Schema.DescribeFieldResult fieldDesc = null;
-                String label = '';
+                HelperSchema.FieldData fieldData = HelperSchema.getValue(dataRows[0], fieldName);
+                String label = fieldData.label;
 
-                if (!fieldName.contains('.'))
-                {
+                FieldWrapper field = new FieldWrapper(label, 
+                                                    fieldData.type.name().toLowerCase());
 
-                    fieldDesc = HelperSchema.getFieldDescribeResult(objType, fieldName);
+                rows.addFieldMetaData(field);
 
-                    label = fieldDesc.getLabel();
+                Map<String, Object> newColumn = new Map<String, Object>();
+                newColumn.put('type', fieldData.type.name().toLowerCase());
+                newColumn.put('fieldNameOrPath', fieldName);
+                newColumn.put('hidden', false);
+                newColumn.put('label', label);
 
-                } else {
-
-                    //get field name so if Account.Type = Type
-                    String relatedObjField = fieldName.substringAfter('.');
-
-                    //get field description of object, so if Account.Type = Account description.
-                    fieldDesc = HelperSchema.getFieldDescribeResult(objType, fieldName.substringBefore('.'));
-
-                    label = fieldDesc.getRelationshipName();
-
-                    //get sobject with field in it.
-                    SObject relatedObj = dataRows[0].getSObject(fieldName.substringBefore('.'));
-
-                    //get the type of the retrieved object
-                    String relatedObjType = HelperSchema.getObjectType(relatedObj);
-
-                    //get the description of the field.
-                    fieldDesc = HelperSchema.getFieldDescribeResult(relatedObjType, relatedObjField);
-
-                    label += ' ' + fieldDesc.getLabel();
-                }
-
-                if (fieldDesc != null)
-                {
-                    FieldWrapper field = new FieldWrapper(label, 
-                                                        fieldDesc.getType().name().toLowerCase());
-
-                    rows.addFieldMetaData(field);
-
-                    Map<String, Object> newColumn = new Map<String, Object>();
-                    newColumn.put('type', fieldDesc.getType().name().toLowerCase());
-                    newColumn.put('fieldNameOrPath', fieldName);
-                    newColumn.put('hidden', false);
-                    newColumn.put('label', label);
-
-                    columns.add(newColumn);
-                }
+                columns.add(newColumn);
 
             }
         }
@@ -349,30 +317,18 @@ public with sharing class ListViewController
                 //do not display hidden
                 if (hidden) continue;
 
-                if (!fieldName.contains('.'))
-                {
-                    FieldWrapper field = new FieldWrapper((String) columnData.get('label'), 
-                                                        String.valueOf(row.get(fieldName)), 
-                                                        fieldType);
+                HelperSchema.FieldData fieldData = HelperSchema.getValue(row, fieldName);
 
-                    if (fieldName == 'Name') {
-                        String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(row.get('Id')) + '/view';
-                        field.setURL(url);
-                    }
+                FieldWrapper field = new FieldWrapper(fieldData.label, 
+                                                    String.valueOf(fieldData.value), 
+                                                    fieldData.type.name().toLowerCase());
 
-                    rowWrapper.addField(field);
-                } else {
-                    SObject relatedObj = row.getSObject(fieldName.substringBefore('.'));
-                    String value = '';
-                    if (relatedObj != null)
-                        value = String.valueOf(relatedObj.get(fieldName.substringAfter('.')));
-
-                    FieldWrapper field = new FieldWrapper((String) columnData.get('label'), 
-                                                        value, 
-                                                        fieldType);
-                    rowWrapper.addField(field);
-
+                if (fieldData.name == 'Name') {
+                    String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';
+                    field.setURL(url);
                 }
+
+                rowWrapper.addField(field);
 
             }
         }

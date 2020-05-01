@@ -431,7 +431,118 @@ public with sharing class HelperSchema {
 		
 		return isValid;
 		
-	}
+    }
+    
+    public static void checkListViewCreatable()
+    {
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__API_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Object_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Describe__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'OwnerId');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Label__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Columns__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Query__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Id__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
+    }
+
+    public static void checkListViewActionsCreatable()
+    {
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Apex_Class_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Label__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Object_Type__c');
+
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action_Parameter__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Field_API_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Label__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__List_View_Action__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Placeholder_Text__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Type__c');
+    }
+
+
+    /*
+     * Method which given an sobject and a field name will retrieve
+     * the value for the field as well as field information. This data
+     * is returned in a map with the following keys - 
+     * 
+     * TYPE  - the type of the field.
+     * VALUE - the value of the field.
+     * LABEL - the label of the field.
+	 * 
+	   Account acc = [SELECT Name, Owner.Name, Owner.Profile.Name FROM Account WHERE Name LIKE 'Burling%' LIMIT 1];
+	   HelperSchema.FieldData d = HelperSchema.getValue(acc, 'Name');
+	   System.debug('Account Name - ' + d.name + ', ' + d.label + ', ' + d.type + ', ' + d.value);
+	 * 
+     */
+    public static FieldData getValue(SObject obj, String fieldName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'HelperMetadata.getValue - obj = ' + obj + ', fieldName = ' + fieldName);
+
+        FieldData data = null;
+		if (obj == null || fieldName == null || fieldName == '')
+			throw new HelperSchemaException('HelperSchema.getValue() called with empty values. obj = ' + obj + ', fieldName = ' + fieldName);
+
+        List<String> fieldHierarchy = fieldName.split('\\.');
+
+        System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
+
+        SObject currentObj = obj;
+
+        for (String field: fieldHierarchy)
+        {
+            //if we are at the last field then get the value and return
+            if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
+            {
+				//get the object type
+				String objType = getObjectType(currentObj);
+
+				//get the field describe
+				Schema.DescribeFieldResult fieldDesc = getFieldDescribeResult(objType, field);
+
+				String label = '';
+				if (fieldHierarchy.size() == 1)
+					label = fieldDesc.getLabel();
+				else
+					label = objType + ' ' + fieldDesc.getLabel();
+
+				//if we have a field describe then get field data
+				if (fieldDesc == null) 
+					throw new HelperSchemaException('Cannot find field with name ' + field + ' for object of type ' + objType);
+				else
+					data = new FieldData(field, label.removeStart(' '), fieldDesc.getType(), currentObj.get(field), currentObj);
+				
+			//if we are not at the last field then get the fields object
+            } else {
+					
+				//get sobject with field in it.
+                currentObj = currentObj.getSObject(field);
+			}
+        }
+
+        return data;
+    }
+
+    public class FieldData 
+    {
+
+		public SObject fieldObj        {get; set;}
+        public String name             {get; set;}
+        public String label            {get; set;}
+        public Schema.DisplayType type {get; set;}
+        public Object value            {get; set;}
+
+        public FieldData(String name, String label, Schema.DisplayType type, Object value, SObject fieldObj)
+        {
+			this.fieldObj = fieldObj;
+            this.name     = name;
+            this.label    = label;
+            this.type     = type;
+            this.value    = value;
+        }
+    }
 
 	public class HelperSchemaException extends Exception { }
 
