@@ -1,7 +1,7 @@
 /*
  * Class to handle the querying and manipulation of meta data information.
  */
-global class HelperMetadata {
+global with sharing class HelperMetadata {
     
     global static Map<String, List_View_Metadata_Type_Name__mdt> metadataTypes = new Map<String, List_View_Metadata_Type_Name__mdt>();
 
@@ -26,7 +26,7 @@ global class HelperMetadata {
         //we build the SOQL query to get the data based on the returned API information.        
         Map<String, Schema.SObjectField> objFields = HelperSchema.getFieldsForObject(metadataTypes.get(name).Metadata_API_Name__c, HelperSchema.NAME);
         
-        String soql = 'SELECT ' + String.join(new List<String>(objFields.keySet()), ',') + ' FROM ' + metadataTypes.get(name).Metadata_API_Name__c;
+        String soql = 'SELECT ' + String.escapeSingleQuotes(String.join(new List<String>(objFields.keySet()), ',')) + ' FROM ' + String.escapeSingleQuotes(metadataTypes.get(name).Metadata_API_Name__c);
         
         List<SObject> metaData = Database.query(soql);
         
