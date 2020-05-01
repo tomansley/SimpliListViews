@@ -84,7 +84,7 @@ global with sharing class ListViewHelper {
     public static Map<String, String> getListViewObjects(String pageWideIncObjs, String pageWideExcObjs)
     {
         Map<String, String> mappedListviewObjects = new Map<String, String>();
-        AggregateResult[] listViewObjects = [SELECT Object_Name__c FROM List_View__c GROUP BY Object_Name__c];
+        AggregateResult[] listViewObjects = [SELECT Object_Name__c FROM List_View__c GROUP BY Object_Name__c LIMIT 2000];
 
         String orgWideExcObjs = HelperMetadata.getOrgWideSettingValue('Excluded Object Types', '');
         String orgWideIncObjs = HelperMetadata.getOrgWideSettingValue('Included Object Types', '');
@@ -277,6 +277,9 @@ global with sharing class ListViewHelper {
 
     global static void insertCoreConfiguration()
     {
+
+        HelperSchema.checkListViewActionsCreatable();
+
         List<List_View_Action__c> actions = new List<List_View_Action__c>();
 
         List_View_Action__c orgDeleteAction = new List_View_Action__c();

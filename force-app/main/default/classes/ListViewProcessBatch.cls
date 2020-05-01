@@ -91,14 +91,8 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             }
         }
 
-        HelperSchema.checkObjectCreatable('List_View__c');
-        HelperSchema.checkObjectFieldCreateable('List_View__c', 'Simpli_lv__API_Name__c');
-        HelperSchema.checkObjectFieldCreateable('List_View__c', 'Simpli_lv__Object_Name__c');
-        HelperSchema.checkObjectFieldCreateable('List_View__c', 'Simpli_lv__Describe__c');
-        HelperSchema.checkObjectFieldCreateable('List_View__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldCreateable('List_View__c', 'Simpli_lv__Core_ListView_Id__c');
-        HelperSchema.checkObjectFieldCreateable('List_View__c', 'Simpli_lv__Primary_Key__c');
-
+        HelperSchema.checkListViewCreatable();
+        
         upsert simpliListViews Primary_Key__c;		
 	}
 	

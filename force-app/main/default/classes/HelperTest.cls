@@ -31,6 +31,20 @@ public with sharing class HelperTest {
 
 		insert simpliListViews;
 
+		List_View_Config__c config = new List_View_Config__c();
+		config.Name                = 'AllAccounts';
+		config.List_View_Object__c = 'Account';
+
+		insert config;
+
+		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = 'AdditionalFields';
+		param.Parameter_Type__c = 'String';
+		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name';
+		param.List_View_Config__c = config.Id;
+		
+		insert param;
+
 		return simpliListViews;
 	}
 

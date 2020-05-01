@@ -12,6 +12,8 @@ private class ListViewProcessBatchTest {
             ListViewProcessBatch job = new ListViewProcessBatch();
             Database.executeBatch(job);
         Test.stopTest();
+
+        System.assert(true);
     }
 
 }

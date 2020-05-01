@@ -5,6 +5,8 @@ private class ScriptInstallTest {
 	static void ScriptInstallTest()
 	{
 		ScriptInstall postinstall = new ScriptInstall();
-		Test.testInstall(postinstall, null);
+        Test.testInstall(postinstall, null);
+        
+        System.assert(true);
 	}
 }
