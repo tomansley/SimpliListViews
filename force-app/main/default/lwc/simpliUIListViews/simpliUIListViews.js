@@ -20,6 +20,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @api mainTitle = 'List Views';
     @api displayActions = false;
     @api displayReprocess = false;
+    @api displayURL = false;
     @api includedObjects = '';
     @api excludedObjects = '';
 
@@ -38,11 +39,15 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track selectedRecordIdsStr;        //holds the set of record ids that have been selected as a string
     @track selectedRecordCount = 0;     //the number of records selected. Passed into the modal dialog.  
 
+    //for handling column width changes
     @track mouseStart;
     @track oldWidth;
     @track parentObj;
 
-
+    //for handling sorting
+    @track columnSortData = new Map();
+    @track columnSortDataStr = '';
+  
     /*
      * Wiring to get the list of config parameters for the chosen object and list view
      */
@@ -72,7 +77,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     /*
      * Wiring to get the list of objects in the system using a LISTVIEW NAME
      */
-    @wire (getListViewData, { objectName: '$selectedObject', listViewName: '$selectedListView' })
+    @wire (getListViewData, { objectName: '$selectedObject', listViewName: '$selectedListView', sortData: '$columnSortDataStr' })
     wiredListViewData({ error, data }) {
         if (data) { 
             console.log('SUCCESS DATA GET ' + data); 
@@ -145,7 +150,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         const chars = event.target.href.split('/');
         console.log('ID - ' + chars[5]);
 
-        //stop the link from ding its usual thing as we will be doing our thing.
+        //stop the link from doing its usual thing as we will be doing our thing.
         event.preventDefault();
         event.stopPropagation();
         
@@ -419,5 +424,57 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
         this.mouseStart = undefined;
     };
+
+    /*
+     * Method that gets fired when a user clicks on one of the column headings to have that column
+     * be a part of the data sorting. The page can have multiple columns be a part of the sort.
+     */
+    sortColumns(event) {
+        this.spinner = true;
+
+        //get all values from the event
+        let fieldName = event.currentTarget.dataset.name;
+        let sortDirection = event.currentTarget.dataset.sortdir;
+        let sortIndex = event.currentTarget.dataset.sortindex;
+        
+        //turn all the values into their respective data types
+        if (sortIndex === undefined || sortIndex === '') {
+            sortIndex = this.columnSortData.size;
+        }
+        sortIndex = Number(sortIndex);
+        
+        if (sortDirection === undefined || sortDirection === '') {
+            sortDirection = true;
+        } else if (sortDirection === 'true') {
+            sortDirection = true; //turning the STRING 'true' into the BOOLEAN true
+        } else if (sortDirection === 'false') {
+            sortDirection = false; //turning the STRING 'false' into the BOOLEAN false
+        }
+
+        let columnData = undefined;
+
+        //if a user has clicked on a column that is already being sorted then switch the direction
+        if (this.columnSortData.has(sortIndex)) {
+            columnData = this.columnSortData.get(sortIndex);
+
+            //if this is the second click on the column then switch the column.
+            if (columnData[2] === true) {
+                columnData[2] = false; 
+                this.columnSortData.set(sortIndex, columnData);
+
+            //if this is the third click on the column then reset all sorting data.
+            } else {
+                this.columnSortData = new Map(); 
+            }
+
+        //if this is the first time clicking on a column then just add the column for sorting.
+        } else {
+            columnData = [sortIndex, fieldName, sortDirection];
+            this.columnSortData.set(sortIndex, columnData);
+        }
+
+        this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
+        
+      }
 
 }

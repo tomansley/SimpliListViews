@@ -31,6 +31,17 @@
                     </lightning-combobox>
                 </lightning-layout-item>
             </template>
+            <template if:true={displayURL}>
+                <template if:true={listViewData}>
+                    <lightning-layout-item padding="horizontal-small">
+                        <a href={listViewData.coreListViewURL} target="_blank">
+                            <lightning-button-icon title="Go to the original SFDC list view." 
+                                                    size="medium" 
+                                                    icon-name="utility:picklist_choice">
+                            </lightning-button-icon></a>
+                    </lightning-layout-item>
+                </template>
+            </template>
             <template if:true={displayActions}>
                 <lightning-layout-item alignment-bump="left" padding="horizontal-small">
                     <lightning-combobox placeholder="Select an Action"
@@ -71,17 +82,30 @@
                             </div>
                         </th>
                         <template for:each={listViewData.fieldMetaData} for:item="field">
-                            <th key={field.label} aria-label={field.label} aria-sort="none" class="slds-is-resizable slds-is-sortable slds-text-title_caps" scope="col">
+                            <th key={field.label} 
+                                aria-label={field.label} 
+                                aria-sort="ascending" 
+                                class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc" 
+                                scope="col">
+
                                 <div onmouseup={setNewWidth}>
-                                    <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="0">
+                                    <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
                                         <span class="slds-assistive-text">Sort by: </span>
                                         <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                        <span class="slds-truncate" title={field.label}>{field.label}</span>
-                                        <span class="slds-icon_container slds-icon-utility-arrowdown">
-                                            <svg class="slds-icon slds-icon-text-default slds-is-sortable__icon " aria-hidden="true">
-                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown"></use>
-                                            </svg>
-                                        </span>
+                                            <span class="slds-truncate" 
+                                                  title={field.label} 
+                                                  onclick={sortColumns} 
+                                                  data-sortdir={field.sortDir}
+                                                  data-name={field.name}
+                                                  data-sortindex={field.sortIndex}>{field.label}</span>
+                                            <div if:true={field.sortIndex}>
+                                                <div if:true={field.sortDir}>
+                                                    &nbsp;(&#9660;{field.sortIndexDisplay})
+                                                </div>
+                                                <div if:false={field.sortDir}>
+                                                    &nbsp;(&#9650;{field.sortIndexDisplay})
+                                                </div>
+                                            </div>
                                         </div>
                                     </a>
                                 </div>
@@ -91,6 +115,7 @@
                                         <span class="slds-resizable__divider"></span>
                                     </span>
                                 </div>
+
                             </th>
                         </template>
                     </tr>
