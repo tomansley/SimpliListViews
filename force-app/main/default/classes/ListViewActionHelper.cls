@@ -9,10 +9,12 @@ public with sharing class ListViewActionHelper {
                                                         Primary_Key__c,
                                                         (SELECT Field_API_Name__c,
                                                                 Label__c,
+                                                                Display_Order__c,
                                                                 Type__c,
                                                                 Default_Value__c,
                                                                 Placeholder_Text__c
-                                                        FROM List_View_Action_Parameters__r)
+                                                        FROM List_View_Action_Parameters__r
+                                                        ORDER BY Display_Order__c NULLS LAST)
                                                 FROM List_View_Action__c
                                                 WHERE Id IN :actionIds]);
     }
@@ -28,10 +30,12 @@ public with sharing class ListViewActionHelper {
                         Primary_Key__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
+                                Display_Order__c,
                                 Type__c,
                                 Default_Value__c,
                                 Placeholder_Text__c
-                         FROM List_View_Action_Parameters__r)
+                         FROM List_View_Action_Parameters__r
+                         ORDER BY Display_Order__c NULLS LAST)
                 FROM List_View_Action__c
                 WHERE Primary_Key__c = :primaryKey];
     }
