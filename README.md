@@ -103,6 +103,7 @@ Once the action has been implemented it then needs to be configured for use by t
 If there are parameters that need to be returned by the user these need to be configured as well. Using the example above we will create one parameter -
 * <b>Label -</b>First Name
 * <b>Field API Name -</b>FirstName
+* <b>Display Order -</b>1
 * <b>Type -</b>STRING
 * <b>Default Value -</b>(leave blank)
 * <b>Placeholder Text -</b>Put your first name here...
