@@ -244,21 +244,55 @@ global with sharing class ListViewHelper {
      * Method to use the SOQL query retrieved from the core listview describe, amend it to include
      * the possible additional fields added by the user and then use it to get the data.
      */ 
-    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfig)
+    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData)
     {
 
-        //get query from map
+        //---------------------------------------------------
+        // Parse out the query retrieved from the list view.
+        //---------------------------------------------------
         String query = listview.Core_ListView_Query__c;
-
         String selectStr = query.substringBefore(' FROM ');
+        String whereStr = null;
+        String orderByStr = '';
+        if (query.contains(' ORDER BY '))
+        {
+            whereStr = query.substringBetween(' FROM ', ' ORDER BY ');
+            orderByStr = query.substringAfter(' ORDER BY ');
 
-        String whereStr = query.substringAfter(' FROM ');
+        } else {
+            whereStr = query.substringAfter(' FROM ');
+        }
 
-        //add any additional fields to the SELECT
+        //------------------------------------------------------
+        // Update all additional fields on the SELECT statement
+        //------------------------------------------------------
         if (lvConfig.get('AdditionalFields') != null)
             selectStr += ', ' + lvConfig.get('AdditionalFields');
 
-        query = selectStr + ' FROM ' + whereStr;
+        //------------------------------------------------------
+        // Handle all changes to the ORDER BY statement
+        //------------------------------------------------------
+        if (sortData != null && sortData.size() > 0)
+        {
+            orderByStr = '';
+            
+            for (ListViewHelper.ColumnSortData columnSortData: sortData)
+            {
+                orderByStr += columnSortData.fieldName + ' ';
+                if (columnSortData.sortDirection == true)
+                    orderByStr += 'ASC NULLS FIRST, ';
+                else
+                    orderByStr += 'DESC NULLS FIRST, ';
+
+            }
+
+            orderByStr = orderByStr.removeEnd(', ');
+        }
+
+        //------------------------------------------------------
+        // Put the query back together again
+        //------------------------------------------------------
+        query = selectStr + ' FROM ' + whereStr + ' ORDER BY ' + orderByStr;
 
         //add any limits to the data returned. Max = 2000
         if (lvConfig.get('ReturnSize') != null)
@@ -388,4 +422,20 @@ global with sharing class ListViewHelper {
         return false;
     }
 
+    public class ColumnSortData implements Comparable {
+
+        public String fieldName;
+        public Boolean sortDirection;
+        public Integer sortIndex;
+
+        public Integer compareTo(Object compareTo) {
+            ColumnSortData sortData2 = (ColumnSortData) compareTo;
+            if (sortIndex > sortData2.sortIndex)
+                return 1;
+            else if (sortIndex < sortData2.sortIndex)
+                return -1;
+            else
+                return 0;
+        }
+    }
 }

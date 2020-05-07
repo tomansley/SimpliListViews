@@ -143,9 +143,9 @@ public with sharing class ListViewController
         * TEST - SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
         */
     @AuraEnabled(cacheable=true)
-    public static RowsWrapper getListViewData(String objectName, String listViewName)
+    public static RowsWrapper getListViewData(String objectName, String listViewName, String sortData)
     {
-        System.debug(LoggingLevel.DEBUG, 'STARTING getListViewData - ' + objectName + ' : ' + listViewName);
+        System.debug(LoggingLevel.DEBUG, 'STARTING getListViewData - ' + objectName + ' : ' + listViewName + ' : ' + sortData);
         
         //get the custom list view config
         Map<String, String> lvConfig = getListViewConfig(objectName, listViewName);
@@ -160,11 +160,42 @@ public with sharing class ListViewController
 
             List_View__c listview = listviews.values()[0];
 
+            //handle the sorting data
+            List<ListViewHelper.ColumnSortData> columnSortData = new List<ListViewHelper.ColumnSortData>();
+            if (sortData.length() > 0)
+            {
+                //below is a bit of a mess at the moment because Map objects cannot be stringified
+                //in Javascript. So we end up with a list of list of list of list!!
+                List<Object> sortValues = (List<Object>) JSON.deserializeUntyped(sortData);
+                System.debug(LoggingLevel.DEBUG, 'SORT VALUES - ' + sortValues);
+                for (Object values: sortValues)
+                {
+                    List<Object> sortVals = (List<Object>) values;
+                    List<Object> tst = (List<Object>) sortVals[1];
+
+                    System.debug(LoggingLevel.DEBUG, 'TST 0 - ' + tst[0]);
+                    System.debug(LoggingLevel.DEBUG, 'TST 1 - ' + tst[1]);
+                    System.debug(LoggingLevel.DEBUG, 'TST 2 - ' + tst[2]);
+
+                    ListViewHelper.ColumnSortData columnData = new ListViewHelper.ColumnSortData();
+                    columnData.sortIndex     = (Integer) tst[0];
+                    columnData.fieldName     = (String) tst[1];
+                    columnData.sortDirection = (Boolean) tst[2];
+
+                    columnSortData.add(columnData);
+                }
+
+                columnSortData.sort();
+            }
+
             //get list view data
-            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig);
+            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData);
             
             //turn SObjects into wrapper classes.
-            rowData = handleRowsToWrapper(objectRows, listview, lvConfig);
+            rowData = handleRowsToWrapper(objectRows, listview, lvConfig, columnSortData);
+
+            rowData.objName    = objectName;
+            rowData.coreListId = listview.Core_ListView_Id__c;
 
         }
         return rowData;
@@ -233,8 +264,13 @@ public with sharing class ListViewController
         * Method to take a list of SObjects retrieved using a listviews query and convert the
         * rows into something that front end lightning components can handle.
         */
-    private static RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, Map<String, String> lvConfig)
+    private static RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData)
     {
+
+        Map<String, ListViewHelper.ColumnSortData> sortDataByFieldName = new Map<String, ListViewHelper.ColumnSortData>();
+        for (ListViewHelper.ColumnSortData columnData: sortData)
+            sortDataByFieldName.put(columnData.fieldName, columnData);
+
         RowsWrapper rows = new RowsWrapper();
         
         //get all columns from the list view
@@ -253,7 +289,14 @@ public with sharing class ListViewController
             if (!hidden)
             {
                 FieldWrapper field = new FieldWrapper((String) columnData.get('label'), 
-                                                        (String) columnData.get('type'));
+                                                      (String) columnData.get('type'),
+                                                      fieldName);
+
+                if (sortDataByFieldName.containsKey(fieldName))
+                {
+                    field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
+                    field.sortDir   = sortDataByFieldName.get(fieldName).sortDirection;
+                }
 
                 rows.addFieldMetaData(field);
 
@@ -278,7 +321,14 @@ public with sharing class ListViewController
                 String label = fieldData.label;
 
                 FieldWrapper field = new FieldWrapper(label, 
-                                                    fieldData.type.name().toLowerCase());
+                                                      fieldData.type.name().toLowerCase(),
+                                                      fieldName);
+
+                if (sortDataByFieldName.containsKey(fieldName))
+                {
+                    field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
+                    field.sortDir   = sortDataByFieldName.get(fieldName).sortDirection;
+                }
 
                 rows.addFieldMetaData(field);
 
@@ -321,11 +371,18 @@ public with sharing class ListViewController
 
                 FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                     String.valueOf(fieldData.value), 
-                                                    fieldData.type.name().toLowerCase());
+                                                    fieldData.type.name().toLowerCase(),
+                                                    fieldName);
 
                 if (fieldData.name == 'Name') {
                     String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';
                     field.setURL(url);
+                }
+
+                if (sortDataByFieldName.containsKey(fieldName))
+                {
+                    field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
+                    field.sortDir   = sortDataByFieldName.get(fieldName).sortDirection;
                 }
 
                 rowWrapper.addField(field);
@@ -418,6 +475,8 @@ public with sharing class ListViewController
     //class which wraps up all the row data for sending to front end.
     public class RowsWrapper
     {
+        public String objName;
+        public String coreListId;
         public List<RowWrapper> rows;
         public List<FieldWrapper> fieldMetaData;
         
@@ -447,7 +506,14 @@ public with sharing class ListViewController
         public List<FieldWrapper> getFieldMetaData()
         {
             return fieldMetaData;
-        }   	
+        }
+
+        //Example - https://simpli-list-view-dev-dev-ed.lightning.force.com/lightning/o/Account/list?filterName=00B3h000003ZfMQEA0
+        @AuraEnabled(cacheable=true)
+        public String getCoreListViewURL()
+        {
+            return URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/o/' + objName + '/list?filterName=' + coreListId;
+        }
         
     }
     
@@ -494,27 +560,61 @@ public with sharing class ListViewController
         public String value;
         public String type;
         public String url;
+        public String name;
+        public Boolean sortDir; //true = asc, false = desc
+        public String sortIndex;
         
-        public FieldWrapper(String label, String value, String type)
+        public FieldWrapper(String label, String value, String type, String name)
         {
-            this.label = label;
-            this.type   = type;
-            this.value = value;
+            this.label     = label;
+            this.type      = type;
+            this.value     = value;
+            this.name      = name;
+            this.sortDir   = true;
+            this.sortIndex = '';
 
             if (this.value == null)
                 this.value = '';
         }
         
-        public FieldWrapper(String label, String type)
+        public FieldWrapper(String label, String type, String name)
         {
-            this.label = label;
-            this.type   = type;
+            this.label   = label;
+            this.type    = type;
+            this.name    = name;
+            this.sortdir = true;
+            this.sortIndex = '';
         }
         
         @AuraEnabled(cacheable=true)
         public String getLabel()
         {
             return label;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getName()
+        {
+            return name;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getSortIndex()
+        {
+            return sortIndex;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getSortIndexDisplay()
+        {
+            if (sortIndex == null || sortIndex == '') return '';
+            return String.valueOf(Integer.valueOf(sortIndex) + 1); //add one as we don't want to start on a zero'th value for users!
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getSortDir()
+        {
+            return sortDir;
         }
         
         @AuraEnabled(cacheable=true)

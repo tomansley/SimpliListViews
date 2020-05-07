@@ -52,7 +52,7 @@ private class ListViewControllerTest {
         System.assert(listviews.size() > 0);
 
 
-        ListViewController.RowsWrapper rows = ListViewController.getListViewData('Account', 'AllAccounts');
+        ListViewController.RowsWrapper rows = ListViewController.getListViewData('Account', 'AllAccounts', '');
 
         System.assert(rows != null);
         System.assert(rows.getFieldMetaData() != null);
