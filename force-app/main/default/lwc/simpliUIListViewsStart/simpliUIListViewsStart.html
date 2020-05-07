@@ -35,7 +35,7 @@
     <lightning-card title="Configuration" icon-name="standard:announcement">
         <div class="slds-m-around_medium">
 
-            <p>There are 3 different levels of configuration that are available in the app.</p>
+            <p>There are 3 different levels of configuration that are available.</p>
             <br/>
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
@@ -52,7 +52,7 @@
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li><b>Included Object Types - </b>Indicates those object types that should always be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.</li>
+                        <li><b>Included Object Types - </b>Indicates only those object types that should be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.</li>
                         <li><b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.</li>
                     </ol>
                 </div>
@@ -69,8 +69,9 @@
                         <li><b>Main Title - </b>Identifies what the title on the component should be if the title is being displayed.</li>
                         <li><b>Display Actions - </b>Indicates whether the actions dropdown should be displayed.</li>
                         <li><b>Display List View Reprocessing Button - </b>Indicates whether the list view reprocessing button should be displayed. This button allows the user to refresh the list view data based on core list view configuration that may have been changed.</li>
-                        <li><b>Included Objects - </b>A comma delimited list of API object names that are to be included on the page. If blank, all objects are included.</li>
-                        <li><b>Excluded Objects - </b>A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded.</li>
+                        <li><b>Display Original List View Button - </b>Indicates whether to display the button which links to the original related Salesforce list view. This button allows the user to quickly go to the original list view allowing them to make changes to the list view columns or filters as necessary.</li>
+                        <li><b>Included Objects - </b>A comma delimited list of API object names that are to be included on the page. If blank, all objects are included. Note that org-wide settings take precedence over these page-level settings.</li>
+                        <li><b>Excluded Objects - </b>A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded. Note that org-wide settings take precedence over these page-level settings.</li>
                     </ol>
                 </div>
             </div>
@@ -82,7 +83,7 @@
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li><b>AdditionalFields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available.</li>
+                        <li><b>AdditionalFields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available via the standard Salesforce list view builder.</li>
                     </ol>
                 </div>
             </div>
@@ -91,8 +92,74 @@
     <br>
     <lightning-card title="Actions" icon-name="standard:announcement">
         <div class="slds-m-around_medium">
-            <b>High Level</b>
+            <p>Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. Currently 2 actions have been implemented and made available in the app exchange package. Delete and Account Update.</p>
             <br/>
+            <p>If an action is needed that is not currently available it can be implemented and then configured. It is highly encouraged to submit actions back to the app exchange package developer for addition in later releases.</p>
+            <br/><br/>
+            <div>
+                <b>Hello World ListViewAction Example</b>
+                <br/><br/>
+                <p>The following is code which implements the ListViewAction interface -</p>
+                <br/><br/>
+                <p><code>global with sharing class ListViewActionHelloWorld extends simpli_lv.ListViewAction &#123; <br/>
+                    <br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;/*<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* This method is required to implement the ListViewAction interface. If processing is successful the<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* UI component expects the string 'Ok' to be returned. Any other string and the UI component assumes<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* processing has failed and the returned string is used as the error message displayed.<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* @param recordIds a list of recordIds that have been sent for processing.<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* @param fieldValues a list of key/value parameters. These parameters are configured.<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;public override String process(List&lt;String&gt; recordIds, Map&lt;String, Object&gt; fieldValues)<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&#123;<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.debug('Hello - ' + (String) fieldValues.get('FirstName') + '. This is where the processing of the records takes place');<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;    <br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return simpli_lv.ListViewAction.RESULT_OK;<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&#125;<br/>
+                    <br/>
+                &#125;<br/></code></p>
+            </div>
+            <br/>
+            <div>
+                Note the following -
+                <br/><br/>
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:decimal; list-style-position: inside;">
+                        <li>the class must be global, otherwise the app will not be able to see it.</li>
+                        <li>the action is performed as a single transaction. All governor limits must be adhered to. If needing to deal with large numbers of records then use the batch interface.</li>
+                        <li>always place processing into a try/catch. The UI component will wait for a valid response before displaying anything to the user.</li>
+                   </ol>
+                </div>
+            </div>
+            <br/><br/>
+            <div>
+                <b>Action Configuration</b>
+                <br/><br/>
+                <p>Once the action has been implemented it then needs to be configured for use by the list views. A new List View Actions record must be created. To follow on from the example above the record would look like the following - </p>
+                <br/>
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:decimal; list-style-position: inside;">
+                        <li><b>Label -</b> Hello World</li>
+                        <li><b>Object Type -</b>(leave blank - this means the action will be available to all object types)</li>
+                        <li><b>Apex Class Name -</b>ListViewActionHelloWorld</li>
+                   </ol>
+                </div>
+                <br/>
+                <p>If there are parameters that need to be returned by the user these need to be configured as well. Using the example above we will create one parameter -</p>
+                <br/>
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:decimal; list-style-position: inside;">
+                        <li><b>Label -</b>First Name</li>
+                        <li><b>Field API Name -</b>FirstName</li>
+                        <li><b>Display Order -</b>1</li>
+                        <li><b>Type -</b>STRING</li>
+                        <li><b>Default Value -</b>(leave blank)</li>
+                        <li><b>Placeholder Text -</b>Put your first name here...</li>
+                   </ol>
+                </div>
+            </div>
+
         </div>
     </lightning-card>
 
