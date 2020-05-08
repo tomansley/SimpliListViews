@@ -42,6 +42,11 @@
                     </lightning-layout-item>
                 </template>
             </template>
+            <template if:true={listViewData}>
+                <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                    Row Count: {listViewData.rowCount}
+                </lightning-layout-item>
+            </template>
             <template if:true={displayActions}>
                 <lightning-layout-item alignment-bump="left" padding="horizontal-small">
                     <lightning-combobox placeholder="Select an Action"

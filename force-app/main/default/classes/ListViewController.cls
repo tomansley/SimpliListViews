@@ -508,6 +508,12 @@ public with sharing class ListViewController
             fieldMetaData = new List<FieldWrapper>();
         }
 
+        @AuraEnabled(cacheable=true)
+        public Integer getRowCount()
+        {
+            return rows.size();
+        }
+
         public void addRow(RowWrapper row)
         {
             rows.add(row);
