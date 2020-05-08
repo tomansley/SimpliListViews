@@ -13,6 +13,7 @@
             <property name="displayActions" type="Boolean" default="true" label="Display Actions" description="Indicates whether the actions dropdown should be displayed."/>
             <property name="displayReprocess" type="Boolean" default="true" label="Display List View Reprocessing Button" description="Indicates whether the list view reprocessing button should be displayed."/>
             <property name="displayURL" type="Boolean" default="true" label="Display Original List View Button" description="Indicates whether to display the button which links to the original related Salesforce list view."/>
+            <property name="displayRowCount" type="Boolean" default="true" label="Display Row Count" description="Indicates whether the row count should be displayed."/>
             <property name="includedObjects" type="String" default="" label="Included Objects" description="A comma delimited list of API object names that are to be included on the page. If blank, all objects are included."/>
             <property name="excludedObjects" type="String" default="" label="Excluded Objects" description="A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded."/>
         </targetConfig>

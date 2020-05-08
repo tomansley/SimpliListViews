@@ -24,7 +24,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @api displayURL = false;
     @api includedObjects = '';
     @api excludedObjects = '';
-    @api displayOrigButton;
+    @api displayRowCount = false;
+    @api displayOrigButton; //this is not used....deprecated.
+
 
     @track selectedListView;            //holds the selected list view name
     @track selectedObject;              //holds the selected object name
