@@ -24,7 +24,10 @@ public with sharing class HelperSchema {
 	{
 		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldAccessible called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
 
-		if (getFieldDescribeResult(objName, fieldName.deleteWhitespace()).isAccessible()) {
+        fieldName = scrubFieldName(fieldName);
+
+        Schema.DescribeFieldResult fieldDesc = getFieldDescribeResult(objName, fieldName);
+		if (fieldDesc != null && fieldDesc.isAccessible()) {
 			return true;
 		} else {
 			if (throwExc)
@@ -50,7 +53,9 @@ public with sharing class HelperSchema {
 	{
 		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldCreateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
 
-		if (getFieldDescribeResult(objName, fieldName.deleteWhitespace()).isCreateable()) {
+        fieldName = scrubFieldName(fieldName);
+
+		if (getFieldDescribeResult(objName, fieldName).isCreateable()) {
 			return true;
 		} else {
 			if (throwExc)
@@ -76,7 +81,9 @@ public with sharing class HelperSchema {
 	{
 		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldUpdateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
 
-		if (getFieldDescribeResult(objName, fieldName.deleteWhitespace()).isUpdateable()) {
+        fieldName = scrubFieldName(fieldName);
+
+		if (getFieldDescribeResult(objName, fieldName).isUpdateable()) {
 			return true;
 		} else {
 			if (throwExc)
@@ -443,7 +450,7 @@ public with sharing class HelperSchema {
 			debug += 'KEY - ' + key + ', VALUE - ' + fieldsByKeyType.get(key) + '\n';
 		debug += '-----------------------------------------------\n';
 
-		System.debug(LoggingLevel.DEBUG, debug);
+		System.debug(LoggingLevel.FINE, debug);
 
 		return fieldsByKeyType;
 		
@@ -615,6 +622,17 @@ public with sharing class HelperSchema {
             this.type     = type;
             this.value    = value;
         }
+    }
+
+    private static String scrubFieldName(String fieldName)
+    {
+        //remove whitespace
+        fieldName = fieldName.deleteWhitespace();
+
+        //remove toLabel keyword
+        if (fieldName.contains('toLabel(')) fieldName = fieldName.substringBetween('(', ')');
+        
+        return fieldName;
     }
 
 	public class HelperSchemaException extends Exception { }
