@@ -1,6 +1,30 @@
 global with sharing class ListViewHelper {
     
     /*
+     * Method to return all CORE list views that have been altered by the running user
+     * within the past 2 weeks.
+     */
+    public static Map<Id, ListView> getChangedListViews(Integer recLimit)
+    {
+
+        Integer soqlLimit = 5000;
+        if (recLimit != null)
+            soqlLimit = recLimit;
+
+        Map<Id, ListView> listViews = new Map<Id, ListView>([SELECT Id, 
+                                                                    Name, 
+                                                                    SObjectType, 
+                                                                    DeveloperName, 
+                                                                    LastModifiedById FROM ListView 
+                                                            WHERE LastModifiedById = :UserInfo.getUserId()
+                                                                    AND LastModifiedDate > :System.today().addDays(-1)
+                                                            ORDER BY LastModifiedDate DESC
+                                                            LIMIT :soqlLimit]);
+
+        return listViews;
+    }
+
+    /*
      * Method to retrieve list view describe details including the SOQL statement.
      * The set passed in is the CUSTOM list view Ids. This method should not be used 
      * for more than 50 list views. If more need to be updated then use the batch job.
@@ -17,7 +41,7 @@ global with sharing class ListViewHelper {
         //but only get those that the user is allowed to update
         for (List_View__c listView: listViews)
         {
-            if (!isUpdateable(listView))
+            if (isUpdateable(listView))
                 listViewsByCoreId.put(listView.Core_ListView_Id__c, listView);
         }
 
@@ -157,9 +181,9 @@ global with sharing class ListViewHelper {
     }
 
     /*
-        * Method to get all list views for a provided object.
-        * The map is returned as follows - (API Name, List View)
-        */
+     * Method to get all list views for a provided object.
+     * The map is returned as follows - (API Name, List View)
+     */
     public static Map<String, List_View__c> getListViewsByObject(String objAPIName)
     {
         System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
@@ -251,7 +275,7 @@ global with sharing class ListViewHelper {
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
         String query = listview.Core_ListView_Query__c;
-        String selectStr = query.substringBefore(' FROM ');
+        String selectStr = query.substringBetween('SELECT ', ' FROM ');
         String whereStr = null;
         String orderByStr = '';
         if (query.contains(' ORDER BY '))
@@ -289,10 +313,20 @@ global with sharing class ListViewHelper {
             orderByStr = orderByStr.removeEnd(', ');
         }
 
+        //check everything on the SOQL statement is accessible by this user
+        HelperSchema.checkObjectAccessible(listview.Object_Name__c);
+        List<String> allFields = selectStr.split(',');
+        for (String field: allFields)
+        {
+            //do some security accessibility validation. If the field is a lookup the security is performed later
+            if (!field.contains('.'))
+                HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field);
+        }
+
         //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------
-        query = selectStr + ' FROM ' + whereStr + ' ORDER BY ' + orderByStr;
+        query = 'SELECT ' + selectStr + ' FROM ' + whereStr + ' ORDER BY ' + orderByStr;
 
         //add any limits to the data returned. Max = 2000
         if (lvConfig.get('ReturnSize') != null)
@@ -312,6 +346,9 @@ global with sharing class ListViewHelper {
     global static void insertCoreConfiguration()
     {
 
+        //-----------------------------------------------------
+        // Create List View Actions
+        //-----------------------------------------------------
         HelperSchema.checkListViewActionsCreatable();
 
         List<List_View_Action__c> actions = new List<List_View_Action__c>();
@@ -353,6 +390,22 @@ global with sharing class ListViewHelper {
 
         insert params;
 
+        //-----------------------------------------------------
+        // Create List View Configs
+        //-----------------------------------------------------
+        HelperSchema.checkListViewConfigsCreatable();
+
+        List_View_Config__c config = new List_View_Config__c();
+        config.Name                = 'Account';
+        config.List_View_Object__c = 'PlatinumandGoldSLACustomers';
+
+        insert config;
+
+        List_View_Config_Parameter__c param1 = new List_View_Config_Parameter__c();
+        param1.List_View_Config__c = config.Id;
+        param1.Parameter_Name__c   = 'AdditionalFields';
+        param1.Parameter_Type__c   = 'STRING';
+        param1.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
     }
 
     /*

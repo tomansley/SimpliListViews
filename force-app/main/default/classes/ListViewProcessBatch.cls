@@ -2,13 +2,21 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
     
     private String query = 'SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE SObjectType != null';
     private final Integer batchSize = 1;
+    private Set<Id> listViewIds = null;
 
     /*
         Simpli_lv.ListViewProcessBatch b = new Simpli_lv.ListViewProcessBatch();
         b.execute(null);
     */
     global ListViewProcessBatch() {
+    }
 
+    /*
+     * Constructor used to only process those list views who's Ids are provided.
+     */
+    global ListViewProcessBatch(Set<Id> listViewIds)
+    {
+        this.listViewIds = listViewIds;
     }
 
 	/* IMPLEMENTS SCHEDULABLE INTERFACE */
@@ -20,6 +28,9 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	/* IMPLEMENTS DATABASE.BATCHABLE INTERFACE */
 	global Database.QueryLocator start(Database.BatchableContext BC) 
 	{
+        if (listViewIds != null && listViewIds.size() > 0)
+            query += ' AND Id IN :listViewIds';
+
         if (Test.isRunningTest())
             query += ' LIMIT 1';
 

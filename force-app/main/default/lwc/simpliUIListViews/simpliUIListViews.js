@@ -9,6 +9,7 @@ import getObjectListViews from '@salesforce/apex/ListViewController.getObjectLis
 import getListViewData from '@salesforce/apex/ListViewController.getListViewData';
 import getListViewsActions from '@salesforce/apex/ListViewController.getListViewsActions';
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
+import updateChangedListViews from '@salesforce/apex/ListViewController.updateChangedListViews';
 import updateAllListViews from '@salesforce/apex/ListViewController.updateAllListViews';
 import updateSingleListView from '@salesforce/apex/ListViewController.updateSingleListView';
 import updateObjectListViews from '@salesforce/apex/ListViewController.updateObjectListViews';
@@ -23,6 +24,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @api displayURL = false;
     @api includedObjects = '';
     @api excludedObjects = '';
+    @api displayOrigButton;
 
     @track selectedListView;            //holds the selected list view name
     @track selectedObject;              //holds the selected object name
@@ -48,6 +50,18 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track columnSortData = new Map();
     @track columnSortDataStr = '';
   
+    constructor() {
+        super();
+
+        //if the user recently changed a core list view this should do an immediate update. 
+        //Only 5 list views are updated at most.
+        updateChangedListViews()
+            .then(result => {
+            })
+            .catch(error => {
+            });
+    }
+    
     /*
      * Wiring to get the list of config parameters for the chosen object and list view
      */

@@ -17,18 +17,44 @@ public with sharing class HelperSchema {
 	}
 
 	/*
+	 * Method to determine if an SObject field is accessible. This is used
+	 * for security to ensure user is allowed to see a field for the given object.
+	 */
+	public static Boolean checkObjectFieldAccessible(String objName, String fieldName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldAccessible called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
+
+		if (getFieldDescribeResult(objName, fieldName.deleteWhitespace()).isAccessible()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName + ' is not accessible. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject field is accessible. This is used
+	 * for security to ensure user is allowed to see a field for the given object.
+	 */
+	public static void checkObjectFieldAccessible(String objName, String fieldName)
+	{
+		checkObjectFieldAccessible(objName, fieldName, true);
+	}
+
+    /*
 	 * Method to determine if an SObject field is createable. This is used
 	 * for security to ensure user is allowed to set a field for the given object.
 	 */
 	public static Boolean checkObjectFieldCreateable(String objName, String fieldName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.FINE, 'checkObjectCreateable called with objName - ' + objName + '.' + fieldName);
+		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldCreateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
 
-		if (getFieldDescribeResult(objName, fieldName).isCreateable()) {
+		if (getFieldDescribeResult(objName, fieldName.deleteWhitespace()).isCreateable()) {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName + ' is not creatable. Please check user permissions');
+				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName.deleteWhitespace() + ' is not creatable. Please check user permissions');
 			return false;
 		}
 	}
@@ -48,9 +74,9 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectFieldUpdateable(String objName, String fieldName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.FINE, 'checkObjectFieldUpdateable called with objName - ' + objName + '.' + fieldName);
+		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldUpdateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
 
-		if (getFieldDescribeResult(objName, fieldName).isUpdateable()) {
+		if (getFieldDescribeResult(objName, fieldName.deleteWhitespace()).isUpdateable()) {
 			return true;
 		} else {
 			if (throwExc)
@@ -74,7 +100,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectCreateable(String objName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.FINE, 'checkObjectCreateable called with objName - ' + objName);
+		System.debug(LoggingLevel.DEBUG, 'checkObjectCreateable called with objName - ' + objName);
 
 		if (getObjectSchema(objName).isCreateable()) {
 			return true;
@@ -95,12 +121,38 @@ public with sharing class HelperSchema {
 	}
 
 	/*
+	 * Method to determine if an SObject is accessible. This is used
+	 * for security to ensure user is allowed to create records for the given object.
+	 */
+	public static Boolean checkObjectAccessible(String objName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectAccessible called with objName - ' + objName);
+
+		if (getObjectSchema(objName).isAccessible()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new HelperSchemaException('Object of type ' + objName + ' is not accessible. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject is accessible. This is used
+	 * for security to ensure user is allowed to create records for the given object.
+	 */
+	public static void checkObjectAccessible(String objName)
+	{
+		checkObjectAccessible(objName, true);
+	}
+
+    /*
 	 * Method to determine if an SObject is createable. This is used
 	 * for security to ensure user is allowed to create records for the given object.
 	 */
 	public static Boolean checkObjectUpdateable(String objName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.FINE, 'checkObjectUpdateable called with objName - ' + objName);
+		System.debug(LoggingLevel.DEBUG, 'checkObjectUpdateable called with objName - ' + objName);
 
 		if (getObjectSchema(objName).isUpdateable()) {
 			return true;
@@ -391,7 +443,7 @@ public with sharing class HelperSchema {
 			debug += 'KEY - ' + key + ', VALUE - ' + fieldsByKeyType.get(key) + '\n';
 		debug += '-----------------------------------------------\n';
 
-		System.debug(LoggingLevel.FINE, debug);
+		System.debug(LoggingLevel.DEBUG, debug);
 
 		return fieldsByKeyType;
 		
@@ -462,28 +514,43 @@ public with sharing class HelperSchema {
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Type__c');
     }
 
+    public static void checkListViewConfigsCreatable()
+    {
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Name');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Simpli_lv__List_View_Object__c');
+
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Config_Parameter__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
+    }
 
     /*
      * Method which given an sobject and a field name will retrieve
      * the value for the field as well as field information. This data
-     * is returned in a map with the following keys - 
+     * is returned in a structure which includes the following data - 
      * 
-     * TYPE  - the type of the field.
-     * VALUE - the value of the field.
-     * LABEL - the label of the field.
+	 *	fieldObj - a pointer to the SObject holding the field
+     *  name  - the API name of the field
+     *  label - the label of the field
+     *  type - the type of the field holding the data value
+     *  value - the value of the field.
+
 	 * 
 	   Account acc = [SELECT Name, Owner.Name, Owner.Profile.Name FROM Account WHERE Name LIKE 'Burling%' LIMIT 1];
-	   HelperSchema.FieldData d = HelperSchema.getValue(acc, 'Name');
+	   HelperSchema.FieldData d = HelperSchema.getFieldData(acc, 'Name');
 	   System.debug('Account Name - ' + d.name + ', ' + d.label + ', ' + d.type + ', ' + d.value);
 	 * 
      */
-    public static FieldData getValue(SObject obj, String fieldName)
+    public static FieldData getFieldData(SObject obj, String fieldName)
     {
         System.debug(LoggingLevel.DEBUG, 'HelperMetadata.getValue - obj = ' + obj + ', fieldName = ' + fieldName);
 
         FieldData data = null;
 		if (obj == null || fieldName == null || fieldName == '')
-			throw new HelperSchemaException('HelperSchema.getValue() called with empty values. obj = ' + obj + ', fieldName = ' + fieldName);
+			throw new HelperSchemaException('HelperSchema.getFieldData() called with empty values. obj = ' + obj + ', fieldName = ' + fieldName);
 
         List<String> fieldHierarchy = fieldName.split('\\.');
 
@@ -511,8 +578,13 @@ public with sharing class HelperSchema {
 				//if we have a field describe then get field data
 				if (fieldDesc == null) 
 					throw new HelperSchemaException('Cannot find field with name ' + field + ' for object of type ' + objType);
-				else
-					data = new FieldData(field, label.removeStart(' '), fieldDesc.getType(), currentObj.get(field), currentObj);
+                else {
+                    data = new FieldData(field, label.removeStart(' '), fieldDesc.getType(), currentObj.get(field), currentObj);
+                    data.fieldObjType = getObjectType(currentObj);
+
+                    //security - check the field is accessible.
+                    HelperSchema.checkObjectFieldAccessible(data.fieldObjType, field);
+                }
 				
 			//if we are not at the last field then get the fields object
             } else {
@@ -528,7 +600,8 @@ public with sharing class HelperSchema {
     public class FieldData 
     {
 
-		public SObject fieldObj        {get; set;}
+        public SObject fieldObj        {get; set;}
+        public String fieldObjType     {get; set;}
         public String name             {get; set;}
         public String label            {get; set;}
         public Schema.DisplayType type {get; set;}

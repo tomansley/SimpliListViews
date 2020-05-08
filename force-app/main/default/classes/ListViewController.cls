@@ -40,6 +40,32 @@ public with sharing class ListViewController
         return 'success';
     }
 
+	@AuraEnabled
+	public static String updateChangedListViews()
+	{
+
+        Map<Id, ListView> changedListViews = ListViewHelper.getChangedListViews(5);
+
+        for (ListView lv: changedListViews.values())
+        {
+            //get the listviews with object and name
+            Map<Id, List_View__c> listviews = ListViewHelper.getListViews(lv.SObjectType, lv.DeveloperName);
+
+            //if no listviews return failed
+            if (listviews.size() == 0) continue;
+
+            //get the list views Id
+            Set<Id> lvId = new Set<Id>();
+            lvId.add(listviews.values()[0].Id);
+
+            //update the list view
+            ListViewHelper.updateListViews(lvId);
+
+        }
+
+		return 'success';
+	}
+
 	//SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
 	@AuraEnabled
 	public static String updateAllListViews()
@@ -172,10 +198,6 @@ public with sharing class ListViewController
                 {
                     List<Object> sortVals = (List<Object>) values;
                     List<Object> tst = (List<Object>) sortVals[1];
-
-                    System.debug(LoggingLevel.DEBUG, 'TST 0 - ' + tst[0]);
-                    System.debug(LoggingLevel.DEBUG, 'TST 1 - ' + tst[1]);
-                    System.debug(LoggingLevel.DEBUG, 'TST 2 - ' + tst[2]);
 
                     ListViewHelper.ColumnSortData columnData = new ListViewHelper.ColumnSortData();
                     columnData.sortIndex     = (Integer) tst[0];
@@ -317,7 +339,7 @@ public with sharing class ListViewController
             for (String fieldName: fields)
             {
 
-                HelperSchema.FieldData fieldData = HelperSchema.getValue(dataRows[0], fieldName);
+                HelperSchema.FieldData fieldData = HelperSchema.getFieldData(dataRows[0], fieldName);
                 String label = fieldData.label;
 
                 FieldWrapper field = new FieldWrapper(label, 
@@ -367,7 +389,7 @@ public with sharing class ListViewController
                 //do not display hidden
                 if (hidden) continue;
 
-                HelperSchema.FieldData fieldData = HelperSchema.getValue(row, fieldName);
+                HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, fieldName);
 
                 FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                     String.valueOf(fieldData.value), 
