@@ -3,6 +3,9 @@
 import { LightningElement, wire, track, api  } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import  LISTVIEW_MC  from '@salesforce/messageChannel/SimpliListViewMessageChannel__c';
+import { refreshApex } from '@salesforce/apex';
+import { subscribe, unsubscribe, publish, APPLICATION_SCOPE, MessageContext } from 'lightning/messageService';
 
 import getListViewObjects from '@salesforce/apex/ListViewController.getListViewObjects';
 import getObjectListViews from '@salesforce/apex/ListViewController.getObjectListViews';
@@ -13,10 +16,12 @@ import updateChangedListViews from '@salesforce/apex/ListViewController.updateCh
 import updateAllListViews from '@salesforce/apex/ListViewController.updateAllListViews';
 import updateSingleListView from '@salesforce/apex/ListViewController.updateSingleListView';
 import updateObjectListViews from '@salesforce/apex/ListViewController.updateObjectListViews';
-import { refreshApex } from '@salesforce/apex';
+import getUserConfigs from '@salesforce/apex/ListViewController.getUserConfigs';
+import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConfig';
 
 export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
+    @api pageName = ''; //this is NOT the page name but the COMPONENT name
     @api hasMainTitle = false;
     @api mainTitle = 'List Views';
     @api displayActions = false;
@@ -25,9 +30,11 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @api includedObjects = '';
     @api excludedObjects = '';
     @api displayRowCount = false;
+    @api joinFieldName = '';
     @api displayOrigButton; //this is not used....deprecated.
 
 
+    @track userConfigs;                 //holds all user configuration for this named component.
     @track selectedListView;            //holds the selected list view name
     @track selectedObject;              //holds the selected object name
     @track objectList;                  //holds the list of objects from which a user can choose one.
@@ -42,6 +49,8 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track showActionModal;             //indicates whether the action modal form should be displayed.
     @track selectedRecordIdsStr;        //holds the set of record ids that have been selected as a string
     @track selectedRecordCount = 0;     //the number of records selected. Passed into the modal dialog.  
+    @track isPinned = false;            //identifies whether this list view and object have been pinned.
+    @track pinnedListView = undefined;  //the list view that is pinned if there is a pinned list view.
 
     //for handling column width changes
     @track mouseStart;
@@ -52,17 +61,51 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track columnSortData = new Map();
     @track columnSortDataStr = '';
   
+    //for message channel handlers
+    subscription = null;
+    receivedMessage;
+
+    //we do not have access to any variables in the constructor
     constructor() {
         super();
 
         //if the user recently changed a core list view this should do an immediate update. 
-        //Only 5 list views are updated at most.
+        //Only the last modified list view is processed.
         updateChangedListViews()
             .then(result => {
             })
             .catch(error => {
             });
     }
+
+    //we do have access to variables in this method.
+    renderedCallback() {
+
+        if (this.userConfigs === undefined) {
+
+            //always subscribe to the message channel
+            this.subscribeMC();
+
+            getUserConfigs({compName: this.pageName })
+            .then(result => {
+                console.log('User configs retrieved successful - ' + result);
+                this.userConfigs = result;
+
+                let pinnedListView = this.userConfigs.pinnedListView;
+
+                if (pinnedListView != undefined && pinnedListView != '') {
+                    this.isPinned = true;
+                    this.selectedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
+                    this.pinnedListView = pinnedListView.substring(pinnedListView.lastIndexOf(':')+1);
+                }
+            })
+            .catch(error => {
+            });
+        }
+    }
+    
+    @wire(MessageContext)
+    messageContext;
     
     /*
      * Wiring to get the list of config parameters for the chosen object and list view
@@ -71,10 +114,19 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     wiredListViewsConfigs({ error, data }) {
         if (data) { 
             console.log('SUCCESS DATA GET ' + data); 
-            this.listViewConfig = data; this.error = undefined; this.spinner = false; }
+            this.listViewConfig = data; this.error = undefined; }
         else if (error) { 
-            console.log('error DETECTED ' + error.message); 
-            this.error = error; this.listViewConfig = undefined; this.spinner = false; }
+            this.error = error; 
+            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            this.listViewConfig = undefined; 
+            this.spinner = false;
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Retrieving List View Configs',
+                message: 'There was an error retrieving the list view configs. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        }
     }
 
     /*
@@ -86,21 +138,39 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             console.log('SUCCESS DATA GET ' + data); 
             this.objectActionList = data; this.error = undefined; this.spinner = false; }
         else if (error) { 
-            console.log('error DETECTED ' + error.message); 
-            this.error = error; this.objectActionList = undefined; this.spinner = false; }
+            this.error = error; 
+            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            this.objectActionList = undefined; 
+            this.spinner = false; 
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Retrieving Actions',
+                message: 'There was an error retrieving the list view actions. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        }
     }
 
     /*
      * Wiring to get the list of objects in the system using a LISTVIEW NAME
      */
-    @wire (getListViewData, { objectName: '$selectedObject', listViewName: '$selectedListView', sortData: '$columnSortDataStr' })
+    @wire (getListViewData, { objectName: '$selectedObject', listViewName: '$selectedListView', sortData: '$columnSortDataStr', joinFieldName: '$joinFieldName', joinData: '' })
     wiredListViewData({ error, data }) {
         if (data) { 
-            console.log('SUCCESS DATA GET ' + data); 
-            this.listViewData = data; this.error = undefined; this.spinner = false; }
+            console.log('Data retrieval successful ' + data); 
+            this.listViewData = data; this.error = undefined;  this.spinner = false;}
         else if (error) { 
-            console.log('error DETECTED ' + error.message); 
-            this.error = error; this.listViewData = undefined; this.spinner = false; }
+            this.error = error; 
+            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            this.listViewData = undefined; 
+            this.spinner = false;
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Retrieving Data',
+                message: 'There was an error retrieving the data. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        }
     }
 
     /*
@@ -108,8 +178,19 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
      */
     @wire (getListViewObjects, { includedObjects: '$includedObjects', excludedObjects: '$excludedObjects'  })
     wiredListViewObjects({ error, data }) {
-        if (data) { this.objectList = data; this.error = undefined; this.spinner = false; }
-        else if (error) { this.error = error; this.objectList = undefined; this.spinner = false; }
+        if (data) { this.objectList = data; this.error = undefined; this.spinner = false;}
+        else if (error) { 
+            this.error = error; 
+            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            this.objectList = undefined; 
+            this.spinner = false;
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Retrieving List View Objects',
+                message: 'There was an error retrieving the list view objects. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        }
     }
 
     /*
@@ -118,23 +199,132 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
      */
     @wire (getObjectListViews, { objectName: '$selectedObject' })
     wiredObjectListViews({ error, data }) {
-        if (data) { this.listViewList = data; this.error = undefined; this.spinner = false; }
-        else if (error) { this.error = error; this.listViewList = undefined; this.spinner = false; }
+        if (data) { this.listViewList = data; 
+                    this.error = undefined; 
+                    if (this.pinnedListView != undefined) {
+                        this.selectedListView = this.pinnedListView;
+                    }
+                    this.spinner = false; }
+        else if (error) { 
+            this.error = error; 
+            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            this.listViewList = undefined; 
+            this.spinner = false; 
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Retrieving Object List Views',
+                message: 'There was an error retrieving the ' + objectName + ' list views data. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        }
+    }
+
+    subscribeMC() {
+        if (this.subscription) {
+            return;
+        }
+        this.subscription = subscribe(
+            this.messageContext,
+            LISTVIEW_MC, (message) => {
+                this.handleMessage(message); //this is the method below that gets called when a message comes in.
+            },
+            {scope: APPLICATION_SCOPE});
+    }
+
+    unsubscribeMC() {
+        unsubscribe(this.subscription);
+        this.subscription = null;
+    }
+
+    /*
+     * called when a component within the same APP as this component sends a message that records
+     * have just been selected by that component.
+     */
+    handleMessage(message) {
+        this.spinner = true;
+
+        this.receivedMessage = message;
+        console.log('RECEIVED A MESSAGE - ' + this.receivedMessage + this.selectedObject);
+
+        //if we have selected a specific list view to update
+        if (this.receivedMessage.listViewName != this.mainTitle && this.joinFieldName != undefined && this.joinFieldName != '')
+        {
+            console.log('We have a joined field name - ' + this.joinFieldName);
+            console.log('Record Ids - ' + this.receivedMessage.recordIds);
+            let joinData = JSON.stringify(message);
+
+            getListViewData({objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: joinData })
+                .then(result => {
+
+                    console.log('RESULT - ' + result);
+                    this.listViewData = result;
+                })
+                .catch(error => {
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Processing Error',
+                        message: 'There was an error processing the list view. Please see an administrator',
+                        variant: 'error',
+                        mode: 'sticky'
+                    }));
+            });
+
+        }
+        this.spinner = false;
+
     }
 
     //called when a user checks a box next to a record for selection to be processed.
     handleRecordSelectChange(event) {
         console.log('Record selected - ' + event.target.checked + ': ' + event.target.value);
+
+        //get all checkbox components
+        let selectedRows = this.template.querySelectorAll('lightning-input');
+
+        //if we have selected "All" then run through all components setting them true or false.
         if (event.target.value === 'all')
         {
-            let selectedRows = this.template.querySelectorAll('lightning-input');
         
             for(let i = 0; i < selectedRows.length; i++) {
                 if(selectedRows[i].type === 'checkbox') {
                     selectedRows[i].checked = event.target.checked;
+
+                    if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
+                    {
+                        selectedRecords.add(selectedRows[i].value);
+                        this.selectedRecordCount++;
+                    }
+    
                 }
             }
         }
+
+        //run through all the checkbox components again now that they have been set
+        var recordIds = '';        
+
+        for(let i = 0; i < selectedRows.length; i++) {
+            if(selectedRows[i].type === 'checkbox') {
+
+                if (selectedRows[i].checked === true)
+                {
+                    recordIds = recordIds + selectedRows[i].value + ',';
+                }
+
+            }
+        }
+
+        if (recordIds.length > 0) {
+            //remove the last comma if there is one.
+            recordIds = recordIds.substring(0, recordIds.lastIndexOf(','));
+
+            //publish the selected rows so that other components can use them if desired.
+            const message = {
+                recordIds: recordIds,
+                objectType: this.selectedObject,
+                listViewName: this.mainTitle
+            };
+            publish(this.messageContext, LISTVIEW_MC, message);        
+        }
+
     }
 
     //called when a user is selecting a list view and they have changed the object of the list view.
@@ -154,6 +344,41 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         this.selectedListView = event.target.value;
         this.listViewData = undefined;
         console.log('List view selected - ' + this.selectedListView);
+    }
+
+    handlePinningClick(event) {
+        this.isPinned = true;
+
+        updateUserConfig({compName: this.pageName, configName: 'pinnedListView', value: this.selectedObject + ':' + this.selectedListView })
+        .then(result => {
+            console.log('RESULT - ' + result);
+        })
+        .catch(error => {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Processing Error',
+                message: 'There was an error during user configuration update. Please see an administrator',
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        });
+
+    }
+
+    handleUnpinningClick(event) {
+        this.isPinned = false;
+
+        updateUserConfig({compName: this.pageName, configName: 'pinnedListView', value: '' })
+        .then(result => {
+            console.log('RESULT - ' + result);
+        })
+        .catch(error => {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Processing Error',
+                message: 'There was an error during user configuration update. Please see an administrator',
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        });
     }
     
     //called when a URL on the pages table data is clicked
@@ -182,16 +407,11 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
     //called when a user clicks the button to refresh the list views.
     handleProcessListViewsButtonClick() {
-        var selectObject;
-        var selectListView;
 
         this.spinner = true;
         console.log('Listview process button clicked!');
         console.log('selectedObject - ' + this.selectedObject);
         console.log('selectedListView - ' + this.selectedListView);
-
-        selectObject = this.selectedObject;
-        selectListView = this.selectedListView;
 
         //if we have selected a specific list view to update
         if (this.selectedObject != undefined && this.selectedListView != undefined)
@@ -233,7 +453,6 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             });
 
             this.spinner = false;
-
         }
         
         //if we have selected an objects list views to update
@@ -318,7 +537,6 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             });
 
             this.spinner = false;
-
         }
 
     }

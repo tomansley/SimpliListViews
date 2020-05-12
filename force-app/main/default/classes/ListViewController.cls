@@ -2,6 +2,30 @@ public with sharing class ListViewController
 {
 
     @AuraEnabled
+    public static Map<String, String> getUserConfigs(String compName)
+    {
+        Map<String, String> userConfigs = new Map<String, String>();
+
+        Map<String, List_View_User_Config__c> configs = ListViewUserConfigHelper.getCurrentUserCompConfig(compName);
+        for (List_View_User_Config__c config: configs.values())
+            userConfigs.put(config.Name__c, config.Value__c);
+
+        System.debug(LoggingLevel.DEBUG, 'User configs - ' + userConfigs);
+        return userConfigs;
+    }
+
+    @AuraEnabled
+    public static String updateUserConfig(String compName, String configName, String value)
+    {
+        try {
+            ListViewUserConfigHelper.updateCurrentUserConfigValue(compName, configName, value);
+        } catch (Exception e) {
+            return 'There was an error during user configuration update';
+        }
+        return 'success';
+    }
+
+    @AuraEnabled
     public static String updateObjectListViews(String objectType)
     {
         //get the listviews with object type
@@ -44,23 +68,29 @@ public with sharing class ListViewController
 	public static String updateChangedListViews()
 	{
 
-        Map<Id, ListView> changedListViews = ListViewHelper.getChangedListViews(5);
+        //try get the last changed CORE list view
+        Map<Id, ListView> changedListViews = ListViewHelper.getChangedListViews(1);
 
-        for (ListView lv: changedListViews.values())
+        if (changedListViews.size() > 0)
         {
-            //get the listviews with object and name
+            //get the changed CORE list view
+            ListView lv = changedListViews.values()[0];
+
+            //get the SIMPLI listviews with object and name
             Map<Id, List_View__c> listviews = ListViewHelper.getListViews(lv.SObjectType, lv.DeveloperName);
 
-            //if no listviews return failed
-            if (listviews.size() == 0) continue;
+            //if SIMPLI listviews return then process
+            if (listviews.size() > 0)
+            {
 
-            //get the list views Id
-            Set<Id> lvId = new Set<Id>();
-            lvId.add(listviews.values()[0].Id);
+                //get the list views Id
+                Set<Id> lvId = new Set<Id>();
+                lvId.add(listviews.values()[0].Id);
 
-            //update the list view
-            ListViewHelper.updateListViews(lvId);
+                //update the list view
+                ListViewHelper.updateListViews(lvId);
 
+            }
         }
 
 		return 'success';
@@ -129,8 +159,8 @@ public with sharing class ListViewController
     }
 
     /*
-        * Method which returns list of objects names and API names in the system
-        */
+     * Method which returns list of objects names and API names in the system
+     */
     @AuraEnabled(cacheable=true)
     public static List<SelectOption> getListViewObjects(String includedObjects, String excludedObjects)
     {
@@ -169,10 +199,22 @@ public with sharing class ListViewController
         * TEST - SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
         */
     @AuraEnabled(cacheable=true)
-    public static RowsWrapper getListViewData(String objectName, String listViewName, String sortData)
+    public static RowsWrapper getListViewData(String objectName, String listViewName, String sortData, String joinFieldName, String joinData)
     {
-        System.debug(LoggingLevel.DEBUG, 'STARTING getListViewData - ' + objectName + ' : ' + listViewName + ' : ' + sortData);
+        System.debug(LoggingLevel.DEBUG, 'STARTING getListViewData - ' + objectName + ' : ' + listViewName + ' : ' + sortData + ' : ' + joinFieldName + ' : ' + joinData);
         
+        //if we have join information then get the record Ids
+        List<String> joinRecordIds = null;
+        if (joinFieldName != '' && joinData != '')
+        {
+            //check that we can actually act on the join data as it could be for another component.
+            if (HelperSchema.isValidSFDCFieldName(objectName, joinFieldName))
+            {
+                Map<String, Object> joinDataMap = (Map<String, Object>) JSON.deserializeUntyped(joinData);
+                joinRecordIds = ((String) joinDataMap.get('recordIds')).split(',');
+            }
+        }
+
         //get the custom list view config
         Map<String, String> lvConfig = getListViewConfig(objectName, listViewName);
 
@@ -191,7 +233,7 @@ public with sharing class ListViewController
             if (sortData.length() > 0)
             {
                 //below is a bit of a mess at the moment because Map objects cannot be stringified
-                //in Javascript. So we end up with a list of list of list of list!!
+                //in Javascript. So we end up with a list of list!!
                 List<Object> sortValues = (List<Object>) JSON.deserializeUntyped(sortData);
                 System.debug(LoggingLevel.DEBUG, 'SORT VALUES - ' + sortValues);
                 for (Object values: sortValues)
@@ -211,7 +253,7 @@ public with sharing class ListViewController
             }
 
             //get list view data
-            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData);
+            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinFieldName, joinRecordIds);
             
             //turn SObjects into wrapper classes.
             rowData = handleRowsToWrapper(objectRows, listview, lvConfig, columnSortData);
@@ -383,9 +425,6 @@ public with sharing class ListViewController
 
                 System.debug(LoggingLevel.DEBUG, 'Field - ' + fieldName + ', Type - ' + fieldType);
 
-                //don't show reference fields
-                if (fieldType == 'reference') continue;
-                
                 //do not display hidden
                 if (hidden) continue;
 

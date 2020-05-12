@@ -11,7 +11,7 @@
         </template>
         
         <lightning-layout>
-            <lightning-layout-item padding="horizontal-small">
+            <lightning-layout-item padding="horizontal-small" style="width: 20%;">
                 <lightning-combobox placeholder="Select Object" 
                                     label="Object" 
                                     value={selectedObject} 
@@ -42,27 +42,47 @@
                     </lightning-layout-item>
                 </template>
             </template>
+            <template if:true={listViewData}>
+                <lightning-layout-item padding="horizontal-small">
+                    <template if:false={isPinned}>
+                        <lightning-button-icon title="Pin this list view." 
+                                                size="medium" 
+                                                icon-name="utility:pin" 
+                                                onclick={handlePinningClick}>
+                        </lightning-button-icon>
+                    </template>
+                    <template if:true={isPinned}>
+                        <lightning-button-icon title="Unpin this list view." 
+                                                size="medium" 
+                                                icon-name="utility:pinned" 
+                                                onclick={handleUnpinningClick}>
+                        </lightning-button-icon>
+                    </template>
+                </lightning-layout-item>
+            </template>
             <template if:true={displayRowCount}>
                 <template if:true={listViewData}>
                     <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                        Row Count: {listViewData.rowCount}
+                        Rows: {listViewData.rowCount}
                     </lightning-layout-item>
                 </template>
             </template>
             <template if:true={displayActions}>
-                <lightning-layout-item alignment-bump="left" padding="horizontal-small">
-                    <lightning-combobox placeholder="Select an Action"
-                                        label="Action" 
-                                        value={selectedAction} 
-                                        onchange={handleActionSelect} 
-                                        options={objectActionList}
-                                        variant=label-hidden>
-                    </lightning-combobox>
-                </lightning-layout-item>
+                <template if:true={listViewData}>
+                    <lightning-layout-item alignment-bump="left" padding="horizontal-small">
+                        <lightning-combobox placeholder="Select an Action"
+                                            label="Action" 
+                                            value={selectedAction} 
+                                            onchange={handleActionSelect} 
+                                            options={objectActionList}
+                                            variant=label-hidden>
+                        </lightning-combobox>
+                    </lightning-layout-item>
+                </template>
             </template>
             <template if:true={displayReprocess}>
                 <lightning-layout-item padding="horizontal-small">
-                    <lightning-button-icon title="List view not showing up or refreshing? Reprocess them by clicking here." 
+                    <lightning-button-icon title="List view not showing up or refreshing? Reprocess by clicking here." 
                                             size="medium" 
                                             icon-name="action:new_task" 
                                             onclick={handleProcessListViewsButtonClick}>
