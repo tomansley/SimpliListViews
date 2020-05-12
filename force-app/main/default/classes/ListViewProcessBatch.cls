@@ -28,6 +28,13 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	/* IMPLEMENTS DATABASE.BATCHABLE INTERFACE */
 	global Database.QueryLocator start(Database.BatchableContext BC) 
 	{
+
+        //never get the excluded objects
+        String orgWideExcObjs = HelperMetadata.getOrgWideSettingValue('Excluded Object Types', '');
+        List<String> excObjs = orgWideExcObjs.split(',');
+        if (excObjs.size() > 0)
+            query += ' AND SObjectType NOT IN :excObjs';
+
         if (listViewIds != null && listViewIds.size() > 0)
             query += ' AND Id IN :listViewIds';
 
