@@ -303,7 +303,7 @@ public with sharing class HelperSchema {
 	 */
 	public static String getObjectTypeFromId(Id objId)
 	{
-		System.debug(LoggingLevel.DEBUG, '@getObjectTypeFromId(' + objId + ')');
+		System.debug(LoggingLevel.DEBUG, 'getObjectTypeFromId(' + objId + ')');
 		System.debug(LoggingLevel.DEBUG, 'objectDescribeByPrefix.size - ' + objectDescribeByPrefix.size());
 		if (objectDescribeByPrefix.isEmpty())
 			initObjectDescribeByPrefix();
@@ -553,54 +553,67 @@ public with sharing class HelperSchema {
      */
     public static FieldData getFieldData(SObject obj, String fieldName)
     {
-        System.debug(LoggingLevel.DEBUG, 'HelperMetadata.getValue - obj = ' + obj + ', fieldName = ' + fieldName);
+		FieldData data = null;
+		String label = '';
 
-        FieldData data = null;
-		if (obj == null || fieldName == null || fieldName == '')
-			throw new HelperSchemaException('HelperSchema.getFieldData() called with empty values. obj = ' + obj + ', fieldName = ' + fieldName);
+		try {
+			System.debug(LoggingLevel.DEBUG, 'HelperMetadata.getValue - obj = ' + obj + ', fieldName = ' + fieldName);
 
-        List<String> fieldHierarchy = fieldName.split('\\.');
+			fieldName = scrubFieldName(fieldName);
+			
+			if (obj == null || fieldName == null || fieldName == '')
+				throw new HelperSchemaException('HelperSchema.getFieldData() called with empty values. obj = ' + obj + ', fieldName = ' + fieldName);
 
-        System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
+			List<String> fieldHierarchy = fieldName.split('\\.');
 
-        SObject currentObj = obj;
+			System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
 
-        for (String field: fieldHierarchy)
-        {
-            //if we are at the last field then get the value and return
-            if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
-            {
-				//get the object type
-				String objType = getObjectType(currentObj);
+			SObject currentObj = obj;
 
-				//get the field describe
-				Schema.DescribeFieldResult fieldDesc = getFieldDescribeResult(objType, field);
+			for (String field: fieldHierarchy)
+			{
+				//if we are at the last field then get the value and return
+				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
+				{
+					//get the object type
+					String objType = getObjectType(currentObj);
 
-				String label = '';
-				if (fieldHierarchy.size() == 1)
-					label = fieldDesc.getLabel();
-				else
-					label = objType + ' ' + fieldDesc.getLabel();
+					//get the field describe
+					Schema.DescribeFieldResult fieldDesc = getFieldDescribeResult(objType, field);
 
-				//if we have a field describe then get field data
-				if (fieldDesc == null) 
-					throw new HelperSchemaException('Cannot find field with name ' + field + ' for object of type ' + objType);
-                else {
-                    data = new FieldData(field, label.removeStart(' '), fieldDesc.getType(), currentObj.get(field), currentObj);
-                    data.fieldObjType = getObjectType(currentObj);
+					if (fieldHierarchy.size() == 1)
+						label = fieldDesc.getLabel();
+					else
+						label = objType + ' ' + fieldDesc.getLabel();
 
-                    //security - check the field is accessible.
-                    HelperSchema.checkObjectFieldAccessible(data.fieldObjType, field);
-                }
-				
-			//if we are not at the last field then get the fields object
-            } else {
+					//if we have a field describe then get field data
+					if (fieldDesc == null) 
+						throw new HelperSchemaException('Cannot find field with name ' + field + ' for object of type ' + objType);
+					else {
+						data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
+						data.fieldObjType = getObjectType(currentObj);
+
+						//THIS NEEDS TO MOVE TO SOMEWHERE WHERE ITS NOT DOING MULTIPLES
+						//security - check the field is accessible.
+						//HelperSchema.checkObjectFieldAccessible(data.fieldObjType, field);
+					}
 					
-				//get sobject with field in it.
-                currentObj = currentObj.getSObject(field);
-			}
-        }
+				//if we are not at the last field then get the fields object
+				} else {
+					
+					//get sobject with field in it if there is a value.
+					if (currentObj.getSObject(field) != null)
+						currentObj = currentObj.getSObject(field);
 
+					//if there is no value then return empty string
+					else
+						data = new FieldData(field, label, Schema.DisplayType.STRING, '', currentObj);
+
+				}
+			}
+		} catch (Exception e) {
+			data = new FieldData(fieldName, 'Field Error', Schema.DisplayType.STRING, 'ERROR', obj);
+		}
         return data;
     }
 

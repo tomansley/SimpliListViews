@@ -130,9 +130,12 @@ global with sharing class ListViewHelper {
                         //ORG-WIDE - do not add excluded objs
                         if (!orgWideExcObjs.contains(objAPIName))
                         {
-                            String objLabel = HelperSchema.getObjectSchema(objAPIName).getLabel();
 
-                            mappedListviewObjects.put(objAPIName, objLabel);
+                            if (HelperSchema.checkObjectAccessible(objAPIName, false))
+                            {
+                                String objLabel = HelperSchema.getObjectSchema(objAPIName).getLabel();
+                                mappedListviewObjects.put(objAPIName, objLabel);
+                            }
                         }
                     }
                 }
@@ -268,8 +271,16 @@ global with sharing class ListViewHelper {
      * Method to use the SOQL query retrieved from the core listview describe, amend it to include
      * the possible additional fields added by the user and then use it to get the data.
      */ 
-    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData)
+    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, List<String> joinRecordIds)
     {
+
+        String debug = '\n\nStarting getListViewData - \n';
+        debug += 'listview - ' + listview + '\n';
+        debug += 'lvConfig - ' + lvConfig + '\n';
+        debug += 'sortData - ' + sortData + '\n';
+        debug += 'joinFieldName - ' + joinFieldName + '\n';
+        debug += 'joinRecordIds - ' + joinRecordIds + '\n\n';
+        System.debug(LoggingLevel.DEBUG, debug);
 
         //---------------------------------------------------
         // Parse out the query retrieved from the list view.
@@ -292,6 +303,17 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         if (lvConfig.get('AdditionalFields') != null)
             selectStr += ', ' + lvConfig.get('AdditionalFields');
+
+        //------------------------------------------------------
+        // Handle all changes to the WHERE statement
+        //------------------------------------------------------
+        if (joinFieldName != '' && joinRecordIds != null && joinRecordIds.size() > 0)
+        {
+            if (whereStr.contains(' WHERE '))
+                whereStr += ' AND ' + joinFieldName + ' IN :joinRecordIds';
+            else
+                whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
+        }
 
         //------------------------------------------------------
         // Handle all changes to the ORDER BY statement
@@ -332,7 +354,7 @@ global with sharing class ListViewHelper {
         if (lvConfig.get('ReturnSize') != null)
             query += ' LIMIT ' + lvConfig.get('ReturnSize');
         else
-            query += ' LIMIT 2000';
+            query += ' LIMIT 500';
 
         System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + query);
 
@@ -373,6 +395,7 @@ global with sharing class ListViewHelper {
         List_View_Action_Parameter__c param = new List_View_Action_Parameter__c();
         param.Field_API_Name__c   = 'Name';
         param.Label__c            = 'Account Name';
+        param.Display_Order__c    = 1;
         param.List_View_Action__c = acctUpdateAction.Id;
         param.Placeholder_Text__c = 'Account name goes here...';
         param.Type__c             = 'STRING';
@@ -382,6 +405,7 @@ global with sharing class ListViewHelper {
         param                     = new List_View_Action_Parameter__c();
         param.Field_API_Name__c   = 'Industry';
         param.Label__c            = 'Industry';
+        param.Display_Order__c    = 2;
         param.List_View_Action__c = acctUpdateAction.Id;
         param.Placeholder_Text__c = 'Industry goes here...';
         param.Type__c             = 'STRING';
@@ -421,13 +445,13 @@ global with sharing class ListViewHelper {
     {
         User usr = UserHelper.getCurrentUser();
 
-        if (lv.OwnerId == UserInfo.getUserId()) return true;
+        //if (lv.OwnerId == UserInfo.getUserId()) return true;
 
-        if (lv.All_Internal_Users__c) return true;
+        //if (lv.All_Internal_Users__c) return true;
 
-        if (lv.Roles__c.contains(usr.UserRole.Name)) return true;
+        //if (lv.Roles__c.contains(usr.UserRole.Name)) return true;
 
-        return false;
+        return true;
     }
 
     /*
@@ -445,8 +469,7 @@ global with sharing class ListViewHelper {
 
         if (lv.OwnerId == UserInfo.getUserId()) return true;
 
-        if (lv.Owner_Name__c == 'Automated Process'
-            && usr.Profile.Name == 'System Administrator') return true;
+        if (usr.Profile.Name == 'System Administrator') return true;
 
         return false;
     }
@@ -467,10 +490,7 @@ global with sharing class ListViewHelper {
 
         if (lv.CreatedById == UserInfo.getUserId()) return true;
 
-        if ((owner == null
-            || (owner.FirstName == 'Automated' 
-                && owner.LastName == 'Process'))
-            && usr.Profile.Name == 'System Administrator') return true;
+        if (usr.Profile.Name == 'System Administrator') return true;
 
         return false;
     }
