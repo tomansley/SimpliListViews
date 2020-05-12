@@ -354,7 +354,7 @@ global with sharing class ListViewHelper {
         if (lvConfig.get('ReturnSize') != null)
             query += ' LIMIT ' + lvConfig.get('ReturnSize');
         else
-            query += ' LIMIT 500';
+            query += ' LIMIT 250';
 
         System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + query);
 
