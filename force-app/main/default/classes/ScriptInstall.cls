@@ -7,11 +7,12 @@ global with sharing class ScriptInstall implements InstallHandler {
 			//insert core configuration
 			ListViewHelper.insertCoreConfiguration();
 			
+			String schedStr = HelperDate.getBatchJobScheduleString(HelperDate.MINUTE, 1);
+			
 			//run the batch job once to have all list views brought in
 			if (!Test.isRunningTest())
 			{
-				ListViewProcessBatch b = new ListViewProcessBatch();
-				b.execute(null);
+				System.schedule('ListView Initial Load', schedStr, new ListViewProcessBatch());
 			}
 		
 		} else if(context.previousVersion().compareTo(new Version(1,0)) == 0) 
