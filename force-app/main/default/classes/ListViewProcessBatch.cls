@@ -31,6 +31,8 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
         if (listViewIds != null && listViewIds.size() > 0)
             query += ' AND Id IN :listViewIds';
 
+        query += ' ORDER BY SObjectType';
+
         if (Test.isRunningTest())
             query += ' LIMIT 1';
 
