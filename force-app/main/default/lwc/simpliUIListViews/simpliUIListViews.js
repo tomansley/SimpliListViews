@@ -51,6 +51,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track selectedRecordCount = 0;     //the number of records selected. Passed into the modal dialog.  
     @track isPinned = false;            //identifies whether this list view and object have been pinned.
     @track pinnedListView = undefined;  //the list view that is pinned if there is a pinned list view.
+    @track pinnedObject = undefined;    //the object that is pinned if there is a pinned list view.
 
     //for handling column width changes
     @track mouseStart;
@@ -95,7 +96,8 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
                 if (pinnedListView != undefined && pinnedListView != '') {
                     this.isPinned = true;
-                    this.selectedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
+                    this.pinnedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
+                    this.selectedObject = pinnedObject;
                     this.pinnedListView = pinnedListView.substring(pinnedListView.lastIndexOf(':')+1);
                 }
             })
@@ -335,6 +337,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         this.selectedListView = undefined;
         this.listViewData = undefined;
         this.objectActionList = undefined;
+        
         console.log('Object selected - ' + this.selectedObject);
     }
 
@@ -342,8 +345,13 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     handleListViewSelected(event) {
         this.spinner = true;
         this.selectedListView = event.target.value;
-        this.listViewData = undefined;
         console.log('List view selected - ' + this.selectedListView);
+        this.listViewData = undefined;
+        if (this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
+            this.isPinned = true;
+        } else {
+            this.isPinned = false;
+        }
     }
 
     handlePinningClick(event) {
