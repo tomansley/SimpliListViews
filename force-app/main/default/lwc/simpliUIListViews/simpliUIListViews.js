@@ -21,6 +21,9 @@ import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConf
 
 export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
+    wiredListViewDataResult;
+    wiredObjectListViewsResult;
+
     @api pageName = ''; //this is NOT the page name but the COMPONENT name
     @api hasMainTitle = false;
     @api mainTitle = 'List Views';
@@ -97,11 +100,17 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                 if (pinnedListView != undefined && pinnedListView != '') {
                     this.isPinned = true;
                     this.pinnedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
-                    this.selectedObject = pinnedObject;
+                    this.selectedObject = this.pinnedObject;
                     this.pinnedListView = pinnedListView.substring(pinnedListView.lastIndexOf(':')+1);
                 }
             })
             .catch(error => {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Handling User Config',
+                    message: 'There was an error handling the user config. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
             });
         }
     }
@@ -115,9 +124,10 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @wire (getListViewConfig, { objectType: '$selectedObject', listViewName: '$selectedListView' })
     wiredListViewsConfigs({ error, data }) {
         if (data) { 
-            console.log('SUCCESS DATA GET ' + data); 
-            this.listViewConfig = data; this.error = undefined; }
-        else if (error) { 
+            console.log('List view config retrieval successful'); 
+            this.listViewConfig = data; 
+            this.error = undefined; 
+        } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.listViewConfig = undefined; 
@@ -137,9 +147,11 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @wire (getListViewsActions, { objectType: '$selectedObject' })
     wiredListViewsActions({ error, data }) {
         if (data) { 
-            console.log('SUCCESS DATA GET ' + data); 
-            this.objectActionList = data; this.error = undefined; this.spinner = false; }
-        else if (error) { 
+            console.log('List view actions retrieval successful'); 
+            this.objectActionList = data; 
+            this.error = undefined; 
+            this.spinner = false; 
+        } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.objectActionList = undefined; 
@@ -157,11 +169,16 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
      * Wiring to get the list of objects in the system using a LISTVIEW NAME
      */
     @wire (getListViewData, { objectName: '$selectedObject', listViewName: '$selectedListView', sortData: '$columnSortDataStr', joinFieldName: '$joinFieldName', joinData: '' })
-    wiredListViewData({ error, data }) {
+    wiredListViewData(wiredListViewDataResult) {
+        this.wiredListViewDataResult = wiredListViewDataResult;
+        const { data, error } = wiredListViewDataResult;
+
         if (data) { 
-            console.log('Data retrieval successful ' + data); 
-            this.listViewData = data; this.error = undefined;  this.spinner = false;}
-        else if (error) { 
+            console.log('List view data retrieval successful'); 
+            this.listViewData = data; 
+            this.error = undefined;  
+            this.spinner = false;
+        } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.listViewData = undefined; 
@@ -180,8 +197,12 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
      */
     @wire (getListViewObjects, { includedObjects: '$includedObjects', excludedObjects: '$excludedObjects'  })
     wiredListViewObjects({ error, data }) {
-        if (data) { this.objectList = data; this.error = undefined; this.spinner = false;}
-        else if (error) { 
+        if (data) { 
+            console.log('List view objects retrieval successful'); 
+            this.objectList = data; 
+            this.error = undefined; 
+            this.spinner = false;
+        } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.objectList = undefined; 
@@ -200,14 +221,18 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
      * We pass the selected object which identifies which list views to retrieve.
      */
     @wire (getObjectListViews, { objectName: '$selectedObject' })
-    wiredObjectListViews({ error, data }) {
-        if (data) { this.listViewList = data; 
-                    this.error = undefined; 
-                    if (this.pinnedListView != undefined) {
-                        this.selectedListView = this.pinnedListView;
-                    }
-                    this.spinner = false; }
-        else if (error) { 
+    wiredObjectListViews(wiredObjectListViewsResult) {
+        this.wiredObjectListViewsResult = wiredObjectListViewsResult;
+        const { data, error } = wiredObjectListViewsResult;
+        if (data) { 
+            console.log('Object list view retrieval successful'); 
+            this.listViewList = data; 
+            this.error = undefined; 
+            if (this.pinnedListView != undefined) {
+                this.selectedListView = this.pinnedListView;
+            }
+            this.spinner = false; 
+        } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.listViewList = undefined; 
@@ -221,6 +246,10 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
     }
 
+    /*
+     * Method which subscribes this component to a defined message channel. This subscription
+     * allows the components to send messages to each other.
+     */
     subscribeMC() {
         if (this.subscription) {
             return;
@@ -228,7 +257,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         this.subscription = subscribe(
             this.messageContext,
             LISTVIEW_MC, (message) => {
-                this.handleMessage(message); //this is the method below that gets called when a message comes in.
+                this.handleMessage(message); //this is the javascript method below (handleMessage()) that gets called when a message comes in.
             },
             {scope: APPLICATION_SCOPE});
     }
@@ -246,19 +275,18 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         this.spinner = true;
 
         this.receivedMessage = message;
-        console.log('RECEIVED A MESSAGE - ' + this.receivedMessage + this.selectedObject);
+        console.log('Received a message - ' + this.receivedMessage + this.selectedObject);
 
         //if we have selected a specific list view to update
         if (this.receivedMessage.listViewName != this.mainTitle && this.joinFieldName != undefined && this.joinFieldName != '')
         {
             console.log('We have a joined field name - ' + this.joinFieldName);
-            console.log('Record Ids - ' + this.receivedMessage.recordIds);
+            console.log('Record ids from message - ' + this.receivedMessage.recordIds);
             let joinData = JSON.stringify(message);
 
             getListViewData({objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: joinData })
                 .then(result => {
-
-                    console.log('RESULT - ' + result);
+                    console.log('List view data retrieval successful'); 
                     this.listViewData = result;
                 })
                 .catch(error => {
@@ -270,7 +298,10 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                     }));
             });
 
+        } else {
+            console.log('We do not have a joined field name so ignoring message!');
         }
+
         this.spinner = false;
 
     }
@@ -347,7 +378,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         this.selectedListView = event.target.value;
         console.log('List view selected - ' + this.selectedListView);
         this.listViewData = undefined;
-        if (this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
+
+        //if we are not in the construction of the page and we change the list view and its the pinned list view
+        if (this.userConfigs != undefined && this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
             this.isPinned = true;
         } else {
             this.isPinned = false;
@@ -359,7 +392,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
         updateUserConfig({compName: this.pageName, configName: 'pinnedListView', value: this.selectedObject + ':' + this.selectedListView })
         .then(result => {
-            console.log('RESULT - ' + result);
+            console.log('User config update successful'); 
         })
         .catch(error => {
             this.dispatchEvent(new ShowToastEvent({
@@ -377,7 +410,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
         updateUserConfig({compName: this.pageName, configName: 'pinnedListView', value: '' })
         .then(result => {
-            console.log('RESULT - ' + result);
+            console.log('User config update successful'); 
         })
         .catch(error => {
             this.dispatchEvent(new ShowToastEvent({
@@ -434,7 +467,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                     {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'List View Updated Successfully',
-                            message: 'List view has been updated successfully. Refresh to see the changes.',
+                            message: 'List view has been updated successfully. Refresh entire page to see the changes.',
                             variant: 'success',
                             mode: 'sticky'
                         }));
@@ -464,7 +497,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
         
         //if we have selected an objects list views to update
-        if (this.selectedObject != undefined && this.selectedListView === undefined)
+        else if (this.selectedObject != undefined && this.selectedListView === undefined)
         {
             console.log('Updating OBJECT list views');
 
@@ -476,7 +509,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                     {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'List Views Updated Successfully',
-                            message: 'List views have been updated successfully. Refresh to see the changes.',
+                            message: 'List views have been updated successfully. Refresh entire page to see the changes.',
                             variant: 'success',
                             mode: 'sticky'
                         }));
@@ -506,7 +539,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
 
         //if we have selected ALL list views to update
-        if (this.selectedObject === undefined && this.selectedListView === undefined)
+        else if (this.selectedObject === undefined && this.selectedListView === undefined)
         {
             console.log('Updating ALL list views');
 
@@ -628,7 +661,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         //this.listViewDataColumns  = undefined;
         this.selectedAction       = '';
 
-        refreshApex(this.listViewData);
+        refreshApex(this.wiredListViewDataResult);
         console.log('APEX REFRESHED');
     }
 
@@ -643,13 +676,11 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         this.mouseStart = mouseStart;
         this.oldWidth = parObj.offsetWidth;
         this.parentObj = parObj;
-        // Stop text selection event so mouse move event works perfectlly.
+        // Stop text selection event
         if(event.stopPropagation) event.stopPropagation();
         if(event.preventDefault) event.preventDefault();
         event.cancelBubble=true;
-        event.returnValue=false;          
-        //component.set("v.mouseStart",mouseStart);
-        //component.set("v.oldWidth",parObj.offsetWidth);
+        event.returnValue=false;
     };
 
     setNewWidth(event) {
