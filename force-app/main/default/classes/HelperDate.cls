@@ -6,24 +6,6 @@ public with sharing class HelperDate {
     public static final String HOUR = 'Hour';
     public static final String MINUTE = 'Minute';
 
-    public static String getFormattedDate(Date theDate, String format)
-    {
-        DateTime newDate = Datetime.newInstance(theDate.year(),theDate.month(),theDate.day(),0,0,0);
-        
-        return newDate.format(format);
-        
-    }
-
-    public static String getSOQLDateTime(DateTime theDate)
-    {
-        return theDate.format('yyyy-MM-dd\'T\'hh:mm:ss\'Z\'');
-    }
-
-    public static String getSOQLDate(DateTime theDate)
-    {
-        return theDate.format('yyyy-MM-dd');
-    }
-
     public static String getBatchJobScheduleString(String lengthType, Integer lengthFromNow)
     {
 
