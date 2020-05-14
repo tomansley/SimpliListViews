@@ -325,15 +325,17 @@ global with sharing class ListViewHelper {
      * Method to use the SOQL query retrieved from the core listview describe, amend it to include
      * the possible additional fields added by the user and then use it to get the data.
      */ 
-    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, List<String> joinRecordIds)
+    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
 
         String debug = '\n\nStarting getListViewData - \n';
-        debug += 'listview - ' + listview + '\n';
-        debug += 'lvConfig - ' + lvConfig + '\n';
-        debug += 'sortData - ' + sortData + '\n';
-        debug += 'joinFieldName - ' + joinFieldName + '\n';
-        debug += 'joinRecordIds - ' + joinRecordIds + '\n\n';
+        debug += 'listview           - ' + listview + '\n';
+        debug += 'lvConfig           - ' + lvConfig + '\n';
+        debug += 'sortData           - ' + sortData + '\n';
+        debug += 'joinFieldName      - ' + joinFieldName + '\n';
+        if (joinRecordIds != null)
+            debug += 'joinRecordIds Size - ' + joinRecordIds.size() + '\n';
+        debug += 'joinRecordIds      - ' + joinRecordIds + '\n\n';
         System.debug(LoggingLevel.DEBUG, debug);
 
         //---------------------------------------------------
@@ -361,6 +363,10 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Handle all changes to the WHERE statement
         //------------------------------------------------------
+        if (joinRecordIds != null) {
+            joinRecordIds.remove(null); //make sure we remove any nulls
+            joinRecordIds.remove('');
+        }
         if (joinFieldName != '' && joinRecordIds != null && joinRecordIds.size() > 0)
         {
             if (whereStr.contains(' WHERE '))

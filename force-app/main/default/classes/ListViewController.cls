@@ -193,14 +193,14 @@ public with sharing class ListViewController
         System.debug(LoggingLevel.DEBUG, 'STARTING getListViewData - ' + objectName + ' : ' + listViewName + ' : ' + sortData + ' : ' + joinFieldName + ' : ' + joinData);
         
         //if we have join information then get the record Ids
-        List<String> joinRecordIds = null;
+        Set<String> joinRecordIds = null;
         if (joinFieldName != '' && joinData != '')
         {
             //check that we can actually act on the join data as it could be for another component.
             if (HelperSchema.isValidSFDCFieldName(objectName, joinFieldName))
             {
                 Map<String, Object> joinDataMap = (Map<String, Object>) JSON.deserializeUntyped(joinData);
-                joinRecordIds = ((String) joinDataMap.get('recordIds')).split(',');
+                joinRecordIds = new Set<String>(((String) joinDataMap.get('recordIds')).split(','));
             }
         }
 

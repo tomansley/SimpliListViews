@@ -348,15 +348,18 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         if (recordIds.length > 0) {
             //remove the last comma if there is one.
             recordIds = recordIds.substring(0, recordIds.lastIndexOf(','));
-
-            //publish the selected rows so that other components can use them if desired.
-            const message = {
-                recordIds: recordIds,
-                objectType: this.selectedObject,
-                listViewName: this.mainTitle
-            };
-            publish(this.messageContext, LISTVIEW_MC, message);        
         }
+
+        //publish the selected rows so that other components can use them if desired.
+        //we do this regardless of whether there are records Ids or not as the user
+        //may have clicked a single row and then unclicked. We need to send a message
+        //about that deselected row.
+        const message = {
+            recordIds: recordIds,
+            objectType: this.selectedObject,
+            listViewName: this.mainTitle
+        };
+        publish(this.messageContext, LISTVIEW_MC, message);        
 
     }
 
