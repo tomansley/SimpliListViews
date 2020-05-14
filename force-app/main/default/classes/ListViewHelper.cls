@@ -25,6 +25,60 @@ global with sharing class ListViewHelper {
     }
 
     /*
+     * Method to update list view describe details including the SOQL statement.
+     * The set passed in is the CUSTOM list view Ids. This method should not be used 
+     * for more than 50 list views. If more need to be updated then use the batch job.
+     */
+    public static Boolean updateListViews(String objectName)
+    {
+        List<List_View__c> updatedListViews = new List<List_View__c>();
+
+        //get the CORE list views.
+        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE SObjectType = :objectName];
+        
+        for (ListView listView: coreListViews)
+        {
+
+            //create URL to find the list view query
+            String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v40.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
+            
+            //get list view describe
+            String callResponse = HelperREST.performInternalCallout(endPoint, null);
+
+            //turn JSON string into map
+            try {
+                Map<String,Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(callResponse);
+
+                List_View__c simpliListView = new List_View__c();
+                simpliListView.API_Name__c              = listView.DeveloperName;
+                simpliListView.Object_Name__c           = listview.SObjectType;
+                simpliListView.Describe__c              = callResponse;
+                simpliListView.Label__c                 = listView.Name;
+                simpliListView.Core_ListView_Id__c      = listView.Id;
+                simpliListView.Primary_Key__c           = listview.SObjectType + ':' + listView.DeveloperName;
+                simpliListView.OwnerId                  = listView.CreatedById;
+                simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
+                simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
+
+                updatedListViews.add(simpliListView);
+
+                System.debug(LoggingLevel.DEBUG, 'Updated Simpli List View - ' + simpliListView);
+
+                //use the metadata API to try and enrich the listview data.
+                HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
+
+            } catch (Exception e) { 
+
+            }
+
+        }
+
+        upsert updatedListViews Primary_Key__c;
+
+        return true;
+    }
+
+    /*
      * Method to retrieve list view describe details including the SOQL statement.
      * The set passed in is the CUSTOM list view Ids. This method should not be used 
      * for more than 50 list views. If more need to be updated then use the batch job.
@@ -335,6 +389,28 @@ global with sharing class ListViewHelper {
             orderByStr = orderByStr.removeEnd(', ');
         }
 
+        //------------------------------------------------------
+        // Handle the LIMIT statement
+        //------------------------------------------------------
+        String limitStr = ' LIMIT ';
+        
+        //if we are getting join records then do not use a limit
+        if (joinRecordIds != null && joinRecordIds.size() > 0)
+        {
+            limitStr = '';
+        
+        } else {
+
+            //if we have a list view limit then use it
+            if (lvConfig.get('ReturnSize') != null)
+                limitStr += lvConfig.get('ReturnSize');
+            
+            //otherwise use 250
+            else
+                limitStr += '250';
+        }
+        
+
         //check everything on the SOQL statement is accessible by this user
         HelperSchema.checkObjectAccessible(listview.Object_Name__c);
         List<String> allFields = selectStr.split(',');
@@ -348,13 +424,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------
-        query = 'SELECT ' + selectStr + ' FROM ' + whereStr + ' ORDER BY ' + orderByStr;
-
-        //add any limits to the data returned. Max = 2000
-        if (lvConfig.get('ReturnSize') != null)
-            query += ' LIMIT ' + lvConfig.get('ReturnSize');
-        else
-            query += ' LIMIT 250';
+        query = 'SELECT ' + selectStr + ' FROM ' + whereStr + ' ORDER BY ' + orderByStr + limitStr;
 
         System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + query);
 
@@ -384,9 +454,16 @@ global with sharing class ListViewHelper {
         List_View_Action__c acctUpdateAction = new List_View_Action__c();
         acctUpdateAction.Apex_Class_Name__c = 'ListViewActionUpdate';
         acctUpdateAction.Label__c           = 'Update';
-        acctUpdateAction.Object_Type__c = 'Account';
+        acctUpdateAction.Object_Type__c     = 'Account';
 
         actions.add(acctUpdateAction);
+
+        List_View_Action__c oppsCloseUpdateAction = new List_View_Action__c();
+        oppsCloseUpdateAction.Apex_Class_Name__c = 'ListViewActionOppsClose';
+        oppsCloseUpdateAction.Label__c           = 'Set Close Lost';
+        oppsCloseUpdateAction.Object_Type__c     = 'Opportunity';
+
+        actions.add(oppsCloseUpdateAction);
 
         insert actions;
 
@@ -409,6 +486,16 @@ global with sharing class ListViewHelper {
         param.List_View_Action__c = acctUpdateAction.Id;
         param.Placeholder_Text__c = 'Industry goes here...';
         param.Type__c             = 'STRING';
+
+        params.add(param);
+
+        param                     = new List_View_Action_Parameter__c();
+        param.Field_API_Name__c   = 'CloseDate';
+        param.Label__c            = 'Close Date';
+        param.Display_Order__c    = 1;
+        param.List_View_Action__c = oppsCloseUpdateAction.Id;
+        param.Placeholder_Text__c = '';
+        param.Type__c             = 'DATE';
 
         params.add(param);
 
