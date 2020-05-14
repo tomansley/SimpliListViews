@@ -91,7 +91,16 @@ public with sharing class ListViewUserConfigHelper {
                 config.Value__c = value;
             }
             upsert config config.Primary_Key__c;
-        
+
+            //update the current users config
+            Map<String, List_View_User_Config__c> compConfigs = currentUsersConfigs.get(config.Ltn_Component_Name__c);
+            if (compConfigs == null)
+            {
+                compConfigs = new Map<String, List_View_User_Config__c>();
+                currentUsersConfigs.put(config.Ltn_Component_Name__c, compConfigs);
+            }
+            compConfigs.put(config.Name__c, config);
+
         } else {
             if (config != null)
                 delete config;
