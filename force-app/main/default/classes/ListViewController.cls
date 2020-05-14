@@ -28,19 +28,8 @@ public with sharing class ListViewController
     @AuraEnabled
     public static String updateObjectListViews(String objectType)
     {
-        //get the listviews with object type
-        Map<String, List_View__c> listviews = ListViewHelper.getListViewsByObject(objectType);
-
-        //if no listviews return failed
-        if (listviews.size() == 0) return 'failed';
-
-        //get the list views Id
-        Set<Id> lvIds = new Set<Id>();
-        for (List_View__c listview: listviews.values())
-            lvIds.add(listview.Id);
-
         //update the list view
-        Boolean result = ListViewHelper.updateListViews(lvIds);
+        Boolean result = ListViewHelper.updateListViews(objectType);
 
         return 'success';
     }
@@ -724,13 +713,6 @@ public with sharing class ListViewController
             this.value = value;
             this.label = label;
             this.disabled = false;
-            this.escapeItem = false;
-        }
-
-        public SelectOption(String value, String label, Boolean isDisabled) {
-            this.value = value;
-            this.label = label;
-            this.disabled = isDisabled;
             this.escapeItem = false;
         }
 
