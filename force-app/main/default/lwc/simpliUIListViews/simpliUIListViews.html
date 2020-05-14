@@ -67,28 +67,32 @@
                     </lightning-layout-item>
                 </template>
             </template>
-            <template if:true={displayActions}>
-                <template if:true={listViewData}>
-                    <lightning-layout-item alignment-bump="left" padding="horizontal-small">
-                        <lightning-combobox placeholder="Select an Action"
-                                            label="Action" 
-                                            value={selectedAction} 
-                                            onchange={handleActionSelect} 
-                                            options={objectActionList}
-                                            variant=label-hidden>
-                        </lightning-combobox>
-                    </lightning-layout-item>
-                </template>
-            </template>
-            <template if:true={displayReprocess}>
-                <lightning-layout-item padding="horizontal-small">
-                    <lightning-button-icon title="List view not showing up or refreshing? Reprocess by clicking here." 
-                                            size="medium" 
-                                            icon-name="action:new_task" 
-                                            onclick={handleProcessListViewsButtonClick}>
-                    </lightning-button-icon>
-                </lightning-layout-item>
-            </template>
+            <lightning-layout-item alignment-bump="left"  padding="horizontal-small">
+                <lightning-layout>
+                    <template if:true={displayActions}>
+                        <template if:true={listViewData}>
+                            <lightning-layout-item padding="horizontal-small">
+                                <lightning-combobox placeholder="Select an Action"
+                                                label="Action" 
+                                                value={selectedAction} 
+                                                onchange={handleActionSelect} 
+                                                options={objectActionList}
+                                                variant=label-hidden>
+                                </lightning-combobox>
+                            </lightning-layout-item>
+                        </template>
+                    </template>
+                    <template if:true={displayReprocess}>
+                        <lightning-layout-item>
+                            <lightning-button-icon title="List view not showing up or refreshing? Reprocess by clicking here." 
+                                                size="medium" 
+                                                icon-name="action:new_task" 
+                                                onclick={handleProcessListViewsButtonClick}>
+                            </lightning-button-icon>
+                        </lightning-layout-item>
+                    </template>
+                </lightning-layout>
+            </lightning-layout-item>
         </lightning-layout>
     </lightning-card>
 
