@@ -42,5 +42,6 @@ public with sharing class HelperSchemaTest {
 
         System.assertEquals('User', typeName);
 
+        Boolean isValid = HelperSchema.isValidSFDCFieldName('Account', 'Name');
     }
 }

@@ -6,6 +6,31 @@ private class ListViewActionTest {
     {
     }
 
+    static testMethod void listViewActionParameterTest() 
+    {
+
+        List<List_View_Action__c> lvActions = HelperTest.createListViewActions();
+
+        Test.startTest();
+            List_View_Action__c updateAction = ListViewActionHelper.getListViewActionByKey('Update:Account');
+            System.assert(updateAction.List_View_Action_Parameters__r != null);
+            System.assert(updateAction.List_View_Action_Parameters__r.size() == 2);
+
+            List_View_Action_Parameter__c param = updateAction.List_View_Action_Parameters__r[0];
+            System.assert(param != null);
+            
+            //change param field to AccountNumber
+            param.Field_API_Name__c   = 'AccountNumber';
+
+            update param;
+
+        Test.stopTest();
+
+        List_View_Action_Parameter__c paramUpdate = [SELECT Field_API_Name__c FROM List_View_Action_Parameter__c WHERE Id = :param.Id];
+        System.assert(paramUpdate.Field_API_Name__c == 'AccountNumber');
+
+    }
+
     static testMethod void listViewActionCreateTest() 
     {
 
@@ -72,5 +97,21 @@ private class ListViewActionTest {
     
     }
 
+    static testMethod void listViewActionOppCloseProcessTest() {
+
+        HelperTest.createListViewActions();
+
+        Account acct = HelperTest.insertAccount('List View Account');
+        Opportunity opp = HelperTest.insertOpportunity(acct, 'Opportunity 1');
+
+        Test.startTest();
+
+            String result = ListViewController.processAction('SetCloseLost:Opportunity', '["' + opp.Id + '"]', '[["CloseDate","2020-05-04"]]');
+
+        Test.stopTest();
+
+        System.assert(result == ListViewAction.RESULT_OK);
+    
+    }
 
 }

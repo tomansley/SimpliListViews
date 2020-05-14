@@ -6,6 +6,35 @@ private class ListViewControllerTest {
     {
     }
 
+    @IsTest
+    static void getUserConfigTest()
+    {
+    
+        Test.startTest();
+            
+        //create user config by doing an upsert
+        ListViewController.updateUserConfig('CompName 1', 'pinnedListView', 'Account:AllAccounts');
+
+        Map<String, String> configs = ListViewController.getUserConfigs('CompName 1');
+
+        System.assert(configs.size() == 1);
+        System.assert(configs.get('pinnedListView') == 'Account:AllAccounts');
+
+        //update user config
+        ListViewController.updateUserConfig('CompName 1', 'pinnedListView', 'Contact:AllContacts');
+        ListViewController.updateUserConfig('CompName 2', 'pinnedListView', 'Account:AllAccounts');
+
+        configs = ListViewController.getUserConfigs('CompName 1');
+
+        System.assert(configs.size() == 1);
+        System.assert(configs.get('pinnedListView') == 'Contact:AllContacts');
+
+
+
+        Test.stopTest();
+        
+    }
+
     static testMethod void updateObjectListViewsTest()
     {
         HelperTest.createListViews();
@@ -23,6 +52,16 @@ private class ListViewControllerTest {
 
         System.assert(result == 'success');
     }
+
+    static testMethod void updateChangedListViewTest()
+    {
+        HelperTest.createListViews();
+
+        String result = ListViewController.updateChangedListViews();
+
+        System.assert(result == 'success');
+    }
+
 
     static testMethod void updateAllListViewsTest()
     {
@@ -59,6 +98,27 @@ private class ListViewControllerTest {
         System.assert(rows.getFieldMetaData().size() > 0);
         System.assert(rows.getRows() != null);
         System.assert(rows.getRows().size() > 0);
+        System.assert(rows.getRowCount() > 0);
+        System.assert(rows.getCoreListViewURL() != '');
+
+        ListViewController.RowWrapper row = rows.rows[0];
+        System.assert(row != null);
+        System.assert(row.getRowId() != null);
+        System.assert(row.getCheckboxId() != null);
+        System.assert(row.getFields() != null);
+        System.assert(row.getFields().size() > 0);
+
+        ListViewController.FieldWrapper field = row.fields[0];
+        System.assert(field != null);
+        System.assert(field.getLabel() != null);
+        System.assert(field.getName() != null);
+        System.assert(field.getSortIndex() != null);
+        System.assert(field.getSortIndexDisplay() != null);
+        System.assert(field.getSortDir() != null);
+        System.assert(field.getType() != null);
+        System.assert(field.getValue() != null);
+        System.assert(field.getHasURL() != null);
+        System.assert(field.getURL() != null);
 
         
         List<ListViewController.SelectOption> actions = ListViewController.getListViewsActions('Account');
@@ -85,5 +145,21 @@ private class ListViewControllerTest {
 
     }
 
+    static testMethod void stupidMetadataAPITest()
+    {
+        ListViewMetadataAPIService.ListViewFilter f = new ListViewMetadataAPIService.ListViewFilter();
+        ListViewMetadataAPIService.ReadResult r = new ListViewMetadataAPIService.ReadResult();
+        ListViewMetadataAPIService.Error e = new ListViewMetadataAPIService.Error();
+        ListViewMetadataAPIService.LogInfo l = new ListViewMetadataAPIService.LogInfo();
+        ListViewMetadataAPIService.DebuggingHeader_element d = new ListViewMetadataAPIService.DebuggingHeader_element();
+        ListViewMetadataAPIService.readMetadata_element r1 = new ListViewMetadataAPIService.readMetadata_element();
+        ListViewMetadataAPIService.readMetadataResponse_element r2 = new ListViewMetadataAPIService.readMetadataResponse_element();
+        ListViewMetadataAPIService.CallOptions_element c = new ListViewMetadataAPIService.CallOptions_element();
+        ListViewMetadataAPIService.DebuggingInfo_element d2 = new ListViewMetadataAPIService.DebuggingInfo_element();
+        ListViewMetadataAPIService.ReadListViewResult r3 = new ListViewMetadataAPIService.ReadListViewResult();
+        ListViewMetadataAPIService.readListViewResponse_element r4 = new ListViewMetadataAPIService.readListViewResponse_element();
+
+        System.assert(true);
+    }
 
 }

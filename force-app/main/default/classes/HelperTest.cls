@@ -13,6 +13,18 @@ public with sharing class HelperTest {
 		return acc;
     }
     
+    public static Opportunity insertOpportunity(Account acct, String name)
+    {
+		Opportunity opp = new Opportunity(Name = name);
+        opp.AccountId = acct.Id;
+        opp.StageName = 'Needs Analysis';
+        opp.CloseDate = System.today().addDays(-5);
+        
+		insert opp;
+		
+		return opp;
+    }
+    
 	public static List<List_View__c> createListViews()
 	{
 		List<List_View__c> simpliListViews = new List<List_View__c>();
@@ -66,6 +78,13 @@ public with sharing class HelperTest {
 
 		listViewActions.add(updateAction);
 
+        List_View_Action__c oppsCloseUpdateAction = new List_View_Action__c();
+        oppsCloseUpdateAction.Apex_Class_Name__c = 'ListViewActionOppsClose';
+        oppsCloseUpdateAction.Label__c           = 'Set Close Lost';
+        oppsCloseUpdateAction.Object_Type__c     = 'Opportunity';
+
+        listViewActions.add(oppsCloseUpdateAction);
+
 		insert listViewActions;
 
 		List<List_View_Action_Parameter__c> listViewActionParams = new List<List_View_Action_Parameter__c>();
@@ -90,6 +109,15 @@ public with sharing class HelperTest {
 
 		listViewActionParams.add(actionParam2);
 
+        List_View_Action_Parameter__c actionParam3 = new List_View_Action_Parameter__c();
+        actionParam3.Field_API_Name__c   = 'CloseDate';
+        actionParam3.Label__c            = 'Close Date';
+        actionParam3.Display_Order__c    = 1;
+        actionParam3.List_View_Action__c = oppsCloseUpdateAction.Id;
+        actionParam3.Placeholder_Text__c = '';
+        actionParam3.Type__c             = 'DATE';
+
+        listViewActionParams.add(actionParam3);
 		insert listViewActionParams;
 
 		return listViewActions;
