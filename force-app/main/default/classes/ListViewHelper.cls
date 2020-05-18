@@ -1,6 +1,23 @@
 global with sharing class ListViewHelper {
     
     /*
+     ListViewHelper.updateListViewObjectsSetting();
+     */
+    public static void updateListViewObjectsSetting()
+    {
+        //get API Name/Label of all list view objects
+        Map<String, String> listViewObjects = getListViewObjects(new Set<String>(), new Set<String>(), true);
+
+        //turn to JSON
+        String jsonStr = JSON.serialize(listViewObjects);
+
+        System.debug(LoggingLevel.DEBUG, 'JSON - ' + jsonStr);
+
+        ListViewConfigHelper.setOrgWideConfig('List View Objects', jsonStr);
+
+    }
+
+    /*
      * Method to return all CORE list views that have been altered by the running user
      * within the past 2 weeks.
      */
@@ -67,10 +84,11 @@ global with sharing class ListViewHelper {
                 //use the metadata API to try and enrich the listview data.
                 HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
 
-            } catch (Exception e) { 
-
+            } catch (Exception e) {
+                String message = 'Exception during ListViewHelper.updateListViews(' + objectName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                ListViewErrorHelper.createUsageError(message); 
             }
-
+    
         }
 
         upsert updatedListViews Primary_Key__c;
@@ -133,8 +151,9 @@ global with sharing class ListViewHelper {
                 //use the metadata API to try and enrich the listview data.
                 HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
 
-            } catch (Exception e) { 
-
+            } catch (Exception e) {
+                String message = 'Exception during ListViewHelper.updateListViews(' + lvIds + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                ListViewErrorHelper.createUsageError(message); 
             }
 
         }
@@ -150,7 +169,7 @@ global with sharing class ListViewHelper {
     */
     public static Map<String, String> getListViewObjects()
     {
-        return getListViewObjects('', '');
+        return getListViewObjects(new Set<String>(), new Set<String>(), false);
     }
     
     /*
@@ -158,40 +177,65 @@ global with sharing class ListViewHelper {
     * if includedObjects is passed in those objects will be returned. If
     * includedObjects is empty or null all objects are returned.
     * The map is returned as follows - (API Name, Label)
+    ListViewHelper.getListViewObjects(new Set<String>(), new Set<String>());
     */
-    public static Map<String, String> getListViewObjects(String pageWideIncObjs, String pageWideExcObjs)
+    public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs, Boolean fresh)
     {
         Map<String, String> mappedListviewObjects = new Map<String, String>();
-        AggregateResult[] listViewObjects = [SELECT Object_Name__c FROM List_View__c GROUP BY Object_Name__c LIMIT 2000];
+        Map<String, String> listViewObjects =  null;
 
-        String orgWideExcObjs = HelperMetadata.getOrgWideSettingValue('Excluded Object Types', '');
-        String orgWideIncObjs = HelperMetadata.getOrgWideSettingValue('Included Object Types', '');
-
-        for (AggregateResult result: listViewObjects)
+        if (fresh)
         {
-            String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
 
-            //PAGE - if included objects have been included then check against.
-            if (pageWideIncObjs == null || pageWideIncObjs == '' || pageWideIncObjs.contains(objAPIName))
+            listViewObjects =  new Map<String, String>();
+
+            String exclObjs = ListViewConfigHelper.getOrgWideConfig('Excluded Object Types');
+            Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
+    
+            AggregateResult[] aggListViewObjects = [SELECT Object_Name__c 
+                                                 FROM List_View__c 
+                                                 WHERE Object_Name__c NOT IN :orgWideExcObjs 
+                                                    AND Object_Name__c NOT IN :pageWideExcObjs 
+                                                 GROUP BY Object_Name__c 
+                                                 LIMIT 2000]; //limit for security review. No other reason
+    
+    
+            for (AggregateResult result: aggListViewObjects)
+            {
+                String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
+    
+                String objLabel = HelperSchema.getObjectSchema(objAPIName).getLabel();
+
+                listViewObjects.put(objAPIName, objLabel);
+            }
+        
+        } else {
+
+            String jsonStr = ListViewConfigHelper.getOrgWideConfig('List View Objects');
+
+            if (jsonStr != null && jsonStr != '')
+                listViewObjects =  (Map<String, String>) JSON.deserialize(jsonStr, Map<String,String>.class);    
+            else
+                listViewObjects = new Map<String, String>();
+        }
+
+        String inclObjs = ListViewConfigHelper.getOrgWideConfig('Included Object Types');
+        Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
+
+        for (String objAPIName: listViewObjects.keySet())
+        {
+
+            //if there are PAGE included objects then only include those.
+            if (pageWideIncObjs.isEmpty() || pageWideIncObjs.contains(objAPIName))
             {
 
-                //PAGE - if excluded objects have been included then be sure to remove
-                if (pageWideExcObjs == null || pageWideExcObjs == '' || !pageWideExcObjs.contains(objAPIName))
+                //if there are ORG WIDE included objects then only include those.
+                if (orgWideIncObjs.isEmpty() || orgWideIncObjs.contains(objAPIName))
                 {
-                    //ORG-WIDE - if we are including all objects or have a list then check against it.
-                    if (orgWideIncObjs == '' || orgWideIncObjs.contains(objAPIName))
-                    {
-                        //ORG-WIDE - do not add excluded objs
-                        if (!orgWideExcObjs.contains(objAPIName))
-                        {
 
-                            if (HelperSchema.checkObjectAccessible(objAPIName, false))
-                            {
-                                String objLabel = HelperSchema.getObjectSchema(objAPIName).getLabel();
-                                mappedListviewObjects.put(objAPIName, objLabel);
-                            }
-                        }
-                    }
+                    //make sure that the user has access to the object itself.
+                    if (HelperSchema.checkObjectAccessible(objAPIName, false))
+                        mappedListviewObjects.put(objAPIName, listViewObjects.get(objAPIName));
                 }
             }
         }
@@ -363,10 +407,6 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Handle all changes to the WHERE statement
         //------------------------------------------------------
-        if (joinRecordIds != null) {
-            joinRecordIds.remove(null); //make sure we remove any nulls
-            joinRecordIds.remove('');
-        }
         if (joinFieldName != '' && joinRecordIds != null && joinRecordIds.size() > 0)
         {
             if (whereStr.contains(' WHERE '))
@@ -413,7 +453,7 @@ global with sharing class ListViewHelper {
             
             //otherwise use 250
             else
-                limitStr += '250';
+                limitStr += '150';
         }
         
 
@@ -512,17 +552,51 @@ global with sharing class ListViewHelper {
         //-----------------------------------------------------
         HelperSchema.checkListViewConfigsCreatable();
 
+        List<List_View_Config__c> configs = new List<List_View_Config__c>();
+
         List_View_Config__c config = new List_View_Config__c();
         config.Name                = 'Account';
         config.List_View_Object__c = 'PlatinumandGoldSLACustomers';
+        configs.add(config);
 
-        insert config;
+        List_View_Config__c config2 = new List_View_Config__c();
+        config2.Name                = 'All';
+        config2.List_View_Object__c = 'All';
+        configs.add(config2);
 
-        List_View_Config_Parameter__c param1 = new List_View_Config_Parameter__c();
-        param1.List_View_Config__c = config.Id;
-        param1.Parameter_Name__c   = 'AdditionalFields';
-        param1.Parameter_Type__c   = 'STRING';
-        param1.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
+        insert configs;
+
+        List<List_View_Config_Parameter__c> params2 = new List<List_View_Config_Parameter__c>();
+      
+        List_View_Config_Parameter__c param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config.Id;
+        param2.Parameter_Name__c   = 'AdditionalFields';
+        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
+        params2.add(param2);
+        
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'List View Objects';
+        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Value__c  = '';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'Included Object Types';
+        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Value__c  = '';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'Excluded Object Types';
+        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
+        params2.add(param2);
+
+        insert params2;
     }
 
     /*
@@ -561,27 +635,6 @@ global with sharing class ListViewHelper {
         User usr = UserHelper.getCurrentUser();
 
         if (lv.OwnerId == UserInfo.getUserId()) return true;
-
-        if (usr.Profile.Name == 'System Administrator') return true;
-
-        return false;
-    }
-
-    /*
-     * Method to check security and determine whether the list view is visible
-     * to the requesting user. The following security is performed.
-     * 1. if user is owner
-     * 2. if list view allows all internal users.
-     * 3. if user is in allowed roles
-     * 4. if user is in allowed groups
-     * 5. if user is in allowed territories
-     */
-    public static Boolean isUpdateable(ListView lv)
-    {
-        User usr = UserHelper.getCurrentUser();
-        User owner = UserHelper.getUserDetails(lv.CreatedById);
-
-        if (lv.CreatedById == UserInfo.getUserId()) return true;
 
         if (usr.Profile.Name == 'System Administrator') return true;
 

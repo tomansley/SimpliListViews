@@ -1,6 +1,63 @@
 public with sharing class ListViewController
 {
 
+    /*
+     * Method which returns list of objects names and API names in the system
+     */
+    @AuraEnabled(cacheable=true)
+    public static List<SelectOption> getListViewObjects(String includedObjects, String excludedObjects)
+    {
+        List<SelectOption> configListOptions = new List<SelectOption>();
+
+        Set<String> excObjs = HelperString.getSetFromString(includedObjects, ',');
+        Set<String> incObjs = HelperString.getSetFromString(excludedObjects, ',');
+
+        Map<String, String> listviewObjects = ListViewHelper.getListViewObjects(incObjs, excObjs, false);
+
+        for (String apiName: listviewObjects.keySet())
+            configListOptions.add(new SelectOption(apiName, listviewObjects.get(apiName)));         
+    
+        configListOptions.sort();
+
+        return configListOptions;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<SelectOption> getObjectListViews(String objectName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'STARTING getObjectListViews - '+ objectName);
+
+        Map<String, List_View__c> listviews = ListViewHelper.getListViewsByObject(objectName);
+
+        List<SelectOption> configListOptions = new List<SelectOption>();
+
+        for (List_View__c listview : listviews.values())
+        {
+            configListOptions.add(new SelectOption(listview.API_Name__c, listview.Label__c));         
+        }
+
+        configListOptions.sort();
+
+        return configListOptions;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static Map<String, String> getListViewConfig(String objectType, String listViewName)
+    {
+        Map<String, String> configParams = new Map<String, String>();
+
+        List<List_View_Config__c> configs = ListViewConfigHelper.getListViewConfig(objectType, listViewName);
+
+        if (configs.size() == 0) return new Map<String, String>();
+
+        List_View_Config__c config = configs[0];
+
+        for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
+            configParams.put(param.Parameter_Name__c, param.Parameter_Value__c);         
+        
+        return configParams;
+    }
+
     @AuraEnabled
     public static Map<String, String> getUserConfigs(String compName)
     {
@@ -20,6 +77,8 @@ public with sharing class ListViewController
         try {
             ListViewUserConfigHelper.updateCurrentUserConfigValue(compName, configName, value);
         } catch (Exception e) {
+            String message = 'Exception during ListViewController.updateUserConfig(' + compName + ',' + configName + ',' + value + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
             return 'There was an error during user configuration update';
         }
         return 'success';
@@ -96,23 +155,6 @@ public with sharing class ListViewController
 	}
 
     @AuraEnabled(cacheable=true)
-    public static Map<String, String> getListViewConfig(String objectType, String listViewName)
-    {
-        Map<String, String> configParams = new Map<String, String>();
-
-        List<List_View_Config__c> configs = ListViewConfigHelper.getListViewConfig(objectType, listViewName);
-
-        if (configs.size() == 0) return new Map<String, String>();
-
-        List_View_Config__c config = configs[0];
-
-        for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
-            configParams.put(param.Parameter_Name__c, param.Parameter_Value__c);         
-        
-        return configParams;
-    }
-
-    @AuraEnabled(cacheable=true)
     public static List<SelectOption> getListViewsActions(String objectType)
     {
         List<SelectOption> actionsOptions = new List<SelectOption>();
@@ -141,52 +183,62 @@ public with sharing class ListViewController
                 action = ListViewActionHelper.getListViewActionByKey(actionName);
                 wrapper = new ActionWrapper(action);
             } catch (Exception e) {
-                System.debug('EXCEPTION - ' + e.getMessage() + ' - ' + e.getStackTraceString());
-            }
+                String message = 'Exception during ListViewController.getListViewAction(' + actionName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                ListViewErrorHelper.createUsageError(message); 
+                }
         }
         return wrapper;
     }
 
     /*
-     * Method which returns list of objects names and API names in the system
+     * Method which determines whether a list view data request is valid or not.
      */
-    @AuraEnabled(cacheable=true)
-    public static List<SelectOption> getListViewObjects(String includedObjects, String excludedObjects)
+    @AuraEnabled
+    public static String isValidListViewDataRequest(String objectName, String joinFieldName, String joinData)
     {
-        List<SelectOption> configListOptions = new List<SelectOption>();
+        System.debug(LoggingLevel.DEBUG, 'Inside isValidListViewDataRequest');
+        String result = 'success';
 
-        Map<String, String> listviewObjects = ListViewHelper.getListViewObjects(includedObjects, excludedObjects);
-
-        for (String apiName: listviewObjects.keySet())
-            configListOptions.add(new SelectOption(apiName, listviewObjects.get(apiName)));         
-    
-        configListOptions.sort();
-
-        return configListOptions;
-    }
-
-    @AuraEnabled(cacheable=true)
-    public static List<SelectOption> getObjectListViews(String objectName)
-    {
-        System.debug(LoggingLevel.DEBUG, 'STARTING getObjectListViews - '+ objectName);
-
-        Map<String, List_View__c> listviews = ListViewHelper.getListViewsByObject(objectName);
-
-        List<SelectOption> configListOptions = new List<SelectOption>();
-
-        for (List_View__c listview : listviews.values())
+        //if we have join information then get the record Ids
+        Set<String> joinRecordIds = null;
+        if (joinFieldName != '' && joinData != '')
         {
-            configListOptions.add(new SelectOption(listview.API_Name__c, listview.Label__c));         
+            //check that we can actually act on the join data as it could be for another component.
+            if (HelperSchema.isValidSFDCFieldName(objectName, joinFieldName))
+            {
+                Map<String, Object> joinDataMap = (Map<String, Object>) JSON.deserializeUntyped(joinData);
+                joinRecordIds = HelperString.getSetFromString(((String) joinDataMap.get('recordIds')), ',');
+                joinRecordIds.remove(null); //make sure we remove any nulls
+                joinRecordIds.remove('');
+
+                //if we have any Ids we need to check that the Ids match the field object type
+                if (joinRecordIds.size() > 0)
+                {
+                    //get the type of the join field lookup object.
+                    String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
+
+                    String objType2 = '';
+                    //this is crazy. In order to get any one value from a set
+                    //I have to iterate over it and break at the first value!!
+                    for (String recordId: joinRecordIds)
+                    {
+                        objType2 = HelperSchema.getObjectTypeFromId(recordId);
+                        break;
+                    }
+
+                    if (objType != objType2)
+                        result = 'failure';
+                }
+            }
         }
-
-        configListOptions.sort();
-
-        return configListOptions;
+        
+        System.debug(LoggingLevel.DEBUG, 'Leaving isValidListViewDataRequest - ' + result);
+        return result;
     }
 
     /*
-        * TEST - SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
-        */
+       TEST - SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
+     */
     @AuraEnabled(cacheable=true)
     public static RowsWrapper getListViewData(String objectName, String listViewName, String sortData, String joinFieldName, String joinData)
     {
@@ -200,7 +252,28 @@ public with sharing class ListViewController
             if (HelperSchema.isValidSFDCFieldName(objectName, joinFieldName))
             {
                 Map<String, Object> joinDataMap = (Map<String, Object>) JSON.deserializeUntyped(joinData);
-                joinRecordIds = new Set<String>(((String) joinDataMap.get('recordIds')).split(','));
+                joinRecordIds = HelperString.getSetFromString(((String) joinDataMap.get('recordIds')), ',');
+                joinRecordIds.remove(null); //make sure we remove any nulls
+                joinRecordIds.remove('');
+
+                //if we have any Ids we need to check that the Ids match the field object type
+                if (joinRecordIds.size() > 0)
+                {
+                    //get the type of the join field lookup object.
+                    String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
+
+                    String objType2 = '';
+                    //this is crazy. In order to get any one value from a set
+                    //I have to iterate over it and break at the first value!!
+                    for (String recordId: joinRecordIds)
+                    {
+                        objType2 = HelperSchema.getObjectTypeFromId(recordId);
+                        break;
+                    }
+
+                    if (objType != objType2)
+                        return null;
+                }
             }
         }
 
@@ -268,6 +341,8 @@ public with sharing class ListViewController
         try {
             action = ListViewActionHelper.getListViewActionByKey(actionKey);
         } catch (Exception e) {
+            String message = 'Exception during ListViewController.processAction(' + actionKey + ',' + dataIds + ',' + valuesMap + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
             responseStr = 'Couldn\'t find action config for name provided!';
             return responseStr;
         }

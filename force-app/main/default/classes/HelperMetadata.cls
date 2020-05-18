@@ -1,11 +1,13 @@
 /*
  * Class to handle the querying and manipulation of meta data information.
  */
-global with sharing class HelperMetadata {
+global with sharing class HelperMetadata implements Metadata.DeployCallback {
     
     global static Map<String, List_View_Metadata_Type_Name__mdt> metadataTypes = new Map<String, List_View_Metadata_Type_Name__mdt>();
 
     /*
+     * DEPRECATED
+     * 
      * Method which, given the name of the meta data to be retrieved returns the list of meta data.
      * Note that this method returns the data in no specific order. Also, the name that should be 
      * provided to retrieve the meta data comes from the List_View_Metadata_Type_Name__mdt table. The label
@@ -13,7 +15,7 @@ global with sharing class HelperMetadata {
      */
     global static List<SObject> getMetaData(String name)
     {
-        
+        /*
         if (metadataTypes.get(name) == null)
         {
             List<List_View_Metadata_Type_Name__mdt> types = [SELECT MasterLabel, DeveloperName, Metadata_API_Name__c FROM List_View_Metadata_Type_Name__mdt WHERE MasterLabel = :name];
@@ -31,9 +33,13 @@ global with sharing class HelperMetadata {
         List<SObject> metaData = Database.query(soql);
         
         return metaData;
+    */
+        return null;
     }
         
     /*
+     * DEPRECATED
+     * 
      * Method which, given the name of the meta data to be retrieved and the MasterLabel of the 
      * particular metadata row returns the single meta data record if there is a match. Note that 
      * the name that should be provided to retrieve the meta data comes from the 
@@ -41,6 +47,7 @@ global with sharing class HelperMetadata {
      */
     global static SObject getMetaData(String name, String masterlabel)
     {
+        /*
         SObject record = null;
         
         List<SObject> metaData = getMetaData(name);
@@ -55,34 +62,31 @@ global with sharing class HelperMetadata {
         }
         
         return record;
+        */
+        return null;
     }
     
     /*
-     * Method which, given the name of a usage setting returns the value as a string.
-     * This is a convenience method to specifically handle general usage application settings.
+     * DEPRECATED
      */
     global static String getOrgWideSettingValue(String name, String valueIfNull)
     {
-        String value = null;
-
-        List<List_View_Org_Wide_Setting__mdt> metaData = (List<List_View_Org_Wide_Setting__mdt>) getMetaData('List View Org Wide Setting');
-        
-        for (List_View_Org_Wide_Setting__mdt obj: metaData)
-        {
-            if (obj.MasterLabel == name)
-            {
-                value = String.valueOf(obj.Value__c);
-                break;
-            }
-        }
-
-        //this allows us to handily specify a value if its null
-        if (value == null)
-            value = valueIfNull;
-
-        return value;
+        return null;
     }
         
+    /*
+     * DEPRECATED
+     */
+    global static void setOrgWideSettingValue(String recordName, String value)
+    {
+    }
+
+    /*
+     * DEPRECATED
+     */
+    public void handleResult(Metadata.DeployResult result, Metadata.DeployCallbackContext context) {
+    }
+    
     global class HelperMetadataException extends Exception { }
 
 }
