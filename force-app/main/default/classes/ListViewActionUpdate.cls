@@ -51,6 +51,8 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
             update updatedObjs.values();
 
         } catch (Exception e) {
+            String message = 'Exception during ListViewActionUpdate.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
             returnStr = e.getMessage();
         }
         

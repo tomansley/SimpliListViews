@@ -37,7 +37,8 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
             upsert closedOpps.values();
 
         } catch (Exception e) {
-            System.debug(LoggingLevel.ERROR, 'Exception thrown - ' + e.getMessage() + ' - ' + e.getStackTraceString());
+            String message = 'Exception during ListViewActionOppsClose.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
             returnStr = e.getMessage();
         }
         return returnStr;

@@ -6,6 +6,9 @@ public with sharing class HelperDate {
     public static final String HOUR = 'Hour';
     public static final String MINUTE = 'Minute';
 
+    /*
+     * HelperDate.getBatchJobScheduleString(HelperDate.MINUTE, 10);
+     */
     public static String getBatchJobScheduleString(String lengthType, Integer lengthFromNow)
     {
 

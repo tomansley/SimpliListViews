@@ -41,7 +41,8 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
             delete deletedObjs.values();
 
         } catch (Exception e) {
-            System.debug(LoggingLevel.ERROR, 'Exception thrown - ' + e.getMessage() + ' - ' + e.getStackTraceString());
+            String message = 'Exception during ListViewActionDelete.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
             returnStr = e.getMessage();
         }
         return returnStr;
