@@ -297,6 +297,29 @@ public with sharing class HelperSchema {
 	}
 
 	/*
+	 * Returns the API object type for a provided lookup field name. Currently
+	 * this method does not work with hierarchical field names 
+	 * 
+	 * Method will return an empty string if the field is not a lookup field.
+	 * 
+	  System.debug(LoggingLevel.DEBUG, 'RESULT 1 - ' + HelperSchema.getObjectTypeForField('Contact', 'Name'));
+	  System.debug(LoggingLevel.DEBUG, 'RESULT 2 - ' + HelperSchema.getObjectTypeForField('Contact', 'AccountId'));
+	 */
+	public static String getObjectTypeForField(String obj, String field)
+	{
+		String objType = '';
+
+		Schema.SObjectField fieldSchema = getFieldByKey(obj, field, NAME);
+
+		List <Schema.SObjectType> sObjTypes = fieldSchema.getDescribe().getReferenceTo();
+
+		if (!sObjTypes.isEmpty())
+			objType = sObjTypes[0].getDescribe().getName();
+
+		return objType;
+	}
+
+	/*
 	 * Returns the API object name based on a provided Id. Record IDs are prefixed 
 	 * with three-character codes that specify the type of the object (for example, 
 	 * accounts have a prefix of 001 and opportunities have a prefix of 006). 
@@ -314,55 +337,6 @@ public with sharing class HelperSchema {
 	public static String getObjectType(SObject obj)
 	{
 		return obj.getSObjectType().getDescribe().getName();
-	}
-
-	private static void initObjectDescribeByPrefix()
-	{
-		objectDescribeByPrefix = new Map<String, Schema.SobjectType>();
-		Map<String,Schema.SobjectType> describe = Schema.getGlobalDescribe();
-		for(String s:describe.keyset())
-			objectDescribeByPrefix.put(describe.get(s).getDescribe().getKeyPrefix(), describe.get(s));
-	}
-    
-    private static void initSObjectSchema(String obj)
-    {
-        initSObjectSchema(obj, true);
-    }
-
-	/*
-	 * Method to initialize an sobject schema if it hasn't already been initialized. This has a small hack
-	 * in it to detect if an object name being requested needs a domain prefix. If it does then it rerequests
-	 * the schema. Once the schema is returned it places the schema into the map with both the domain prefix
-	 * and without it. This hack ensures that tests will run in both the package dev org and other orgs.
-     * HelperSchema.initSObjectSchema('simpli_lv__List_View__c');
-     * HelperSchema.initSObjectSchema('');
-	 */
-	private static void initSObjectSchema(String obj, Boolean allowRecurring)
-	{
-		//if this object has not been described yet get the data
-		if (objectDescribeByName.get(obj) == null)
-		{
-			System.debug(LoggingLevel.DEBUG, 'Trying to initialize schema with name - ' + obj);
-			Schema.SObjectType objSchema = Schema.getGlobalDescribe().get(obj);
-			if (objSchema != null)
-			{
-				System.debug(LoggingLevel.DEBUG, 'Found schema with name - ' + obj);
-				objectDescribeByName.put(obj, objSchema);
-				objectDescribeFieldsByObjectName.put(obj, objSchema.getDescribe().fields.getMap());
-
-				//if schema contain "simpli_lv" then remove and try again (this is the hack)
-				if (obj.contains(DOMAIN_NAME))
-				{
-					objectDescribeByName.put(obj.removeStart(DOMAIN_NAME), objSchema);
-					objectDescribeFieldsByObjectName.put(obj.removeStart(DOMAIN_NAME), objSchema.getDescribe().fields.getMap());
-				}
-
-			} else if (allowRecurring) {
-				System.debug(LoggingLevel.DEBUG, 'NO schema with name - ' + obj);
-				initSObjectSchema(DOMAIN_NAME + obj, false);
-			}
-		}
-		
 	}
 	
 	public static Schema.DisplayType getFieldType(String obj, String field)
@@ -443,6 +417,17 @@ public with sharing class HelperSchema {
 				fieldsByKeyType.put(objField.getDescribe().getLabel().toLowerCase(), objField);
 		}
 		
+		System.debug(LoggingLevel.DEBUG, getObjectFieldDebug(obj, keyType, fieldsByKeyType));
+
+		return fieldsByKeyType;
+		
+    }
+    
+    /*
+     * Debugging method to show fields by key type
+     */
+    private static String getObjectFieldDebug(String obj, String keyType, Map<String, Schema.SObjectField> fieldsByKeyType)
+    {
 		String debug = '\n-----------------------------------------------\n';
 		debug += 'OBJ      - ' + obj + '\n';
 		debug += 'KEY TYPE - ' + keyType + '\n\n';
@@ -450,11 +435,8 @@ public with sharing class HelperSchema {
 			debug += 'KEY - ' + key + ', VALUE - ' + fieldsByKeyType.get(key) + '\n';
 		debug += '-----------------------------------------------\n';
 
-		System.debug(LoggingLevel.FINE, debug);
-
-		return fieldsByKeyType;
-		
-	}
+		return debug;
+    }
 
 	/*
 	 * Method to determine if a given object and field name is valid.
@@ -466,9 +448,11 @@ public with sharing class HelperSchema {
 			Map<String, Schema.SObjectField> fields = HelperSchema.getFieldsForObject(objName, NAME);
 			if (fields.get(sfdcFieldName.toLowerCase()) != null)
 				isValid = true;
-		} catch (Exception e) {
-			isValid = false;
-		}
+        } catch (Exception e) {
+            String message = 'Exception during HelperSchema.isValidSFDCFieldName(' + objName + ',' + sfdcFieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
+            isValid = false;
+        }
 
 		return isValid;
 		
@@ -484,56 +468,16 @@ public with sharing class HelperSchema {
 			List<String> objName = new List<String>();
 			objName.add(sfdcObjectName);
 			Schema.describeSObjects(objName);
-		} catch (Exception e) {
-			isValid = false;
-		}
+        } catch (Exception e) {
+            String message = 'Exception during HelperSchema.isValidSFDCObjectName(' + sfdcObjectName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
+            isValid = false;
+        }
 		
 		return isValid;
 		
     }
     
-    public static void checkListViewCreatable()
-    {
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__API_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Object_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Describe__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'OwnerId');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Columns__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Query__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Id__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
-    }
-
-    public static void checkListViewActionsCreatable()
-    {
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Apex_Class_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Object_Type__c');
-
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action_Parameter__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Field_API_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__List_View_Action__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Placeholder_Text__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Type__c');
-    }
-
-    public static void checkListViewConfigsCreatable()
-    {
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Name');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Simpli_lv__List_View_Object__c');
-
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Config_Parameter__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
-    }
-
     /*
      * Method which given an sobject and a field name will retrieve
      * the value for the field as well as field information. This data
@@ -557,7 +501,7 @@ public with sharing class HelperSchema {
 		String label = '';
 
 		try {
-			System.debug(LoggingLevel.DEBUG, 'HelperMetadata.getValue - obj = ' + obj + ', fieldName = ' + fieldName);
+			System.debug(LoggingLevel.DEBUG, 'HelperSchema.getFieldData - obj = ' + obj + ', fieldName = ' + fieldName);
 
 			fieldName = scrubFieldName(fieldName);
 			
@@ -611,10 +555,55 @@ public with sharing class HelperSchema {
 
 				}
 			}
-		} catch (Exception e) {
+        } catch (Exception e) {
+            String message = 'Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
 			data = new FieldData(fieldName, 'Field Error', Schema.DisplayType.STRING, 'ERROR', obj);
-		}
+        }
+
         return data;
+    }
+
+	public static void checkListViewCreatable()
+    {
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__API_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Object_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Describe__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'OwnerId');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Label__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Columns__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Query__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Id__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
+    }
+
+    public static void checkListViewActionsCreatable()
+    {
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Apex_Class_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Label__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Object_Type__c');
+
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action_Parameter__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Field_API_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Label__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__List_View_Action__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Placeholder_Text__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Type__c');
+    }
+
+    public static void checkListViewConfigsCreatable()
+    {
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Name');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Simpli_lv__List_View_Object__c');
+
+        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Config_Parameter__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
+        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
     }
 
     public class FieldData 
@@ -635,9 +624,62 @@ public with sharing class HelperSchema {
             this.type     = type;
             this.value    = value;
         }
+	}
+	
+	//------------------------------------------------
+	// PRIVATE METHODS BELOW
+	//------------------------------------------------
+
+	private static void initObjectDescribeByPrefix()
+	{
+		objectDescribeByPrefix = new Map<String, Schema.SobjectType>();
+		Map<String,Schema.SobjectType> describe = Schema.getGlobalDescribe();
+		for(String s:describe.keyset())
+			objectDescribeByPrefix.put(describe.get(s).getDescribe().getKeyPrefix(), describe.get(s));
+	}
+    
+    private static void initSObjectSchema(String obj)
+    {
+        initSObjectSchema(obj, true);
     }
 
-    private static String scrubFieldName(String fieldName)
+	/*
+	 * Method to initialize an sobject schema if it hasn't already been initialized. This has a small hack
+	 * in it to detect if an object name being requested needs a domain prefix. If it does then it rerequests
+	 * the schema. Once the schema is returned it places the schema into the map with both the domain prefix
+	 * and without it. This hack ensures that tests will run in both the package dev org and other orgs.
+     * HelperSchema.initSObjectSchema('simpli_lv__List_View__c');
+     * HelperSchema.initSObjectSchema('');
+	 */
+	private static void initSObjectSchema(String obj, Boolean allowRecurring)
+	{
+		//if this object has not been described yet get the data
+		if (objectDescribeByName.get(obj) == null)
+		{
+			System.debug(LoggingLevel.DEBUG, 'Trying to initialize schema with name - ' + obj);
+			Schema.SObjectType objSchema = Schema.getGlobalDescribe().get(obj);
+			if (objSchema != null)
+			{
+				System.debug(LoggingLevel.DEBUG, 'Found schema with name - ' + obj);
+				objectDescribeByName.put(obj, objSchema);
+				objectDescribeFieldsByObjectName.put(obj, objSchema.getDescribe().fields.getMap());
+
+				//if schema contain "simpli_lv" then remove and try again (this is the hack)
+				if (obj.contains(DOMAIN_NAME))
+				{
+					objectDescribeByName.put(obj.removeStart(DOMAIN_NAME), objSchema);
+					objectDescribeFieldsByObjectName.put(obj.removeStart(DOMAIN_NAME), objSchema.getDescribe().fields.getMap());
+				}
+
+			} else if (allowRecurring) {
+				System.debug(LoggingLevel.DEBUG, 'NO schema with name - ' + obj);
+				initSObjectSchema(DOMAIN_NAME + obj, false);
+			}
+		}
+		
+	}
+
+	private static String scrubFieldName(String fieldName)
     {
         //remove whitespace
         fieldName = fieldName.deleteWhitespace();
