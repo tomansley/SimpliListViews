@@ -18,6 +18,7 @@ import updateSingleListView from '@salesforce/apex/ListViewController.updateSing
 import updateObjectListViews from '@salesforce/apex/ListViewController.updateObjectListViews';
 import getUserConfigs from '@salesforce/apex/ListViewController.getUserConfigs';
 import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConfig';
+import isValidListViewDataRequest from '@salesforce/apex/ListViewController.isValidListViewDataRequest';
 
 export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
@@ -35,6 +36,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @api displayRowCount = false;
     @api joinFieldName = '';
     @api displayOrigButton; //this is not used....deprecated.
+    @api useMessageChannel = false;
 
 
     @track userConfigs;                 //holds all user configuration for this named component.
@@ -68,6 +70,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     //for message channel handlers
     subscription = null;
     receivedMessage;
+    isValid;
 
     //we do not have access to any variables in the constructor
     constructor() {
@@ -284,18 +287,31 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             console.log('Record ids from message - ' + this.receivedMessage.recordIds);
             let joinData = JSON.stringify(message);
 
-            getListViewData({objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: joinData })
-                .then(result => {
-                    console.log('List view data retrieval successful'); 
-                    this.listViewData = result;
-                })
-                .catch(error => {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Processing Error',
-                        message: 'There was an error processing the list view. Please see an administrator',
-                        variant: 'error',
-                        mode: 'sticky'
-                    }));
+            isValidListViewDataRequest({objectName: this.selectedObject, joinFieldName: this.joinFieldName, joinData: joinData })
+            .then(result => {
+                console.log('isValidListViewDataRequest returned - ' + result);
+
+                if (result === 'success') {
+
+                    getListViewData({objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: joinData })
+                        .then(result => {
+                            console.log('List view data retrieval successful'); 
+                            this.listViewData = result;
+                        })
+                        .catch(error => {
+                            this.dispatchEvent(new ShowToastEvent({
+                                title: 'Processing Error',
+                                message: 'There was an error processing the list view. Please see an administrator',
+                                variant: 'error',
+                                mode: 'sticky'
+                            }));
+                    });
+    
+                }
+    
+            })
+            .catch(error => {
+                console.log('Error');
             });
 
         } else {
@@ -320,47 +336,49 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             for(let i = 0; i < selectedRows.length; i++) {
                 if(selectedRows[i].type === 'checkbox') {
                     selectedRows[i].checked = event.target.checked;
+                }
+            }
+        }
 
-                    if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
+        //if we are sending the selection to other components.
+        if (this.useMessageChannel === true) {
+
+            console.log('Sending to message channel');
+            //run through all the checkbox components again now that they have been set
+            var recordIds = '';        
+
+            for(let i = 0; i < selectedRows.length; i++) {
+                if(selectedRows[i].type === 'checkbox') {
+
+                    if (selectedRows[i].checked === true)
                     {
-                        selectedRecords.add(selectedRows[i].value);
-                        this.selectedRecordCount++;
+                        if (selectedRows[i].value != 'all') {
+                            recordIds = recordIds + selectedRows[i].value + ',';
+                        }
                     }
-    
+
                 }
             }
-        }
 
-        //run through all the checkbox components again now that they have been set
-        var recordIds = '';        
-
-        for(let i = 0; i < selectedRows.length; i++) {
-            if(selectedRows[i].type === 'checkbox') {
-
-                if (selectedRows[i].checked === true)
-                {
-                    recordIds = recordIds + selectedRows[i].value + ',';
-                }
-
+            if (recordIds.length > 0) {
+                //remove the last comma if there is one.
+                recordIds = recordIds.substring(0, recordIds.lastIndexOf(','));
             }
+
+            //publish the selected rows so that other components can use them if desired.
+            //we do this regardless of whether there are records Ids or not as the user
+            //may have clicked a single row and then unclicked. We need to send a message
+            //about that deselected row.
+            const message = {
+                recordIds: recordIds,
+                objectType: this.selectedObject,
+                listViewName: this.mainTitle
+            };
+            publish(this.messageContext, LISTVIEW_MC, message);        
+        
+        } else {
+            console.log('NOT sending to message channel');
         }
-
-        if (recordIds.length > 0) {
-            //remove the last comma if there is one.
-            recordIds = recordIds.substring(0, recordIds.lastIndexOf(','));
-        }
-
-        //publish the selected rows so that other components can use them if desired.
-        //we do this regardless of whether there are records Ids or not as the user
-        //may have clicked a single row and then unclicked. We need to send a message
-        //about that deselected row.
-        const message = {
-            recordIds: recordIds,
-            objectType: this.selectedObject,
-            listViewName: this.mainTitle
-        };
-        publish(this.messageContext, LISTVIEW_MC, message);        
-
     }
 
     //called when a user is selecting a list view and they have changed the object of the list view.
