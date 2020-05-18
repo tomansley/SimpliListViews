@@ -117,7 +117,8 @@ public class HelperMetadataAPI
     {
         ListViewMetadataAPIService.MetadataPort service = new ListViewMetadataAPIService.MetadataPort();
         service.SessionHeader = new ListViewMetadataAPIService.SessionHeader_element();
-        service.SessionHeader.sessionId = UserInfo.getSessionId();
+        if (!Test.isRunningTest())
+            service.SessionHeader.sessionId = HelperREST.getSessionIdFromVFPage(Page.SessionId);
         return service;
     }    
 
