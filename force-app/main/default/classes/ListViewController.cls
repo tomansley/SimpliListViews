@@ -7,10 +7,11 @@ public with sharing class ListViewController
     @AuraEnabled(cacheable=true)
     public static List<SelectOption> getListViewObjects(String includedObjects, String excludedObjects)
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewObjects(' + includedObjects + ', ' + excludedObjects + ')');
         List<SelectOption> configListOptions = new List<SelectOption>();
 
-        Set<String> excObjs = HelperString.getSetFromString(includedObjects, ',');
-        Set<String> incObjs = HelperString.getSetFromString(excludedObjects, ',');
+        Set<String> excObjs = HelperString.getSetFromString(excludedObjects, ',');
+        Set<String> incObjs = HelperString.getSetFromString(includedObjects, ',');
 
         Map<String, String> listviewObjects = ListViewHelper.getListViewObjects(incObjs, excObjs, false);
 
@@ -25,7 +26,7 @@ public with sharing class ListViewController
     @AuraEnabled(cacheable=true)
     public static List<SelectOption> getObjectListViews(String objectName)
     {
-        System.debug(LoggingLevel.DEBUG, 'STARTING getObjectListViews - '+ objectName);
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getObjectListViews(' + objectName + ')');
 
         Map<String, List_View__c> listviews = ListViewHelper.getListViewsByObject(objectName);
 
@@ -44,6 +45,7 @@ public with sharing class ListViewController
     @AuraEnabled(cacheable=true)
     public static Map<String, String> getListViewConfig(String objectType, String listViewName)
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfig(' + objectType + ', ' + listViewName + ')');
         Map<String, String> configParams = new Map<String, String>();
 
         List<List_View_Config__c> configs = ListViewConfigHelper.getListViewConfig(objectType, listViewName);
@@ -61,6 +63,7 @@ public with sharing class ListViewController
     @AuraEnabled
     public static Map<String, String> getUserConfigs(String compName)
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getUserConfigs(' + compName + ')');
         Map<String, String> userConfigs = new Map<String, String>();
 
         Map<String, List_View_User_Config__c> configs = ListViewUserConfigHelper.getCurrentUserCompConfig(compName);
@@ -74,6 +77,7 @@ public with sharing class ListViewController
     @AuraEnabled
     public static String updateUserConfig(String compName, String configName, String value)
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateUserConfig(' + compName + ', ' + configName + ',' + value + ')');
         try {
             ListViewUserConfigHelper.updateCurrentUserConfigValue(compName, configName, value);
         } catch (Exception e) {
@@ -87,6 +91,7 @@ public with sharing class ListViewController
     @AuraEnabled
     public static String updateObjectListViews(String objectType)
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateObjectListViews(' + objectType + ')');
         //update the list view
         Boolean result = ListViewHelper.updateListViews(objectType);
 
@@ -96,6 +101,7 @@ public with sharing class ListViewController
     @AuraEnabled
     public static String updateSingleListView(String objectType, String listViewName)
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateSingleListView(' + objectType + ', ' + listViewName + ')');
         //get the listviews with object and name
         Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectType, listViewName);
 
@@ -115,6 +121,7 @@ public with sharing class ListViewController
 	@AuraEnabled
 	public static String updateChangedListViews()
 	{
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateChangedListViews()');
 
         //try get the last changed CORE list view
         Map<Id, ListView> changedListViews = ListViewHelper.getChangedListViews(1);
@@ -148,6 +155,7 @@ public with sharing class ListViewController
 	@AuraEnabled
 	public static String updateAllListViews()
 	{
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateAllListViews()');
         Simpli_lv.ListViewProcessBatch b = new Simpli_lv.ListViewProcessBatch();
         b.execute(null);
 	
@@ -157,6 +165,7 @@ public with sharing class ListViewController
     @AuraEnabled(cacheable=true)
     public static List<SelectOption> getListViewsActions(String objectType)
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewsActions(' + objectType + ')');
         List<SelectOption> actionsOptions = new List<SelectOption>();
 
         Map<String, List_View_Action__c> actions = ListViewActionHelper.getListViewActionsByObject(objectType);
@@ -172,7 +181,8 @@ public with sharing class ListViewController
     @AuraEnabled(cacheable=true)
     public static ActionWrapper getListViewAction(String actionName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Action name - ' + actionName);
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateSingleListView(' + actionName + ')');
+
         ActionWrapper wrapper = null;
         if (actionName != '')
         {
@@ -196,7 +206,7 @@ public with sharing class ListViewController
     @AuraEnabled
     public static String isValidListViewDataRequest(String objectName, String joinFieldName, String joinData)
     {
-        System.debug(LoggingLevel.DEBUG, 'Inside isValidListViewDataRequest');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.isValidListViewDataRequest(' + objectName + ', ' + joinFieldName + ',' + joinData + ')');
         String result = 'success';
 
         //if we have join information then get the record Ids
@@ -237,12 +247,12 @@ public with sharing class ListViewController
     }
 
     /*
-       TEST - SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
+       
      */
     @AuraEnabled(cacheable=true)
     public static RowsWrapper getListViewData(String objectName, String listViewName, String sortData, String joinFieldName, String joinData)
     {
-        System.debug(LoggingLevel.DEBUG, 'STARTING getListViewData - ' + objectName + ' : ' + listViewName + ' : ' + sortData + ' : ' + joinFieldName + ' : ' + joinData);
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ')');
         
         //if we have join information then get the record Ids
         Set<String> joinRecordIds = null;
@@ -331,9 +341,7 @@ public with sharing class ListViewController
     @AuraEnabled
     public static String processAction(String actionKey, String dataIds, String valuesMap)
     {
-        System.debug(LoggingLevel.DEBUG, 'Action Key - ' + actionKey);
-        System.debug(LoggingLevel.DEBUG, 'Data Ids   - ' + dataIds);
-        System.debug(LoggingLevel.DEBUG, 'Values Map - ' + valuesMap);
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.processAction(' + actionKey + ', ' + dataIds + ',' + valuesMap + ')');
     
         String responseStr = ListViewAction.RESULT_OK;
         List_View_Action__c action = null;
@@ -394,6 +402,7 @@ public with sharing class ListViewController
         */
     private static RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData)
     {
+        System.debug('Starting ListViewController.handleRowsToWrapper - ' + System.now().getTime());
 
         Map<String, ListViewHelper.ColumnSortData> sortDataByFieldName = new Map<String, ListViewHelper.ColumnSortData>();
         for (ListViewHelper.ColumnSortData columnData: sortData)
@@ -433,6 +442,8 @@ public with sharing class ListViewController
             
         }
 
+        System.debug('Checkpoint 1 ListViewController.handleRowsToWrapper - ' + System.now().getTime());
+
         //set the CUSTOM COLUMN meta data into the rows wrapper
         if (lvConfig.get('AdditionalFields') != null && dataRows.size() > 0)
         {
@@ -470,6 +481,8 @@ public with sharing class ListViewController
 
             }
         }
+
+        System.debug('Checkpoint 2 ListViewController.handleRowsToWrapper - ' + System.now().getTime());
 
         //for each row of data
         for (SObject row: dataRows)
@@ -515,6 +528,7 @@ public with sharing class ListViewController
             }
         }
 
+        System.debug('Ending ListViewController.handleRowsToWrapper - ' + System.now().getTime());
         return rows;
     }
 

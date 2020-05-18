@@ -2,7 +2,7 @@ public with sharing class HelperSchema {
 
 	public static Map<String, Schema.SObjectType> objectDescribeByName = new Map<String, Schema.SObjectType>();
 	public static Map<String, Schema.SObjectType> objectDescribeByPrefix = new Map<String, Schema.SObjectType>();
-	public static Map<String, Map<String, Schema.SObjectField>> objectDescribeFieldsByObjectName = new Map<String, Map<String, Schema.SObjectField>>();
+	public static Map<String, Map<String, Schema.SObjectField>> objectDescribeFieldsByObjectNameAndKey = new Map<String, Map<String, Schema.SObjectField>>();
 
 	public static final String LABEL = 'label';
     public static final String NAME = 'name';
@@ -326,8 +326,6 @@ public with sharing class HelperSchema {
 	 */
 	public static String getObjectTypeFromId(Id objId)
 	{
-		System.debug(LoggingLevel.DEBUG, 'getObjectTypeFromId(' + objId + ')');
-		System.debug(LoggingLevel.DEBUG, 'objectDescribeByPrefix.size - ' + objectDescribeByPrefix.size());
 		if (objectDescribeByPrefix.isEmpty())
 			initObjectDescribeByPrefix();
 
@@ -382,10 +380,13 @@ public with sharing class HelperSchema {
 	 */
 	public static Schema.SObjectField getFieldByKey(String obj, String key, String keyType)
 	{
-		
+
+        //initialize if necessary
+		initSObjectSchema(obj);
+
 		//get the fields of the object in question
-		Map<String, Schema.SObjectField> fieldsByKeyType = getFieldsForObject(obj, keyType);
-		
+		Map<String, Schema.SObjectField> fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
+
 		//get the field by key
 		Schema.SObjectField field = fieldsByKeyType.get(key.toLowerCase());
 
@@ -400,27 +401,11 @@ public with sharing class HelperSchema {
 	 */
 	public static Map<String, Schema.SObjectField> getFieldsForObject(String obj, String keyType)
 	{
-		Map<String, Schema.SObjectField> fieldsByKeyType = new Map<String, Schema.SObjectField>();
-		
 		//initialize if necessary
 		initSObjectSchema(obj);
 		
-		//get the fields of the object in question
-		List<Schema.SObjectField> fields = objectDescribeFieldsByObjectName.get(obj).values();
-		
-		//create a map of fields by name
-		for (Schema.SObjectField objField: fields)
-		{
-			if (keyType == NAME)
-				fieldsByKeyType.put(objField.getDescribe().getName().toLowerCase(), objField);
-			else if (keyType == LABEL)
-				fieldsByKeyType.put(objField.getDescribe().getLabel().toLowerCase(), objField);
-		}
-		
-		System.debug(LoggingLevel.DEBUG, getObjectFieldDebug(obj, keyType, fieldsByKeyType));
+		return objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
 
-		return fieldsByKeyType;
-		
     }
     
     /*
@@ -557,8 +542,9 @@ public with sharing class HelperSchema {
 			}
         } catch (Exception e) {
             String message = 'Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            System.debug(LoggingLevel.ERROR, 'ERROR - ' + message);
             ListViewErrorHelper.createUsageError(message); 
-			data = new FieldData(fieldName, 'Field Error', Schema.DisplayType.STRING, 'ERROR', obj);
+			data = null;
         }
 
         return data;
@@ -661,14 +647,28 @@ public with sharing class HelperSchema {
 			if (objSchema != null)
 			{
 				System.debug(LoggingLevel.DEBUG, 'Found schema with name - ' + obj);
-				objectDescribeByName.put(obj, objSchema);
-				objectDescribeFieldsByObjectName.put(obj, objSchema.getDescribe().fields.getMap());
+                objectDescribeByName.put(obj, objSchema);
+                
+                List<Schema.SObjectField> fields = objSchema.getDescribe().fields.getMap().values();
+
+                Map<String,Schema.SObjectField> fieldsByLabel = new Map<String,Schema.SObjectField>();
+                Map<String,Schema.SObjectField> fieldsByName = new Map<String,Schema.SObjectField>();
+
+                for (Schema.SObjectField objField: fields)
+                {
+                    fieldsByName.put(objField.getDescribe().getName().toLowerCase(), objField);
+                    fieldsByLabel.put(objField.getDescribe().getLabel().toLowerCase(), objField);
+                }
+				objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + LABEL, fieldsByLabel);
+				objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + NAME, fieldsByName);
 
 				//if schema contain "simpli_lv" then remove and try again (this is the hack)
 				if (obj.contains(DOMAIN_NAME))
 				{
 					objectDescribeByName.put(obj.removeStart(DOMAIN_NAME), objSchema);
-					objectDescribeFieldsByObjectName.put(obj.removeStart(DOMAIN_NAME), objSchema.getDescribe().fields.getMap());
+    
+                    objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + LABEL, fieldsByLabel);
+                    objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + NAME, fieldsByName);
 				}
 
 			} else if (allowRecurring) {

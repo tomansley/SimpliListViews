@@ -181,6 +181,8 @@ global with sharing class ListViewHelper {
     */
     public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs, Boolean fresh)
     {
+        System.debug(LoggingLevel.DEBUG, 'ListViewHelper.getListViewObjects(' + pageWideIncObjs + ', ' + pageWideExcObjs + ', ' + fresh + ')');
+
         Map<String, String> mappedListviewObjects = new Map<String, String>();
         Map<String, String> listViewObjects =  null;
 
@@ -232,10 +234,7 @@ global with sharing class ListViewHelper {
                 //if there are ORG WIDE included objects then only include those.
                 if (orgWideIncObjs.isEmpty() || orgWideIncObjs.contains(objAPIName))
                 {
-
-                    //make sure that the user has access to the object itself.
-                    if (HelperSchema.checkObjectAccessible(objAPIName, false))
-                        mappedListviewObjects.put(objAPIName, listViewObjects.get(objAPIName));
+                    mappedListviewObjects.put(objAPIName, listViewObjects.get(objAPIName));
                 }
             }
         }
@@ -287,7 +286,12 @@ global with sharing class ListViewHelper {
      */
     public static Map<String, List_View__c> getListViewsByObject(String objAPIName)
     {
+
         System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
+
+        //make sure that the user has access to the object itself.
+        if (!HelperSchema.checkObjectAccessible(objAPIName, false))
+            return new Map<String, List_View__c>();
 
         //get list view data
         List<List_View__c> listviews = [SELECT Label__c,
@@ -382,7 +386,10 @@ global with sharing class ListViewHelper {
         debug += 'joinRecordIds      - ' + joinRecordIds + '\n\n';
         System.debug(LoggingLevel.DEBUG, debug);
 
-        //---------------------------------------------------
+        //check the object is accessible by this user
+        HelperSchema.checkObjectAccessible(listview.Object_Name__c);
+
+            //---------------------------------------------------
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
         String query = listview.Core_ListView_Query__c;
@@ -402,7 +409,17 @@ global with sharing class ListViewHelper {
         // Update all additional fields on the SELECT statement
         //------------------------------------------------------
         if (lvConfig.get('AdditionalFields') != null)
+        {
+            List<String> allFields = lvConfig.get('AdditionalFields').split(',');
+            for (String field: allFields)
+            {
+                //do security validation on additional fields. If the field is a lookup the security is performed later
+                if (!field.contains('.'))
+                    HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field);
+            }
+
             selectStr += ', ' + lvConfig.get('AdditionalFields');
+        }
 
         //------------------------------------------------------
         // Handle all changes to the WHERE statement
@@ -456,17 +473,6 @@ global with sharing class ListViewHelper {
                 limitStr += '150';
         }
         
-
-        //check everything on the SOQL statement is accessible by this user
-        HelperSchema.checkObjectAccessible(listview.Object_Name__c);
-        List<String> allFields = selectStr.split(',');
-        for (String field: allFields)
-        {
-            //do some security accessibility validation. If the field is a lookup the security is performed later
-            if (!field.contains('.'))
-                HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field);
-        }
-
         //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------

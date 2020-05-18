@@ -202,6 +202,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     wiredListViewObjects({ error, data }) {
         if (data) { 
             console.log('List view objects retrieval successful'); 
+            console.log('Included objects - ' + this.includedObjects); 
+            console.log('Excluded objects - ' + this.excludedObjects); 
+            console.log('List view objects retrieval successful'); 
             this.objectList = data; 
             this.error = undefined; 
             this.spinner = false;

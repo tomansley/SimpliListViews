@@ -3,7 +3,8 @@ public with sharing class ListViewErrorHelper {
     /*
      * Method to create a usage error record which can be used for debugging purposes.
      */
-    public static List_View_Error__c createUsageError(String message) 
+    @future
+    public static void createUsageError(String message) 
     {
         List_View_Error__c error   = new List_View_Error__c();
         error.Running_User__c  = UserInfo.getUserId();
@@ -13,6 +14,5 @@ public with sharing class ListViewErrorHelper {
 
         System.debug(LoggingLevel.ERROR, 'Error record created - ' + error);
 
-        return error;
     }
 }
