@@ -66,6 +66,8 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     //for handling sorting
     @track columnSortData = new Map();
     @track columnSortDataStr = '';
+
+    @track isInit = true;
   
     //for message channel handlers
     subscription = null;
@@ -206,7 +208,13 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             console.log('Excluded objects - ' + this.excludedObjects); 
             console.log('List view objects retrieval successful'); 
             this.objectList = data; 
-            this.error = undefined; 
+            this.error = undefined;
+            
+            if (this.objectList === undefined || this.objectList.length === 0)
+            {
+                this.isInit = false;
+            }
+
             this.spinner = false;
         } else if (error) { 
             this.error = error; 
@@ -479,7 +487,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         console.log('selectedListView - ' + this.selectedListView);
 
         //if we have selected a specific list view to update
-        if (this.selectedObject != undefined && this.selectedListView != undefined)
+        if (this.selectedObject != undefined && this.selectedListView != undefined && this.isInit === true)
         {
             console.log('Updating SINGLE list view');
 
@@ -521,7 +529,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
         
         //if we have selected an objects list views to update
-        else if (this.selectedObject != undefined && this.selectedListView === undefined)
+        else if (this.selectedObject != undefined && this.selectedListView === undefined && this.isInit === true)
         {
             console.log('Updating OBJECT list views');
 
@@ -563,7 +571,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
 
         //if we have selected ALL list views to update
-        else if (this.selectedObject === undefined && this.selectedListView === undefined)
+        else if (this.selectedObject === undefined && this.selectedListView === undefined ||  this.isInit === false)
         {
             console.log('Updating ALL list views');
 

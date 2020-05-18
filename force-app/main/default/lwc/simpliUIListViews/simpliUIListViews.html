@@ -3,6 +3,27 @@
         <lightning-spinner alternative-text="Loading"></lightning-spinner>
     </template>
 
+    <template if:false={isInit}>
+        <lightning-card>
+            <div class="slds-m-around_medium">
+                <p>
+                    <lightning-icon icon-name="standard:first_non_empty" 
+                                    alternative-text="List Views Not Initialized" 
+                                    title="List Views Not Initialized">
+                    </lightning-icon>&nbsp;&nbsp;
+                    List views must be initialized. Click here 
+                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
+                        size="medium" 
+                        icon-name="action:new_task" 
+                        onclick={handleProcessListViewsButtonClick}>
+                    </lightning-button-icon>
+                   to process the list views.
+                </p>
+            </div>
+        </lightning-card>
+        <br/>
+    </template>
+
     <lightning-card>
         <template if:true={hasMainTitle}>
             <div slot="title">
