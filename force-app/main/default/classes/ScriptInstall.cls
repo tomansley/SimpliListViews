@@ -4,17 +4,23 @@ global with sharing class ScriptInstall implements InstallHandler {
 	{
 		if(context.previousVersion() == null)
 		{
-			//insert core configuration
-			ListViewHelper.insertCoreConfiguration();
-			
-			String schedStr = HelperDate.getBatchJobScheduleString(HelperDate.MINUTE, 1);
-			
-			//run the batch job once to have all list views brought in
-			if (!Test.isRunningTest())
-			{
-				System.schedule('ListView Initial Load', schedStr, new ListViewProcessBatch());
-			}
-		
+            try {
+                //insert core configuration
+                ListViewHelper.insertCoreConfiguration();
+                
+                String schedStr = HelperDate.getBatchJobScheduleString(HelperDate.MINUTE, 2);
+                
+                //run the batch job once to have all list views brought in
+                if (!Test.isRunningTest())
+                {
+                    System.schedule('ListView Initial Load - ' + schedStr, schedStr, new ListViewProcessBatch());
+                    //Database.executeBatch(new ListViewProcessBatch());
+                }
+            } catch (Exception e) {
+                String message = 'Exception during ScriptInstall.onInstall() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                ListViewErrorHelper.createUsageError(message); 
+            }
+            
 		} else if(context.previousVersion().compareTo(new Version(1,0)) == 0) 
 		{
 		}
