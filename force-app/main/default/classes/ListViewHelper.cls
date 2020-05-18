@@ -470,7 +470,7 @@ global with sharing class ListViewHelper {
             
             //otherwise use 250
             else
-                limitStr += '150';
+                limitStr += '250';
         }
         
         //------------------------------------------------------
