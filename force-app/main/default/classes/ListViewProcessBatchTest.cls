@@ -4,6 +4,7 @@ private class ListViewProcessBatchTest {
     @testSetup
     private static void createSampleData()
     {
+        ListViewHelper.insertCoreConfiguration();
     }
 
     static testMethod void listViewProcessBatchTest() {

@@ -57,6 +57,10 @@ public with sharing class HelperTest {
 		
 		insert param;
 
+		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'List View Objects'];
+		orgWideConfig.Parameter_Value__c = '{"Account":"Account"}';
+		update orgWideConfig;
+
 		return simpliListViews;
 	}
 
