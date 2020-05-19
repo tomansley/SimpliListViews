@@ -1,31 +1,45 @@
 <template>
 
-    <template if:false={isInit}>
-        <lightning-card>
-                <template if:false={showProgress}>
-                    <div style="padding-left: 10px;">
-                        <lightning-icon icon-name="standard:first_non_empty" 
-                                        alternative-text="List Views Not Initialized" 
-                                        title="List Views Not Initialized">
-                        </lightning-icon>&nbsp;&nbsp;
-                        List views must be initialized. Click  
-                        <lightning-button-icon style="padding: 10px;" title="Process List Views" 
-                            size="small" 
-                            icon-name="action:new_task" 
-                            onclick={handleProcessListViewsButtonClick}>
-                        </lightning-button-icon>
-                        to process the list views.
-                    </div>
+    <lightning-card>
+        <template if:false={showProgress}>  
+            <div style="padding-left: 10px;">
+                <template if:false={isInit}>
+                    <lightning-icon icon-name="standard:first_non_empty" 
+                                    alternative-text="List Views Not Initialized" 
+                                    title="List Views Not Initialized">
+                    </lightning-icon>&nbsp;&nbsp;
+                    List views need to be initialized. Click  
+                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
+                        size="small" 
+                        icon-name="action:new_task" 
+                        onclick={handleProcessListViewsButtonClick}>
+                    </lightning-button-icon>
+                    to process the list views.
                 </template>
-                <template if:true={showProgress}>
-                    <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
-                                                               working-text="List views initializing..."
-                                                               complete-text="List views have been initialized!">
-                    </c-simpli-u-i-list-views-init-progress-bar>
+                <template if:true={isInit}>    
+                    <lightning-icon icon-name="standard:task2" 
+                                    alternative-text="List Views Initialized" 
+                                    title="List Views Initialized">
+                    </lightning-icon>&nbsp;&nbsp;
+                    List views are initialized. But, if they need to be reprocessed click  
+                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
+                        size="small" 
+                        icon-name="action:new_task" 
+                        onclick={handleProcessListViewsButtonClick}>
+                    </lightning-button-icon>
+                    to process them again.
                 </template>
-        </lightning-card>
-        <br/>
-    </template>
+            </div>
+        </template>
+        <template if:true={showProgress}>
+            <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
+                                                        working-text="List views initializing..."
+                                                        complete-text="List views have been initialized!">
+            </c-simpli-u-i-list-views-init-progress-bar>
+        </template>
+
+    </lightning-card>
+    <br/>
     <lightning-card title="Feature Overview" icon-name="standard:announcement">
         <div class="slds-m-around_medium">
             <div style="padding-left: 20px;">
