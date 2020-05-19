@@ -67,15 +67,15 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track columnSortData = new Map();
     @track columnSortDataStr = '';
 
+    //for tracking list view init process
     @track isInit = true;               //indicates whether the list views have been initialized for the first time or not.
-    @track progress = 0;                //indicates the reload progress after pressing the initialize button.
     @track showProgress = false;        //indicates whether the progress bar should be displayed
+    @track batchId = '';                //indicates the batch Id of the list view batch process.
   
     //for message channel handlers
     subscription = null;
     receivedMessage;
     isValid;
-    @track batchId = '';
 
     //we do not have access to any variables in the constructor
     constructor() {
