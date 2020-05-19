@@ -1,0 +1,24 @@
+<template>
+    <div style="padding-left: 10px; padding-right: 10px;">
+        <template if:false={hasCompleted}>
+            <lightning-icon icon-name="standard:outcome" 
+                            alternative-text={workingText} 
+                            title={workingText}>
+            </lightning-icon>&nbsp;&nbsp;
+            {workingText}
+            <br/><br/>
+            <div>
+                <lightning-progress-bar value={progress}></lightning-progress-bar>
+            </div>
+        </template>
+        <template if:true={hasCompleted}>
+            <lightning-icon icon-name="standard:task2" 
+                            alternative-text={completeText} 
+                            title={completeText}>
+            </lightning-icon>&nbsp;&nbsp;
+            {completeText}
+        </template>
+
+    </div>
+
+</template>

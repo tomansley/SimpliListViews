@@ -67,12 +67,15 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track columnSortData = new Map();
     @track columnSortDataStr = '';
 
-    @track isInit = true;
+    @track isInit = true;               //indicates whether the list views have been initialized for the first time or not.
+    @track progress = 0;                //indicates the reload progress after pressing the initialize button.
+    @track showProgress = false;        //indicates whether the progress bar should be displayed
   
     //for message channel handlers
     subscription = null;
     receivedMessage;
     isValid;
+    @track batchId = '';
 
     //we do not have access to any variables in the constructor
     constructor() {
@@ -86,7 +89,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             .catch(error => {
             });
     }
-
+    
     //we do have access to variables in this method.
     renderedCallback() {
 
@@ -501,7 +504,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                             title: 'List View Updated Successfully',
                             message: 'List view has been updated successfully. Refresh entire page to see the changes.',
                             variant: 'success',
-                            mode: 'sticky'
+                            mode: 'dismissable'
                         }));
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
 
@@ -543,7 +546,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                             title: 'List Views Updated Successfully',
                             message: 'List views have been updated successfully. Refresh entire page to see the changes.',
                             variant: 'success',
-                            mode: 'sticky'
+                            mode: 'dismissable'
                         }));
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
 
@@ -579,25 +582,29 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                 .then(result => {
 
                     //if we have an error then send an ERROR toast.
-                    if (result === 'success')
+                    if (result === 'failed')
                     {
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'List View Processing',
-                            message: 'List view processing has started and should be complete in a few minutes. Refresh to see the changes.',
-                            variant: 'success',
-                            mode: 'sticky'
-                        }));
-                        this.dispatchEvent(new CustomEvent('processlistviewclick'));
-
-                    //else send a SUCCESS toast.
-                    } else {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'Processing Error',
                             message: 'There was an error processing the list views. Please see an administrator',
                             variant: 'error',
                             mode: 'sticky'
                         }));
-                
+
+                    //else send a SUCCESS toast.
+                    } else {
+
+                        this.batchId = result;
+
+                        this.showProgress = true;
+
+                        this.dispatchEvent(new ShowToastEvent({
+                            title: 'List View Processing',
+                            message: 'List view processing has started and should be complete in a few minutes. Refresh to see the changes.',
+                            variant: 'success',
+                            mode: 'dismissable'
+                        }));
+                        this.dispatchEvent(new CustomEvent('processlistviewclick'));
                     }
                 })
                 .catch(error => {

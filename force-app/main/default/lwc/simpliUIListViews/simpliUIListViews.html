@@ -5,117 +5,125 @@
 
     <template if:false={isInit}>
         <lightning-card>
-            <div class="slds-m-around_medium">
-                <p>
-                    <lightning-icon icon-name="standard:first_non_empty" 
-                                    alternative-text="List Views Not Initialized" 
-                                    title="List Views Not Initialized">
-                    </lightning-icon>&nbsp;&nbsp;
-                    List views must be initialized. Click here 
-                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
-                        size="medium" 
-                        icon-name="action:new_task" 
-                        onclick={handleProcessListViewsButtonClick}>
-                    </lightning-button-icon>
-                   to process the list views.
-                </p>
-            </div>
+                <template if:false={showProgress}>
+                    <div style="padding-left: 10px;">
+                        <lightning-icon icon-name="standard:first_non_empty" 
+                                        alternative-text="List Views Not Initialized" 
+                                        title="List Views Not Initialized">
+                        </lightning-icon>&nbsp;&nbsp;
+                        List views must be initialized. Click  
+                        <lightning-button-icon style="padding: 10px;" title="Process List Views" 
+                            size="small" 
+                            icon-name="action:new_task" 
+                            onclick={handleProcessListViewsButtonClick}>
+                        </lightning-button-icon>
+                        to process the list views.
+                    </div>
+                </template>
+                <template if:true={showProgress}>
+                    <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
+                                                               working-text="List views initializing..."
+                                                               complete-text="List views have been initialized!">
+                    </c-simpli-u-i-list-views-init-progress-bar>
+                </template>
         </lightning-card>
         <br/>
     </template>
 
-    <lightning-card>
-        <template if:true={hasMainTitle}>
-            <div slot="title">
-                {mainTitle}
-            </div>
-        </template>
-        
-        <lightning-layout>
-            <lightning-layout-item padding="horizontal-small" style="width: 20%;">
-                <lightning-combobox placeholder="Select Object" 
-                                    label="Object" 
-                                    value={selectedObject} 
-                                    onchange={handleObjectChange} 
-                                    options={objectList}
-                                    variant=label-hidden>
-                </lightning-combobox>                        
-            </lightning-layout-item>
-            <template if:true={selectedObject}>
-                <lightning-layout-item style="width: 20%;">
-                    <lightning-combobox placeholder="Select List View" 
-                                        label="List View" 
-                                        value={selectedListView} 
-                                        onchange={handleListViewSelected} 
-                                        options={listViewList}
+    <template if:true={isInit}>
+        <lightning-card>
+            <template if:true={hasMainTitle}>
+                <div slot="title">
+                    {mainTitle}
+                </div>
+            </template>
+            
+            <lightning-layout>
+                <lightning-layout-item padding="horizontal-small" style="width: 20%;">
+                    <lightning-combobox placeholder="Select Object" 
+                                        label="Object" 
+                                        value={selectedObject} 
+                                        onchange={handleObjectChange} 
+                                        options={objectList}
                                         variant=label-hidden>
-                    </lightning-combobox>
+                    </lightning-combobox>                        
                 </lightning-layout-item>
-            </template>
-            <template if:true={displayURL}>
-                <template if:true={listViewData}>
-                    <lightning-layout-item padding="horizontal-small">
-                        <a href={listViewData.coreListViewURL} target="_blank">
-                            <lightning-button-icon title="Go to the original SFDC list view." 
-                                                    size="medium" 
-                                                    icon-name="utility:picklist_choice">
-                            </lightning-button-icon></a>
+                <template if:true={selectedObject}>
+                    <lightning-layout-item style="width: 20%;">
+                        <lightning-combobox placeholder="Select List View" 
+                                            label="List View" 
+                                            value={selectedListView} 
+                                            onchange={handleListViewSelected} 
+                                            options={listViewList}
+                                            variant=label-hidden>
+                        </lightning-combobox>
                     </lightning-layout-item>
                 </template>
-            </template>
-            <template if:true={listViewData}>
-                <lightning-layout-item padding="horizontal-small">
-                    <template if:false={isPinned}>
-                        <lightning-button-icon title="Pin this list view." 
-                                                size="medium" 
-                                                icon-name="utility:pin" 
-                                                onclick={handlePinningClick}>
-                        </lightning-button-icon>
-                    </template>
-                    <template if:true={isPinned}>
-                        <lightning-button-icon title="Unpin this list view." 
-                                                size="medium" 
-                                                icon-name="utility:pinned" 
-                                                onclick={handleUnpinningClick}>
-                        </lightning-button-icon>
-                    </template>
-                </lightning-layout-item>
-            </template>
-            <template if:true={displayRowCount}>
-                <template if:true={listViewData}>
-                    <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                        Rows: {listViewData.rowCount}
-                    </lightning-layout-item>
-                </template>
-            </template>
-            <lightning-layout-item alignment-bump="left"  padding="horizontal-small">
-                <lightning-layout>
-                    <template if:true={displayActions}>
-                        <template if:true={listViewData}>
-                            <lightning-layout-item padding="horizontal-small">
-                                <lightning-combobox placeholder="Select an Action"
-                                                label="Action" 
-                                                value={selectedAction} 
-                                                onchange={handleActionSelect} 
-                                                options={objectActionList}
-                                                variant=label-hidden>
-                                </lightning-combobox>
-                            </lightning-layout-item>
-                        </template>
-                    </template>
-                    <template if:true={displayReprocess}>
-                        <lightning-layout-item>
-                            <lightning-button-icon title="List view not showing up or refreshing? Reprocess by clicking here." 
-                                                size="medium" 
-                                                icon-name="action:new_task" 
-                                                onclick={handleProcessListViewsButtonClick}>
-                            </lightning-button-icon>
+                <template if:true={displayURL}>
+                    <template if:true={listViewData}>
+                        <lightning-layout-item padding="horizontal-small">
+                            <a href={listViewData.coreListViewURL} target="_blank">
+                                <lightning-button-icon title="Go to the original SFDC list view." 
+                                                        size="medium" 
+                                                        icon-name="utility:picklist_choice">
+                                </lightning-button-icon></a>
                         </lightning-layout-item>
                     </template>
-                </lightning-layout>
-            </lightning-layout-item>
-        </lightning-layout>
-    </lightning-card>
+                </template>
+                <template if:true={listViewData}>
+                    <lightning-layout-item padding="horizontal-small">
+                        <template if:false={isPinned}>
+                            <lightning-button-icon title="Pin this list view." 
+                                                    size="medium" 
+                                                    icon-name="utility:pin" 
+                                                    onclick={handlePinningClick}>
+                            </lightning-button-icon>
+                        </template>
+                        <template if:true={isPinned}>
+                            <lightning-button-icon title="Unpin this list view." 
+                                                    size="medium" 
+                                                    icon-name="utility:pinned" 
+                                                    onclick={handleUnpinningClick}>
+                            </lightning-button-icon>
+                        </template>
+                    </lightning-layout-item>
+                </template>
+                <template if:true={displayRowCount}>
+                    <template if:true={listViewData}>
+                        <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                            Rows: {listViewData.rowCount}
+                        </lightning-layout-item>
+                    </template>
+                </template>
+                <lightning-layout-item alignment-bump="left"  padding="horizontal-small">
+                    <lightning-layout>
+                        <template if:true={displayActions}>
+                            <template if:true={listViewData}>
+                                <lightning-layout-item padding="horizontal-small">
+                                    <lightning-combobox placeholder="Select an Action"
+                                                    label="Action" 
+                                                    value={selectedAction} 
+                                                    onchange={handleActionSelect} 
+                                                    options={objectActionList}
+                                                    variant=label-hidden>
+                                    </lightning-combobox>
+                                </lightning-layout-item>
+                            </template>
+                        </template>
+                        <template if:true={displayReprocess}>
+                            <lightning-layout-item>
+                                <lightning-button-icon title="List view not showing up or refreshing? Reprocess by clicking here." 
+                                                    size="medium" 
+                                                    icon-name="action:new_task" 
+                                                    onclick={handleProcessListViewsButtonClick}>
+                                </lightning-button-icon>
+                            </lightning-layout-item>
+                        </template>
+                    </lightning-layout>
+                </lightning-layout-item>
+            </lightning-layout>
+        </lightning-card>
+    </template>
 
     <template if:true={listViewData}>
         <lightning-card>

@@ -2,6 +2,45 @@ public with sharing class ListViewController
 {
 
     /*
+     * Method to retrieve the progress of the initialization batch process
+     */
+    @AuraEnabled
+    public static String getListViewInitProgress(String batchId)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewInitProgress(' + batchId + ')');
+        String result = '0';
+        
+        if (batchId != '')
+        {
+            //Query the Batch apex jobs
+            List<AsyncApexJob> jobs = [SELECT TotalJobItems, 
+                                              Status, 
+                                              NumberOfErrors, 
+                                              MethodName, 
+                                              JobType, 
+                                              JobItemsProcessed, 
+                                              Id 
+                                       FROM AsyncApexJob 
+                                       WHERE Id = :batchId];
+
+            if (jobs.size() == 0) result = '0';
+
+            if (jobs[0].TotalJobItems == 0) result = '0';
+
+            if (jobs[0].Status == 'Completed') result = '100';
+
+            Decimal percentComp = (Decimal.valueOf(jobs[0].JobItemsProcessed)/Decimal.valueOf(jobs[0].TotalJobItems)) * 100;
+
+            result = String.valueOf(percentComp);
+        } else {
+            result = '-1';
+        }
+
+        System.debug(LoggingLevel.DEBUG, 'Finishing ListViewController.getListViewInitProgress with result - ' + result);
+        return String.valueOf(result);
+    }
+
+    /*
      * Method which returns list of objects names and API names in the system
      */
     @AuraEnabled(cacheable=true)
@@ -157,9 +196,15 @@ public with sharing class ListViewController
 	{
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateAllListViews()');
         Simpli_lv.ListViewProcessBatch b = new Simpli_lv.ListViewProcessBatch();
-        b.execute(null);
-	
-		return 'success';
+        
+        Id jobId = null;
+        
+        try {
+            jobId = Database.executebatch(b, 40);
+        } catch (Exception e) {
+            jobId = 'failed';
+        }
+		return jobId;
 	}
 
     @AuraEnabled(cacheable=true)
