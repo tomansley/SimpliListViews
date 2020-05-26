@@ -23,7 +23,6 @@ export default class SimpliUIListViewsStart extends LightningElement {
             if (data === undefined || data.length === 0)
             {
                 this.isInit = false;
-                this.showProgress = true;
             }
 
             this.spinner = false;
