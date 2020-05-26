@@ -46,7 +46,6 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track listViewList;                //holds the set of list views for the chosen object
     @track listViewData;                //holds the set of data returned for a given object and list view.
     @track listViewDataColumns;         //holds the data tables column information
-    @track spinner = false;             //identifies if the spinner should be displayed or not.
     @track selectedAction;              //holds the selected action API name if one is chosen.
     @track selectedActionLabel;         //holds the selected action label if one is chosen.
     @track objectActionList;            //holds the list of available actions for the selected object
@@ -57,6 +56,8 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track isPinned = false;            //identifies whether this list view and object have been pinned.
     @track pinnedListView = undefined;  //the list view that is pinned if there is a pinned list view.
     @track pinnedObject = undefined;    //the object that is pinned if there is a pinned list view.
+
+    @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
 
     //for handling column width changes
     @track mouseStart;
@@ -77,7 +78,10 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     receivedMessage;
     isValid;
 
-    //we do not have access to any variables in the constructor
+    /*
+     * Method which gets called when the class is being instantiated
+     * Note that we do not have access to any local variables in the constructor
+     */
     constructor() {
         super();
 
@@ -90,9 +94,13 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             });
     }
     
-    //we do have access to variables in this method.
+    /*
+     * Method which gets called after the class has been instantiated
+     * but before it is rendered. We do have access to variables in this method.
+     */
     renderedCallback() {
 
+        //this ensures we only call this once for each page load
         if (this.userConfigs === undefined) {
 
             //always subscribe to the message channel
@@ -123,6 +131,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
     }
     
+    /*
+     * Used for handling the message channel
+     */
     @wire(MessageContext)
     messageContext;
     
@@ -274,11 +285,15 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         this.subscription = subscribe(
             this.messageContext,
             LISTVIEW_MC, (message) => {
-                this.handleMessage(message); //this is the javascript method below (handleMessage()) that gets called when a message comes in.
+                this.handleMessage(message);
             },
             {scope: APPLICATION_SCOPE});
     }
 
+    /*
+     * Method which unsubscribes this component from any channels. 
+     * This method will be called automatically by the SFDC framework.
+     */
     unsubscribeMC() {
         unsubscribe(this.subscription);
         this.subscription = null;
@@ -289,18 +304,19 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
      * have just been selected by that component.
      */
     handleMessage(message) {
-        this.spinner = true;
 
         this.receivedMessage = message;
-        console.log('Received a message - ' + this.receivedMessage + this.selectedObject);
+        console.log(this.pageName + ' received a message from ' + this.receivedMessage.pageName);
 
         //if we have selected a specific list view to update
-        if (this.receivedMessage.listViewName != this.mainTitle && this.joinFieldName != undefined && this.joinFieldName != '')
+        if (this.receivedMessage.pageName != this.pageName && this.joinFieldName != undefined && this.joinFieldName != '')
         {
             console.log('We have a joined field name - ' + this.joinFieldName);
             console.log('Record ids from message - ' + this.receivedMessage.recordIds);
             let joinData = JSON.stringify(message);
 
+            //we need to check and see if this message is valid for this component.
+            //I think we need to get rid of this.......causes data reload to take too long.
             isValidListViewDataRequest({objectName: this.selectedObject, joinFieldName: this.joinFieldName, joinData: joinData })
             .then(result => {
                 console.log('isValidListViewDataRequest returned - ' + result);
@@ -321,7 +337,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                             }));
                     });
     
-                }
+                }    
     
             })
             .catch(error => {
@@ -329,14 +345,18 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             });
 
         } else {
-            console.log('We do not have a joined field name so ignoring message!');
+            console.log('Page names are the same or we do not have a joined field name so ignoring message!');
         }
-
-        this.spinner = false;
 
     }
 
-    //called when a user checks a box next to a record for selection to be processed.
+    /*
+     * Called when a user checks a box next to a record for 
+     * selection to be processed. This method is really for
+     * handling the case when the ALL checkbox is checked. It 
+     * also handles sending the record Ids checked to the message
+     * channel.
+     */
     handleRecordSelectChange(event) {
         console.log('Record selected - ' + event.target.checked + ': ' + event.target.value);
 
@@ -379,14 +399,19 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                 recordIds = recordIds.substring(0, recordIds.lastIndexOf(','));
             }
 
-            //publish the selected rows so that other components can use them if desired.
-            //we do this regardless of whether there are records Ids or not as the user
-            //may have clicked a single row and then unclicked. We need to send a message
-            //about that deselected row.
+            /*
+             * Publish the selected rows so that other components can use them if desired.
+             * we do this regardless of whether there are records Ids or not as the user
+             * may have clicked a single row and then unclicked. We need to send a message
+             * about that deselected row.
+             *
+             * Also, we send the page name sending the message otherwise this same component
+             * will potentially get the message!
+             */
             const message = {
                 recordIds: recordIds,
                 objectType: this.selectedObject,
-                listViewName: this.mainTitle
+                pageName: this.pageName
             };
             publish(this.messageContext, LISTVIEW_MC, message);        
         
@@ -395,7 +420,10 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
     }
 
-    //called when a user is selecting a list view and they have changed the object of the list view.
+    /*
+     * Called when a user is selecting a list view and 
+     * they have changed the object of the list view.
+     */
     handleObjectChange(event) {
         this.spinner = true;
         this.selectedObject = event.target.value;
@@ -407,7 +435,10 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         console.log('Object selected - ' + this.selectedObject);
     }
 
-    //called when a user changed a list view, used to retrieve record data.
+    /*
+     * Called when a user changed a list view, used 
+     * to retrieve record data.
+     */
     handleListViewSelected(event) {
         this.spinner = true;
         this.selectedListView = event.target.value;
@@ -422,6 +453,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
     }
 
+    /*
+     * Method for handling when a user pins a given list view.
+     */
     handlePinningClick(event) {
         this.isPinned = true;
 
@@ -440,6 +474,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
     }
 
+    /*
+     * Method for handling when a user UNPINS a given list view.
+     */
     handleUnpinningClick(event) {
         this.isPinned = false;
 
@@ -457,7 +494,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         });
     }
     
-    //called when a URL on the pages table data is clicked
+    /*
+     * Called when a URL on the pages table data is clicked
+     */
     handleURLClick(event) {
 
         //this is the URL
@@ -695,15 +734,15 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         }
 
         this.showActionModal      = false;
-        //this.selectedListView     = undefined;
-        //this.listViewData         = undefined;
-        //this.listViewDataColumns  = undefined;
         this.selectedAction       = '';
 
         refreshApex(this.wiredListViewDataResult);
         console.log('APEX REFRESHED');
     }
 
+    /*
+     * Called when a user tries to change the width of a column.
+     */
     calculateWidth(event) {
         var childObj = event.target
         var parObj = childObj.parentNode;
@@ -722,6 +761,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         event.returnValue=false;
     };
 
+    /*
+     * Called when a user tries to change the width of a column.
+     */
     setNewWidth(event) {
 
         if (this.mouseStart === undefined) return;
