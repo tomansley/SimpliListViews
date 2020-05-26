@@ -13,7 +13,8 @@ global with sharing class ScriptInstall implements InstallHandler {
                 //run the batch job once to have all list views brought in
                 if (!Test.isRunningTest())
                 {
-                    System.schedule('ListView Initial Load - ' + schedStr, schedStr, new ListViewProcessBatch());
+                    //CANNOT GET EITHER OF THESE TO WORK CORRECTLY! LISTVIEW OBJECT DOES NOT SEEM TO BE VISIBLE ON INSTALL SCRIPT RUNNING
+                    //System.schedule('ListView Initial Load - ' + schedStr, schedStr, new ListViewProcessBatch());
                     //Database.executeBatch(new ListViewProcessBatch());
                 }
             } catch (Exception e) {
