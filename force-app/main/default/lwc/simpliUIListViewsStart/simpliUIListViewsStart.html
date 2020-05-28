@@ -51,11 +51,11 @@
                 </ol>
             </div>
             <br/>
-            <p>Users spend lots of time working with lists of data. In Salesforce those lists are spread throughout the application. Depending on user process, this can create unnecessary clicks and page loads. Simpli List Views helps reduce the clicks a user needs when moving from one object list view to another. All list views are displayed on one page.</p>
+            <p>Simpli List Views helps reduce the clicks a user needs when moving from one object list view to another. All list views are displayed on one page. Users spend lots of time working with lists of data. In Salesforce those lists are spread throughout the application. Depending on user process, this can create unnecessary clicks and page loads.</p>
             <br/>
-            <p>Salesforce list views could also do with a spruce-up! Ever needed to look deeper into an object hierarchy? Now you can. Move beyond standard list views and add deeper hierarchical custom fields that reference objects multiple levels deeper. For example, on an Account list view you could see the account owners profile by using Owner.Profile.Name in the list views configuration.</p>
+            <p>Salesforce list views could also do with a spruce-up! Ever needed to look deeper into an object hierarchy? Now you can. Move beyond standard list views and add custom fields that reference objects multiple levels deeper. For example, on an Account list view you could see the account owners profile by using Owner.Profile.Name in the list views configuration.</p>
              <br/> 
-            <p>And since you have decided to use Simpli List Views and plan on spending all your time using it, you can create actions for list views (requires Apex development). Select records that need to be processed and choose an action. Actions can be universal (to delete records), object specific (to update object fields) or list view specific (process oriented action). Actions can be configured to have users enter data before processing the action.</p>
+            <p>Create actions that can be performed on multiple records (requires Apex development). Select records that need to be processed and choose an action. Actions can be universal (to delete records), object specific (to update object fields) or list view specific (process oriented action). Actions can be configured to have users enter data before processing the action.</p>
         </div>
     </lightning-card>
     <br/>
@@ -75,12 +75,13 @@
             <div>
                 <b>Org-Wide Custom Settings</b>
                 <br/><br/>
-                <p>These settings are maintained in the "List View Org Wide Setting" custom metadata type in the org setup. They affect all list views displayed in the SFDC org and are typically set by a system administrator at initial setup.</p>
+                <p>These settings are maintained in the List View Config tab. Look for the list view config with Object = 'All' and API Name = 'All'. They affect all list views displayed in the SFDC org and are typically set by a system administrator at initial setup.</p>
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
                         <li><b>Included Object Types - </b>Indicates only those object types that should be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.</li>
                         <li><b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.</li>
+                        <li><b>List View Objects - </b>Do not touch this setting unless you know what you are doing!</li>
                     </ol>
                 </div>
             </div>
@@ -106,7 +107,7 @@
             <div>
                <b>List View Configuration</b>
                <br/><br/>
-                <p>These settings affect individual list views in the SFDC org. They are typically created after the list view has been created. The settings are found in the List View Configs object. Each config has a set of parameters that can be set based on needs.</p>
+                <p>These settings are maintained in the List View Config tab. These settings affect individual list views in the SFDC org. They are typically created after the list view has been created. Each config has a set of parameters that can be set based on needs.</p>
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
@@ -154,7 +155,7 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;&#123;<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.debug('Hello - ' + (String) fieldValues.get('FirstName') + '. This is where the processing of the records takes place');<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;    <br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return simpli_lv.ListViewAction.RESULT_OK;<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return simpli_lv.ListViewAction.RESULT_OK + ':Hi ' + (String) fieldValues.get('FirstName') + '. The Hello World action was completed successfully';<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;&#125;<br/>
                     <br/>
                 &#125;<br/></code></p>

@@ -6,7 +6,7 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
 
     public override String process(List<String> recordIds, Map<String, Object> fieldValues)
 	{
-        String returnStr = ListViewAction.RESULT_OK;
+        String returnStr = ListViewAction.RESULT_OK + ':';
 
         try {
 
@@ -40,10 +40,15 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
 
             delete deletedObjs.values();
 
+            if (deletedObjs.size() == 1)
+                returnStr += '1 record deleted successfully.';
+            else
+                returnStr += deletedObjs.size() + ' records deleted successfully.';
+
         } catch (Exception e) {
-            String message = 'Exception during ListViewActionDelete.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = ListViewAction.RESULT_ERROR + ':Exception during ListViewActionDelete.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
             ListViewErrorHelper.createUsageError(message); 
-            returnStr = e.getMessage();
+            returnStr = message;
         }
         return returnStr;
     }

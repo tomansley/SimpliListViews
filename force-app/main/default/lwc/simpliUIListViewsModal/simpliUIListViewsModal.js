@@ -61,10 +61,22 @@ export default class simpliUIListViewsModal extends LightningElement {
             .then(result => {
                 resultStr = result;
                 this.error = undefined;
-                if (resultStr === 'Ok') {
+
+                //get the status
+                let status = resultStr.substring(0, resultStr.indexOf(':'));
+                
+                //get any associated message
+                let message = resultStr.substring(resultStr.indexOf(':')+1);
+                if (message === '' && status === 'Ok') {
+                    message = 'All records have been processed successfully.';
+                } else if (message === '' && status != 'Ok') {
+                    message = 'There was an error processing the records.';
+                }
+
+                if (status === 'Ok') {
                     this.dispatchEvent(new ShowToastEvent({
                         title: this.listViewAction.label + ' Completed!',
-                        message: 'All records have been processed successfully.',
+                        message: message,
                         variant: 'success',
                         mode: 'dismissable'
                     }));
@@ -73,7 +85,7 @@ export default class simpliUIListViewsModal extends LightningElement {
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error!',
-                        message: resultStr,
+                        message: message,
                         variant: 'error',
                         mode: 'sticky'
                     }));
@@ -87,7 +99,7 @@ export default class simpliUIListViewsModal extends LightningElement {
 
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error whilst processing - ' + error.message,
+                    message: 'There was an error whilst processing\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                     variant: 'error',
                     mode: 'sticky'
                 }));

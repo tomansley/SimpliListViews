@@ -6,7 +6,7 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
 
     public override String process(List<String> recordIds, Map<String, Object> fieldValues)
     {
-        String returnStr = ListViewAction.RESULT_OK;
+        String returnStr = ListViewAction.RESULT_OK + ':';
 
         try {
 
@@ -50,10 +50,15 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
 
             update updatedObjs.values();
 
+            if (updatedObjs.size() == 1)
+                returnStr += '1 record updated successfully.';
+            else
+                returnStr += updatedObjs.size() + ' records updated successfully.';
+
         } catch (Exception e) {
-            String message = 'Exception during ListViewActionUpdate.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = ListViewAction.RESULT_ERROR + ':Exception during ListViewActionUpdate.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
             ListViewErrorHelper.createUsageError(message); 
-            returnStr = e.getMessage();
+            returnStr = message;
         }
         
         return returnStr;

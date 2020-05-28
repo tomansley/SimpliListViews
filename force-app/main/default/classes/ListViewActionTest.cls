@@ -77,7 +77,7 @@ private class ListViewActionTest {
 
         Test.stopTest();
 
-        System.assert(result == ListViewAction.RESULT_OK);
+        System.assert(result.startsWith(ListViewAction.RESULT_OK));
     
     }
 
@@ -93,7 +93,7 @@ private class ListViewActionTest {
 
         Test.stopTest();
 
-        System.assert(result == ListViewAction.RESULT_OK);
+        System.assert(result.startsWith(ListViewAction.RESULT_OK));
     
     }
 
@@ -110,7 +110,7 @@ private class ListViewActionTest {
 
         Test.stopTest();
 
-        System.assert(result == ListViewAction.RESULT_OK);
+        System.assert(result.startsWith(ListViewAction.RESULT_OK));
     
     }
 

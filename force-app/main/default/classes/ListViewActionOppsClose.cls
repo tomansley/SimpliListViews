@@ -6,7 +6,7 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
 
     public override String process(List<String> recordIds, Map<String, Object> fieldValues)
 	{
-        String returnStr = ListViewAction.RESULT_OK;
+        String returnStr = ListViewAction.RESULT_OK + ':';
 
         try {
 
@@ -36,10 +36,16 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
 
             upsert closedOpps.values();
 
+            if (closedOpps.size() == 1)
+                returnStr += '1 opportunity updated successfully.';
+            else
+                returnStr += closedOpps.size() + ' opportunities updated successfully.';
+
+
         } catch (Exception e) {
-            String message = 'Exception during ListViewActionOppsClose.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = ListViewAction.RESULT_ERROR + ':Exception during ListViewActionOppsClose.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
             ListViewErrorHelper.createUsageError(message); 
-            returnStr = e.getMessage();
+            returnStr = message;
         }
         return returnStr;
     }
