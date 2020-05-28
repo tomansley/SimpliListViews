@@ -34,10 +34,10 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @api includedObjects = '';
     @api excludedObjects = '';
     @api displayRowCount = false;
+    @api displaySelectedCount = false;
     @api joinFieldName = '';
     @api displayOrigButton; //this is not used....deprecated.
     @api useMessageChannel = false;
-
 
     @track userConfigs;                 //holds all user configuration for this named component.
     @track selectedListView;            //holds the selected list view name
@@ -123,7 +123,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             .catch(error => {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Handling User Config',
-                    message: 'There was an error handling the user config. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                    message: 'There was an error handling the user config. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                     variant: 'error',
                     mode: 'sticky'
                 }));
@@ -153,7 +153,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             this.spinner = false;
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Configs',
-                message: 'There was an error retrieving the list view configs. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                message: 'There was an error retrieving the list view configs. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -177,7 +177,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             this.spinner = false; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Actions',
-                message: 'There was an error retrieving the list view actions. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                message: 'There was an error retrieving the list view actions. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -204,7 +204,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             this.spinner = false;
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Data',
-                message: 'There was an error retrieving the data. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                message: 'There was an error retrieving the data. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -237,7 +237,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             this.spinner = false;
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Objects',
-                message: 'There was an error retrieving the list view objects. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                message: 'There was an error retrieving the list view objects. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -267,7 +267,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             this.spinner = false; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Object List Views',
-                message: 'There was an error retrieving the ' + objectName + ' list views data. Please see an administrator - ' + error.body.message + ' - ' + error.body.stackTrace,
+                message: 'There was an error retrieving the ' + objectName + ' list views data. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -308,8 +308,8 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         this.receivedMessage = message;
         console.log(this.pageName + ' received a message from ' + this.receivedMessage.pageName);
 
-        //if we have selected a specific list view to update
-        if (this.receivedMessage.pageName != this.pageName && this.joinFieldName != undefined && this.joinFieldName != '')
+        //if we have a list view selected AND if we have selected a specific list view to update
+        if (this.selectedObject != undefined && this.receivedMessage.pageName != this.pageName && this.joinFieldName != undefined && this.joinFieldName != '')
         {
             console.log('We have a joined field name - ' + this.joinFieldName);
             console.log('Record ids from message - ' + this.receivedMessage.recordIds);
@@ -331,7 +331,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                         .catch(error => {
                             this.dispatchEvent(new ShowToastEvent({
                                 title: 'Processing Error',
-                                message: 'There was an error processing the list view. Please see an administrator',
+                                message: 'There was an error processing the list view. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                                 variant: 'error',
                                 mode: 'sticky'
                             }));
@@ -366,11 +366,24 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         //if we have selected "All" then run through all components setting them true or false.
         if (event.target.value === 'all')
         {
-        
+
             for(let i = 0; i < selectedRows.length; i++) {
                 if(selectedRows[i].type === 'checkbox') {
                     selectedRows[i].checked = event.target.checked;
                 }
+            }
+
+            if (event.target.checked === true) {
+                this.selectedRecordCount = this.listViewData.rowCount;
+            } else {
+                this.selectedRecordCount = 0;
+            }
+
+        } else {
+            if (event.target.checked === true) {
+                this.selectedRecordCount++;
+            } else {
+                this.selectedRecordCount--;
             }
         }
 
@@ -382,20 +395,13 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             var recordIds = '';        
 
             for(let i = 0; i < selectedRows.length; i++) {
-                if(selectedRows[i].type === 'checkbox') {
-
-                    if (selectedRows[i].checked === true)
-                    {
-                        if (selectedRows[i].value != 'all') {
+                if(selectedRows[i].type === 'checkbox' && selectedRows[i].checked === true && selectedRows[i].value != 'all') {
                             recordIds = recordIds + selectedRows[i].value + ',';
-                        }
-                    }
-
                 }
             }
 
+            //remove the last comma if there is one.
             if (recordIds.length > 0) {
-                //remove the last comma if there is one.
                 recordIds = recordIds.substring(0, recordIds.lastIndexOf(','));
             }
 
@@ -466,7 +472,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         .catch(error => {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Processing Error',
-                message: 'There was an error during user configuration update. Please see an administrator',
+                message: 'There was an error during user configuration update. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -487,7 +493,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         .catch(error => {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Processing Error',
-                message: 'There was an error during user configuration update. Please see an administrator',
+                message: 'There was an error during user configuration update. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -561,7 +567,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                 .catch(error => {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
-                        message: 'There was an error processing the list view. Please see an administrator',
+                        message: 'There was an error processing the list view. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                         variant: 'error',
                         mode: 'sticky'
                     }));
@@ -603,7 +609,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                 .catch(error => {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
-                        message: 'There was an error processing the list views. Please see an administrator',
+                        message: 'There was an error processing the list views. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                         variant: 'error',
                         mode: 'sticky'
                     }));
@@ -649,7 +655,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                 .catch(error => {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
-                        message: 'There was an error processing the list views. Please see an administrator',
+                        message: 'There was an error processing the list views. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                         variant: 'error',
                         mode: 'sticky'
                     }));
@@ -665,7 +671,6 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
         var selectedRecords = new Set();
         
-        this.selectedRecordCount = 0;
         this.selectedAction = event.target.value;
 
         //get the selected record Ids
@@ -675,7 +680,6 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
                 if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
                 {
                     selectedRecords.add(selectedRows[i].value);
-                    this.selectedRecordCount++;
                 }
             }
         }

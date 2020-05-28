@@ -8,17 +8,18 @@
     </targets>
     <!-- Configuring the design attributes --><targetConfigs>
         <targetConfig targets="lightning__HomePage,lightning__AppPage">
-            <property name="pageName"          type="String"  default="My_Component_Name" required="true" label="Component Name" description="String used to identify the list view component. It is used to identify user configuration for the component. Names should be distinct and should NEVER be changed."/>
-            <property name="hasMainTitle"      type="Boolean" default="true" label="Show Title" description="Indicates whether the name should be displayed or not."/>
-            <property name="mainTitle"         type="String"  default="My List View Title" label="Title" description="String used if the title is displayed. Names should be distinct within a lightning page."/>
-            <property name="displayActions"    type="Boolean" default="true" label="Display Actions" description="Indicates whether the actions dropdown should be displayed."/>
-            <property name="displayReprocess"  type="Boolean" default="true" label="Display List View Reprocessing Button" description="Indicates whether the list view reprocessing button should be displayed."/>
-            <property name="displayURL"        type="Boolean" default="true" label="Display Original List View Button" description="Indicates whether to display the button which links to the original related Salesforce list view."/>
-            <property name="displayRowCount"   type="Boolean" default="true" label="Display Row Count" description="Indicates whether the row count should be displayed."/>
-            <property name="includedObjects"   type="String"  default=""     label="Included Objects" description="A comma delimited list of API object names that are to be included on the page. If blank, all objects are included."/>
-            <property name="excludedObjects"   type="String"  default=""     label="Excluded Objects" description="A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded."/>
-            <property name="joinFieldName"     type="String"  default=""     label="Joined Field Name" description="The API field name of the field that should be used by this component if it receives ids from another component. If blank, no joining takes place."/>
-            <property name="useMessageChannel" type="Boolean" default="true" label="Use Message Channel" description="Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!"/>
+            <property name="pageName"             type="String"  default="My_Component_Name" required="true" label="Component Name" description="String used to identify the list view component. It is used to identify user configuration for the component. Names should be distinct and should NEVER be changed."/>
+            <property name="hasMainTitle"         type="Boolean" default="true" label="Show Title" description="Indicates whether the name should be displayed or not."/>
+            <property name="mainTitle"            type="String"  default="My List View Title" label="Title" description="String used if the title is displayed. Names should be distinct within a lightning page."/>
+            <property name="displayActions"       type="Boolean" default="true" label="Display Actions" description="Indicates whether the actions dropdown should be displayed."/>
+            <property name="displayReprocess"     type="Boolean" default="true" label="Display List View Reprocessing Button" description="Indicates whether the list view reprocessing button should be displayed."/>
+            <property name="displayURL"           type="Boolean" default="true" label="Display Original List View Button" description="Indicates whether to display the button which links to the original related Salesforce list view."/>
+            <property name="displayRowCount"      type="Boolean" default="true" label="Display Row Count" description="Indicates whether the row count should be displayed."/>
+            <property name="displaySelectedCount" type="Boolean" default="true" label="Display Selected Count" description="Indicates whether the selected row count should be displayed."/>
+            <property name="includedObjects"      type="String"  default=""     label="Included Objects" description="A comma delimited list of API object names that are to be included on the page. If blank, all objects are included."/>
+            <property name="excludedObjects"      type="String"  default=""     label="Excluded Objects" description="A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded."/>
+            <property name="joinFieldName"        type="String"  default=""     label="Joined Field Name" description="The API field name of the field that should be used by this component if it receives ids from another component. If blank, no joining takes place."/>
+            <property name="useMessageChannel"    type="Boolean" default="true" label="Use Message Channel" description="Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
