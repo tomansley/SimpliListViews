@@ -481,8 +481,15 @@ global with sharing class ListViewHelper {
         System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + query);
 
         //get rows of data from query
-        List<SObject> objectRows = Database.query(query);
-
+        List<SObject> objectRows = null;
+        try {
+            objectRows = Database.query(query);
+        } catch (Exception e) {
+            String message = 'Exception during ListViewHelper.getListViewData(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message);
+            throw new ListViewHelperException('There was an error during data retrieval. Please try again or notify an administrator.');
+        }
+        
         return objectRows;
 
     }
@@ -663,4 +670,6 @@ global with sharing class ListViewHelper {
                 return 0;
         }
     }
+
+    public class ListViewHelperException extends Exception { }
 }
