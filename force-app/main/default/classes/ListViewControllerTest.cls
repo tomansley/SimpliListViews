@@ -141,7 +141,7 @@ private class ListViewControllerTest {
 
         String result = ListViewController.processAction('Delete:null', '["' + acct.Id + '"]', '[]');
 
-        System.assert(result == ListViewAction.RESULT_OK);
+        System.assert(result.startsWith(ListViewAction.RESULT_OK));
 
     }
 
