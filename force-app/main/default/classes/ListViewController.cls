@@ -23,15 +23,24 @@ public with sharing class ListViewController
                                        FROM AsyncApexJob 
                                        WHERE Id = :batchId];
 
-            if (jobs.size() == 0) result = '0';
+            if (jobs.size() == 0) { 
+                
+                result = '0';
 
-            if (jobs[0].TotalJobItems == 0) result = '0';
+            } else if (jobs[0].TotalJobItems == 0) {
+            
+                result = '0';
 
-            if (jobs[0].Status == 'Completed') result = '100';
+            } else if (jobs[0].Status == 'Completed') { 
+            
+                result = '100';
 
-            Decimal percentComp = (Decimal.valueOf(jobs[0].JobItemsProcessed)/Decimal.valueOf(jobs[0].TotalJobItems)) * 100;
+            } else { 
 
-            result = String.valueOf(percentComp);
+                Decimal percentComp = (Decimal.valueOf(jobs[0].JobItemsProcessed)/Decimal.valueOf(jobs[0].TotalJobItems)) * 100;
+                result = String.valueOf(percentComp);
+                
+            }
         } else {
             result = '-1';
         }
@@ -396,7 +405,7 @@ public with sharing class ListViewController
         } catch (Exception e) {
             String message = 'Exception during ListViewController.processAction(' + actionKey + ',' + dataIds + ',' + valuesMap + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
             ListViewErrorHelper.createUsageError(message); 
-            responseStr = 'Couldn\'t find action config for name provided!';
+            responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find action config for name provided!';
             return responseStr;
         }
 
@@ -413,7 +422,7 @@ public with sharing class ListViewController
     	}
 
         if (t == null) {
-            responseStr = 'Couldn\'t find apex class "' + action.Apex_Class_Name__c + '" for config with name ' + action.Label__c;
+            responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find apex class "' + action.Apex_Class_Name__c + '" for config with name ' + action.Label__c;
             return responseStr; 
         }
         
@@ -436,8 +445,11 @@ public with sharing class ListViewController
         ListViewAction actionJob = (ListViewAction) t.newInstance();
 
         //process the object
-        responseStr = actionJob.process(listStrIds, mapValues);
-
+        try {
+            responseStr = actionJob.process(listStrIds, mapValues);
+        } catch (Exception e) {
+            responseStr = ListViewAction.RESULT_ERROR + ':There was an error processing the records  - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+        }
         return responseStr;
     }
 
