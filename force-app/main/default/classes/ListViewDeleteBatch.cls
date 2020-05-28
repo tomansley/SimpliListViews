@@ -47,7 +47,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
 
         } catch (Exception e) {
             String message = 'Exception during ListViewDeleteBatch.start(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            ListViewErrorHelper.createUsageError(message);
+            ListViewErrorHelper.createUsageErrorNonFuture(message);
             Database.setSavepoint();
         }
                 
@@ -61,7 +61,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
             delete scope;
         } catch (Exception e) {
             String message = 'Exception during ListViewDeleteBatch.execute() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createUsageErrorNonFuture(message); 
         }
     }
     
@@ -75,7 +75,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
                 ListViewHelper.updateListViewObjectsSetting();
         } catch (Exception e) {
             String message = 'Exception during ListViewDeleteBatch.finish() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createUsageErrorNonFuture(message); 
         }
     }
     

@@ -48,7 +48,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.start(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            ListViewErrorHelper.createUsageError(message);
+            ListViewErrorHelper.createUsageErrorNonFuture(message);
             Database.setSavepoint();
         }
                 
@@ -120,7 +120,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.execute() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createUsageErrorNonFuture(message); 
         }
 	}
 	
