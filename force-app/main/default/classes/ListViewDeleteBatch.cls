@@ -1,3 +1,14 @@
+/**
+ * @File Name          : ListViewDeleteBatch.cls
+ * @Description        : 
+ * @Author             : tom.h.ansley@medtronic.com
+ * @Group              : 
+ * @Last Modified By   : tom.h.ansley@medtronic.com
+ * @Last Modified On   : 6/11/2020, 8:06:16 AM
+ * @Modification Log   : 
+ * Ver       Date            Author      		    Modification
+ * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
+**/
 public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
 
     private String query = 'SELECT Id FROM List_View__c';
@@ -58,7 +69,11 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
     public void execute(Database.BatchableContext BC, List<SObject> scope) 
     {
         try {
+
+            HelperSchema.checkObjectDeletable('List_View__c');
+
             delete scope;
+            
         } catch (Exception e) {
             String message = 'Exception during ListViewDeleteBatch.execute() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
             ListViewErrorHelper.createUsageErrorNonFuture(message); 

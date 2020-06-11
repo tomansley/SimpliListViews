@@ -1,3 +1,14 @@
+/**
+ * @File Name          : HelperSchema.cls
+ * @Description        : 
+ * @Author             : tom.h.ansley@medtronic.com
+ * @Group              : 
+ * @Last Modified By   : tom.h.ansley@medtronic.com
+ * @Last Modified On   : 6/11/2020, 8:05:37 AM
+ * @Modification Log   : 
+ * Ver       Date            Author      		    Modification
+ * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
+**/
 public with sharing class HelperSchema {
 
 	public static Map<String, Schema.SObjectType> objectDescribeByName = new Map<String, Schema.SObjectType>();
@@ -222,7 +233,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not creatable. Please check user permissions');
+				throw new HelperSchemaException('Object of type ' + objName + ' is not deletable. Please check user permissions');
 			return false;
 		}
 	}

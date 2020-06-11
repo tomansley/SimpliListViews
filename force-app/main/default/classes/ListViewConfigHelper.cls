@@ -1,3 +1,14 @@
+/**
+ * @File Name          : ListViewConfigHelper.cls
+ * @Description        : 
+ * @Author             : tom.h.ansley@medtronic.com
+ * @Group              : 
+ * @Last Modified By   : tom.h.ansley@medtronic.com
+ * @Last Modified On   : 6/11/2020, 8:35:27 AM
+ * @Modification Log   : 
+ * Ver       Date            Author      		    Modification
+ * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
+**/
 public with sharing class ListViewConfigHelper {
 
     public static Map<String,Object> orgWideConfig = null;
@@ -20,6 +31,9 @@ public with sharing class ListViewConfigHelper {
             {
                 //update database
                 param.Parameter_Value__c = value;
+
+                HelperSchema.checkObjectUpdateable('List_View_Config_Parameter__c');
+
                 update param;
 
                 //update cache
