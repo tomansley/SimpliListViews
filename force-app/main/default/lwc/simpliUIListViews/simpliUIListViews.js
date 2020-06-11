@@ -367,11 +367,11 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         if (event.target.value === 'all')
         {
 
+            console.log('Starting loop!');
             for(let i = 0; i < selectedRows.length; i++) {
-                if(selectedRows[i].type === 'checkbox') {
-                    selectedRows[i].checked = event.target.checked;
-                }
+                selectedRows[i].checked = event.target.checked;
             }
+            console.log('Finishing loop!');
 
             if (event.target.checked === true) {
                 this.selectedRecordCount = this.listViewData.rowCount;
@@ -395,7 +395,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
             var recordIds = '';        
 
             for(let i = 0; i < selectedRows.length; i++) {
-                if(selectedRows[i].type === 'checkbox' && selectedRows[i].checked === true && selectedRows[i].value != 'all') {
+                if(selectedRows[i].checked === true && selectedRows[i].value != 'all') {
                             recordIds = recordIds + selectedRows[i].value + ',';
                 }
             }
@@ -676,11 +676,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         //get the selected record Ids
         let selectedRows = this.template.querySelectorAll('lightning-input');
         for(let i = 0; i < selectedRows.length; i++) {
-            if(selectedRows[i].type === 'checkbox') {
-                if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
-                {
-                    selectedRecords.add(selectedRows[i].value);
-                }
+            if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
+            {
+                selectedRecords.add(selectedRows[i].value);
             }
         }
 
@@ -729,11 +727,9 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         //reset the selected record Ids
         let selectedRows = this.template.querySelectorAll('lightning-input');
         for(let i = 0; i < selectedRows.length; i++) {
-            if(selectedRows[i].type === 'checkbox') {
-                if (selectedRows[i].checked === true)
-                {
-                    selectedRows[i].checked = false;
-                }
+            if (selectedRows[i].checked === true)
+            {
+                selectedRows[i].checked = false;
             }
         }
 
