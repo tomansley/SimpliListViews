@@ -20,25 +20,28 @@ import getUserConfigs from '@salesforce/apex/ListViewController.getUserConfigs';
 import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConfig';
 import isValidListViewDataRequest from '@salesforce/apex/ListViewController.isValidListViewDataRequest';
 
-export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
+export default class simpliUIListViews extends NavigationMixin(LightningElement) {
 
     wiredListViewDataResult;
     wiredObjectListViewsResult;
 
-    @api pageName = ''; //this is NOT the page name but the COMPONENT name
-    @api hasMainTitle = false;
-    @api mainTitle = 'List Views';
-    @api displayActions = false;
-    @api displayReprocess = false;
-    @api displayURL = false;
-    @api includedObjects = '';
-    @api excludedObjects = '';
-    @api displayRowCount = false;
+    @api pageName             = '';                 //this is NOT the page name but the COMPONENT name
+    @api hasMainTitle         = false;
+    @api mainTitle            = 'List Views';
+    @api includedObjects      = '';
+    @api excludedObjects      = '';
+    @api joinFieldName        = '';
+    @api useMessageChannel    = false;
+    @api allowRefresh         = false; //config indicating whether the auto refresh checkbox is made available.
+    @api displayActions       = false;
+    @api displayReprocess     = false;
+    @api displayURL           = false;
+    @api displayRowCount      = false;
     @api displaySelectedCount = false;
-    @api joinFieldName = '';
-    @api displayOrigButton; //this is not used....deprecated.
-    @api useMessageChannel = false;
+    @api displayOrigButton;             //this is not used....deprecated.
+    @api displayModified      = false;
 
+    @track modifiedText;                //holds the last modified text that should be displayed based on the component config
     @track userConfigs;                 //holds all user configuration for this named component.
     @track selectedListView;            //holds the selected list view name
     @track selectedObject;              //holds the selected object name
@@ -56,6 +59,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
     @track isPinned = false;            //identifies whether this list view and object have been pinned.
     @track pinnedListView = undefined;  //the list view that is pinned if there is a pinned list view.
     @track pinnedObject = undefined;    //the object that is pinned if there is a pinned list view.
+    @track isRefreshed = false;         //identifies whether this list views data is being refreshed at intervals.
 
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
 
@@ -194,7 +198,16 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
         if (data) { 
             console.log('List view data retrieval successful'); 
-            this.listViewData = data; 
+            this.listViewData = data;
+
+            //sets the last modified text if the component has been configured to show the data.
+            if (this.displayModified === true)
+            {
+                this.modifiedText = this.listViewData.listView.lastModifiedText;
+            } else {
+                this.modifiedText = '';
+            }
+
             this.error = undefined;  
             this.spinner = false;
         } else if (error) { 
@@ -350,6 +363,29 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
 
     }
 
+    handleAutoRefreshData() {
+
+        console.log('Refreshing data');
+
+        if (this.isRefreshed) {
+
+            refreshApex(this.wiredListViewDataResult);
+
+            //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
+            //look at its use with setTimeout down the page!
+            setTimeout(this.handleAutoRefreshData.bind(this), 5000);
+
+        }
+    }
+
+    handleAutoRefreshButtonClick(event) {
+        console.log('Auto refresh button clicked!');
+        console.log('Refresh was set to ' + this.isRefreshed);
+        this.isRefreshed = !this.isRefreshed;
+        this.handleAutoRefreshData();
+        console.log('Refresh now set to ' + this.isRefreshed);
+    }
+
     /*
      * Called when a user checks a box next to a record for 
      * selection to be processed. This method is really for
@@ -358,6 +394,7 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
      * channel.
      */
     handleRecordSelectChange(event) {
+        this.spinner = true;
         console.log('Record selected - ' + event.target.checked + ': ' + event.target.value);
 
         //get all checkbox components
@@ -424,6 +461,8 @@ export default class SimpliUIBatch extends NavigationMixin(LightningElement) {
         } else {
             console.log('NOT sending to message channel');
         }
+
+        this.spinner = false;
     }
 
     /*

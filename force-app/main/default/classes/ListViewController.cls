@@ -465,7 +465,7 @@ public with sharing class ListViewController
         for (ListViewHelper.ColumnSortData columnData: sortData)
             sortDataByFieldName.put(columnData.fieldName, columnData);
 
-        RowsWrapper rows = new RowsWrapper();
+        RowsWrapper rows = new RowsWrapper(listView);
         
         //get all columns from the list view
         List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
@@ -673,11 +673,13 @@ public with sharing class ListViewController
     {
         public String objName;
         public String coreListId;
+        public ListViewWrapper listView;
         public List<RowWrapper> rows;
         public List<FieldWrapper> fieldMetaData;
         
-        public RowsWrapper()
+        public RowsWrapper(List_View__c listView)
         {
+            this.listView = new ListViewWrapper(listView);
             rows = new List<RowWrapper>();
             fieldMetaData = new List<FieldWrapper>();
         }
@@ -708,6 +710,12 @@ public with sharing class ListViewController
         public List<FieldWrapper> getFieldMetaData()
         {
             return fieldMetaData;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public ListViewWrapper getListView()
+        {
+            return listView;
         }
 
         //Example - https://simpli-list-view-dev-dev-ed.lightning.force.com/lightning/o/Account/list?filterName=00B3h000003ZfMQEA0
@@ -753,6 +761,37 @@ public with sharing class ListViewController
         {
             return 'checkbox:' + rowId;
         }
+    }
+
+    public class ListViewWrapper
+    {
+        public DateTime lastModifiedDate;
+        public String lastModifiedBy;
+
+        public ListViewWrapper(List_View__c listView)
+        {
+            lastModifiedDate = listView.LastModifiedDate;
+            lastModifiedBy   = listView.LastModifiedBy.Name;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLastModifiedText()
+        {
+            return  'Last Modified By: ' + lastModifiedBy + ' - ' + lastModifiedDate;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLastModifiedBy()
+        {
+            return lastModifiedBy;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public DateTime getLastModifiedDate()
+        {
+            return lastModifiedDate;
+        }
+        
     }
 
     public class FieldWrapper

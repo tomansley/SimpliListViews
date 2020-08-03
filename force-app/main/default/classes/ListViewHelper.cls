@@ -265,8 +265,10 @@ global with sharing class ListViewHelper {
                                                  Roles__c,
                                                  Roles_And_Subordinates__c,
                                                  Territories__c,
-                                                 Territories_And_Subordinates__c
-                                          FROM List_View__c
+                                                 Territories_And_Subordinates__c,
+                                                 LastModifiedDate,
+                                                 LastModifiedBy.Name
+                                           FROM List_View__c
                                           WHERE Id IN :lvIds];
 
         Map<Id, List_View__c> lvs = new Map<Id, List_View__c>();
@@ -310,7 +312,9 @@ global with sharing class ListViewHelper {
                                                 Roles__c,
                                                 Roles_And_Subordinates__c,
                                                 Territories__c,
-                                                Territories_And_Subordinates__c
+                                                Territories_And_Subordinates__c,
+                                                LastModifiedDate,
+                                                LastModifiedBy.Name
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
                                         ORDER BY Label__c];
@@ -352,7 +356,9 @@ global with sharing class ListViewHelper {
                                                 Roles__c,
                                                 Roles_And_Subordinates__c,
                                                 Territories__c,
-                                                Territories_And_Subordinates__c
+                                                Territories_And_Subordinates__c,
+                                                LastModifiedDate,
+                                                LastModifiedBy.Name
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
                                             AND API_Name__c = :listViewAPIName];

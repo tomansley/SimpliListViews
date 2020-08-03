@@ -1,8 +1,21 @@
+<!--
+  @description       : 
+  @author            : tom.h.ansley@medtronic.com
+  @group             : 
+  @last modified on  : 08-03-2020
+  @last modified by  : tom.h.ansley@medtronic.com
+  Modifications Log 
+  Ver   Date         Author                       Modification
+  1.0   08-03-2020   tom.h.ansley@medtronic.com   Initial Version
+-->
 <template>
     <template if:true={spinner}>
         <lightning-spinner alternative-text="Loading"></lightning-spinner>
     </template>
 
+    <!-- ------------------------------------------------------------------------ -->
+    <!-- Section which handles the initialization of the list views if its needed -->
+    <!-- ------------------------------------------------------------------------ -->
     <template if:false={isInit}>
         <lightning-card>
                 <template if:false={showProgress}>
@@ -55,7 +68,8 @@
                                             value={selectedListView} 
                                             onchange={handleListViewSelected} 
                                             options={listViewList}
-                                            variant=label-hidden>
+                                            variant=label-hidden
+                                            title={modifiedText}>
                         </lightning-combobox>
                     </lightning-layout-item>
                 </template>
@@ -125,6 +139,26 @@
                                                     onclick={handleProcessListViewsButtonClick}>
                                 </lightning-button-icon>
                             </lightning-layout-item>
+                        </template>
+                        <template if:true={listViewData}>
+                            <template if:true={allowRefresh}>
+                                <lightning-layout-item  padding="horizontal-small">
+                                    <template if:true={isRefreshed}>
+                                        <lightning-button-icon title="Click to STOP the list auto refreshing." 
+                                                                size="medium" 
+                                                                icon-name="utility:routing_offline" 
+                                                                onclick={handleAutoRefreshButtonClick}>
+                                        </lightning-button-icon>
+                                    </template>
+                                    <template if:false={isRefreshed}>
+                                        <lightning-button-icon title="Click to START the list auto refreshing." 
+                                                                size="medium" 
+                                                                icon-name="utility:refresh" 
+                                                                onclick={handleAutoRefreshButtonClick}>
+                                        </lightning-button-icon>
+                                    </template>
+                                </lightning-layout-item>
+                            </template>
                         </template>
                     </lightning-layout>
                 </lightning-layout-item>
