@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 08-04-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   08-04-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 public with sharing class ListViewController
 {
 
@@ -676,6 +686,7 @@ public with sharing class ListViewController
         public ListViewWrapper listView;
         public List<RowWrapper> rows;
         public List<FieldWrapper> fieldMetaData;
+        public String csvData;
         
         public RowsWrapper(List_View__c listView)
         {
@@ -716,6 +727,40 @@ public with sharing class ListViewController
         public ListViewWrapper getListView()
         {
             return listView;
+        }
+
+        /*
+         * Method to retrieve the data in CSV format.
+         */
+        @AuraEnabled(cacheable=true)
+        public String getDataAsString()
+        {
+            String dataStr = '';
+
+            //first line is always column names. We make sure to escape delimiter
+            for (FieldWrapper column: fieldMetaData)
+            {
+                dataStr += '"' + column.name.replaceAll('"', '""') + '"' + ',';
+            }
+
+            dataStr = dataStr.removeEnd(',') + '\n';
+
+            //if we have no data then return
+            if (rows == null || rows.size() == 0) return dataStr;
+
+            //for each row of data
+            for (RowWrapper row: rows)
+            {
+                //get the field data. We make sure to escape delimiter
+                for (FieldWrapper rowData: row.fields)
+                {
+                    dataStr += '"' + rowData.value.replaceAll('"', '""') + '"' + ',';
+                }
+
+                dataStr = dataStr.removeEnd(',') + '\n';
+            }
+
+            return dataStr;
         }
 
         //Example - https://simpli-list-view-dev-dev-ed.lightning.force.com/lightning/o/Account/list?filterName=00B3h000003ZfMQEA0

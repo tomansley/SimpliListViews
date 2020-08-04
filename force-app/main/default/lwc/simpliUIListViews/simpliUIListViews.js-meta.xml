@@ -17,6 +17,7 @@
             <property name="displayRowCount" type="Boolean" default="true" label="Display Row Count" description="Indicates whether the row count should be displayed."/>
             <property name="displaySelectedCount" type="Boolean" default="true" label="Display Selected Count" description="Indicates whether the selected row count should be displayed."/>
             <property name="displayModified" type="Boolean" default="false" label="Display Modified Details" description="Indicates whether the last modified date and user should be displayed."/>
+            <property name="displayExportButton" type="Boolean" default="false" label="Allow Data Export" description="Indicates whether the list view data should be made available for download as a CSV file."/>
             <property name="allowRefresh" type="Boolean" default="false" label="Allow Automatic Data Refresh" description="Indicates whether the data refresh checkbox should be made available. This checkbox allows the user to automatically have the page data refreshed. Use with caution!"/>
             <property name="includedObjects" type="String" default="" label="Included Objects" description="A comma delimited list of API object names that are to be included on the page. If blank, all objects are included."/>
             <property name="excludedObjects" type="String" default="" label="Excluded Objects" description="A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded."/>

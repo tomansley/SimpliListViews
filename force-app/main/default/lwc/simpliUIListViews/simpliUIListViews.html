@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-03-2020
+  @last modified on  : 08-04-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -104,16 +104,30 @@
                 </template>
                 <template if:true={displayRowCount}>
                     <template if:true={listViewData}>
-                        <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                            Rows: {listViewData.rowCount}
-                        </lightning-layout-item>
+                        <template if:true={displayExportButton}>
+                            <lightning-layout-item title="Click to export list view data" padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                Rows:&nbsp;<a download={selectedListView} type='text/csv' onclick={handleDownloadData}>{listViewData.rowCount}</a>
+                            </lightning-layout-item>
+                        </template>
+                        <template if:false={displayExportButton}>
+                            <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                Rows: {listViewData.rowCount}
+                            </lightning-layout-item>
+                        </template>
                     </template>
                 </template>
                 <template if:true={displaySelectedCount}>
                     <template if:true={listViewData}>
-                        <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                            Selected: {selectedRecordCount}
-                        </lightning-layout-item>
+                        <template if:true={displayExportButton}>
+                            <lightning-layout-item title="Click to export selected list view data" padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                Selected:&nbsp;<a download={selectedListView} type='text/csv' onclick={handleSelectedDownloadData}>{selectedRecordCount}</a>
+                            </lightning-layout-item>
+                        </template>
+                        <template if:false={displayExportButton}>
+                            <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                Selected: {selectedRecordCount}
+                            </lightning-layout-item>
+                        </template>
                     </template>
                 </template>
                 <lightning-layout-item alignment-bump="left"  padding="horizontal-small">

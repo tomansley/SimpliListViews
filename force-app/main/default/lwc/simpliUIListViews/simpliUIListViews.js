@@ -40,6 +40,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api displaySelectedCount = false;
     @api displayOrigButton;             //this is not used....deprecated.
     @api displayModified      = false;
+    @api displayExportButton  = false;
 
     @track modifiedText;                //holds the last modified text that should be displayed based on the component config
     @track userConfigs;                 //holds all user configuration for this named component.
@@ -381,9 +382,56 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleAutoRefreshButtonClick(event) {
         console.log('Auto refresh button clicked!');
         console.log('Refresh was set to ' + this.isRefreshed);
+
         this.isRefreshed = !this.isRefreshed;
+
+        if (this.isRefreshed === true)
+        {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'List View Auto Refresh Started',
+                message: 'List view refresh has been started. To stop refreshing click the refresh button again.',
+                variant: 'success',
+                mode: 'dismissable'
+            }));
+
+        } else {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'List View Auto Refresh Stopped',
+                message: 'List view refresh has been stopped. To start refreshing click the refresh button again.',
+                variant: 'success',
+                mode: 'dismissable'
+            }));
+    
+        }
+
         this.handleAutoRefreshData();
         console.log('Refresh now set to ' + this.isRefreshed);
+    }
+
+    /*
+     * Called when the user clicks the data download button.
+     * This returns the data for the current list view in CSV format.
+     */
+    handleDownloadData(event) {
+        console.log('Data export button clicked');        
+        var csvData = this.listViewData.dataAsString;
+
+        var data = new Blob([csvData]);
+        event.target.href = URL.createObjectURL(data);
+
+    }
+
+    /*
+     * Called when the user clicks the SELECTED data download button.
+     * This returns the data for the current list view in CSV format.
+     */
+    handleSelectedDownloadData(event) {
+        console.log('Selected data export button clicked');        
+        var csvData = this.listViewData.dataAsString;
+
+        var data = new Blob([csvData]);
+        event.target.href = URL.createObjectURL(data);
+
     }
 
     /*
@@ -404,11 +452,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         if (event.target.value === 'all')
         {
 
-            console.log('Starting loop!');
             for(let i = 0; i < selectedRows.length; i++) {
                 selectedRows[i].checked = event.target.checked;
             }
-            console.log('Finishing loop!');
 
             if (event.target.checked === true) {
                 this.selectedRecordCount = this.listViewData.rowCount;
