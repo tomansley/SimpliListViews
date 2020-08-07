@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 6/11/2020, 8:05:37 AM
+ * @Last Modified On   : 08-06-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -422,6 +422,7 @@ public with sharing class HelperSchema {
     /*
      * Debugging method to show fields by key type
      */
+    @TestVisible
     private static String getObjectFieldDebug(String obj, String keyType, Map<String, Schema.SObjectField> fieldsByKeyType)
     {
 		String debug = '\n-----------------------------------------------\n';
@@ -575,6 +576,20 @@ public with sharing class HelperSchema {
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
     }
 
+	public static void checkListViewUpdateable()
+    {
+        HelperSchema.checkObjectUpdateable('Simpli_lv__List_View__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__API_Name__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Object_Name__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Describe__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'OwnerId');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Label__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Columns__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Query__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Id__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
+    }
+
     public static void checkListViewActionsCreatable()
     {
         HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action__c');
@@ -601,6 +616,15 @@ public with sharing class HelperSchema {
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
+
+        HelperSchema.checkObjectCreatable('simpli_lv__List_View_Config_Condition__c');
+        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Field_Name__c');
+        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
+        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Operator__c');
+        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Order__c');
+        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Value__c');
+
     }
 
     public class FieldData 

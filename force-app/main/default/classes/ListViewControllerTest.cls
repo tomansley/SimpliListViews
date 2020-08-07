@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 08-07-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   08-06-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 @isTest
 private class ListViewControllerTest {
 
@@ -5,6 +15,8 @@ private class ListViewControllerTest {
     private static void createSampleData()
     {
         ListViewHelper.insertCoreConfiguration();
+
+        HelperTest.insertAccount('Test Account 1');
     }
 
     @IsTest
@@ -100,6 +112,14 @@ private class ListViewControllerTest {
         System.assert(rows.getRows().size() > 0);
         System.assert(rows.getRowCount() > 0);
         System.assert(rows.getCoreListViewURL() != '');
+        System.assert(rows.getDataAsString() != null);
+        System.assert(rows.getListView() != null);
+
+        ListViewController.ListViewWrapper listViewWrapper = rows.getListView();
+        System.assert(listViewWrapper.getLastModifiedText() != null);
+        System.assert(listViewWrapper.getLastModifiedBy() != null);
+        System.assert(listViewWrapper.getLastModifiedDate() != null);
+
 
         ListViewController.RowWrapper row = rows.rows[0];
         System.assert(row != null);
@@ -107,8 +127,10 @@ private class ListViewControllerTest {
         System.assert(row.getCheckboxId() != null);
         System.assert(row.getFields() != null);
         System.assert(row.getFields().size() > 0);
+        System.assert(row.getHighlight() != null);
+        System.assert(row.getHighlightColor() != null);
 
-        ListViewController.FieldWrapper field = row.fields[0];
+        ListViewController.FieldWrapper field = row.getFields()[0];
         System.assert(field != null);
         System.assert(field.getLabel() != null);
         System.assert(field.getName() != null);
@@ -142,6 +164,12 @@ private class ListViewControllerTest {
         String result = ListViewController.processAction('Delete:null', '["' + acct.Id + '"]', '[]');
 
         System.assert(result.startsWith(ListViewAction.RESULT_OK));
+
+        Map<String, String> params = ListViewController.getListViewConfigParams('Account', 'PlatinumandGoldSLACustomers');
+
+        System.assert(params.size() > 0);
+
+        String validResult =  ListViewController.isValidListViewDataRequest('Account', 'OwnerId', '');
 
     }
 

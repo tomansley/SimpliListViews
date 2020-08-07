@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 08-06-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   08-06-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 @IsTest
 public with sharing class HelperSchemaTest {
     
@@ -24,6 +34,8 @@ public with sharing class HelperSchemaTest {
 
         System.assert(fields.size() > 0);
 
+        HelperSchema.getObjectFieldDebug('Account', HelperSchema.LABEL, fields);
+
         Schema.DisplayType fieldType = HelperSchema.getFieldType('Account', 'AnnualRevenue');
 
         System.assert(fieldType == Schema.DisplayType.CURRENCY);
@@ -43,5 +55,12 @@ public with sharing class HelperSchemaTest {
         System.assertEquals('User', typeName);
 
         Boolean isValid = HelperSchema.isValidSFDCFieldName('Account', 'Name');
+
+        HelperSchema.checkObjectFieldAccessible('Account', 'Name');
+
+        HelperSchema.checkObjectDeletable('Account', false);
+
+        HelperSchema.getObjectTypeForField('Account', 'Name');
+
     }
 }

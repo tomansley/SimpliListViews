@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-04-2020
+ * @last modified on  : 08-07-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -10,6 +10,8 @@
 **/
 public with sharing class ListViewController
 {
+
+    public static Set<String> validTotalColumns = new Set<String>{'integer', 'decimal', 'currency'};
 
     /*
      * Method to retrieve the progress of the initialization batch process
@@ -101,9 +103,9 @@ public with sharing class ListViewController
     }
 
     @AuraEnabled(cacheable=true)
-    public static Map<String, String> getListViewConfig(String objectType, String listViewName)
+    public static Map<String, String> getListViewConfigParams(String objectType, String listViewName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfig(' + objectType + ', ' + listViewName + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfigParams(' + objectType + ', ' + listViewName + ')');
         Map<String, String> configParams = new Map<String, String>();
 
         List<List_View_Config__c> configs = ListViewConfigHelper.getListViewConfig(objectType, listViewName);
@@ -351,8 +353,23 @@ public with sharing class ListViewController
             }
         }
 
-        //get the custom list view config
-        Map<String, String> lvConfig = getListViewConfig(objectName, listViewName);
+        //get the custom list view config and params
+        List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig(objectName, listViewName);
+        List_View_Config__c lvConfig = null;
+        Map<String, String> lvConfigParams = new Map<String, String>();
+        Map<String, List_View_Config_Condition__c> lvConfigConditions = new Map<String, List_View_Config_Condition__c>();
+
+        //we may not have any configuration for the provided list view names - FYI
+        if (lvConfigs.size() > 0) 
+        {
+            lvConfig = lvConfigs[0];
+
+            for (List_View_Config_Parameter__c param: lvConfig.List_View_Config_Parameters__r)
+                lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
+
+            for (List_View_Config_Condition__c cond: lvConfig.List_View_Config_Conditions__r)
+                lvConfigConditions.put(cond.Field_Name__c.toLowerCase(), cond);
+        }
 
         //get the core SFDC list view data
         Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectName, listViewName);
@@ -389,10 +406,10 @@ public with sharing class ListViewController
             }
 
             //get list view data
-            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinFieldName, joinRecordIds);
+            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfigParams, columnSortData, joinFieldName, joinRecordIds);
             
             //turn SObjects into wrapper classes.
-            rowData = handleRowsToWrapper(objectRows, listview, lvConfig, columnSortData);
+            rowData = handleRowsToWrapper(objectRows, listview, lvConfigConditions, lvConfigParams, columnSortData);
 
             rowData.objName    = objectName;
             rowData.coreListId = listview.Core_ListView_Id__c;
@@ -467,7 +484,10 @@ public with sharing class ListViewController
         * Method to take a list of SObjects retrieved using a listviews query and convert the
         * rows into something that front end lightning components can handle.
         */
-    private static RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData)
+    private static RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, 
+                                                   Map<String, List_View_Config_Condition__c> lvConfigConditions, 
+                                                   Map<String, String> lvConfigParams, 
+                                                   List<ListViewHelper.ColumnSortData> sortData)
     {
         System.debug('Starting ListViewController.handleRowsToWrapper - ' + System.now().getTime());
 
@@ -512,10 +532,10 @@ public with sharing class ListViewController
         System.debug('Checkpoint 1 ListViewController.handleRowsToWrapper - ' + System.now().getTime());
 
         //set the CUSTOM COLUMN meta data into the rows wrapper
-        if (lvConfig.get('AdditionalFields') != null && dataRows.size() > 0)
+        if (lvConfigParams.get('AdditionalFields') != null && dataRows.size() > 0)
         {
             //get the field names in a list
-            List<String> fields = lvConfig.get('AdditionalFields').deleteWhitespace().split(',');
+            List<String> fields = lvConfigParams.get('AdditionalFields').deleteWhitespace().split(',');
 
             //get the object type we are working with
             String objType = HelperSchema.getObjectType(dataRows[0]);
@@ -593,92 +613,110 @@ public with sharing class ListViewController
                 rowWrapper.addField(field);
 
             }
+
+            rowWrapper.calculateHighlighting(lvConfigConditions);
+        }
+
+        //if totals have been configured
+        if (lvConfigParams.get('TotalColumns') != null)
+        {
+
+            System.debug(LoggingLevel.DEBUG, 'Starting total column calculations!');
+
+            String totalColumns = lvConfigParams.get('TotalColumns');
+
+            System.debug(LoggingLevel.DEBUG, 'TotalColumns - ' + totalColumns);
+
+            RowWrapper totalWrapper = new RowWrapper('000000000000000000');
+            totalWrapper.highlight = true;
+            if (lvConfigParams.get('TotalColumnsColor') != null)
+                totalWrapper.highlightColor = lvConfigParams.get('TotalColumnsColor');
+            else
+                totalWrapper.highlightColor = '#FFFFFF';
+            totalWrapper.isTotals = true;
+
+            rows.addRow(totalWrapper);
+
+            //for each row of data
+            for (RowWrapper rowWrapper: rows.getRows())
+            {
+
+                if (rowWrapper.getIsTotals()) continue;
+
+                List<FieldWrapper> fields = rowWrapper.getFields();
+
+                //for each field
+                for (FieldWrapper fieldWrapper: fields)
+                {
+
+                    FieldWrapper totalField = totalWrapper.getField(fieldWrapper.getName());
+
+                    //if this is the first pass then we will need to create a wrapper 
+                    //regardless of whether its a column that is to be calculated.
+                    if (totalField == null)
+                    {
+                        String initValue = '';
+
+                        //for the very first column add the TOTALS string
+                        if (totalWrapper.getFields().size() == 0)
+                            initValue = 'TOTALS';
+                        //for any VALID calculation columns
+                        else if (validTotalColumns.contains(fieldWrapper.getType()))
+                            initValue = '0';
+                        else 
+                            initValue = '';
+
+                        totalField = new FieldWrapper(fieldWrapper.getLabel(),  
+                                            initValue,
+                                            fieldWrapper.getType(),
+                                            fieldWrapper.getName());
+
+                        System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
+
+                        totalWrapper.addField(totalField);
+                    }
+
+                    //see if the field is a column to be totalled
+                    if (totalColumns.contains(fieldWrapper.getName()))
+                    {
+                        System.debug(LoggingLevel.DEBUG, 'Found a column to total - ' + fieldWrapper.getName());
+
+                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getValue() - ' + fieldWrapper.getValue());
+                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getType() - ' + fieldWrapper.getType());
+                        System.debug(LoggingLevel.DEBUG, 'totalField.value - ' + totalField.value);
+                        System.debug(LoggingLevel.DEBUG, 'totalField.getType() - ' + totalField.getType());
+
+                        //if this is a valid column for total calculation and there is a value to calculate
+                        if (validTotalColumns.contains(totalField.getType()) && fieldWrapper.getValue() != null && fieldWrapper.getValue() != '')
+                        {
+                            if (totalField.getType() == 'currency')
+                                totalField.value = String.valueOf(Decimal.valueOf(String.valueOf(fieldWrapper.getValue())) + Decimal.valueOf(totalField.value));
+                            else
+                                totalField.value = String.valueOf(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.value));
+
+                            
+                        }
+                    }
+                }
+
+
+            }
+
         }
 
         System.debug('Ending ListViewController.handleRowsToWrapper - ' + System.now().getTime());
         return rows;
     }
 
-    //-----------------------------
-    // INTERNAL CLASS
-    //-----------------------------
+    //=============================
+    // INTERNAL CLASSES
+    //=============================
     
-    //class which wraps up an action
-    public class ActionWrapper
-    {
-        public List_View_Action__c action;
-        public List<ActionParameterWrapper> parameters;
-
-        public ActionWrapper(List_View_Action__c action)
-        {
-            this.action = action;
-            parameters = new List<ActionParameterWrapper>();
-            for (List_View_Action_Parameter__c param: action.List_View_Action_Parameters__r)
-                parameters.add(new ActionParameterWrapper(param));
-        }
-
-        @AuraEnabled(cacheable=true)
-        public List<ActionParameterWrapper> getParameters()
-        {
-            return parameters;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getLabel()
-        {
-            return action.Label__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getObjectType()
-        {
-            return action.Object_Type__c;
-        }
-
-    }
-
-    public class ActionParameterWrapper
-    {
-        public List_View_Action_Parameter__c param;
-
-        public ActionParameterWrapper(List_View_Action_Parameter__c param)
-        {
-            this.param = param;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getAPIName()
-        {
-            return param.Field_API_Name__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getLabel()
-        {
-            return param.Label__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getType()
-        {
-            return param.Type__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getValue()
-        {
-            return param.Default_Value__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getPlaceholder()
-        {
-            return param.Placeholder_Text__c;
-        }
-
-    }
-
-    //class which wraps up all the row data for sending to front end.
+    //-------------------------------------------------------------------
+    //ROWS - class which wraps up ALL row data for sending to front end.
+    //       this includes the table data itself as well as any rows, 
+    //       row or field config.
+    //-------------------------------------------------------------------
     public class RowsWrapper
     {
         public String objName;
@@ -752,7 +790,7 @@ public with sharing class ListViewController
             for (RowWrapper row: rows)
             {
                 //get the field data. We make sure to escape delimiter
-                for (FieldWrapper rowData: row.fields)
+                for (FieldWrapper rowData: row.getFields())
                 {
                     dataStr += '"' + rowData.value.replaceAll('"', '""') + '"' + ',';
                 }
@@ -772,27 +810,41 @@ public with sharing class ListViewController
         
     }
     
+    //-----------------------------------------------------------
+    //ROW - wrapper which holds one ROW of field data and config.
+    //-----------------------------------------------------------
     public class RowWrapper
     {
 
-        public List<FieldWrapper> fields;
-        public String rowId;
+        public Map<String, FieldWrapper> fields; //the list of fields and values for the row
+        public String rowId;                     //the SFDC record id. USed to identify rows on the UI
+        public Boolean highlight;                //indicates whether the row should be highlighted due to conditions set by user
+        public String highlightColor;            //the color the row should be set to if being highlighted.
+        public Boolean isTotals;                 //indicates whether this row is a totals row.
 
         public RowWrapper(String rowId)
         {
             this.rowId = rowId;
-            fields = new List<FieldWrapper>();
+            this.highlight = false;
+            this.highlightColor = '';
+            fields = new Map<String, FieldWrapper>();
+            isTotals = false;
         }
 
         public void addField(FieldWrapper field)
         {
-            fields.add(field);
+            fields.put(field.getName(), field);
         }
 
         @AuraEnabled(cacheable=true)
         public List<FieldWrapper> getFields()
         {
-            return fields;
+            return fields.values();
+        }
+
+        public FieldWrapper getField(String apiName)
+        {
+            return fields.get(apiName);
         }
         
         @AuraEnabled(cacheable=true)
@@ -806,39 +858,64 @@ public with sharing class ListViewController
         {
             return 'checkbox:' + rowId;
         }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getHighlight()
+        {
+            return highlight;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTotals()
+        {
+            return isTotals;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getHighlightColor()
+        {
+            return highlightColor;
+        }
+
+        /*
+         * Method to calculate and set the conditional highlighting of rows based on provided configuration conditions.
+         * We pass in the condition details each time as its a complex object that cannot be passed to the lightning UI
+         */
+        public void calculateHighlighting(Map<String, List_View_Config_Condition__c> lvConfigConditions)
+        {
+            System.debug(LoggingLevel.DEBUG, 'Calculating highlighting for row!');
+            System.debug(LoggingLevel.DEBUG, 'Conditions are - ' + lvConfigConditions);
+            //for each field
+            for (FieldWrapper field: fields.values())
+            {
+                System.debug(LoggingLevel.DEBUG, 'Looking at field with name = ' + field.label + ' and value = ' + field.value);
+
+                //check of there is a condition name which matches a field
+                List_View_Config_Condition__c condition = lvConfigConditions.get(field.label.toLowerCase());
+
+                //if there is then validate
+                if (condition != null)
+                {
+
+                    System.debug(LoggingLevel.DEBUG, 'We have a matching condition!');
+
+                    highlight = ListViewConfigHelper.validateFieldCondition(field.value, condition);
+
+                    System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + highlight);
+
+                    //get the highlight color as well regardless.
+                    if (highlight)
+                        highlightColor = condition.Highlight_Color__c;
+                }
+            }
+        }
     }
 
-    public class ListViewWrapper
-    {
-        public DateTime lastModifiedDate;
-        public String lastModifiedBy;
-
-        public ListViewWrapper(List_View__c listView)
-        {
-            lastModifiedDate = listView.LastModifiedDate;
-            lastModifiedBy   = listView.LastModifiedBy.Name;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getLastModifiedText()
-        {
-            return  'Last Modified By: ' + lastModifiedBy + ' - ' + lastModifiedDate;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getLastModifiedBy()
-        {
-            return lastModifiedBy;
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public DateTime getLastModifiedDate()
-        {
-            return lastModifiedDate;
-        }
-        
-    }
-
+    //---------------------------------------------------------------------
+    //FIELD - wrapper holding data for a single cell in a table. This data 
+    //        includes both table data as well as config for how it should 
+    //        be displayed.
+    //---------------------------------------------------------------------
     public class FieldWrapper
     {
 
@@ -935,9 +1012,125 @@ public with sharing class ListViewController
         
     }
 
+    //-------------------------------------------------------------------
+    //LIST VIEW - wrapper which holds list view information. Note that 
+    //            we cannot pass any SObject to a lightning component so 
+    //            need to add fields to this wrapper as we need them.
+    //-------------------------------------------------------------------
+    public class ListViewWrapper
+    {
+        public DateTime lastModifiedDate;
+        public String lastModifiedBy;
+
+        public ListViewWrapper(List_View__c listView)
+        {
+            lastModifiedDate = listView.LastModifiedDate;
+            lastModifiedBy   = listView.LastModifiedBy.Name;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLastModifiedText()
+        {
+            return  'Last Modified By: ' + lastModifiedBy + ' - ' + lastModifiedDate;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLastModifiedBy()
+        {
+            return lastModifiedBy;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public DateTime getLastModifiedDate()
+        {
+            return lastModifiedDate;
+        }
+        
+    }
+
+    //---------------------------------------
+    //ACTION - class which wraps up an action
+    //---------------------------------------
+    public class ActionWrapper
+    {
+        public List_View_Action__c action;
+        public List<ActionParameterWrapper> parameters;
+
+        public ActionWrapper(List_View_Action__c action)
+        {
+            this.action = action;
+            parameters = new List<ActionParameterWrapper>();
+            for (List_View_Action_Parameter__c param: action.List_View_Action_Parameters__r)
+                parameters.add(new ActionParameterWrapper(param));
+        }
+
+        @AuraEnabled(cacheable=true)
+        public List<ActionParameterWrapper> getParameters()
+        {
+            return parameters;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLabel()
+        {
+            return action.Label__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getObjectType()
+        {
+            return action.Object_Type__c;
+        }
+
+    }
+
+    //---------------------------------------------------------
+    //ACTION PARAM - class which wraps up an action parameter.
+    //---------------------------------------------------------
+    public class ActionParameterWrapper
+    {
+        public List_View_Action_Parameter__c param;
+
+        public ActionParameterWrapper(List_View_Action_Parameter__c param)
+        {
+            this.param = param;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getAPIName()
+        {
+            return param.Field_API_Name__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLabel()
+        {
+            return param.Label__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getType()
+        {
+            return param.Type__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getValue()
+        {
+            return param.Default_Value__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getPlaceholder()
+        {
+            return param.Placeholder_Text__c;
+        }
+
+    }
+
     /* 
-        * Have to build our own SelectOption object as Lightning cannot use System.SelectOption
-        */
+    * Have to build our own SelectOption object as Lightning cannot use System.SelectOption
+    */
     public class SelectOption implements Comparable {
         public SelectOption(String value, String label) {
             this.value = value;

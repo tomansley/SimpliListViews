@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-04-2020
+  @last modified on  : 08-07-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -237,15 +237,17 @@
                 </thead>
                 <tbody>
                     <template for:each={listViewData.rows} for:item="rowData">
-                        <tr key={rowData.rowId} style="height: 30px;">
-                            <td class="slds-text-align_right" style="width:3.25rem">
+                        <tr key={rowData.rowId} style="height: 30px;" bgcolor={rowData.highlightColor}>
+                           <td class="slds-text-align_right" style="width:3.25rem">
                                 <div class="slds-checkbox">
-                                    <lightning-input type="checkbox" 
-                                                    variant="label-hidden" 
-                                                    name={rowData.checkBoxId} 
-                                                    value={rowData.rowId} 
-                                                    onchange={handleRecordSelectChange}>
-                                    </lightning-input>
+                                    <template if:false={rowData.isTotals}>
+                                        <lightning-input type="checkbox" 
+                                                        variant="label-hidden" 
+                                                        name={rowData.checkBoxId} 
+                                                        value={rowData.rowId} 
+                                                        onchange={handleRecordSelectChange}>
+                                        </lightning-input>
+                                    </template>
                                 </div>
                             </td>
                             <template for:each={rowData.fields} for:item="fieldData">

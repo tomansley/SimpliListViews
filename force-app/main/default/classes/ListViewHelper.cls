@@ -1,3 +1,11 @@
+/**
+ * @author            : tom.h.ansley@medtronic.com
+ * @last modified on  : 08-07-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 global with sharing class ListViewHelper {
     
     /*
@@ -13,7 +21,7 @@ global with sharing class ListViewHelper {
 
         System.debug(LoggingLevel.DEBUG, 'JSON - ' + jsonStr);
 
-        ListViewConfigHelper.setOrgWideConfig('List View Objects', jsonStr);
+        ListViewConfigHelper.setOrgWideConfigParam('List View Objects', jsonStr);
 
     }
 
@@ -23,6 +31,8 @@ global with sharing class ListViewHelper {
      */
     public static Map<Id, ListView> getChangedListViews(Integer recLimit)
     {
+
+        HelperSchema.checkObjectAccessible('ListView');
 
         Integer soqlLimit = 5000;
         if (recLimit != null)
@@ -90,6 +100,9 @@ global with sharing class ListViewHelper {
             }
     
         }
+
+        HelperSchema.checkObjectCreatable('List_View__c');
+        HelperSchema.checkObjectUpdateable('List_View__c');
 
         upsert updatedListViews Primary_Key__c;
 
@@ -191,9 +204,11 @@ global with sharing class ListViewHelper {
 
             listViewObjects =  new Map<String, String>();
 
-            String exclObjs = ListViewConfigHelper.getOrgWideConfig('Excluded Object Types');
+            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('Excluded Object Types');
             Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
     
+            HelperSchema.checkObjectAccessible('List_View__c');
+
             AggregateResult[] aggListViewObjects = [SELECT Object_Name__c 
                                                  FROM List_View__c 
                                                  WHERE Object_Name__c NOT IN :orgWideExcObjs 
@@ -213,7 +228,7 @@ global with sharing class ListViewHelper {
         
         } else {
 
-            String jsonStr = ListViewConfigHelper.getOrgWideConfig('List View Objects');
+            String jsonStr = ListViewConfigHelper.getOrgWideConfigParam('List View Objects');
 
             if (jsonStr != null && jsonStr != '')
                 listViewObjects =  (Map<String, String>) JSON.deserialize(jsonStr, Map<String,String>.class);    
@@ -221,7 +236,7 @@ global with sharing class ListViewHelper {
                 listViewObjects = new Map<String, String>();
         }
 
-        String inclObjs = ListViewConfigHelper.getOrgWideConfig('Included Object Types');
+        String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('Included Object Types');
         Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
 
         for (String objAPIName: listViewObjects.keySet())
@@ -248,6 +263,8 @@ global with sharing class ListViewHelper {
     public static Map<Id, List_View__c> getListViewsById(Set<Id> lvIds)
     {
         System.debug(LoggingLevel.DEBUG, 'lvIds - ' + lvIds);
+
+        HelperSchema.checkObjectAccessible('List_View__c');
 
         List<List_View__c> listviews = [SELECT Label__c,
                                                  Describe__c,
@@ -339,6 +356,8 @@ global with sharing class ListViewHelper {
         System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
         System.debug(LoggingLevel.DEBUG, 'listViewAPIName - ' + listViewAPIName);
 
+        HelperSchema.checkObjectAccessible('List_View__c');
+
         //get list view data
         List<List_View__c> listviews = [SELECT Label__c,
                                                 Describe__c,
@@ -379,12 +398,12 @@ global with sharing class ListViewHelper {
      * Method to use the SOQL query retrieved from the core listview describe, amend it to include
      * the possible additional fields added by the user and then use it to get the data.
      */ 
-    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfigParams, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
 
         String debug = '\n\nStarting getListViewData - \n';
         debug += 'listview           - ' + listview + '\n';
-        debug += 'lvConfig           - ' + lvConfig + '\n';
+        debug += 'lvConfigParams     - ' + lvConfigParams + '\n';
         debug += 'sortData           - ' + sortData + '\n';
         debug += 'joinFieldName      - ' + joinFieldName + '\n';
         if (joinRecordIds != null)
@@ -414,9 +433,9 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Update all additional fields on the SELECT statement
         //------------------------------------------------------
-        if (lvConfig.get('AdditionalFields') != null)
+        if (lvConfigParams.get('AdditionalFields') != null)
         {
-            List<String> allFields = lvConfig.get('AdditionalFields').split(',');
+            List<String> allFields = lvConfigParams.get('AdditionalFields').split(',');
             for (String field: allFields)
             {
                 //do security validation on additional fields. If the field is a lookup the security is performed later
@@ -424,7 +443,7 @@ global with sharing class ListViewHelper {
                     HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field);
             }
 
-            selectStr += ', ' + lvConfig.get('AdditionalFields');
+            selectStr += ', ' + lvConfigParams.get('AdditionalFields');
         }
 
         //------------------------------------------------------
@@ -471,8 +490,8 @@ global with sharing class ListViewHelper {
         } else {
 
             //if we have a list view limit then use it
-            if (lvConfig.get('ReturnSize') != null)
-                limitStr += lvConfig.get('ReturnSize');
+            if (lvConfigParams.get('ReturnSize') != null)
+                limitStr += lvConfigParams.get('ReturnSize');
             
             //otherwise use 250
             else
@@ -574,14 +593,19 @@ global with sharing class ListViewHelper {
         List<List_View_Config__c> configs = new List<List_View_Config__c>();
 
         List_View_Config__c config = new List_View_Config__c();
-        config.Name                = 'Account';
-        config.List_View_Object__c = 'PlatinumandGoldSLACustomers';
+        config.Name                = 'PlatinumandGoldSLACustomers';
+        config.List_View_Object__c = 'Account';
         configs.add(config);
 
         List_View_Config__c config2 = new List_View_Config__c();
         config2.Name                = 'All';
         config2.List_View_Object__c = 'All';
         configs.add(config2);
+
+        List_View_Config__c config3 = new List_View_Config__c();
+        config3.Name                = 'AllAccounts';
+        config3.List_View_Object__c = 'Account';
+        configs.add(config3);
 
         insert configs;
 
@@ -592,6 +616,20 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'AdditionalFields';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
+        params2.add(param2);
+        
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config.Id;
+        param2.Parameter_Name__c   = 'TotalColumns';
+        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Value__c  = 'AnnualRevenue';
+        params2.add(param2);
+        
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config.Id;
+        param2.Parameter_Name__c   = 'TotalColumnsColor';
+        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Value__c  = '#E5F0FA';
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -615,7 +653,42 @@ global with sharing class ListViewHelper {
         param2.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
         params2.add(param2);
 
+        param2 = new List_View_Config_Parameter__c();
+		param2.Parameter_Name__c = 'AdditionalFields';
+		param2.Parameter_Type__c = 'String';
+		param2.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
+		param2.List_View_Config__c = config3.Id;
+        params2.add(param2);
+        
+        param2 = new List_View_Config_Parameter__c();
+		param2.Parameter_Name__c = 'TotalColumns';
+		param2.Parameter_Type__c = 'String';
+		param2.Parameter_Value__c = 'AnnualRevenue';
+		param2.List_View_Config__c = config3.Id;
+        params2.add(param2);
+        
+        param2 = new List_View_Config_Parameter__c();
+		param2.Parameter_Name__c = 'TotalColumnsColor';
+		param2.Parameter_Type__c = 'String';
+		param2.Parameter_Value__c = '#E5F0FA';
+		param2.List_View_Config__c = config3.Id;
+        params2.add(param2);
+        
         insert params2;
+
+        List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
+
+        List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
+        condition.List_View_Config__c = config.Id;
+        condition.Field_Name__c       = 'Account Name';
+        condition.Operator__c         = 'Contains';
+        condition.Value__c            = 'Burlington';
+        condition.Order__c            = '1';
+        condition.Highlight_Color__c  = '#c59e9e';
+        conditions.add(condition);
+
+        insert conditions;
+
     }
 
     /*

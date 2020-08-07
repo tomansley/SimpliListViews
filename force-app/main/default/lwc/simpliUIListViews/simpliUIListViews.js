@@ -11,7 +11,7 @@ import getListViewObjects from '@salesforce/apex/ListViewController.getListViewO
 import getObjectListViews from '@salesforce/apex/ListViewController.getObjectListViews';
 import getListViewData from '@salesforce/apex/ListViewController.getListViewData';
 import getListViewsActions from '@salesforce/apex/ListViewController.getListViewsActions';
-import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
+import getListViewConfigParams from '@salesforce/apex/ListViewController.getListViewConfigParams';
 import updateChangedListViews from '@salesforce/apex/ListViewController.updateChangedListViews';
 import updateAllListViews from '@salesforce/apex/ListViewController.updateAllListViews';
 import updateSingleListView from '@salesforce/apex/ListViewController.updateSingleListView';
@@ -53,7 +53,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track selectedAction;              //holds the selected action API name if one is chosen.
     @track selectedActionLabel;         //holds the selected action label if one is chosen.
     @track objectActionList;            //holds the list of available actions for the selected object
-    @track listViewConfig;              //holds the config parameters for the chosen list view (if one exists)
+    @track listViewConfigParams;        //holds the config parameters for the chosen list view (if one exists)
     @track showActionModal;             //indicates whether the action modal form should be displayed.
     @track selectedRecordIdsStr;        //holds the set of record ids that have been selected as a string
     @track selectedRecordCount = 0;     //the number of records selected. Passed into the modal dialog.  
@@ -145,16 +145,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     /*
      * Wiring to get the list of config parameters for the chosen object and list view
      */
-    @wire (getListViewConfig, { objectType: '$selectedObject', listViewName: '$selectedListView' })
+    @wire (getListViewConfigParams, { objectType: '$selectedObject', listViewName: '$selectedListView' })
     wiredListViewsConfigs({ error, data }) {
         if (data) { 
             console.log('List view config retrieval successful'); 
-            this.listViewConfig = data; 
+            this.listViewConfigParams = data; 
             this.error = undefined; 
         } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
-            this.listViewConfig = undefined; 
+            this.listViewConfigParams = undefined; 
             this.spinner = false;
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Configs',

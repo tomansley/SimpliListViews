@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 08-06-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 global with sharing class ListViewProcessBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
     
     private String query = 'SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE SObjectType != null';
@@ -32,7 +42,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
         try {
 
             //never get the excluded objects
-            String exclObjs = ListViewConfigHelper.getOrgWideConfig('Excluded Object Types');
+            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('Excluded Object Types');
             Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
             
             if (!orgWideExcObjs.isEmpty())
@@ -115,6 +125,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             }
 
             HelperSchema.checkListViewCreatable();
+            HelperSchema.checkListViewUpdateable();
             
             upsert simpliListViews Primary_Key__c;		
 

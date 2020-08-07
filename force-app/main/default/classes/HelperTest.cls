@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 08-07-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   08-07-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 public with sharing class HelperTest {
 
     public static Account insertAccount(String name)
@@ -7,7 +17,8 @@ public with sharing class HelperTest {
 		acc.BillingCity = 'Chicago';
 		acc.BillingState = 'IL';
 		acc.BillingPostalCode = '60601';
-		acc.BillingCountry = 'USA';
+        acc.BillingCountry = 'USA';
+        acc.AnnualRevenue = 125000;
 		insert acc;
 		
 		return acc;
@@ -49,13 +60,30 @@ public with sharing class HelperTest {
 
 		insert config;
 
+        List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
+
 		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'AdditionalFields';
 		param.Parameter_Type__c = 'String';
-		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name';
+		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
 		param.List_View_Config__c = config.Id;
-		
-		insert param;
+        params.add(param);
+        
+        param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = 'TotalColumns';
+		param.Parameter_Type__c = 'String';
+		param.Parameter_Value__c = 'AnnualRevenue';
+		param.List_View_Config__c = config.Id;
+        params.add(param);
+        
+        param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = 'TotalColumnsColor';
+		param.Parameter_Type__c = 'String';
+		param.Parameter_Value__c = '#E5F0FA';
+		param.List_View_Config__c = config.Id;
+        params.add(param);
+        
+        insert params;
 
 		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'List View Objects'];
 		orgWideConfig.Parameter_Value__c = '{"Account":"Account"}';
