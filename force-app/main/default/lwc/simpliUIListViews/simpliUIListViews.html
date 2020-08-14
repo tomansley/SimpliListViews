@@ -85,7 +85,7 @@
                     </template>
                 </template>
                 <template if:true={listViewData}>
-                    <lightning-layout-item padding="horizontal-small">
+                    <lightning-layout-item>
                         <template if:false={isPinned}>
                             <lightning-button-icon title="Pin this list view." 
                                                     size="medium" 
@@ -173,6 +173,15 @@
                                     </template>
                                 </lightning-layout-item>
                             </template>
+                        </template>
+                        <template if:true={allowAdmin}>
+                            <lightning-layout-item>
+                                <lightning-button-icon title="List view administration." 
+                                                        size="medium" 
+                                                        icon-name="utility:settings" 
+                                                        onclick={handleAdminButtonClick}>
+                                </lightning-button-icon>
+                            </lightning-layout-item>
                         </template>
                     </lightning-layout>
                 </lightning-layout-item>
@@ -271,7 +280,7 @@
         </lightning-card>
     </template>
 
-    <!-- The modal view if the action button is pressed and we need to display something -->
+    <!-- The modal view if the ACTION button is pressed and we need to display something -->
     <c-simpli-u-i-list-views-modal show-modal={showActionModal}
                                     action-api-name={selectedAction}
                                     record-count={selectedRecordCount}
@@ -279,5 +288,12 @@
                                     onprocessed={processModal}
                                     oncancelled={cancelModal}>
     </c-simpli-u-i-list-views-modal>
+
+    <!-- The modal view if the ADMIN button is pressed and we need to display something -->
+    <c-simpli-u-i-list-views-admin-modal show-modal={showAdminModal}
+                                    list-view-object={selectedObject}
+                                    list-view-name={selectedListView}
+                                    onclose={processAdminModal}>
+    </c-simpli-u-i-list-views-admin-modal>
 
 </template>

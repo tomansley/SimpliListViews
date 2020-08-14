@@ -1,0 +1,215 @@
+<!--
+  @description       : 
+  @author            : tom.h.ansley@medtronic.com
+  @group             : 
+  @last modified on  : 08-14-2020
+  @last modified by  : tom.h.ansley@medtronic.com
+  Modifications Log 
+  Ver   Date         Author                       Modification
+  1.0   08-12-2020   tom.h.ansley@medtronic.com   Initial Version
+-->
+<template>
+    <template if:true={showModal}>
+        <div>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container" style="align-items: center;">
+                    <header class="slds-modal__header" style="min-width: 1100px;">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close" onclick={handleClose}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" variant="warning"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{listViewConfig.name} List View Config</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-param-content" style="min-width: 1100px;">
+                        <h4 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate" style="padding-bottom: 10px;">List View Configuration</h4>
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr class="slds-line-height_reset" style="height: 30px;">
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Field Name">Parameter Name</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Value">Value</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={listViewConfig.parameters} for:item="param">
+                                    <tr key={param.name} class="slds-hint-parent" style="height: 30px;">
+
+                                        <td key={param.name} class="">
+                                            <div key={param.name} class="slds-truncate" title={param.name}>
+                                                {param.name}
+                                                &nbsp;
+                                                <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text="close"></lightning-icon> 
+                                            </div>
+                                        </td>
+                                        <td key={param.name} data-label={param.name}>
+                                            <div class="slds-truncate" title={param.value}>
+                                                <template if:true={param.updateImmediate}>
+                                                    <lightning-input type={param.type} 
+                                                                        variant="label-hidden" 
+                                                                        name={param.name} 
+                                                                        onchange={handleParamUpdate}
+                                                                        placeholder={param.placeHolder}
+                                                                        value={param.value}>
+                                                    </lightning-input>
+                                                </template>
+                                                <template if:false={param.updateImmediate}>
+                                                    <lightning-input type={param.type} 
+                                                                        variant="label-hidden" 
+                                                                        name={param.name} 
+                                                                        onfocus={handleParamLoad}
+                                                                        onblur={handleParamUpdate}
+                                                                        placeholder={param.placeHolder}
+                                                                        value={param.value}>
+                                                    </lightning-input>
+                                                </template>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>            
+                            </tbody>
+                        </table>      
+                    </div>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-condition-content" style="min-width: 1100px;">
+                        <h4 id="modal-heading-03" class="slds-text-heading_medium slds-hyphenate" style="padding-bottom: 10px;">Conditional Highlighting</h4>
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr class="slds-line-height_reset" style="height: 30px;">
+                                    <th class="" scope="col" style="width:1.25rem">
+                                        <div class="slds-truncate" title="Add/Remove"></div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Field Name">Field</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Operator">Operator</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Value">Value</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Order">Precedence</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Color">Color</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={listViewConfig.conditions} for:item="condition">
+                                    <tr key={condition.fieldLabel} class="slds-hint-parent" style="height: 30px;">
+                                        <td key={condition.fieldLabel} data-label={condition.fieldLabel} style="width:1.25rem">
+                                            <div class="slds-truncate">
+                                                <lightning-button-icon icon-name="utility:dash"  
+                                                                       alternative-text="Remove Condition" 
+                                                                       title="Remove Condition"
+                                                                       name={condition.id}
+                                                                       onclick={handleConditionChange}
+                                                                       value="remove">
+                                                </lightning-button-icon>
+                                            </div>
+                                        </td>
+                                        <td key={condition.fieldLabel} data-label={condition.fieldLabel}>
+                                            <div class="slds-truncate" title="Field Name">
+                                                <lightning-formatted-text value={condition.fieldLabel}></lightning-formatted-text>
+                                            </div>
+                                        </td>
+                                        <td key={condition.fieldLabel} data-label={condition.operator}>
+                                            <div title="Operator">
+                                                <lightning-formatted-text value={condition.operator}></lightning-formatted-text>                        
+                                            </div>
+                                        </td>
+                                        <td key={condition.fieldLabel} data-label={condition.value}>
+                                            <div class="slds-truncate" title="Value">
+                                                <lightning-formatted-text value={condition.value}></lightning-formatted-text>
+                                            </div>
+                                        </td>
+                                        <td key={condition.fieldLabel} data-label={condition.order}>
+                                            <div title="Order">
+                                                <lightning-formatted-text value={condition.order}></lightning-formatted-text>                        
+                                            </div>
+                                        </td>
+                                        <td key={condition.fieldLabel} data-label={condition.color}>
+                                            <div class="slds-truncate" title="Color">
+                                                <lightning-formatted-text value={condition.color}></lightning-formatted-text>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>            
+                                <tr class="slds-hint-parent" style="height: 30px;">
+                                    <td style="width:1.25rem">
+                                        <div class="slds-truncate">
+                                            <lightning-button-icon icon-name="utility:add"  
+                                                                   alternative-text="Add Condition" 
+                                                                   title="Add Condition"
+                                                                   onclick={handleConditionChange}
+                                                                   value="add">
+                                            </lightning-button-icon>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" title="Field Label">
+                                            <lightning-input type="string" 
+                                                                variant="label-hidden" 
+                                                                onblur={handleConditionFieldChange}
+                                                                placeholder="Enter a Value..."
+                                                                value="">
+                                            </lightning-input>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div title="Operator">
+                                            <lightning-combobox placeholder="Enter a Value..."
+                                                                value="Equals"
+                                                                onblur={handleConditionOperatorChange}
+                                                                options={operatorList}
+                                                                variant=label-hidden>
+                                            </lightning-combobox>                        
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" title="Value">
+                                            <lightning-input type="string" 
+                                                                variant="label-hidden" 
+                                                                onblur={handleConditionValueChange}
+                                                                placeholder="Enter a Value..."
+                                                                value="">
+                                            </lightning-input>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div title="Order">
+                                            <lightning-combobox placeholder="Enter a Value..."
+                                                                value="1" 
+                                                                onblur={handleConditionOrderChange}
+                                                                options={orderList}
+                                                                variant=label-hidden>
+                                            </lightning-combobox>                        
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" title="Color">
+                                            <lightning-input type="color" 
+                                                                variant="label-hidden" 
+                                                                onchange={handleConditionColorChange}
+                                                                value="#000000">
+                                            </lightning-input>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>      
+                    </div>
+                    <footer class="slds-modal__footer" style="min-width: 1100px;">
+                        <button class="slds-button slds-button_brand" onclick={handleCloseClick}>Close</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+</template>

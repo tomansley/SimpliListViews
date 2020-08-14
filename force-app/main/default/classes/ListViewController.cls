@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-07-2020
+ * @last modified on  : 08-14-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -118,6 +118,21 @@ public with sharing class ListViewController
             configParams.put(param.Parameter_Name__c, param.Parameter_Value__c);         
         
         return configParams;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static ListViewConfigWrapper getListViewConfig(String objectType, String listViewName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfig(' + objectType + ', ' + listViewName + ')');
+        ListViewConfigWrapper lvConfig = null;
+
+        List<List_View_Config__c> configs = ListViewConfigHelper.getListViewConfig(objectType, listViewName);
+
+        if (configs.size() == 0) return new ListViewConfigWrapper(listViewName, objectType);
+
+        lvConfig = new ListViewConfigWrapper(configs[0]);
+
+        return lvConfig;
     }
 
     @AuraEnabled
@@ -355,21 +370,11 @@ public with sharing class ListViewController
 
         //get the custom list view config and params
         List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig(objectName, listViewName);
-        List_View_Config__c lvConfig = null;
-        Map<String, String> lvConfigParams = new Map<String, String>();
-        Map<String, List_View_Config_Condition__c> lvConfigConditions = new Map<String, List_View_Config_Condition__c>();
+        ListViewConfigWrapper lvConfigWrapper = null;
 
         //we may not have any configuration for the provided list view names - FYI
         if (lvConfigs.size() > 0) 
-        {
-            lvConfig = lvConfigs[0];
-
-            for (List_View_Config_Parameter__c param: lvConfig.List_View_Config_Parameters__r)
-                lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
-
-            for (List_View_Config_Condition__c cond: lvConfig.List_View_Config_Conditions__r)
-                lvConfigConditions.put(cond.Field_Name__c.toLowerCase(), cond);
-        }
+            lvConfigWrapper = new ListViewConfigWrapper(lvConfigs[0]);
 
         //get the core SFDC list view data
         Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectName, listViewName);
@@ -406,10 +411,10 @@ public with sharing class ListViewController
             }
 
             //get list view data
-            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfigParams, columnSortData, joinFieldName, joinRecordIds);
+            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfigWrapper.listViewConfig, columnSortData, joinFieldName, joinRecordIds);
             
             //turn SObjects into wrapper classes.
-            rowData = handleRowsToWrapper(objectRows, listview, lvConfigConditions, lvConfigParams, columnSortData);
+            rowData = handleRowsToWrapper(objectRows, listview, lvConfigWrapper, columnSortData);
 
             rowData.objName    = objectName;
             rowData.coreListId = listview.Core_ListView_Id__c;
@@ -417,6 +422,68 @@ public with sharing class ListViewController
         }
         return rowData;
 
+    }
+
+    @AuraEnabled
+    public static String processParamChange(String objectName, String listViewName, String paramName, String paramValue)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.processParamChange(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ')');
+
+        String rtnStr = 'Ok:';
+
+        try {
+            ListViewConfigHelper.updateListViewParam(objectName, listViewName, paramName, paramValue);
+        } catch (Exception e) {
+            rtnStr = 'Failed:' + e.getMessage();
+        }
+
+        return rtnStr;
+    }
+
+    /*
+     * action = remove or add
+     * conditionData = condition id (if remove) or condition data map (if add)
+     */
+    @AuraEnabled
+    public static String processConditionChange(String objectName, String listViewName, String action, String conditionData)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')');
+
+        String rtnStr = 'Ok:';
+
+        if (action == 'add')
+        {
+            //get the field/value pairs of the update data
+            List<Object> listValues = (List<Object>) JSON.deserializeUntyped(conditionData);
+            Map<String, Object> mapValues = new Map<String, Object>();
+            for (Object key: listValues)
+            {
+                List<Object> keyValues = (List<Object>) key;
+                mapValues.put( (String) keyValues[0], keyValues[1]);
+            }
+
+            try {
+                ListViewConfigHelper.addListViewCondition(objectName, 
+                                                          listViewName, 
+                                                          (String) mapValues.get('field'), 
+                                                          (String) mapValues.get('operator'),
+                                                          (String) mapValues.get('value'),
+                                                          (String) mapValues.get('order'),
+                                                          (String) mapValues.get('color'));
+            } catch (Exception e) {
+                rtnStr = 'Failed:' + e.getMessage();
+            }
+
+        } else if (action == 'remove')
+        {
+            try {
+                ListViewConfigHelper.deleteListViewCondition(conditionData);
+            } catch (Exception e) {
+                rtnStr = 'Failed:' + e.getMessage();
+            }
+        }
+
+        return rtnStr;
     }
 
     @AuraEnabled
@@ -485,8 +552,7 @@ public with sharing class ListViewController
         * rows into something that front end lightning components can handle.
         */
     private static RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, 
-                                                   Map<String, List_View_Config_Condition__c> lvConfigConditions, 
-                                                   Map<String, String> lvConfigParams, 
+                                                   ListViewConfigWrapper lvConfigWrapper,
                                                    List<ListViewHelper.ColumnSortData> sortData)
     {
         System.debug('Starting ListViewController.handleRowsToWrapper - ' + System.now().getTime());
@@ -532,10 +598,14 @@ public with sharing class ListViewController
         System.debug('Checkpoint 1 ListViewController.handleRowsToWrapper - ' + System.now().getTime());
 
         //set the CUSTOM COLUMN meta data into the rows wrapper
-        if (lvConfigParams.get('AdditionalFields') != null && dataRows.size() > 0)
+        if (lvConfigWrapper.getParameter('AdditionalFields') != null 
+            && lvConfigWrapper.getParameter('AdditionalFields').getValue() != '' 
+            && dataRows.size() > 0)
         {
             //get the field names in a list
-            List<String> fields = lvConfigParams.get('AdditionalFields').deleteWhitespace().split(',');
+            List<String> fields = lvConfigWrapper.getParameter('AdditionalFields').getValue().deleteWhitespace().split(',');
+
+            System.debug(LoggingLevel.DEBUG, 'FIELDS - ' + fields);
 
             //get the object type we are working with
             String objType = HelperSchema.getObjectType(dataRows[0]);
@@ -614,23 +684,25 @@ public with sharing class ListViewController
 
             }
 
-            rowWrapper.calculateHighlighting(lvConfigConditions);
+            rowWrapper.calculateHighlighting(lvConfigWrapper.conditions);
         }
 
         //if totals have been configured
-        if (lvConfigParams.get('TotalColumns') != null)
+        if (lvConfigWrapper.getParameter('TotalColumns') != null && lvConfigWrapper.getParameter('TotalColumns').getValue() != '')
         {
+
+            rows.hasTotalsRow = true;
 
             System.debug(LoggingLevel.DEBUG, 'Starting total column calculations!');
 
-            String totalColumns = lvConfigParams.get('TotalColumns');
+            String totalColumns = lvConfigWrapper.getParameter('TotalColumns').getValue();
 
             System.debug(LoggingLevel.DEBUG, 'TotalColumns - ' + totalColumns);
 
             RowWrapper totalWrapper = new RowWrapper('000000000000000000');
             totalWrapper.highlight = true;
-            if (lvConfigParams.get('TotalColumnsColor') != null)
-                totalWrapper.highlightColor = lvConfigParams.get('TotalColumnsColor');
+            if (lvConfigWrapper.getParameter('TotalColumnsColor') != null)
+                totalWrapper.highlightColor = lvConfigWrapper.getParameter('TotalColumnsColor').getValue();
             else
                 totalWrapper.highlightColor = '#FFFFFF';
             totalWrapper.isTotals = true;
@@ -725,18 +797,23 @@ public with sharing class ListViewController
         public List<RowWrapper> rows;
         public List<FieldWrapper> fieldMetaData;
         public String csvData;
+        public Boolean hasTotalsRow;
         
         public RowsWrapper(List_View__c listView)
         {
             this.listView = new ListViewWrapper(listView);
             rows = new List<RowWrapper>();
             fieldMetaData = new List<FieldWrapper>();
+            hasTotalsRow = false;
         }
 
         @AuraEnabled(cacheable=true)
         public Integer getRowCount()
         {
-            return rows.size();
+            if (hasTotalsRow)
+                return rows.size()-1;
+            else
+                return rows.size();
         }
 
         public void addRow(RowWrapper row)
@@ -881,7 +958,7 @@ public with sharing class ListViewController
          * Method to calculate and set the conditional highlighting of rows based on provided configuration conditions.
          * We pass in the condition details each time as its a complex object that cannot be passed to the lightning UI
          */
-        public void calculateHighlighting(Map<String, List_View_Config_Condition__c> lvConfigConditions)
+        public void calculateHighlighting(Map<String, List<ListViewCondition>> lvConfigConditions)
         {
             System.debug(LoggingLevel.DEBUG, 'Calculating highlighting for row!');
             System.debug(LoggingLevel.DEBUG, 'Conditions are - ' + lvConfigConditions);
@@ -891,21 +968,25 @@ public with sharing class ListViewController
                 System.debug(LoggingLevel.DEBUG, 'Looking at field with name = ' + field.label + ' and value = ' + field.value);
 
                 //check of there is a condition name which matches a field
-                List_View_Config_Condition__c condition = lvConfigConditions.get(field.label.toLowerCase());
+                List<ListViewCondition> conditions = lvConfigConditions.get(field.label.toLowerCase());
 
                 //if there is then validate
-                if (condition != null)
+                if (conditions != null)
                 {
 
-                    System.debug(LoggingLevel.DEBUG, 'We have a matching condition!');
+                    System.debug(LoggingLevel.DEBUG, 'We have ' + conditions.size() + ' matching conditions!');
 
-                    highlight = ListViewConfigHelper.validateFieldCondition(field.value, condition);
+                    List<List_View_Config_Condition__c> lvConditions = new List<List_View_Config_Condition__c>();
+                    for (ListViewCondition condition: conditions)
+                        lvConditions.add(condition.getCondition());
 
-                    System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + highlight);
+                    String color = ListViewConfigHelper.validateFieldCondition(field.value, lvConditions);
+
+                    System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + color);
 
                     //get the highlight color as well regardless.
-                    if (highlight)
-                        highlightColor = condition.Highlight_Color__c;
+                    if (color != '')
+                        highlightColor = color;
                 }
             }
         }
@@ -1046,6 +1127,270 @@ public with sharing class ListViewController
             return lastModifiedDate;
         }
         
+    }
+
+    //-------------------------------------------------------------------
+    //LIST VIEW - wrapper which holds list view CONFIG information. Note 
+    //CONFIG      that we cannot pass any SObject to a lightning component 
+    //            so need to add fields to this wrapper as we need them.
+    //-------------------------------------------------------------------
+    public class ListViewConfigWrapper
+    {
+        public List_View_Config__c listViewConfig;
+        public DateTime lastModifiedDate;
+        public String lastModifiedBy;
+        public Map<String, ListViewParam> parameters;
+        public Map<String, List<ListViewCondition>> conditions;
+        public String name;
+        public String obj;
+
+        public ListViewConfigWrapper (String name, String obj)
+        {
+            this.name = name;
+            this.obj = obj;
+            parameters       = new Map<String,ListViewParam>();
+            conditions       = new Map<String, List<ListViewCondition>>();
+        }
+
+        public ListViewConfigWrapper(List_View_Config__c listView)
+        {
+            this.listViewConfig = listView;
+            this.name        = listView.Name;
+            this.obj         = listView.List_View_Object__c;
+            lastModifiedDate = listView.LastModifiedDate;
+            lastModifiedBy   = listView.LastModifiedBy.Name;
+            parameters       = new Map<String,ListViewParam>();
+            conditions       = new Map<String, List<ListViewCondition>>();
+
+            for (List_View_Config_Parameter__c param: listView.List_View_Config_Parameters__r)
+            {
+                parameters.put(param.Parameter_Name__c, new ListViewParam(param.Parameter_Name__c, 
+                                                                          param.Parameter_Value__c, 
+                                                                          param.Parameter_Type__c));
+            }
+
+            //now add other parameters that have not been set but we need defaults
+
+            System.debug(LoggingLevel.DEBUG, 'All OLD config params - ' + parameters);
+
+            //get the default params
+            ListViewConfigHelper.ListViewConfigDefaults paramDefaults = new ListViewConfigHelper.ListViewConfigDefaults();
+
+            //set defaults if they do not exist
+            for (ListViewConfigHelper.ListViewConfigDefault param: paramDefaults.params.values())
+            {
+                System.debug(LoggingLevel.DEBUG, 'Looking at def param - ' + param);
+
+                ListViewParam lvParam = parameters.get(param.name);
+                if (lvParam == null)
+                {
+                    System.debug(LoggingLevel.DEBUG, 'Creating new param - ' + param.name);
+
+                    lvParam = new ListViewParam(param.name, param.value, param.type);
+                    lvParam.description = param.description;
+                    parameters.put(param.name, lvParam);
+
+                //if we already have the parameter then just set the description as that info does not get saved.
+                } else {
+                    lvParam.description = param.description;
+                }
+            }
+
+            System.debug(LoggingLevel.DEBUG, 'All NEW config params - ' + parameters);
+
+
+            for (List_View_Config_Condition__c condition: listView.List_View_Config_Conditions__r)
+            {
+                List<ListViewCondition> conditionList = conditions.get(condition.Field_Name__c.toLowerCase());
+                if (conditionList == null)
+                {
+                    conditionList = new List<ListViewCondition>();
+                    conditions.put(condition.Field_Name__c.toLowerCase(), conditionList);
+                }
+                conditionList.add(new ListViewCondition(condition));
+            }
+            
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getName()
+        {
+            return name;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getObject()
+        {
+            return obj;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getLastModifiedText()
+        {
+            return  'Last Modified By: ' + lastModifiedBy + ' - ' + lastModifiedDate;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLastModifiedBy()
+        {
+            return lastModifiedBy;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public DateTime getLastModifiedDate()
+        {
+            return lastModifiedDate;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public List<ListViewParam> getParameters()
+        {
+            return parameters.values();
+        }
+
+        public ListViewParam getParameter(String name)
+        {
+            return parameters.get(name);
+        }
+
+        @AuraEnabled(cacheable=true)
+        public List<ListViewCondition> getConditions()
+        {
+            List<ListViewCondition> allConditions = new List<ListViewCondition>();
+            for (String name: conditions.keySet())
+                allConditions.addAll(conditions.get(name));
+
+            return allConditions;
+        }
+
+        public List<ListViewCondition> getCondition(String field)
+        {
+            return conditions.get(field);
+        }
+
+
+        
+    }
+
+    public class ListViewParam
+    {
+        public Id paramId;
+        public String name;
+        public String value;
+        public String type;
+        public String description;
+
+        public ListViewParam(String name, String value, String type)
+        {
+            this.name = name;
+            this.value = value;
+            this.type = type;
+            this.description = '';
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getName()
+        {
+            return name;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getValue()
+        {
+            return value;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getType()
+        {
+            return type;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getPlaceHolder()
+        {
+            return 'Enter a value here...';
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getDescription()
+        {
+            return description;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getUpdateImmediate()
+        {
+            if (getType().toLowerCase() == 'color') 
+                return true;
+            else 
+                return false;
+        }
+
+    }
+
+    public class ListViewCondition
+    {
+        public List_View_Config_Condition__c condition;
+        public String fieldLabel;
+        public String operator;
+        public String value;
+        public String order;
+        public String color;
+        public String id;
+
+        public ListViewCondition(List_View_Config_Condition__c condition)
+        {
+            this.condition = condition;
+            fieldLabel     = condition.Field_Name__c;
+            operator       = condition.Operator__c;
+            value          = condition.Value__c;
+            order          = condition.Order__c;
+            color          = condition.Highlight_Color__c;
+            id             = condition.Id;
+        }
+
+        public List_View_Config_Condition__c getCondition()
+        {
+            return condition;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFieldLabel()
+        {
+            return fieldLabel;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getOperator()
+        {
+            return operator;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getValue()
+        {
+            return value;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getOrder()
+        {
+            return order;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getColor()
+        {
+            return color;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getId()
+        {
+            return id;
+        }
+
     }
 
     //---------------------------------------

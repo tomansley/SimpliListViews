@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-07-2020
+ * @last modified on  : 08-12-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -398,18 +398,22 @@ global with sharing class ListViewHelper {
      * Method to use the SOQL query retrieved from the core listview describe, amend it to include
      * the possible additional fields added by the user and then use it to get the data.
      */ 
-    public static List<SObject> getListViewData(List_View__c listview, Map<String, String> lvConfigParams, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    public static List<SObject> getListViewData(List_View__c listview, List_View_Config__c lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
 
         String debug = '\n\nStarting getListViewData - \n';
         debug += 'listview           - ' + listview + '\n';
-        debug += 'lvConfigParams     - ' + lvConfigParams + '\n';
+        debug += 'lvConfig           - ' + lvConfig + '\n';
         debug += 'sortData           - ' + sortData + '\n';
         debug += 'joinFieldName      - ' + joinFieldName + '\n';
         if (joinRecordIds != null)
             debug += 'joinRecordIds Size - ' + joinRecordIds.size() + '\n';
         debug += 'joinRecordIds      - ' + joinRecordIds + '\n\n';
         System.debug(LoggingLevel.DEBUG, debug);
+
+        Map<String, String> lvConfigParams = new Map<String, String>();
+        for (List_View_Config_Parameter__c param: lvConfig.List_View_Config_Parameters__r)
+            lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
 
         //check the object is accessible by this user
         HelperSchema.checkObjectAccessible(listview.Object_Name__c);
@@ -628,7 +632,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config.Id;
         param2.Parameter_Name__c   = 'TotalColumnsColor';
-        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Type__c   = 'Color';
         param2.Parameter_Value__c  = '#E5F0FA';
         params2.add(param2);
         
@@ -669,7 +673,7 @@ global with sharing class ListViewHelper {
         
         param2 = new List_View_Config_Parameter__c();
 		param2.Parameter_Name__c = 'TotalColumnsColor';
-		param2.Parameter_Type__c = 'String';
+		param2.Parameter_Type__c = 'Color';
 		param2.Parameter_Value__c = '#E5F0FA';
 		param2.List_View_Config__c = config3.Id;
         params2.add(param2);

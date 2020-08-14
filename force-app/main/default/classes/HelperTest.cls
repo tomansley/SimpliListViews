@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-07-2020
+ * @last modified on  : 08-12-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -78,7 +78,7 @@ public with sharing class HelperTest {
         
         param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'TotalColumnsColor';
-		param.Parameter_Type__c = 'String';
+		param.Parameter_Type__c = 'Color';
 		param.Parameter_Value__c = '#E5F0FA';
 		param.List_View_Config__c = config.Id;
         params.add(param);

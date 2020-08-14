@@ -55,15 +55,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track objectActionList;            //holds the list of available actions for the selected object
     @track listViewConfigParams;        //holds the config parameters for the chosen list view (if one exists)
     @track showActionModal;             //indicates whether the action modal form should be displayed.
+    @track showAdminModal;              //indicates whether the admin modal form should be displayed.
     @track selectedRecordIdsStr;        //holds the set of record ids that have been selected as a string
     @track selectedRecordCount = 0;     //the number of records selected. Passed into the modal dialog.  
     @track isPinned = false;            //identifies whether this list view and object have been pinned.
     @track pinnedListView = undefined;  //the list view that is pinned if there is a pinned list view.
     @track pinnedObject = undefined;    //the object that is pinned if there is a pinned list view.
     @track isRefreshed = false;         //identifies whether this list views data is being refreshed at intervals.
-
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
-
+    @track allowAdmin = true;           //indicates whether the admin button should display to the user
     //for handling column width changes
     @track mouseStart;
     @track oldWidth;
@@ -793,6 +793,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     }
 
+    handleAdminButtonClick(event) {
+        console.log('Admin button clicked');
+
+        this.showAdminModal = true;
+    }
+
     //called if the user selects the cancel button.
     handleCancelButtonClick(event) {
         var action = event.target.label;
@@ -823,6 +829,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         refreshApex(this.wiredListViewDataResult);
         console.log('APEX REFRESHED');
+    }
+
+    /*
+     * Method called after the admin modal dialog is closed.
+     */
+    processAdminModal() {   
+
+        this.showAdminModal = false;
+
     }
 
     /*
