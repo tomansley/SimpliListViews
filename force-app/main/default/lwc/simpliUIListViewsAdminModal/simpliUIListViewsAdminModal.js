@@ -3,6 +3,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
+import getListViewColumnLabels from '@salesforce/apex/ListViewController.getListViewColumnLabels';
 import processParamChange from '@salesforce/apex/ListViewController.processParamChange';
 import processConditionChange from '@salesforce/apex/ListViewController.processConditionChange';
 
@@ -15,6 +16,7 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
     @api listViewName;                  //the name of the list view.
     @api recordCount;                   //the number of record Ids passed in.
     @track listViewConfig               //holds all configuration for the list view
+    @track listViewColumnLabels         //holds all column label information
     @track error                        //holds any error details.
     @track paramNameLoad;               //on entry into a param value the name is set here.
     @track paramValueLoad;              //on entry into a param value the value is set here.
@@ -92,6 +94,28 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
         }
     }
 
+    /*
+     * Wiring to get the list of objects in the system
+     */
+    @wire (getListViewColumnLabels, { objectName: '$listViewObject', listViewName: '$listViewName' })
+    wiredListViewColumnLabels({ error, data }) {
+        if (data) { 
+            console.log('List view column label retrieval successful'); 
+            this.listViewColumnLabels = data; 
+            this.error = undefined;
+        } else if (error) { 
+            this.error = error; 
+            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            this.listViewColumnLabels = undefined; 
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Retrieving List View Column Labels',
+                message: 'There was an error retrieving the list view column labels. Please see an administrator\n\n' + error.message + '\n\n' + error.stackTrace,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        }
+    }
+
     handleParamLoad(event)
     {
         this.paramNameLoad = event.target.name;
@@ -133,6 +157,12 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
                 }
 
                 if (status === 'Ok') {
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Parameter Updated Successfully!',
+                        message: message,
+                        variant: 'success',
+                        mode: 'dismissable'
+                    }));
                 
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
@@ -164,9 +194,9 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
     }
 
     handleConditionChange(event) {
-        var name = event.target.name;
+        var id = event.target.name;
         var action = event.target.value;
-        console.log('Name - ' + name);
+        console.log('Id - ' + id);
         console.log('Action - ' + action);
 
         var resultStr;
@@ -176,7 +206,7 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
         //if we are REMOVING we just need to pass the id of the condition
         if (action === 'remove') {
 
-            strParamsMap = name;
+            strParamsMap = id;
 
         //if we are ADDING we need to pass all condition information
         } else if (action === 'add') {
@@ -260,6 +290,14 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
 
         this.configChanged = true;
 
+    }
+
+    handleClose() {
+        //refresh the entire page
+        if (this.configChanged)
+            window.location.replace(window.location.href);
+        else
+            this.dispatchEvent(new CustomEvent('close'));
     }
 
     handleCloseClick(event) {

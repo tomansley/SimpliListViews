@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-14-2020
+ * @last modified on  : 08-17-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -432,7 +432,14 @@ public with sharing class ListViewController
         String rtnStr = 'Ok:';
 
         try {
-            ListViewConfigHelper.updateListViewParam(objectName, listViewName, paramName, paramValue);
+
+            String errorStr = ListViewConfigHelper.updateListViewParam(objectName, listViewName, paramName, paramValue);
+
+            if (errorStr != '')
+            {
+                rtnStr = 'Failed:' + errorStr;    
+            }
+
         } catch (Exception e) {
             rtnStr = 'Failed:' + e.getMessage();
         }
@@ -547,6 +554,98 @@ public with sharing class ListViewController
         return responseStr;
     }
 
+    @AuraEnabled(cacheable=true)
+    public static List<SelectOption> getListViewColumnLabels(String objectName, String listViewName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewColumnLabels(' + objectName + ', ' + listViewName + ')');
+        List<SelectOption> labelOptions = new List<SelectOption>();
+
+        List<String> labels = getColumnLabels(objectName, listViewName);
+
+        for (String label: labels)
+            labelOptions.add(new SelectOption(label, label));         
+    
+        labelOptions.sort();
+
+        return labelOptions;
+    }
+
+    /*
+     * Method to get a list of the column labels for a list view.
+     
+       System.debug(LoggingLevel.DEBUG, 'Labels - ' + ListViewController.getListViewColumnLabels('Account','PlatinumandGoldSLACustomers'));
+     */
+    private static List<String> getColumnLabels(String objectName, String listViewName)
+    {
+
+        //get the core SFDC list view data
+        List_View__c listView = ListViewHelper.getListViews(objectName, listViewName).values()[0];
+
+        //get the custom list view config and params
+        List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig(objectName, listViewName);
+        ListViewConfigWrapper lvConfigWrapper = null;
+
+        //we may not have any configuration for the provided list view names - FYI
+        if (lvConfigs.size() > 0) 
+            lvConfigWrapper = new ListViewConfigWrapper(lvConfigs[0]);
+
+        SObject exampleRow = null;
+        
+        //try to get a true example row
+        List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfigWrapper.listViewConfig, null, null, null, true);
+        if (objectRows.size() > 0) 
+        {
+            exampleRow = objectRows[0];
+        //if no row then use object type (which will not work if there are weird additional fields.)
+        } else {
+            Type t = Type.forName(objectName);
+            exampleRow = (SObject) t.newInstance();
+        }
+
+        List<String> colLabels = new List<String>();
+
+        //get all columns from the list view
+        List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
+
+        //get the CORE SFDC COLUMN meta data
+        for (Object column: allColumns)
+        {
+            Map<String, Object> columnData = (Map<String, Object>) column;
+
+            String fieldName = (String) columnData.get('fieldNameOrPath');
+            Boolean hidden   = (Boolean) columnData.get('hidden');
+
+            if (!hidden)
+            {
+                HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
+         
+                colLabels.add(d.label);
+            }
+            
+        }
+
+        //set the CUSTOM COLUMN meta data into the rows wrapper
+        if (lvConfigWrapper != null 
+            && lvConfigWrapper.getParameter('AdditionalFields') != null 
+            && lvConfigWrapper.getParameter('AdditionalFields').getValue() != '')
+        {
+            //get the field names in a list
+            List<String> fields = lvConfigWrapper.getParameter('AdditionalFields').getValue().deleteWhitespace().split(',');
+
+            System.debug(LoggingLevel.DEBUG, 'Additional Fields - ' + fields);
+
+            for (String fieldName: fields)
+            {
+                HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
+         
+                if (d != null)
+                    colLabels.add(d.label);
+            }
+        }
+
+        return colLabels;
+    }
+
     /*
         * Method to take a list of SObjects retrieved using a listviews query and convert the
         * rows into something that front end lightning components can handle.
@@ -598,7 +697,8 @@ public with sharing class ListViewController
         System.debug('Checkpoint 1 ListViewController.handleRowsToWrapper - ' + System.now().getTime());
 
         //set the CUSTOM COLUMN meta data into the rows wrapper
-        if (lvConfigWrapper.getParameter('AdditionalFields') != null 
+        if (lvConfigWrapper != null
+            && lvConfigWrapper.getParameter('AdditionalFields') != null 
             && lvConfigWrapper.getParameter('AdditionalFields').getValue() != '' 
             && dataRows.size() > 0)
         {

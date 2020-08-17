@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-14-2020
+ * @Last Modified On   : 08-17-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -89,54 +89,63 @@ public with sharing class ListViewConfigHelper {
         return (String) orgWideConfigParams.get(settingName);
     }
 
-    public static void updateListViewParam(String objectName, String listViewName, String paramName, String paramValue)
+    public static String updateListViewParam(String objectName, String listViewName, String paramName, String paramValue)
     {
 
         System.debug(LoggingLevel.DEBUG, 'Starting updateListViewParam(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ')');
 
-        List<List_View_Config_Parameter__c> params = [SELECT Parameter_Name__c,
-                                                        Parameter_Type__c,
-                                                        Parameter_Value__c
-                                                FROM List_View_Config_Parameter__c
-                                                WHERE List_View_Config__r.Name = :listViewName
-                                                    AND List_View_Config__r.List_View_Object__c = :objectName
-                                                    AND Parameter_Name__c = :paramName];
+        String errorStr = ListViewConfigHelper.validateParameter(objectName, listViewName, paramName, paramValue);
 
-        //if we have a parameter
-        if (params.size() > 0)
+        if (errorStr == '')
         {
-            System.debug(LoggingLevel.DEBUG, 'Param found - ' + params[0]);
 
-            params[0].Parameter_Value__c = paramValue;
-        
-        //we have no parameter so we need to create one
-        } else {
+            List<List_View_Config_Parameter__c> params = [SELECT Parameter_Name__c,
+                                                            Parameter_Type__c,
+                                                            Parameter_Value__c
+                                                    FROM List_View_Config_Parameter__c
+                                                    WHERE List_View_Config__r.Name = :listViewName
+                                                        AND List_View_Config__r.List_View_Object__c = :objectName
+                                                        AND Parameter_Name__c = :paramName];
 
-            System.debug(LoggingLevel.DEBUG, 'Creating param as nothing found');
+            //if we have a parameter
+            if (params.size() > 0)
+            {
+                System.debug(LoggingLevel.DEBUG, 'Param found - ' + params[0]);
 
-            //get the list view config for the parameter
-            List<List_View_Config__c> lvConfig = getListViewConfig(objectName, listViewName);
+                params[0].Parameter_Value__c = paramValue;
             
-            //get the defaults for the parameters
-            ListViewConfigDefaults defaults = new ListViewConfigDefaults();
+            //we have no parameter so we need to create one
+            } else {
 
-            //create the parameter
-            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
-            param.Parameter_Name__c = paramName;
-            param.Parameter_Value__c = paramValue;
-            param.List_View_Config__c = lvConfig[0].Id;
-            param.Parameter_Type__c = defaults.params.get(paramName).type;
+                System.debug(LoggingLevel.DEBUG, 'Creating param as nothing found');
 
-            System.debug(LoggingLevel.DEBUG, 'Param created - ' + param);
+                //get the list view config for the parameter
+                List<List_View_Config__c> lvConfig = getListViewConfig(objectName, listViewName);
+                
+                //get the defaults for the parameters
+                ListViewConfigDefaults defaults = new ListViewConfigDefaults();
 
-            params.add(param);
+                //create the parameter
+                List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                param.Parameter_Name__c = paramName;
+                param.Parameter_Value__c = paramValue;
+                param.List_View_Config__c = lvConfig[0].Id;
+                param.Parameter_Type__c = defaults.params.get(paramName).type;
+
+                System.debug(LoggingLevel.DEBUG, 'Param created - ' + param);
+
+                params.add(param);
+
+            }
+
+            upsert params;
+
+            System.debug(LoggingLevel.DEBUG, 'Finished upserting param!');
 
         }
 
-        upsert params;
-
-        System.debug(LoggingLevel.DEBUG, 'Finished upserting param!');
-
+        return errorStr;
+        
     }
 
     public static void addListViewCondition(String objectType, String listViewName, String fieldName, String fieldOperator, String fieldValue, String fieldOrder, String fieldColor)
@@ -216,9 +225,64 @@ public with sharing class ListViewConfigHelper {
         if (name == 'AdditionalFields') descr = 'String holding the additional API field names that should be returned in the list view data (comma delimited).';
         else if (name == 'RefreshRate') descr = 'The number of seconds between refreshes if the list view can be auto refreshed.';
         else if (name == 'ReturnSize') descr = 'The maximum number of rows of data that can be returned. Note that org and list view configuration takes precedence.';
-        else if (name == 'TotalColumns') descr = 'String holding the columns within the list view that should have a total in the footer.';
+        else if (name == 'TotalColumns') descr = 'String holding the API field names of the columns within the list view that should have a total in the footer.';
         else if (name == 'TotalColumnsColor') descr = 'The HTML color that the footer row should be displayed in. i.e. #E5F0FA.';
         return descr;
+    }
+
+    /**
+    * @description Method to validate parameter updates
+    * @author tom.h.ansley@medtronic.com | 08-17-2020 
+    * @param paramName the name of the parameter being updated
+    * @param paramValue the value the parameter is being updated to
+    * @return String the error message if the parameter is invalid.
+    **/
+    public static String validateParameter(String objectName, String listViewName, String paramName, String paramValue)
+    {
+        String error = '';
+
+        if (paramName == 'RefreshRate')
+        {
+
+            try {
+                Integer rate = Integer.valueOf(paramValue);
+
+                if (rate < 10 || rate > 500)
+                {
+                    error = 'Refresh rate must be between 10 and 500';
+                }
+            } catch (Exception e) {
+                error = 'Refresh rate must be an integer value';
+            }
+
+        } else if (paramName == 'ReturnSize')
+        {
+            try {
+                Integer size = Integer.valueOf(paramValue);
+
+                if (size > 500)
+                {
+                    error = 'Return size must be less than 500';
+                }
+            } catch (Exception e) {
+                error = 'Return size must be an integer value';
+            }
+
+
+        } else if (paramName == 'TotalColumns')
+        {
+        } else if (paramName == 'AdditionalFields')
+        {
+            String soql = 'SELECT ' + paramValue + ' FROM ' + objectName + ' LIMIT 1';
+
+            try {
+                List<SObject> result = Database.query(soql);
+            } catch (Exception e) {
+                error = 'There was an error testing the additional fields. Please ensure the names are valid API field names - ' + e.getMessage();
+            }
+        }
+
+        return error;
     }
 
     /**

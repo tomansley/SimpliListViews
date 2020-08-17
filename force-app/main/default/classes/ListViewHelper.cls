@@ -394,11 +394,7 @@ global with sharing class ListViewHelper {
         return listviewsById;
     }
 
-    /*
-     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
-     * the possible additional fields added by the user and then use it to get the data.
-     */ 
-    public static List<SObject> getListViewData(List_View__c listview, List_View_Config__c lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    public static List<SObject> getListViewData(List_View__c listview, List_View_Config__c lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
     {
 
         String debug = '\n\nStarting getListViewData - \n';
@@ -493,6 +489,10 @@ global with sharing class ListViewHelper {
         
         } else {
 
+            //if we only need an example record
+            if (example)
+                limitStr += '1';
+                
             //if we have a list view limit then use it
             if (lvConfigParams.get('ReturnSize') != null)
                 limitStr += lvConfigParams.get('ReturnSize');
@@ -521,6 +521,15 @@ global with sharing class ListViewHelper {
         
         return objectRows;
 
+    }
+
+    /*
+     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
+     * the possible additional fields added by the user and then use it to get the data.
+     */ 
+    public static List<SObject> getListViewData(List_View__c listview, List_View_Config__c lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    {
+        return getListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false);
     }
 
     global static void insertCoreConfiguration()
