@@ -950,30 +950,29 @@ public with sharing class ListViewController
         @AuraEnabled(cacheable=true)
         public String getDataAsString()
         {
-            String dataStr = '';
-
-            //first line is always column names. We make sure to escape delimiter
-            for (FieldWrapper column: fieldMetaData)
-            {
-                dataStr += '"' + column.name.replaceAll('"', '""') + '"' + ',';
-            }
-
-            dataStr = dataStr.removeEnd(',') + '\n';
+            String dataStr = getHeadersAsCSVString();
 
             //if we have no data then return
             if (rows == null || rows.size() == 0) return dataStr;
 
             //for each row of data
             for (RowWrapper row: rows)
-            {
-                //get the field data. We make sure to escape delimiter
-                for (FieldWrapper rowData: row.getFields())
-                {
-                    dataStr += '"' + rowData.value.replaceAll('"', '""') + '"' + ',';
-                }
+                dataStr += row.getDataAsCSVString();
 
-                dataStr = dataStr.removeEnd(',') + '\n';
+            return dataStr;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getHeadersAsCSVString()
+        {
+            String dataStr = '';
+
+            for (FieldWrapper column: fieldMetaData)
+            {
+                dataStr += '"' + column.name.replaceAll('"', '""') + '"' + ',';
             }
+
+            dataStr = dataStr.removeEnd(',') + '\n';
 
             return dataStr;
         }
@@ -1052,6 +1051,22 @@ public with sharing class ListViewController
         public String getHighlightColor()
         {
             return highlightColor;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getDataAsCSVString()
+        {
+            String dataStr = '';
+
+            //get the field data. We make sure to escape delimiter
+            for (FieldWrapper rowData: getFields())
+            {
+                dataStr += '"' + rowData.value.replaceAll('"', '""') + '"' + ',';
+            }
+
+            dataStr = dataStr.removeEnd(',') + '\n';
+
+            return dataStr;
         }
 
         /*

@@ -426,10 +426,34 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * This returns the data for the current list view in CSV format.
      */
     handleSelectedDownloadData(event) {
-        console.log('Selected data export button clicked');        
-        var csvData = this.listViewData.dataAsString;
+        console.log('Selected data export button clicked');   
+        
+        //get the header values
+        var dataStr = this.listViewData.headersAsCSVString;
 
-        var data = new Blob([csvData]);
+        //get the selected record Ids
+        var selectedRecords = new Set();
+        let selectedRows = this.template.querySelectorAll('lightning-input');
+        for(let i = 0; i < selectedRows.length; i++) {
+            if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
+            {
+                selectedRecords.add(selectedRows[i].value);
+            }
+        }
+
+        //go through rows looking for selected record Ids
+        for(let i = 0; i < this.listViewData.rows.length; i++) {
+            console.log('Inside data loop ');
+            
+            if (selectedRecords.has(this.listViewData.rows[i].rowId)) {
+                dataStr = dataStr + this.listViewData.rows[i].dataAsCSVString;
+            }
+        }
+
+        //turn string into blob
+        var data = new Blob([dataStr]);
+
+        //send blob to user.
         event.target.href = URL.createObjectURL(data);
 
     }
