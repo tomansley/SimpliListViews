@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-06-2020
+ * @Last Modified On   : 08-18-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -624,6 +624,28 @@ public with sharing class HelperSchema {
         HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Operator__c');
         HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Order__c');
         HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Value__c');
+
+    }
+
+    public static void checkListViewConfigsUpdateable()
+    {
+        HelperSchema.checkObjectUpdateable('Simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config__c', 'Name');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config__c', 'Simpli_lv__List_View_Object__c');
+
+        HelperSchema.checkObjectUpdateable('Simpli_lv__List_View_Config_Parameter__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
+        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
+
+        HelperSchema.checkObjectUpdateable('simpli_lv__List_View_Config_Condition__c');
+        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Field_Name__c');
+        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
+        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Operator__c');
+        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Order__c');
+        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Value__c');
 
     }
 

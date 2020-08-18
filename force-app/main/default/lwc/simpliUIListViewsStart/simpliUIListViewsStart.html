@@ -1,3 +1,13 @@
+<!--
+  @description       : 
+  @author            : tom.h.ansley@medtronic.com
+  @group             : 
+  @last modified on  : 08-18-2020
+  @last modified by  : tom.h.ansley@medtronic.com
+  Modifications Log 
+  Ver   Date         Author                       Modification
+  1.0   08-18-2020   tom.h.ansley@medtronic.com   Initial Version
+-->
 <template>
 
     <lightning-card>
@@ -113,19 +123,13 @@
                     <ol style="list-style-type:decimal; list-style-position: inside;">
                         <li><b>AdditionalFields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available via the standard Salesforce list view builder.</li>
                         <li><b>ReturnSize - </b>Indicates the number of rows that should be returned. This value is defaulted to 250. The higher this value, the more page performance will be reduced.</li>
+                        <li><b>RefreshRate - </b>Holds the number of seconds between refreshes if the list view can be auto refreshed.</li>
+                        <li><b>TotalColumns - </b>Indicates the API field names of the columns within the list view that should have a total in the footer.</li>
+                        <li><b>TotalColumnsColor - </b>The color that the footer row should be displayed in.</li>
                     </ol>
                 </div>
                 <br/>
-                <p>To create list view settings create a new record on the List View Configs object with the following properties.</p>
-                <br/>
-                <div style="padding-left: 20px;">
-                    <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li><b>List View API Name - </b>The API Name of the list view the settings are for.</li>
-                        <li><b>List View Object - </b>The API Name of the object that the list view is associated with.</li>
-                    </ol>
-                </div>
-                <br/>
-                <p>Once the main config record has been created parameters for that config can be set.</p>
+                <p>To update a list views settings, select the list view, then click on the cog icon in the top right corner.</p>
             </div>
         </div>
     </lightning-card>

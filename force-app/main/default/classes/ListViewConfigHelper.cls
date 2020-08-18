@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-17-2020
+ * @Last Modified On   : 08-18-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -127,6 +127,7 @@ public with sharing class ListViewConfigHelper {
 
                 //create the parameter
                 List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                param.Parameter_Label__c = defaults.params.get(paramName).label;
                 param.Parameter_Name__c = paramName;
                 param.Parameter_Value__c = paramValue;
                 param.List_View_Config__c = lvConfig[0].Id;
@@ -195,8 +196,10 @@ public with sharing class ListViewConfigHelper {
                                 List_View_Object__c,
                                 LastModifiedDate,
                                 LastModifiedBy.Name,
+                                Primary_Key__c,
                                 (SELECT Parameter_Name__c,
                                         Parameter_Type__c,
+                                        Parameter_Label__c,
                                         Parameter_Value__c
                                 FROM List_View_Config_Parameters__r
                                 ORDER BY Parameter_Name__c),
@@ -227,6 +230,7 @@ public with sharing class ListViewConfigHelper {
         else if (name == 'ReturnSize') descr = 'The maximum number of rows of data that can be returned. Note that org and list view configuration takes precedence.';
         else if (name == 'TotalColumns') descr = 'String holding the API field names of the columns within the list view that should have a total in the footer.';
         else if (name == 'TotalColumnsColor') descr = 'The HTML color that the footer row should be displayed in. i.e. #E5F0FA.';
+        else if (name == 'AllRows') descr = 'Indicates whether deleted and archived records should be included in list view results.';
         return descr;
     }
 
@@ -337,6 +341,7 @@ public with sharing class ListViewConfigHelper {
             params = new Map<String, ListViewConfigDefault>();
 
             ListViewConfigDefault defaultConfig = new ListViewConfigDefault();
+            defaultConfig.label       = 'Additional Fields';
             defaultConfig.name        = 'AdditionalFields';
             defaultConfig.type        = 'String';
             defaultConfig.value       = '';
@@ -345,6 +350,7 @@ public with sharing class ListViewConfigHelper {
             params.put(defaultConfig.name, defaultConfig);
 
             defaultConfig = new ListViewConfigDefault();
+            defaultConfig.label       = 'Return Size';
             defaultConfig.name        = 'ReturnSize';
             defaultConfig.type        = 'Number';
             defaultConfig.value       = '100';
@@ -353,6 +359,7 @@ public with sharing class ListViewConfigHelper {
             params.put(defaultConfig.name, defaultConfig);
 
             defaultConfig = new ListViewConfigDefault();
+            defaultConfig.label       = 'Refresh Rate';
             defaultConfig.name        = 'RefreshRate';
             defaultConfig.type        = 'Number';
             defaultConfig.value       = '30';
@@ -361,6 +368,7 @@ public with sharing class ListViewConfigHelper {
             params.put(defaultConfig.name, defaultConfig);
 
             defaultConfig = new ListViewConfigDefault();
+            defaultConfig.label       = 'Total Column Names';
             defaultConfig.name        = 'TotalColumns';
             defaultConfig.type        = 'String';
             defaultConfig.value       = '';
@@ -369,10 +377,20 @@ public with sharing class ListViewConfigHelper {
             params.put(defaultConfig.name, defaultConfig);
 
             defaultConfig = new ListViewConfigDefault();
+            defaultConfig.label       = 'Total Row Color';
             defaultConfig.name        = 'TotalColumnsColor';
             defaultConfig.type        = 'Color';
             defaultConfig.value       = '#E5F0FA';
             defaultConfig.description = 'The HTML color that the footer row should be displayed in. i.e. #E5F0FA.';
+
+            params.put(defaultConfig.name, defaultConfig);
+
+            defaultConfig = new ListViewConfigDefault();
+            defaultConfig.label       = 'Include All Rows';
+            defaultConfig.name        = 'AllRows';
+            defaultConfig.type        = 'Checkbox';
+            defaultConfig.value       = 'false';
+            defaultConfig.description = 'Indicates whether deleted and archived records should be included in list view results.';
 
             params.put(defaultConfig.name, defaultConfig);
 
@@ -382,6 +400,7 @@ public with sharing class ListViewConfigHelper {
     public class ListViewConfigDefault
     {
         public String name  {get; set;}
+        public String label {get; set;}
         public String type  {get; set;}
         public String value {get; set;}
         public String description {get; set;}

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-06-2020
+ * @last modified on  : 08-18-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -70,6 +70,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	{
         try {
             List<List_View__c> simpliListViews = new List<List_View__c>();
+            List<List_View_Config__c> simpliListViewConfigs = new List<List_View_Config__c>();
         
             List<ListView> listViews = (List<ListView>) scope;
 
@@ -119,6 +120,13 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                     //use the metadata API to try and enrich the listview data.
                     HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
 
+                    List_View_Config__c config = new List_View_Config__c();
+                    config.Name                = simpliListView.API_Name__c;
+                    config.List_View_Object__c = simpliListView.Object_Name__c;
+                    config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
+
+                    simpliListViewConfigs.add(config);
+
                 } catch (Exception e) { 
                     //we don't care about exceptions here because it means the listview is not one that can be handled.
                 }
@@ -126,8 +134,13 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
             HelperSchema.checkListViewCreatable();
             HelperSchema.checkListViewUpdateable();
+            HelperSchema.checkListViewConfigsCreatable();
+            HelperSchema.checkListViewConfigsUpdateable();
             
-            upsert simpliListViews Primary_Key__c;		
+            upsert simpliListViews Primary_Key__c;
+            upsert simpliListViewConfigs Primary_Key__c;
+            
+
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.execute() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();

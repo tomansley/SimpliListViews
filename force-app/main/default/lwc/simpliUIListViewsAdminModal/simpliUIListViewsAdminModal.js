@@ -119,7 +119,13 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
     handleParamLoad(event)
     {
         this.paramNameLoad = event.target.name;
-        this.paramValueLoad = event.target.value;
+
+        if (event.target.type === 'toggle') {
+            this.paramValueLoad = event.target.checked;
+        } else {
+            this.paramValueLoad = event.target.value;
+        }
+
         console.log('Param loaded - ' + this.paramNameLoad + ' - ' + this.paramValueLoad);
 
     }
@@ -129,13 +135,16 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
 
         var name = event.target.name;
         var value = event.target.value;
+        if (event.target.type === 'toggle') {
+            value = event.target.checked;
+        }
 
         console.log('Inside handleParamChange - ' + name + '/' + value);
 
         //if we are leaving the param with no value change then do nothing.
         if (value === this.paramValueLoad) {
             this.paramValueLoad = undefined;
-            this.paramValueLoad = undefined;
+            this.paramNameLoad = undefined;
             return;
         }
 
@@ -250,9 +259,9 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
                 //get any associated message
                 let message = resultStr.substring(resultStr.indexOf(':')+1);
                 if (message === '' && status === 'Ok') {
-                    message = 'All records have been processed successfully.';
+                    message = 'All conditions processed.';
                 } else if (message === '' && status != 'Ok') {
-                    message = 'There was an error processing the records.';
+                    message = 'There was an error processing the condition.';
                 }
 
                 if (status === 'Ok') {

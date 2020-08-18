@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-17-2020
+  @last modified on  : 08-18-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -23,9 +23,8 @@
                         <h2 id="modal-heading-01" class="slds-text-heading_small slds-hyphenate">{listViewConfig.name} List View Config</h2>
                     </header>
 
-                    <div class="slds-modal__content slds-p-around_small" id="modal-param-content" style="min-width: 1100px;">
-                        <lightning-card>
-                            <h4 id="modal-heading-02" class="slds-text-heading_small slds-hyphenate" style="padding-bottom: 10px;">List View Configuration</h4>
+                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1100px;">
+                        <lightning-card title="List View Configuration">
                             <table class="slds-table slds-table_bordered">
                                 <thead>
                                     <tr>
@@ -43,7 +42,7 @@
 
                                             <td key={param.name} class="">
                                                 <div key={param.name} class="slds-truncate" title={param.name}>
-                                                    {param.name}
+                                                    {param.label}
                                                     &nbsp;
                                                     <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text="close"></lightning-icon> 
                                                 </div>
@@ -78,9 +77,11 @@
                         </lightning-card>
                     </div>
 
-                    <div class="slds-modal__content slds-p-around_small" id="modal-condition-content" style="min-width: 1100px;">
-                        <lightning-card>
-                            <h4 id="modal-heading-03" class="slds-text-heading_small slds-hyphenate" style="padding-bottom: 10px;">Conditional Highlighting</h4>
+                    <!-- Add a border below the first table for separation -->
+                    <div id="modal-spacer-content" style="max-height: 5px; min-width: 1100px; border-color:#DDDBDA; border-top-style: solid; border-right-style: none; border-left-style: none; border-bottom-style: none; border-width: 2px;"></div>
+
+                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-condition-content" style="min-width: 1100px;">
+                        <lightning-card title="Conditional Highlighting">
                             <table class="slds-table slds-table_bordered">
                                 <thead>
                                     <tr class="slds-line-height_reset">

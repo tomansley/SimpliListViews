@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-07-2020
+  @last modified on  : 08-18-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -158,14 +158,14 @@
                             <template if:true={allowRefresh}>
                                 <lightning-layout-item  padding="horizontal-small">
                                     <template if:true={isRefreshed}>
-                                        <lightning-button-icon title="Click to STOP the list auto refreshing." 
+                                        <lightning-button-icon title="Click to STOP auto refreshing." 
                                                                 size="medium" 
                                                                 icon-name="utility:routing_offline" 
                                                                 onclick={handleAutoRefreshButtonClick}>
                                         </lightning-button-icon>
                                     </template>
                                     <template if:false={isRefreshed}>
-                                        <lightning-button-icon title="Click to START the list auto refreshing." 
+                                        <lightning-button-icon title="Click to START auto refreshing." 
                                                                 size="medium" 
                                                                 icon-name="utility:refresh" 
                                                                 onclick={handleAutoRefreshButtonClick}>
@@ -197,10 +197,10 @@
                         <th class="slds-text-align_right" scope="col" style="width:3.25rem">
                             <div class="slds-th__action slds-th__action_form">
                                 <div class="slds-checkbox">
-                                        <lightning-input type="checkbox" 
-                                                variant="label-hidden" 
-                                                value="all" 
-                                                onchange={handleRecordSelectChange}>
+                                    <lightning-input type="checkbox" 
+                                                    variant="label-hidden" 
+                                                    value="all" 
+                                                    onchange={handleRecordSelectChange}>
                                     </lightning-input>
                                 </div>
                             </div>
@@ -234,7 +234,7 @@
                                     </a>
                                 </div>
                                 <div class="slds-resizable">
-                                    <input type="range" min="20" max="1000" class="slds-resizable__input slds-assistive-text" id={field.label} tabindex="0" />
+                                    <input type="range" min="20" max="1000" class="slds-assistive-text" id={field.label} tabindex="0" />
                                     <span class="slds-resizable__handle" onmousedown={calculateWidth}>
                                         <span class="slds-resizable__divider"></span>
                                     </span>
@@ -281,13 +281,13 @@
     </template>
 
     <!-- The modal view if the ACTION button is pressed and we need to display something -->
-    <c-simpli-u-i-list-views-modal show-modal={showActionModal}
+    <c-simpli-u-i-list-views-action-modal show-modal={showActionModal}
                                     action-api-name={selectedAction}
                                     record-count={selectedRecordCount}
                                     record-ids={selectedRecordIdsStr}
                                     onprocessed={processModal}
                                     oncancelled={cancelModal}>
-    </c-simpli-u-i-list-views-modal>
+    </c-simpli-u-i-list-views-action-modal>
 
     <!-- The modal view if the ADMIN button is pressed and we need to display something -->
     <c-simpli-u-i-list-views-admin-modal show-modal={showAdminModal}

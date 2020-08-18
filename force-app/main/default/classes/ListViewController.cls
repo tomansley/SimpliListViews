@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-17-2020
+ * @last modified on  : 08-18-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -370,11 +370,15 @@ public with sharing class ListViewController
 
         //get the custom list view config and params
         List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig(objectName, listViewName);
+        List_View_Config__c lvConfig = null;
         ListViewConfigWrapper lvConfigWrapper = null;
 
         //we may not have any configuration for the provided list view names - FYI
         if (lvConfigs.size() > 0) 
+        {
             lvConfigWrapper = new ListViewConfigWrapper(lvConfigs[0]);
+            lvConfig = lvConfigWrapper.listViewConfig;
+        }
 
         //get the core SFDC list view data
         Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectName, listViewName);
@@ -411,7 +415,7 @@ public with sharing class ListViewController
             }
 
             //get list view data
-            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfigWrapper.listViewConfig, columnSortData, joinFieldName, joinRecordIds);
+            List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinFieldName, joinRecordIds);
             
             //turn SObjects into wrapper classes.
             rowData = handleRowsToWrapper(objectRows, listview, lvConfigWrapper, columnSortData);
@@ -579,20 +583,26 @@ public with sharing class ListViewController
     {
 
         //get the core SFDC list view data
-        List_View__c listView = ListViewHelper.getListViews(objectName, listViewName).values()[0];
+        Map<Id, List_View__c> listViews = ListViewHelper.getListViews(objectName, listViewName);
+        if (listViews.size() == 0) return new List<String>();
+        List_View__c listView = listViews.values()[0];
 
         //get the custom list view config and params
         List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig(objectName, listViewName);
+        List_View_Config__c lvConfig = null;
         ListViewConfigWrapper lvConfigWrapper = null;
 
         //we may not have any configuration for the provided list view names - FYI
         if (lvConfigs.size() > 0) 
+        {
             lvConfigWrapper = new ListViewConfigWrapper(lvConfigs[0]);
+            lvConfig = lvConfigWrapper.listViewConfig;
+        }
 
         SObject exampleRow = null;
         
         //try to get a true example row
-        List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfigWrapper.listViewConfig, null, null, null, true);
+        List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true);
         if (objectRows.size() > 0) 
         {
             exampleRow = objectRows[0];
@@ -784,11 +794,14 @@ public with sharing class ListViewController
 
             }
 
+            if (lvConfigWrapper != null)
             rowWrapper.calculateHighlighting(lvConfigWrapper.conditions);
         }
 
         //if totals have been configured
-        if (lvConfigWrapper.getParameter('TotalColumns') != null && lvConfigWrapper.getParameter('TotalColumns').getValue() != '')
+        if (lvConfigWrapper != null
+            && lvConfigWrapper.getParameter('TotalColumns') != null 
+            && lvConfigWrapper.getParameter('TotalColumns').getValue() != '')
         {
 
             rows.hasTotalsRow = true;
@@ -1279,7 +1292,8 @@ public with sharing class ListViewController
 
             for (List_View_Config_Parameter__c param: listView.List_View_Config_Parameters__r)
             {
-                parameters.put(param.Parameter_Name__c, new ListViewParam(param.Parameter_Name__c, 
+                parameters.put(param.Parameter_Name__c, new ListViewParam(param.Parameter_Label__c,
+                                                                          param.Parameter_Name__c, 
                                                                           param.Parameter_Value__c, 
                                                                           param.Parameter_Type__c));
             }
@@ -1301,7 +1315,7 @@ public with sharing class ListViewController
                 {
                     System.debug(LoggingLevel.DEBUG, 'Creating new param - ' + param.name);
 
-                    lvParam = new ListViewParam(param.name, param.value, param.type);
+                    lvParam = new ListViewParam(param.label, param.name, param.value, param.type);
                     lvParam.description = param.description;
                     parameters.put(param.name, lvParam);
 
@@ -1391,16 +1405,24 @@ public with sharing class ListViewController
     {
         public Id paramId;
         public String name;
+        public String label;
         public String value;
         public String type;
         public String description;
 
-        public ListViewParam(String name, String value, String type)
+        public ListViewParam(String label, String name, String value, String type)
         {
+            this.label = label;
             this.name = name;
             this.value = value;
             this.type = type;
             this.description = '';
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLabel()
+        {
+            return label;
         }
 
         @AuraEnabled(cacheable=true)
@@ -1434,9 +1456,14 @@ public with sharing class ListViewController
         }
 
         @AuraEnabled(cacheable=true)
+        /*
+         * Method which indicates whether an update should occur on this parameter immediately after its been changed vs.
+         * after the user leaves the input field.
+         */
         public Boolean getUpdateImmediate()
         {
-            if (getType().toLowerCase() == 'color') 
+            if (getType().toLowerCase() == 'color' 
+                || getType().toLowerCase() == 'checkbox') 
                 return true;
             else 
                 return false;

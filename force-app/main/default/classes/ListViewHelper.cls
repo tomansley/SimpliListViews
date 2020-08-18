@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-12-2020
+ * @last modified on  : 08-18-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -408,9 +408,12 @@ global with sharing class ListViewHelper {
         System.debug(LoggingLevel.DEBUG, debug);
 
         Map<String, String> lvConfigParams = new Map<String, String>();
-        for (List_View_Config_Parameter__c param: lvConfig.List_View_Config_Parameters__r)
-            lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
-
+        if (lvConfig != null) //there might not e a config yet for this list view
+        {
+            for (List_View_Config_Parameter__c param: lvConfig.List_View_Config_Parameters__r)
+                lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
+        }
+        
         //check the object is accessible by this user
         HelperSchema.checkObjectAccessible(listview.Object_Name__c);
 
@@ -501,11 +504,20 @@ global with sharing class ListViewHelper {
             else
                 limitStr += '250';
         }
-        
+
+        //------------------------------------------------------
+        // Handle the ALL ROWS statement
+        //------------------------------------------------------
+        String allRowsStr = '';
+        if (lvConfigParams.get('AllRows') != null && lvConfigParams.get('AllRows') == 'true')
+        {
+            allRowsStr += ' ALL ROWS';
+        }
+
         //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------
-        query = 'SELECT ' + selectStr + ' FROM ' + whereStr + ' ORDER BY ' + orderByStr + limitStr;
+        query = 'SELECT ' + selectStr + ' FROM ' + whereStr + ' ORDER BY ' + orderByStr + limitStr + allRowsStr;
 
         System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + query);
 
