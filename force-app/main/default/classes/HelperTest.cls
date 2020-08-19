@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-12-2020
+ * @last modified on  : 08-19-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -38,7 +38,9 @@ public with sharing class HelperTest {
     
 	public static List<List_View__c> createListViews()
 	{
-		List<List_View__c> simpliListViews = new List<List_View__c>();
+        ListViewConfigHelper.ListViewConfigDefaults defaults = new ListViewConfigHelper.ListViewConfigDefaults();
+
+        List<List_View__c> simpliListViews = new List<List_View__c>();
 
 		List_View__c simpliListView           = new List_View__c();
 		simpliListView.API_Name__c            = 'AllAccounts';
@@ -54,11 +56,7 @@ public with sharing class HelperTest {
 
 		insert simpliListViews;
 
-		List_View_Config__c config = new List_View_Config__c();
-		config.Name                = 'AllAccounts';
-		config.List_View_Object__c = 'Account';
-
-		insert config;
+		List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'Account:AllAccounts'];
 
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
 
@@ -67,6 +65,7 @@ public with sharing class HelperTest {
 		param.Parameter_Type__c = 'String';
 		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
 		param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = defaults.params.get(param.Parameter_Name__c).label;
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
@@ -74,6 +73,7 @@ public with sharing class HelperTest {
 		param.Parameter_Type__c = 'String';
 		param.Parameter_Value__c = 'AnnualRevenue';
 		param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = defaults.params.get(param.Parameter_Name__c).label;
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
@@ -81,9 +81,24 @@ public with sharing class HelperTest {
 		param.Parameter_Type__c = 'Color';
 		param.Parameter_Value__c = '#E5F0FA';
 		param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = defaults.params.get(param.Parameter_Name__c).label;
         params.add(param);
         
         insert params;
+
+        List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
+        
+        List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
+        condition.Field_Name__c       = 'AnnualRevenue';
+        condition.Highlight_Color__c  = '#000000';
+        condition.Operator__c         = 'Equals';
+        condition.Order__c            = '1';
+        condition.Value__c            = '1000';
+        condition.List_View_Config__c = config.Id;
+
+        conditions.add(condition);
+
+        insert conditions;
 
 		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'List View Objects'];
 		orgWideConfig.Parameter_Value__c = '{"Account":"Account"}';

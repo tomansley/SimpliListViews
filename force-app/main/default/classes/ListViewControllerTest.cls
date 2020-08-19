@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-07-2020
+ * @last modified on  : 08-19-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -64,6 +64,76 @@ private class ListViewControllerTest {
         String result = ListViewController.updateSingleListView('Account', 'AllAccounts');
 
         System.assert(result == 'success');
+    }
+
+    static testMethod void processParamChangeTest()
+    {
+        HelperTest.createListViews();
+
+        String result = ListViewController.processParamChange('Account', 'AllAccounts', 'RefreshRate', '45');
+
+        System.assert(result == 'Ok:');
+
+    }
+
+    static testMethod void processConditionChangeTest()
+    {
+        HelperTest.createListViews();
+
+        String result = ListViewController.processConditionChange('Account', 'AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"]]');
+
+        System.assert(result == 'Ok:');
+
+        List_View_Config_Condition__c condition = [SELECT ID FROM List_View_Config_Condition__c WHERE Value__c = 'Dickenson plc'];
+
+        result = ListViewController.processConditionChange('Account', 'AllAccounts', 'remove', condition.Id);
+
+        System.assert(result == 'Ok:');
+
+    }
+
+    static testMethod void getListViewColumnLabelsTest()
+    {
+        HelperTest.createListViews();
+
+        List<ListViewController.SelectOption> labels = ListViewController.getListViewColumnLabels('Account', 'AllAccounts');
+
+        System.assert(labels.size() > 0);
+    }
+
+
+    static testMethod void getListViewConfigTest()
+    {
+        HelperTest.createListViews();
+
+        ListViewController.ListViewConfigWrapper lvConfig = ListViewController.getListViewConfig('Account', 'AllAccounts');
+
+        System.assert(lvConfig.listViewConfig != null);
+
+        System.assert(lvConfig.getName() != null);
+        System.assert(lvConfig.getObject() != null);
+        System.assert(lvConfig.getLastModifiedText() != null);
+        System.assert(lvConfig.getLastModifiedBy() != null);
+        System.assert(lvConfig.getLastModifiedDate() != null);
+        List<ListViewController.ListViewParam> params = lvConfig.getParameters();
+        System.assert(params.size() > 0);
+        System.assert(params[0].getLabel() != null);
+        System.assert(params[0].getName() != null);
+        System.assert(params[0].getType() != null);
+        System.assert(params[0].getPlaceHolder() != null);
+        System.assert(params[0].getDescription() != null);
+        System.assert(params[0].getUpdateImmediate() != null);
+        System.assert(params[0].getIsBoolean() != null);
+        List<ListViewController.ListViewCondition> conditions = lvConfig.getConditions();
+        System.assert(conditions.size() > 0);
+        System.assert(conditions[0].getCondition() != null);
+        System.assert(conditions[0].getFieldLabel() != null);
+        System.assert(conditions[0].getOperator() != null);
+        System.assert(conditions[0].getValue() != null);
+        System.assert(conditions[0].getOrder() != null);
+        System.assert(conditions[0].getColor() != null);
+        System.assert(conditions[0].getId() != null);
+
     }
 
     static testMethod void updateChangedListViewTest()

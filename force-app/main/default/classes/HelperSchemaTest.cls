@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-06-2020
+ * @last modified on  : 08-19-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -61,6 +61,10 @@ public with sharing class HelperSchemaTest {
         HelperSchema.checkObjectDeletable('Account', false);
 
         HelperSchema.getObjectTypeForField('Account', 'Name');
+
+        HelperTest.insertAccount('Test Account');
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        HelperSchema.checkObjectDeletable(acc);
 
     }
 }
