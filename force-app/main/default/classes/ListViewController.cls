@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-18-2020
+ * @last modified on  : 08-19-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -1325,6 +1325,8 @@ public with sharing class ListViewController
                 }
             }
 
+
+
             System.debug(LoggingLevel.DEBUG, 'All NEW config params - ' + parameters);
 
 
@@ -1374,7 +1376,10 @@ public with sharing class ListViewController
         @AuraEnabled(cacheable=true)
         public List<ListViewParam> getParameters()
         {
-            return parameters.values();
+            List<ListViewParam> params = parameters.values();
+            params.sort();
+
+            return params;
         }
 
         public ListViewParam getParameter(String name)
@@ -1401,7 +1406,7 @@ public with sharing class ListViewController
         
     }
 
-    public class ListViewParam
+    public class ListViewParam implements Comparable
     {
         public Id paramId;
         public String name;
@@ -1463,12 +1468,25 @@ public with sharing class ListViewController
         public Boolean getUpdateImmediate()
         {
             if (getType().toLowerCase() == 'color' 
-                || getType().toLowerCase() == 'checkbox') 
+                || getType().toLowerCase() == 'boolean') 
                 return true;
             else 
                 return false;
         }
 
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsBoolean()
+        {
+            if (getType().toLowerCase() == 'boolean') 
+                return true;
+            else 
+                return false;            
+        }
+
+        public Integer compareTo(Object compareTo) {
+            ListViewParam param2 = (ListViewParam) compareTo;
+            return label.compareTo(param2.label);
+        }
     }
 
     public class ListViewCondition
