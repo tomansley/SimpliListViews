@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-18-2020
+ * @Last Modified On   : 08-19-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -139,6 +139,8 @@ public with sharing class ListViewConfigHelper {
 
             }
 
+            HelperSchema.checkListViewConfigsUpdateable();
+
             upsert params;
 
             System.debug(LoggingLevel.DEBUG, 'Finished upserting param!');
@@ -151,6 +153,8 @@ public with sharing class ListViewConfigHelper {
 
     public static void addListViewCondition(String objectType, String listViewName, String fieldName, String fieldOperator, String fieldValue, String fieldOrder, String fieldColor)
     {
+        HelperSchema.checkListViewConfigsCreatable();
+
         //get the list view config for the parameter
         List<List_View_Config__c> lvConfig = getListViewConfig(objectType, listViewName);
 
@@ -202,7 +206,7 @@ public with sharing class ListViewConfigHelper {
                                         Parameter_Label__c,
                                         Parameter_Value__c
                                 FROM List_View_Config_Parameters__r
-                                ORDER BY Parameter_Name__c),
+                                ORDER BY Parameter_Label__c),
                                 (SELECT Field_Name__c,
                                             Highlight_Color__c,
                                             Operator__c,
@@ -280,6 +284,16 @@ public with sharing class ListViewConfigHelper {
             String soql = 'SELECT ' + paramValue + ' FROM ' + objectName + ' LIMIT 1';
 
             try {
+
+                HelperSchema.checkObjectAccessible(objectName);
+                for (String field: paramValue.split(','))
+                {
+                    if (!field.contains('.'))
+                    {
+                        HelperSchema.checkObjectFieldAccessible(objectName, field);
+                    }
+                }
+
                 List<SObject> result = Database.query(soql);
             } catch (Exception e) {
                 error = 'There was an error testing the additional fields. Please ensure the names are valid API field names - ' + e.getMessage();
@@ -291,11 +305,12 @@ public with sharing class ListViewConfigHelper {
 
     /**
     * @description Method to validate a condition given an object being validated against and
-    * a condition.
+    * a condition. The return of an HTML color indicates the condition yielded a result. If no
+    * color was returned the value did meet any criteria.
     * @author tom.h.ansley@medtronic.com | 08-05-2020 
-    * @param value 
-    * @param condition 
-    * @return Boolean 
+    * @param value the value being validated against
+    * @param conditions the conditions the value is being validated against
+    * @return String either an HTML color (condition match) or empty string (condition not met) 
     **/
     public static String validateFieldCondition(Object value, List<List_View_Config_Condition__c> conditions)
     {
@@ -388,7 +403,7 @@ public with sharing class ListViewConfigHelper {
             defaultConfig = new ListViewConfigDefault();
             defaultConfig.label       = 'Include All Rows';
             defaultConfig.name        = 'AllRows';
-            defaultConfig.type        = 'Checkbox';
+            defaultConfig.type        = 'Boolean';
             defaultConfig.value       = 'false';
             defaultConfig.description = 'Indicates whether deleted and archived records should be included in list view results.';
 

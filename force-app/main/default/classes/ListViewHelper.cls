@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-18-2020
+ * @last modified on  : 08-19-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -620,19 +620,24 @@ global with sharing class ListViewHelper {
         List_View_Config__c config = new List_View_Config__c();
         config.Name                = 'PlatinumandGoldSLACustomers';
         config.List_View_Object__c = 'Account';
+        config.Primary_Key__c      = 'Account:PlatinumandGoldSLACustomers';
         configs.add(config);
 
         List_View_Config__c config2 = new List_View_Config__c();
         config2.Name                = 'All';
         config2.List_View_Object__c = 'All';
+        config2.Primary_Key__c       = 'All:All';
         configs.add(config2);
 
         List_View_Config__c config3 = new List_View_Config__c();
         config3.Name                = 'AllAccounts';
         config3.List_View_Object__c = 'Account';
+        config3.Primary_Key__c       = 'Account:AllAccounts';
         configs.add(config3);
 
         insert configs;
+
+        ListViewConfigHelper.ListViewConfigDefaults defaults = new ListViewConfigHelper.ListViewConfigDefaults();
 
         List<List_View_Config_Parameter__c> params2 = new List<List_View_Config_Parameter__c>();
       
@@ -641,6 +646,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'AdditionalFields';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
+        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -648,6 +654,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'TotalColumns';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = 'AnnualRevenue';
+        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -655,6 +662,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'TotalColumnsColor';
         param2.Parameter_Type__c   = 'Color';
         param2.Parameter_Value__c  = '#E5F0FA';
+        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -662,6 +670,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'List View Objects';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = '';
+        param2.Parameter_Label__c  = 'List View Objects';
         params2.add(param2);
 
         param2 = new List_View_Config_Parameter__c();
@@ -669,6 +678,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'Included Object Types';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = '';
+        param2.Parameter_Label__c  = 'Included Object Types';
         params2.add(param2);
 
         param2 = new List_View_Config_Parameter__c();
@@ -676,6 +686,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'Excluded Object Types';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
+        param2.Parameter_Label__c  = 'Excluded Object Types';
         params2.add(param2);
 
         param2 = new List_View_Config_Parameter__c();
@@ -683,6 +694,7 @@ global with sharing class ListViewHelper {
 		param2.Parameter_Type__c = 'String';
 		param2.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
 		param2.List_View_Config__c = config3.Id;
+        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -690,6 +702,7 @@ global with sharing class ListViewHelper {
 		param2.Parameter_Type__c = 'String';
 		param2.Parameter_Value__c = 'AnnualRevenue';
 		param2.List_View_Config__c = config3.Id;
+        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -697,6 +710,7 @@ global with sharing class ListViewHelper {
 		param2.Parameter_Type__c = 'Color';
 		param2.Parameter_Value__c = '#E5F0FA';
 		param2.List_View_Config__c = config3.Id;
+        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
         params2.add(param2);
         
         insert params2;
@@ -727,19 +741,19 @@ global with sharing class ListViewHelper {
      */
     public static Boolean isVisible(List_View__c lv)
     {
+        if (lv.OwnerId == UserInfo.getUserId()) return true;
+
+        if (lv.All_Internal_Users__c != null && lv.All_Internal_Users__c) return true;
+
         User usr = UserHelper.getCurrentUser();
 
-        //if (lv.OwnerId == UserInfo.getUserId()) return true;
+        if (lv.Roles__c != null && lv.Roles__c.contains(usr.UserRole.Name)) return true;
 
-        //if (lv.All_Internal_Users__c) return true;
-
-        //if (lv.Roles__c.contains(usr.UserRole.Name)) return true;
-
-        return true;
+        return false;
     }
 
     /*
-     * Method to check security and determine whether the list view is visible
+     * Method to check security and determine whether the list view is updateable
      * to the requesting user. The following security is performed.
      * 1. if user is owner
      * 2. if list view allows all internal users.
@@ -754,6 +768,8 @@ global with sharing class ListViewHelper {
         if (lv.OwnerId == UserInfo.getUserId()) return true;
 
         if (usr.Profile.Name == 'System Administrator') return true;
+
+        if (lv.All_Internal_Users__c != null && lv.All_Internal_Users__c) return true;
 
         return false;
     }

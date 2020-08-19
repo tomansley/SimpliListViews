@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-18-2020
+ * @Last Modified On   : 08-19-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -42,7 +42,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName + ' is not accessible. Please check user permissions');
+				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName + ' is not accessible or does not exist. Please check user permissions');
 			return false;
 		}
 	}
@@ -70,7 +70,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName.deleteWhitespace() + ' is not creatable. Please check user permissions');
+				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName.deleteWhitespace() + ' is not creatable or does not exist. Please check user permissions');
 			return false;
 		}
 	}
@@ -98,7 +98,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName + ' is not updateable. Please check user permissions');
+				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName + ' is not updateable or does not exist. Please check user permissions');
 			return false;
 		}
 	}
@@ -124,7 +124,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not creatable. Please check user permissions');
+				throw new HelperSchemaException('Object of type ' + objName + ' is not creatable or does not exist. Please check user permissions');
 			return false;
 		}
 	}
@@ -150,7 +150,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not accessible. Please check user permissions');
+				throw new HelperSchemaException('Object of type ' + objName + ' is not accessible or does not exist. Please check user permissions');
 			return false;
 		}
 	}
@@ -176,7 +176,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not updateable. Please check user permissions');
+				throw new HelperSchemaException('Object of type ' + objName + ' is not updateable or does not exist. Please check user permissions');
 			return false;
 		}
 	}
@@ -198,7 +198,7 @@ public with sharing class HelperSchema {
 	{
 		System.debug(LoggingLevel.DEBUG, 'checkObjectDeletable called with obj - ' + obj);
 
-		if (obj == null || obj.Id == null || obj.Id == '')
+		if (obj == null || obj.Id == null)
 			throw new HelperSchemaException('HelperSchema.checkObjectDeletable called with null Object or object with empty Id');
 
 		String objName = getSObjectTypeFromId(obj.Id);
@@ -207,7 +207,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not deletable. Please check user permissions');
+				throw new HelperSchemaException('Object of type ' + objName + ' is not deletable or does not exist. Please check user permissions');
 			return false;
 		}
 	}
@@ -233,7 +233,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not deletable. Please check user permissions');
+				throw new HelperSchemaException('Object of type ' + objName + ' is not deletable or does not exist. Please check user permissions');
 			return false;
 		}
 	}
