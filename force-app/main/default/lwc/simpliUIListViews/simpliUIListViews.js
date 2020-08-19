@@ -754,7 +754,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'List View Processing',
-                            message: 'List view processing has started and should be complete in a few minutes. Refresh to see the changes.',
+                            message: 'List view processing has started. See progress below and refresh page to see changes.',
                             variant: 'success',
                             mode: 'dismissable'
                         }));
