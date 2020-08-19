@@ -27,6 +27,13 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
     @track newConditionColor;
     @track configChanged;
 
+    get booleanList() {
+        return [
+            { label: 'Yes', value: 'true'},
+            { label: 'No', value: 'false'},
+        ];
+    }
+
     get operatorList() {
         return [
             { label: 'Equals', value: 'Equals' },
@@ -120,11 +127,7 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
     {
         this.paramNameLoad = event.target.name;
 
-        if (event.target.type === 'toggle') {
-            this.paramValueLoad = event.target.checked;
-        } else {
-            this.paramValueLoad = event.target.value;
-        }
+        this.paramValueLoad = event.target.value;
 
         console.log('Param loaded - ' + this.paramNameLoad + ' - ' + this.paramValueLoad);
 
@@ -135,9 +138,6 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
 
         var name = event.target.name;
         var value = event.target.value;
-        if (event.target.type === 'toggle') {
-            value = event.target.checked;
-        }
 
         console.log('Inside handleParamChange - ' + name + '/' + value);
 

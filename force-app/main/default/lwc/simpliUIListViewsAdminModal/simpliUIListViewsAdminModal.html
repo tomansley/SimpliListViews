@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-18-2020
+  @last modified on  : 08-19-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -50,13 +50,24 @@
                                             <td key={param.name} data-label={param.name}>
                                                 <div class="slds-form-element__control" title={param.value}>
                                                     <template if:true={param.updateImmediate}>
-                                                        <lightning-input type={param.type} 
-                                                                            variant="label-hidden" 
-                                                                            name={param.name} 
-                                                                            onchange={handleParamUpdate}
-                                                                            placeholder={param.placeHolder}
-                                                                            value={param.value}>
-                                                        </lightning-input>
+                                                        <template if:true={param.isBoolean}>
+                                                            <lightning-combobox placeholder="Select a Value..."
+                                                                                onblur={handleParamUpdate}
+                                                                                options={booleanList}
+                                                                                variant=label-hidden
+                                                                                value={param.value}
+                                                                                name={param.name}>
+                                                            </lightning-combobox>                        
+                                                        </template>
+                                                        <template if:false={param.isBoolean}>
+                                                            <lightning-input type={param.type} 
+                                                                                variant="label-hidden" 
+                                                                                name={param.name} 
+                                                                                onchange={handleParamUpdate}
+                                                                                placeholder={param.placeHolder}
+                                                                                value={param.value}>
+                                                            </lightning-input>
+                                                        </template>
                                                     </template>
                                                     <template if:false={param.updateImmediate}>
                                                         <lightning-input type={param.type} 
@@ -163,7 +174,7 @@
                                         </td>
                                         <td>
                                             <div title="Operator">
-                                                <lightning-combobox placeholder="Enter a Value..."
+                                                <lightning-combobox placeholder="Select a Value..."
                                                                     value="Equals"
                                                                     onblur={handleConditionOperatorChange}
                                                                     options={operatorList}
@@ -183,7 +194,7 @@
                                         </td>
                                         <td>
                                             <div title="Order">
-                                                <lightning-combobox placeholder="Enter a Value..."
+                                                <lightning-combobox placeholder="Select a Value..."
                                                                     value="1" 
                                                                     onblur={handleConditionOrderChange}
                                                                     options={orderList}
