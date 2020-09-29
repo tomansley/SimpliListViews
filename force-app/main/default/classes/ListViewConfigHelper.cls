@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-19-2020
+ * @Last Modified On   : 09-09-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -40,9 +40,7 @@ public with sharing class ListViewConfigHelper {
                 //update database
                 param.Parameter_Value__c = value;
 
-                HelperSchema.checkObjectUpdateable('List_View_Config_Parameter__c');
-
-                update param;
+                HelperDatabase.updateRecord(param, 'Simpli_lv__List_View_Config_Parameter__c');
 
                 //update cache
                 orgWideConfigParams.put(settingName, value);
@@ -99,6 +97,8 @@ public with sharing class ListViewConfigHelper {
         if (errorStr == '')
         {
 
+            HelperSchema.checkListViewConfigsAccessible();
+
             List<List_View_Config_Parameter__c> params = [SELECT Parameter_Name__c,
                                                             Parameter_Type__c,
                                                             Parameter_Value__c
@@ -139,9 +139,7 @@ public with sharing class ListViewConfigHelper {
 
             }
 
-            HelperSchema.checkListViewConfigsUpdateable();
-
-            upsert params;
+            HelperDatabase.upsertRecords(params, 'Simpli_lv__List_View_Config_Parameter__c');
 
             System.debug(LoggingLevel.DEBUG, 'Finished upserting param!');
 
@@ -153,7 +151,6 @@ public with sharing class ListViewConfigHelper {
 
     public static void addListViewCondition(String objectType, String listViewName, String fieldName, String fieldOperator, String fieldValue, String fieldOrder, String fieldColor)
     {
-        HelperSchema.checkListViewConfigsCreatable();
 
         //get the list view config for the parameter
         List<List_View_Config__c> lvConfig = getListViewConfig(objectType, listViewName);
@@ -166,15 +163,21 @@ public with sharing class ListViewConfigHelper {
         condition.Value__c            = fieldValue;
         condition.List_View_Config__c = lvConfig[0].Id;
 
-        insert condition;
+        HelperDatabase.insertRecord(condition, 'simpli_lv__List_View_Config_Condition__c');
     }
 
     public static void deleteListViewCondition(String id)
     {
         System.debug(LoggingLevel.DEBUG, 'Deleting list view condition - ' + id);
-        delete [SELECT Id 
-                FROM List_View_Config_Condition__c
-                WHERE Id = :id];
+
+        HelperSchema.checkListViewConfigsAccessible();
+
+        List<List_View_Config_Condition__c> conditions = [SELECT Id 
+                                                          FROM List_View_Config_Condition__c
+                                                          WHERE Id = :id];
+
+        HelperDatabase.deleteRecords(conditions, 'simpli_lv__List_View_Config_Condition__c');
+
     }
     
     /*
@@ -192,9 +195,7 @@ public with sharing class ListViewConfigHelper {
         if (config == null)
         {
 
-            HelperSchema.checkObjectAccessible('List_View_Config__c');
-            HelperSchema.checkObjectAccessible('List_View_Config_Parameter__c');
-            HelperSchema.checkObjectAccessible('List_View_Config_Condition__c');
+            HelperSchema.checkListViewConfigsAccessible();
 
             configs = [SELECT Name,
                                 List_View_Object__c,

@@ -1,3 +1,12 @@
+/**
+ * @description       : Helper class for list view user configuration
+ * @author            : tom.h.ansley@medtronic.com
+ * @last modified on  : 09-09-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   09-08-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 public with sharing class ListViewUserConfigHelper {
     
     public static Map<String, Map<String, List_View_User_Config__c>> currentUsersConfigs = null;
@@ -10,6 +19,8 @@ public with sharing class ListViewUserConfigHelper {
      */
     public static Map<String, Map<String, List_View_User_Config__c>> getCurrentUserConfigs() 
     {
+        HelperSchema.checkListViewUserConfigsAccessible();
+
         List<List_View_User_Config__c> configs = [SELECT Ltn_Component_Name__c,
                                                          Name__c,
                                                          Primary_Key__c,
@@ -90,7 +101,7 @@ public with sharing class ListViewUserConfigHelper {
             } else {
                 config.Value__c = value;
             }
-            upsert config config.Primary_Key__c;
+            HelperDatabase.upsertRecord(config, 'simpli_lv__List_View_User_Config__c', 'simpli_lv__Primary_Key__c');
 
             //update the current users config
             Map<String, List_View_User_Config__c> compConfigs = currentUsersConfigs.get(config.Ltn_Component_Name__c);
@@ -103,7 +114,7 @@ public with sharing class ListViewUserConfigHelper {
 
         } else {
             if (config != null)
-                delete config;
+                HelperDatabase.deleteRecord(config, 'simpli_lv__List_View_User_Config__c');
         }
     }
 }

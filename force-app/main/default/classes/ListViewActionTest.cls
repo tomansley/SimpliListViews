@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 09-09-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   09-09-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 @isTest
 private class ListViewActionTest {
 
@@ -22,10 +32,11 @@ private class ListViewActionTest {
             //change param field to AccountNumber
             param.Field_API_Name__c   = 'AccountNumber';
 
-            update param;
+            HelperDatabase.updateRecord(param, 'simpli_lv__List_View_Action_Parameter__c');
 
         Test.stopTest();
 
+        HelperSchema.checkListViewActionsAccessible();
         List_View_Action_Parameter__c paramUpdate = [SELECT Field_API_Name__c FROM List_View_Action_Parameter__c WHERE Id = :param.Id];
         System.assert(paramUpdate.Field_API_Name__c == 'AccountNumber');
 
@@ -55,7 +66,7 @@ private class ListViewActionTest {
 
             deleteAction.Label__c = 'Changed Name';
 
-            update deleteAction;
+            HelperDatabase.updateRecord(deleteAction, 'simpli_lv__List_View_Action__c');
 
             deleteAction = ListViewActionHelper.getListViewActionByKey('ChangedName:null');
 

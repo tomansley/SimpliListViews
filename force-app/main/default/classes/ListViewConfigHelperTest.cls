@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-19-2020
+ * @last modified on  : 09-09-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -71,6 +71,7 @@ private class ListViewConfigHelperTest {
         try {
             ListViewConfigHelper.addListViewCondition('Account', 'AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '1', '#000000');
 
+            HelperSchema.checkListViewConfigsAccessible();
             List_View_Config_Condition__c condition = [SELECT Id FROM List_View_Config_Condition__c WHERE Value__c = 'Testerson'];
 
             ListViewConfigHelper.deleteListViewCondition(condition.Id);
@@ -88,6 +89,7 @@ private class ListViewConfigHelperTest {
         //create a list view
         List<List_View__c> listViews = HelperTest.createListViews();
 
+        HelperSchema.checkListViewConfigsAccessible();
         List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'Account:AllAccounts'];
 
         //get the parameters of the created list view

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-05-2020
+ * @last modified on  : 09-09-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -13,7 +13,7 @@ public with sharing class ListViewActionHelper {
 
     public static Map<Id, List_View_Action__c> getListViewConfigs(Set<Id> actionIds) 
     {
-        HelperSchema.checkObjectAccessible('List_View_Action__c');
+        HelperSchema.checkListViewActionsAccessible();
 
         return new Map<Id, List_View_Action__c>([SELECT Label__c,
                                                         Apex_Class_Name__c,
@@ -36,7 +36,7 @@ public with sharing class ListViewActionHelper {
      */
     public static List_View_Action__c getListViewActionByKey(String primaryKey)
     {
-        HelperSchema.checkObjectAccessible('List_View_Action__c');
+        HelperSchema.checkListViewActionsAccessible();
 
         return [SELECT Label__c,
                         Apex_Class_Name__c,
@@ -60,7 +60,7 @@ public with sharing class ListViewActionHelper {
      */
     public static Map<String, List_View_Action__c> getListViewActionsByObject(String objectType)
     {
-        HelperSchema.checkObjectAccessible('List_View_Action__c');
+        HelperSchema.checkListViewActionsAccessible();
 
         //get list view data
         List<List_View_Action__c> actions = [SELECT Label__c,

@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 09-08-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   09-08-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 public with sharing class ListViewActionUpdate  extends ListViewAction {
 
     public ListViewActionUpdate() {
@@ -44,11 +54,10 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
             }
 
             //security review
-            HelperSchema.checkObjectUpdateable(objType);
             for (String fieldName: fieldValues.keySet())
                 HelperSchema.checkObjectFieldUpdateable(objType, fieldName);
 
-            update updatedObjs.values();
+            HelperDatabase.updateRecords(updatedObjs.values(), objType);
 
             if (updatedObjs.size() == 1)
                 returnStr += '1 record updated successfully.';

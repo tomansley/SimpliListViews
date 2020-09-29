@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 09-08-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   09-08-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 public with sharing class ListViewActionOppsClose extends ListViewAction {
     
     public ListViewActionOppsClose() {
@@ -32,9 +42,7 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
             }
 
             //security review
-            HelperSchema.checkObjectUpdateable('Opportunity');
-
-            upsert closedOpps.values();
+            HelperDatabase.upsertRecords(closedOpps.values(), 'Opportunity');
 
             if (closedOpps.size() == 1)
                 returnStr += '1 opportunity updated successfully.';

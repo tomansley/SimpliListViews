@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-19-2020
+ * @last modified on  : 09-09-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -19,7 +19,7 @@ public with sharing class HelperTest {
 		acc.BillingPostalCode = '60601';
         acc.BillingCountry = 'USA';
         acc.AnnualRevenue = 125000;
-		insert acc;
+        HelperDatabase.insertRecord(acc, 'Account');
 		
 		return acc;
     }
@@ -31,7 +31,7 @@ public with sharing class HelperTest {
         opp.StageName = 'Needs Analysis';
         opp.CloseDate = System.today().addDays(-5);
         
-		insert opp;
+        HelperDatabase.insertRecord(opp, 'Opportunity');
 		
 		return opp;
     }
@@ -54,8 +54,9 @@ public with sharing class HelperTest {
 
 		simpliListViews.add(simpliListView);
 
-		insert simpliListViews;
+        HelperDatabase.insertRecords(simpliListViews, 'Simpli_lv__List_View__c');
 
+        HelperSchema.checkListViewConfigsAccessible();
 		List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'Account:AllAccounts'];
 
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
@@ -84,7 +85,7 @@ public with sharing class HelperTest {
         param.Parameter_Label__c  = defaults.params.get(param.Parameter_Name__c).label;
         params.add(param);
         
-        insert params;
+        HelperDatabase.insertRecords(params, 'Simpli_lv__List_View_Config_Parameter__c');
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
         
@@ -98,11 +99,12 @@ public with sharing class HelperTest {
 
         conditions.add(condition);
 
-        insert conditions;
+        HelperDatabase.insertRecords(conditions, 'Simpli_lv__List_View_Config_Condition__c');
 
+        HelperSchema.checkListViewConfigsAccessible();
 		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'List View Objects'];
 		orgWideConfig.Parameter_Value__c = '{"Account":"Account"}';
-		update orgWideConfig;
+		HelperDatabase.updateRecord(orgWideConfig, 'simpli_lv__List_View_Config_Parameter__c');
 
 		return simpliListViews;
 	}
@@ -132,7 +134,7 @@ public with sharing class HelperTest {
 
         listViewActions.add(oppsCloseUpdateAction);
 
-		insert listViewActions;
+        HelperDatabase.insertRecords(listViewActions, 'Simpli_lv__List_View_Action__c');
 
 		List<List_View_Action_Parameter__c> listViewActionParams = new List<List_View_Action_Parameter__c>();
 
@@ -165,7 +167,7 @@ public with sharing class HelperTest {
         actionParam3.Type__c             = 'DATE';
 
         listViewActionParams.add(actionParam3);
-		insert listViewActionParams;
+        HelperDatabase.insertRecords(listViewActionParams, 'Simpli_lv__List_View_Action_Parameter__c');
 
 		return listViewActions;
 

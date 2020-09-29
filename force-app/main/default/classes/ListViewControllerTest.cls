@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-19-2020
+ * @last modified on  : 09-09-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -84,6 +84,7 @@ private class ListViewControllerTest {
 
         System.assert(result == 'Ok:');
 
+        HelperSchema.checkListViewConfigsAccessible();
         List_View_Config_Condition__c condition = [SELECT ID FROM List_View_Config_Condition__c WHERE Value__c = 'Dickenson plc'];
 
         result = ListViewController.processConditionChange('Account', 'AllAccounts', 'remove', condition.Id);

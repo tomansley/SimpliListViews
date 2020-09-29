@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 09-09-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   09-09-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 @isTest
 private class ListViewActionBLTest {
 
@@ -19,7 +29,7 @@ private class ListViewActionBLTest {
 
         lvAction.Label__c = 'Changed Name';
 
-        update lvAction;
+		HelperDatabase.updateRecord(lvAction, 'simpli_lv__List_View_Action__c');
 
     }
 

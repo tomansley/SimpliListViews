@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @group             : 
+ * @last modified on  : 09-09-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   09-09-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 public with sharing class UserHelper {
 
     private static User currentUser = null;
@@ -34,6 +44,8 @@ public with sharing class UserHelper {
      */
     public static Map<ID,User> getUserDetails(List<Id> userIds)
     {    
+        
+        HelperSchema.checkSelectAccessible('SELECT Id, User.Name, UserRole.Name, FirstName, LastName, Profile.Name, UserRole.ParentRoleId, Email FROM User');
         
         Map<ID,User> userMap = new Map<ID,User>([SELECT Id, 
                                                         User.Name, 

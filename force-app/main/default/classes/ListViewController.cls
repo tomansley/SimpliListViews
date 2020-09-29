@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-19-2020
+ * @last modified on  : 09-09-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -25,6 +25,7 @@ public with sharing class ListViewController
         if (batchId != '')
         {
             //Query the Batch apex jobs
+            HelperSchema.checkSelectAccessible('SELECT TotalJobItems, Status, NumberOfErrors, MethodName, JobType, JobItemsProcessed, Id FROM AsyncApexJob');
             List<AsyncApexJob> jobs = [SELECT TotalJobItems, 
                                               Status, 
                                               NumberOfErrors, 

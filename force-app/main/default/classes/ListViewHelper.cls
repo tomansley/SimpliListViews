@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-19-2020
+ * @last modified on  : 09-09-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -32,7 +32,7 @@ global with sharing class ListViewHelper {
     public static Map<Id, ListView> getChangedListViews(Integer recLimit)
     {
 
-        HelperSchema.checkObjectAccessible('ListView');
+        HelperSchema.checkListViewAccessible();
 
         Integer soqlLimit = 5000;
         if (recLimit != null)
@@ -42,7 +42,8 @@ global with sharing class ListViewHelper {
                                                                     Name, 
                                                                     SObjectType, 
                                                                     DeveloperName, 
-                                                                    LastModifiedById FROM ListView 
+                                                                    LastModifiedById 
+                                                            FROM ListView 
                                                             WHERE LastModifiedById = :UserInfo.getUserId()
                                                                     AND LastModifiedDate > :System.today().addDays(-1)
                                                             ORDER BY LastModifiedDate DESC
@@ -61,6 +62,7 @@ global with sharing class ListViewHelper {
         List<List_View__c> updatedListViews = new List<List_View__c>();
 
         //get the CORE list views.
+        HelperSchema.checkSelectAccessible('SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView');
         List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE SObjectType = :objectName];
         
         for (ListView listView: coreListViews)
@@ -101,10 +103,7 @@ global with sharing class ListViewHelper {
     
         }
 
-        HelperSchema.checkObjectCreatable('List_View__c');
-        HelperSchema.checkObjectUpdateable('List_View__c');
-
-        upsert updatedListViews Primary_Key__c;
+        HelperDatabase.upsertRecords(updatedListViews, 'Simpli_lv__List_View__c', 'simpli_lv__Primary_Key__c', true);
 
         return true;
     }
@@ -131,6 +130,7 @@ global with sharing class ListViewHelper {
         }
 
         //get the CORE list views.
+        HelperSchema.checkSelectAccessible('SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView');
         List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE Id IN :listViewsByCoreId.keySet()];
         
         for (ListView listView: coreListViews)
@@ -171,7 +171,7 @@ global with sharing class ListViewHelper {
 
         }
 
-        upsert updatedListViews Primary_Key__c;
+        HelperDatabase.upsertRecords(updatedListViews, 'simpli_lv__List_View__c', 'simpli_lv__Primary_Key__c', true);
 
         return true;
     }
@@ -207,7 +207,7 @@ global with sharing class ListViewHelper {
             String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('Excluded Object Types');
             Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
     
-            HelperSchema.checkObjectAccessible('List_View__c');
+            HelperSchema.checkListViewAccessible();
 
             AggregateResult[] aggListViewObjects = [SELECT Object_Name__c 
                                                  FROM List_View__c 
@@ -264,7 +264,7 @@ global with sharing class ListViewHelper {
     {
         System.debug(LoggingLevel.DEBUG, 'lvIds - ' + lvIds);
 
-        HelperSchema.checkObjectAccessible('List_View__c');
+        HelperSchema.checkListViewAccessible();
 
         List<List_View__c> listviews = [SELECT Label__c,
                                                  Describe__c,
@@ -313,6 +313,7 @@ global with sharing class ListViewHelper {
             return new Map<String, List_View__c>();
 
         //get list view data
+        HelperSchema.checkListViewAccessible();
         List<List_View__c> listviews = [SELECT Label__c,
                                                 Describe__c,
                                                 Core_ListView_Id__c,
@@ -356,7 +357,7 @@ global with sharing class ListViewHelper {
         System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
         System.debug(LoggingLevel.DEBUG, 'listViewAPIName - ' + listViewAPIName);
 
-        HelperSchema.checkObjectAccessible('List_View__c');
+        HelperSchema.checkListViewAccessible();
 
         //get list view data
         List<List_View__c> listviews = [SELECT Label__c,
@@ -550,7 +551,6 @@ global with sharing class ListViewHelper {
         //-----------------------------------------------------
         // Create List View Actions
         //-----------------------------------------------------
-        HelperSchema.checkListViewActionsCreatable();
 
         List<List_View_Action__c> actions = new List<List_View_Action__c>();
 
@@ -574,7 +574,7 @@ global with sharing class ListViewHelper {
 
         actions.add(oppsCloseUpdateAction);
 
-        insert actions;
+        HelperDatabase.insertRecords(actions, 'Simpli_lv__List_View_Action__c');
 
         List<List_View_Action_Parameter__c> params = new List<List_View_Action_Parameter__c>();
 
@@ -608,12 +608,11 @@ global with sharing class ListViewHelper {
 
         params.add(param);
 
-        insert params;
+        HelperDatabase.insertRecords(params, 'Simpli_lv__List_View_Action_Parameter__c');
 
         //-----------------------------------------------------
         // Create List View Configs
         //-----------------------------------------------------
-        HelperSchema.checkListViewConfigsCreatable();
 
         List<List_View_Config__c> configs = new List<List_View_Config__c>();
 
@@ -635,7 +634,7 @@ global with sharing class ListViewHelper {
         config3.Primary_Key__c       = 'Account:AllAccounts';
         configs.add(config3);
 
-        insert configs;
+        HelperDatabase.insertRecords(configs, 'Simpli_lv__List_View_Config__c');
 
         ListViewConfigHelper.ListViewConfigDefaults defaults = new ListViewConfigHelper.ListViewConfigDefaults();
 
@@ -713,7 +712,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
         params2.add(param2);
         
-        insert params2;
+        HelperDatabase.insertRecords(params2, 'Simpli_lv__List_View_Config_Parameter__c');
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
 
@@ -726,7 +725,7 @@ global with sharing class ListViewHelper {
         condition.Highlight_Color__c  = '#c59e9e';
         conditions.add(condition);
 
-        insert conditions;
+        HelperDatabase.insertRecords(conditions, 'Simpli_lv__List_View_Config_Condition__c');
 
     }
 
@@ -747,7 +746,7 @@ global with sharing class ListViewHelper {
 
         User usr = UserHelper.getCurrentUser();
 
-        if (lv.Roles__c != null && lv.Roles__c.contains(usr.UserRole.Name)) return true;
+        if (lv.Roles__c != null && usr.UserRole != null && lv.Roles__c.contains(usr.UserRole.Name)) return true;
 
         return false;
     }

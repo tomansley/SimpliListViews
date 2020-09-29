@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-18-2020
+ * @last modified on  : 09-09-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -54,7 +54,8 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
 
-            return Database.getQueryLocator(query);
+                HelperSchema.checkSelectAccessible(query);
+                return Database.getQueryLocator(query);
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.start(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
@@ -127,20 +128,13 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
                     simpliListViewConfigs.add(config);
 
-                } catch (Exception e) { 
+                } catch (Exception e) {
                     //we don't care about exceptions here because it means the listview is not one that can be handled.
                 }
             }
-
-            HelperSchema.checkListViewCreatable();
-            HelperSchema.checkListViewUpdateable();
-            HelperSchema.checkListViewConfigsCreatable();
-            HelperSchema.checkListViewConfigsUpdateable();
             
-            upsert simpliListViews Primary_Key__c;
-            upsert simpliListViewConfigs Primary_Key__c;
-            
-
+            HelperDatabase.upsertRecords(simpliListViews, 'Simpli_lv__List_View__c', 'simpli_lv__Primary_Key__c', true);
+            HelperDatabase.upsertRecords(simpliListViewConfigs, 'Simpli_lv__List_View_Config__c', 'simpli_lv__Primary_Key__c', true);           
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.execute() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();

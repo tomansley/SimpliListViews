@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-05-2020
+ * @Last Modified On   : 09-09-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -54,6 +54,8 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
 
+            HelperSchema.checkListViewAccessible();
+
             return Database.getQueryLocator(query);
 
         } catch (Exception e) {
@@ -70,9 +72,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
     {
         try {
 
-            HelperSchema.checkObjectDeletable('List_View__c');
-
-            delete scope;
+            HelperDatabase.deleteRecords(scope, 'List_View__c');
             
         } catch (Exception e) {
             String message = 'Exception during ListViewDeleteBatch.execute() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
