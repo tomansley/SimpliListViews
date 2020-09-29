@@ -1,7 +1,7 @@
 /* eslint-disable vars-on-top */
 /* eslint-disable no-console */
 import { LightningElement, wire, track, api  } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
+import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import  LISTVIEW_MC  from '@salesforce/messageChannel/SimpliListViewMessageChannel__c';
 import { refreshApex } from '@salesforce/apex';
@@ -24,6 +24,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     wiredListViewDataResult;
     wiredObjectListViewsResult;
+    wiredListViewObjectsResult;
 
     @api pageName             = '';                 //this is NOT the page name but the COMPONENT name
     @api hasMainTitle         = false;
@@ -61,6 +62,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isPinned = false;            //identifies whether this list view and object have been pinned.
     @track pinnedListView = undefined;  //the list view that is pinned if there is a pinned list view.
     @track pinnedObject = undefined;    //the object that is pinned if there is a pinned list view.
+    @track urlListView = undefined;     //the list view that is supplied on the URL if it exists.
+    @track urlObject = undefined;       //the object that is supplied on the URL if it exists.
     @track isRefreshed = false;         //identifies whether this list views data is being refreshed at intervals.
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
     @track allowAdmin = true;           //indicates whether the admin button should display to the user
@@ -83,6 +86,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     receivedMessage;
     isValid;
 
+    currentPageReference;
+
+
     /*
      * Method which gets called when the class is being instantiated
      * Note that we do not have access to any local variables in the constructor
@@ -99,6 +105,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             });
     }
     
+
+    @wire(CurrentPageReference)
+    setCurrentPageReference(currentPageReference) {
+        this.currentPageReference = currentPageReference;
+        if(this.currentPageReference) {
+            window.console.log('Current Page Reference...'+JSON.stringify(this.currentPageReference));
+        }
+    }
+
     /*
      * Method which gets called after the class has been instantiated
      * but before it is rendered. We do have access to variables in this method.
@@ -111,6 +126,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             //always subscribe to the message channel
             this.subscribeMC();
 
+            this.urlObject = this.currentPageReference.state.ObjectName;
+            this.urlListView = this.currentPageReference.state.ListViewName;
+            
+            console.log('URL OBJECT - ' + this.urlObject);
+            console.log('URL LIST VIEW - ' + this.urlListView);
+
             getUserConfigs({compName: this.pageName })
             .then(result => {
                 console.log('User configs retrieved successful - ' + result);
@@ -118,11 +139,19 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 let pinnedListView = this.userConfigs.pinnedListView;
 
-                if (pinnedListView != undefined && pinnedListView != '') {
-                    this.isPinned = true;
-                    this.pinnedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
-                    this.selectedObject = this.pinnedObject;
-                    this.pinnedListView = pinnedListView.substring(pinnedListView.lastIndexOf(':')+1);
+                //if we have a URL object then use it
+                if (this.urlObject != undefined) {
+                    this.selectedObject = this.urlObject
+
+                //otherwise if they have a pinned list view then use it.
+                } else {
+
+                    if (pinnedListView != undefined && pinnedListView != '') {
+                        this.isPinned = true;
+                        this.pinnedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
+                        this.selectedObject = this.pinnedObject;
+                        this.pinnedListView = pinnedListView.substring(pinnedListView.lastIndexOf(':')+1);
+                    }
                 }
             })
             .catch(error => {
@@ -155,7 +184,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.listViewConfigParams = undefined; 
-            this.spinner = false;
+            this.spinnerOff();
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Configs',
                 message: 'There was an error retrieving the list view configs. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
@@ -174,12 +203,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('List view actions retrieval successful'); 
             this.objectActionList = data; 
             this.error = undefined; 
-            this.spinner = false; 
+            this.spinnerOff(); 
         } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.objectActionList = undefined; 
-            this.spinner = false; 
+            this.spinnerOff(); 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Actions',
                 message: 'There was an error retrieving the list view actions. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
@@ -194,6 +223,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      */
     @wire (getListViewData, { objectName: '$selectedObject', listViewName: '$selectedListView', sortData: '$columnSortDataStr', joinFieldName: '$joinFieldName', joinData: '' })
     wiredListViewData(wiredListViewDataResult) {
+        this.spinnerOn();
         this.wiredListViewDataResult = wiredListViewDataResult;
         const { data, error } = wiredListViewDataResult;
 
@@ -210,12 +240,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
 
             this.error = undefined;  
-            this.spinner = false;
+            this.spinnerOff();
         } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.listViewData = undefined; 
-            this.spinner = false;
+            this.spinnerOff();
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Data',
                 message: 'There was an error retrieving the data. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
@@ -229,7 +259,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * Wiring to get the list of objects in the system
      */
     @wire (getListViewObjects, { includedObjects: '$includedObjects', excludedObjects: '$excludedObjects'  })
-    wiredListViewObjects({ error, data }) {
+    wiredListViewObjects(wiredListViewObjectsResult) {
+        this.wiredListViewObjectsResult = wiredListViewObjectsResult;
+        const { data, error } = wiredListViewObjectsResult;
         if (data) { 
             console.log('List view objects retrieval successful'); 
             console.log('Included objects - ' + this.includedObjects); 
@@ -243,12 +275,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.isInit = false;
             }
 
-            this.spinner = false;
+            this.spinnerOff();
         } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.objectList = undefined; 
-            this.spinner = false;
+            this.spinnerOff();
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Objects',
                 message: 'There was an error retrieving the list view objects. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
@@ -270,18 +302,20 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('Object list view retrieval successful'); 
             this.listViewList = data; 
             this.error = undefined; 
-            if (this.pinnedListView != undefined) {
+            if (this.urlListView != undefined) {
+                this.selectedListView = this.urlListView;
+            } else if (this.pinnedListView != undefined) {
                 this.selectedListView = this.pinnedListView;
             }
-            this.spinner = false; 
+            this.spinnerOff(); 
         } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
             this.listViewList = undefined; 
-            this.spinner = false; 
+            this.spinnerOff(); 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Object List Views',
-                message: 'There was an error retrieving the ' + objectName + ' list views data. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
+                message: 'There was an error retrieving the ' + this.selectedObject + ' list views data. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -466,7 +500,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * channel.
      */
     handleRecordSelectChange(event) {
-        this.spinner = true;
+        this.spinnerOn();
         console.log('Record selected - ' + event.target.checked + ': ' + event.target.value);
 
         //get all checkbox components
@@ -532,7 +566,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('NOT sending to message channel');
         }
 
-        this.spinner = false;
+        this.spinnerOff();
     }
 
     /*
@@ -540,7 +574,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * they have changed the object of the list view.
      */
     handleObjectChange(event) {
-        this.spinner = true;
+        this.spinnerOn();
         this.selectedObject = event.target.value;
         this.listViewList = undefined;
         this.selectedListView = undefined;
@@ -555,7 +589,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * to retrieve record data.
      */
     handleListViewSelected(event) {
-        this.spinner = true;
+        this.spinnerOn();
         this.selectedListView = event.target.value;
         console.log('List view selected - ' + this.selectedListView);
         this.listViewData = undefined;
@@ -566,6 +600,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else {
             this.isPinned = false;
         }
+
+        refreshApex(this.wiredListViewDataResult);
+
     }
 
     /*
@@ -635,10 +672,20 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         });
     }
 
+    spinnerOn() {
+        this.spinner = true;
+        console.log('Spinner ON');
+    }
+
+    spinnerOff() {
+        this.spinner = false;
+        console.log('Spinner OFF');
+    }
+
     //called when a user clicks the button to refresh the list views.
     handleProcessListViewsButtonClick() {
 
-        this.spinner = true;
+        this.spinnerOn();
         console.log('Listview process button clicked!');
         console.log('selectedObject - ' + this.selectedObject);
         console.log('selectedListView - ' + this.selectedListView);
@@ -661,6 +708,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             mode: 'dismissable'
                         }));
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
+                        refreshApex(this.wiredListViewDataResult);
+                        this.spinnerOff();
 
                     //else send an ERROR toast.
                     } else {
@@ -670,7 +719,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             variant: 'error',
                             mode: 'sticky'
                         }));
-                
+
+                        this.spinnerOff();
                     }
                 })
                 .catch(error => {
@@ -680,9 +730,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         variant: 'error',
                         mode: 'sticky'
                     }));
-            });
+                    this.spinnerOff();
+                });
 
-            this.spinner = false;
+
         }
         
         //if we have selected an objects list views to update
@@ -703,6 +754,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             mode: 'dismissable'
                         }));
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
+                        refreshApex(this.wiredObjectListViewsResult);
+                        refreshApex(this.wiredListViewDataResult);
+                        this.spinnerOff();
 
                     //else send an ERROR toast.
                     } else {
@@ -712,6 +766,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             variant: 'error',
                             mode: 'sticky'
                         }));
+                        this.spinnerOff();
                 
                     }
                 })
@@ -722,9 +777,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         variant: 'error',
                         mode: 'sticky'
                     }));
-            });
+                    this.spinnerOff();
+                });
 
-            this.spinner = false;
         }
 
         //if we have selected ALL list views to update
@@ -744,6 +799,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             variant: 'error',
                             mode: 'sticky'
                         }));
+                        this.spinnerOff();
 
                     //else send a SUCCESS toast.
                     } else {
@@ -754,11 +810,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'List View Processing',
-                            message: 'List view processing has started. See progress below and refresh page to see changes.',
+                            message: 'List view processing has started for ALL list views. You MUST do a full page refresh after completion to see changes.',
                             variant: 'success',
                             mode: 'dismissable'
                         }));
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
+                        this.spinnerOff();
                     }
                 })
                 .catch(error => {
@@ -768,9 +825,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         variant: 'error',
                         mode: 'sticky'
                     }));
-            });
+                    this.spinnerOff();
+                });
 
-            this.spinner = false;
         }
 
     }
@@ -837,7 +894,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.showActionModal = false;
     }
 
-    processModal() {   
+    processActionModal() {   
 
         //reset the selected record Ids
         let selectedRows = this.template.querySelectorAll('lightning-input');
@@ -861,7 +918,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     processAdminModal() {   
 
         this.showAdminModal = false;
-
+        refreshApex(this.wiredListViewConfigResult);
+        refreshApex(this.wiredListViewDataResult);
     }
 
     /*
@@ -908,7 +966,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * be a part of the data sorting. The page can have multiple columns be a part of the sort.
      */
     sortColumns(event) {
-        this.spinner = true;
+        this.spinnerOn();
 
         //get all values from the event
         let fieldName = event.currentTarget.dataset.name;

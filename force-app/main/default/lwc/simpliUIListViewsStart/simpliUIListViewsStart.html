@@ -2,13 +2,17 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-18-2020
+  @last modified on  : 09-29-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-18-2020   tom.h.ansley@medtronic.com   Initial Version
 -->
 <template>
+
+    <template if:true={spinner}>
+        <lightning-spinner alternative-text="Processing"></lightning-spinner>
+    </template>
 
     <lightning-card>
         <template if:false={showProgress}>  
@@ -54,10 +58,14 @@
         <div class="slds-m-around_medium">
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
-                    <li>Reduce number of clicks</li>
-                    <li>Customize list view fields beyond standard list view field options</li>
-                    <li>Create custom list view actions</li>
-                    <li>Configure the list view page at the org, page and list view level</li>
+                    <li>Reduce number of clicks.</li>
+                    <li>Customize list view fields beyond standard list view field options.</li>
+                    <li>Create custom list view actions.</li>
+                    <li>Configure the list view page at the org, page and list view level.</li>
+                    <li>Sort list views by multiple columns at once.</li>
+                    <li>Add list view footer calculations.</li>
+                    <li>Configure row highlighting based on criteria.</li>
+                    <li>Auto-refresh list views to see the latest data</li>
                 </ol>
             </div>
             <br/>

@@ -1,15 +1,17 @@
 import { LightningElement, wire, track, api  } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
+import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
 import getListViewColumnLabels from '@salesforce/apex/ListViewController.getListViewColumnLabels';
 import processParamChange from '@salesforce/apex/ListViewController.processParamChange';
 import processConditionChange from '@salesforce/apex/ListViewController.processConditionChange';
 
-export default class simpliUIListViewsAdminModal extends LightningElement {
+export default class simpliUIListViewsAdminModal extends NavigationMixin(LightningElement) {
 
     wiredListViewConfigResult;
+    currentPageReference;
 
     @api showModal;                     //indicates whether this modal dialog should be displayed or not.
     @api listViewObject;                //the object of the list view.
@@ -74,6 +76,17 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
         if (this.listViewConfig === undefined) {
             this.configChanged = false;
         }
+    }
+
+    @wire(CurrentPageReference)
+    setCurrentPageReference(currentPageReference) {
+        this.currentPageReference = currentPageReference;
+        if(this.currentPageReference) {
+            window.console.log('Current Page Reference...'+JSON.stringify(this.currentPageReference));
+        }
+
+        let testparam=this.currentPageReference.attributes.apiName;
+        console.log('OBJ Name - ' + testparam);
     }
 
     /*
@@ -272,8 +285,6 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
                         mode: 'dismissable'
                     }));
                 
-                    refreshApex(this.wiredListViewConfigResult);
-
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error!',
@@ -302,20 +313,13 @@ export default class simpliUIListViewsAdminModal extends LightningElement {
     }
 
     handleClose() {
-        //refresh the entire page
-        if (this.configChanged)
-            window.location.replace(window.location.href);
-        else
-            this.dispatchEvent(new CustomEvent('close'));
+        refreshApex(this.wiredListViewConfigResult);
+        this.dispatchEvent(new CustomEvent('close'));
     }
 
     handleCloseClick(event) {
-
-        //refresh the entire page
-        if (this.configChanged)
-            window.location.replace(window.location.href);
-        else
-            this.dispatchEvent(new CustomEvent('close'));
+        refreshApex(this.wiredListViewConfigResult);
+        this.dispatchEvent(new CustomEvent('close'));
     }
 
     handleConditionFieldChange(event) {
