@@ -180,6 +180,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('List view config retrieval successful'); 
             this.listViewConfigParams = data; 
             this.error = undefined; 
+            //this.spinnerOff();
         } else if (error) { 
             this.error = error; 
             console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
@@ -224,6 +225,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @wire (getListViewData, { objectName: '$selectedObject', listViewName: '$selectedListView', sortData: '$columnSortDataStr', joinFieldName: '$joinFieldName', joinData: '' })
     wiredListViewData(wiredListViewDataResult) {
         this.spinnerOn();
+        console.log('SELECTED LIST VIEW - ' + this.selectedListView);
         this.wiredListViewDataResult = wiredListViewDataResult;
         const { data, error } = wiredListViewDataResult;
 
@@ -252,6 +254,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 variant: 'error',
                 mode: 'sticky'
             }));
+        } else {
+            this.spinnerOff();
         }
     }
 
@@ -575,9 +579,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      */
     handleObjectChange(event) {
         this.spinnerOn();
+        this.selectedListView = undefined;
         this.selectedObject = event.target.value;
         this.listViewList = undefined;
-        this.selectedListView = undefined;
         this.listViewData = undefined;
         this.objectActionList = undefined;
         
@@ -680,6 +684,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     spinnerOff() {
         this.spinner = false;
         console.log('Spinner OFF');
+        var stack = new Error().stack
+        console.log( stack )
     }
 
     //called when a user clicks the button to refresh the list views.
