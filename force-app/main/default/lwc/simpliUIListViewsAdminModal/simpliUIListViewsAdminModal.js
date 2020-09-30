@@ -284,6 +284,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                         variant: 'success',
                         mode: 'dismissable'
                     }));
+                    refreshApex(this.wiredListViewConfigResult);
                 
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
