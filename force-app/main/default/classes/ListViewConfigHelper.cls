@@ -40,6 +40,10 @@ public with sharing class ListViewConfigHelper {
                 //update database
                 param.Parameter_Value__c = value;
 
+                //bug fix to stop failures during auto updates of params without labels.
+                if (param.Parameter_Label__c == null)
+                    param.Parameter_Label__c = param.Parameter_Name__c;
+
                 HelperDatabase.updateRecord(param, 'Simpli_lv__List_View_Config_Parameter__c');
 
                 //update cache
@@ -282,22 +286,25 @@ public with sharing class ListViewConfigHelper {
         {
         } else if (paramName == 'AdditionalFields')
         {
-            String soql = 'SELECT ' + paramValue + ' FROM ' + objectName + ' LIMIT 1';
+            if (paramValue != '')
+            {
+                String soql = 'SELECT ' + paramValue + ' FROM ' + objectName + ' LIMIT 1';
 
-            try {
+                try {
 
-                HelperSchema.checkObjectAccessible(objectName);
-                for (String field: paramValue.split(','))
-                {
-                    if (!field.contains('.'))
+                    HelperSchema.checkObjectAccessible(objectName);
+                    for (String field: paramValue.split(','))
                     {
-                        HelperSchema.checkObjectFieldAccessible(objectName, field);
+                        if (!field.contains('.'))
+                        {
+                            HelperSchema.checkObjectFieldAccessible(objectName, field);
+                        }
                     }
-                }
 
-                List<SObject> result = Database.query(soql);
-            } catch (Exception e) {
-                error = 'There was an error testing the additional fields. Please ensure the names are valid API field names - ' + e.getMessage();
+                    List<SObject> result = Database.query(soql);
+                } catch (Exception e) {
+                    error = 'There was an error testing the additional fields. Please ensure the names are valid API field names - ' + e.getMessage();
+                }
             }
         }
 
