@@ -58,35 +58,45 @@
         <div class="slds-m-around_medium">
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
-                    <li>Reduce number of clicks.</li>
-                    <li>Customize list view fields beyond standard list view field options.</li>
-                    <li>Create custom list view actions.</li>
-                    <li>Configure the list view page at the org, page and list view level.</li>
-                    <li>Sort list views by multiple columns at once.</li>
-                    <li>Add list view footer calculations.</li>
-                    <li>Configure row highlighting based on criteria.</li>
-                    <li>Auto-refresh list views to see the latest data</li>
+                    <li style="padding-bottom: 5px;">All list views on one page = reduction of clicks.</li>
+                    <li style="padding-bottom: 5px;">Customize list view fields beyond standard list view field options.</li>
+                    <li style="padding-bottom: 5px;">Create custom list view actions.</li>
+                    <li style="padding-bottom: 5px;">Configure the list view page at the org, page and list view level.</li>
+                    <li style="padding-bottom: 5px;">Sort list views by multiple columns at once.</li>
+                    <li style="padding-bottom: 5px;">Add list view footer calculations.</li>
+                    <li style="padding-bottom: 5px;">Configure row highlighting based on criteria.</li>
+                    <li style="padding-bottom: 5px;">Auto-refresh list views to see the latest data</li>
                 </ol>
             </div>
-            <br/>
-            <p>Simpli List Views helps reduce the clicks a user needs when moving from one object list view to another. All list views are displayed on one page. Users spend lots of time working with lists of data. In Salesforce those lists are spread throughout the application. Depending on user process, this can create unnecessary clicks and page loads.</p>
-            <br/>
-            <p>Salesforce list views could also do with a spruce-up! Ever needed to look deeper into an object hierarchy? Now you can. Move beyond standard list views and add custom fields that reference objects multiple levels deeper. For example, on an Account list view you could see the account owners profile by using Owner.Profile.Name in the list views configuration.</p>
-             <br/> 
-            <p>Create actions that can be performed on multiple records (requires Apex development). Select records that need to be processed and choose an action. Actions can be universal (to delete records), object specific (to update object fields) or list view specific (process oriented action). Actions can be configured to have users enter data before processing the action.</p>
         </div>
     </lightning-card>
     <br/>
-    <lightning-card title="Configuration" icon-name="standard:announcement">
+    <lightning-card title="Quick Start" icon-name="standard:custom_notification">
+        <div class="slds-m-around_medium">
+            <div style="padding-left: 20px;">
+                <ol style="list-style-type:decimal; list-style-position: inside;">
+                    <li style="padding-bottom: 5px;"><b>Initialize List Views - </b>Click the <lightning-button-icon style="padding: 5px;" 
+                                                                                                size="x-small" 
+                                                                                                icon-name="action:new_task">
+                                                                        </lightning-button-icon>
+                            button above to process the list views if they have not been initialized.</li>
+                    <li style="padding-bottom: 5px;"><b>Refresh Page - </b>After initializing, refresh the page to cache the new data.</li>
+                    <li style="padding-bottom: 5px;"><b>Go To Example Tab - </b>Click on the "List Views Example 1" tab. The objects and list views will be displayed.</li>
+                </ol>
+            </div>
+        </div>
+    </lightning-card>
+    <br/>
+    <lightning-card title="Configuration" icon-name="standard:settings">
         <div class="slds-m-around_medium">
 
             <p>There are 3 different levels of configuration that are available.</p>
             <br/>
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
-                    <li>Org-wide custom settings</li>
-                    <li>Component or page level settings</li>
-                    <li>List view configuration</li>
+                    <li style="padding-bottom: 5px;">Org-wide custom settings</li>
+                    <li style="padding-bottom: 5px;">Component or page level settings</li>
+                    <li style="padding-bottom: 5px;">List view configuration</li>
                 </ol>
             </div>
             <br/>
@@ -97,9 +107,9 @@
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li><b>Included Object Types - </b>Indicates only those object types that should be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.</li>
-                        <li><b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.</li>
-                        <li><b>List View Objects - </b>Do not touch this setting unless you know what you are doing!</li>
+                        <li style="padding-bottom: 5px;"><b>Included Object Types - </b>Indicates only those object types that should be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.</li>
+                        <li style="padding-bottom: 5px;"><b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.</li>
+                        <li style="padding-bottom: 5px;"><b>List View Objects - </b>Do not touch this setting unless you know what you are doing!</li>
                     </ol>
                 </div>
             </div>
@@ -111,13 +121,13 @@
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li><b>Has Main Title - </b>Indicates whether the main title on the list view component should be displayed.</li>
-                        <li><b>Main Title - </b>Identifies what the title on the component should be if the title is being displayed.</li>
-                        <li><b>Display Actions - </b>Indicates whether the actions dropdown should be displayed.</li>
-                        <li><b>Display List View Reprocessing Button - </b>Indicates whether the list view reprocessing button should be displayed. This button allows the user to refresh the list view data based on core list view configuration that may have been changed.</li>
-                        <li><b>Display Original List View Button - </b>Indicates whether to display the button which links to the original related Salesforce list view. This button allows the user to quickly go to the original list view allowing them to make changes to the list view columns or filters as necessary.</li>
-                        <li><b>Included Objects - </b>A comma delimited list of API object names that are to be included on the page. If blank, all objects are included. Note that org-wide settings take precedence over these page-level settings.</li>
-                        <li><b>Excluded Objects - </b>A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded. Note that org-wide settings take precedence over these page-level settings.</li>
+                        <li style="padding-bottom: 5px;"><b>Has Main Title - </b>Indicates whether the main title on the list view component should be displayed.</li>
+                        <li style="padding-bottom: 5px;"><b>Main Title - </b>Identifies what the title on the component should be if the title is being displayed.</li>
+                        <li style="padding-bottom: 5px;"><b>Display Actions - </b>Indicates whether the actions dropdown should be displayed.</li>
+                        <li style="padding-bottom: 5px;"><b>Display List View Reprocessing Button - </b>Indicates whether the list view reprocessing button should be displayed. This button allows the user to refresh the list view data based on core list view configuration that may have been changed.</li>
+                        <li style="padding-bottom: 5px;"><b>Display Original List View Button - </b>Indicates whether to display the button which links to the original related Salesforce list view. This button allows the user to quickly go to the original list view allowing them to make changes to the list view columns or filters as necessary.</li>
+                        <li style="padding-bottom: 5px;"><b>Included Objects - </b>A comma delimited list of API object names that are to be included on the page. If blank, all objects are included. Note that org-wide settings take precedence over these page-level settings.</li>
+                        <li style="padding-bottom: 5px;"><b>Excluded Objects - </b>A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded. Note that org-wide settings take precedence over these page-level settings.</li>
                     </ol>
                 </div>
             </div>
@@ -129,11 +139,11 @@
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li><b>AdditionalFields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available via the standard Salesforce list view builder.</li>
-                        <li><b>ReturnSize - </b>Indicates the number of rows that should be returned. This value is defaulted to 250. The higher this value, the more page performance will be reduced.</li>
-                        <li><b>RefreshRate - </b>Holds the number of seconds between refreshes if the list view can be auto refreshed.</li>
-                        <li><b>TotalColumns - </b>Indicates the API field names of the columns within the list view that should have a total in the footer.</li>
-                        <li><b>TotalColumnsColor - </b>The color that the footer row should be displayed in.</li>
+                        <li style="padding-bottom: 5px;"><b>AdditionalFields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available via the standard Salesforce list view builder.</li>
+                        <li style="padding-bottom: 5px;"><b>ReturnSize - </b>Indicates the number of rows that should be returned. This value is defaulted to 250. The higher this value, the more page performance will be reduced.</li>
+                        <li style="padding-bottom: 5px;"><b>RefreshRate - </b>Holds the number of seconds between refreshes if the list view can be auto refreshed.</li>
+                        <li style="padding-bottom: 5px;"><b>TotalColumns - </b>Indicates the API field names of the columns within the list view that should have a total in the footer.</li>
+                        <li style="padding-bottom: 5px;"><b>TotalColumnsColor - </b>The color that the footer row should be displayed in.</li>
                     </ol>
                 </div>
                 <br/>
@@ -142,7 +152,7 @@
         </div>
     </lightning-card>
     <br>
-    <lightning-card title="Actions" icon-name="standard:announcement">
+    <lightning-card title="Actions" icon-name="standard:invocable_action">
         <div class="slds-m-around_medium">
             <p>Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. Currently 2 actions have been implemented and made available in the app exchange package. Delete and Account Update.</p>
             <br/>
@@ -178,9 +188,9 @@
                 <br/><br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li>the class must be global, otherwise the app will not be able to see it.</li>
-                        <li>the action is performed as a single transaction. All governor limits must be adhered to. If needing to deal with large numbers of records then use the batch interface.</li>
-                        <li>always place processing into a try/catch. The UI component will wait for a valid response before displaying anything to the user.</li>
+                        <li style="padding-bottom: 5px;">the class must be global, otherwise the app will not be able to see it.</li>
+                        <li style="padding-bottom: 5px;">the action is performed as a single transaction. All governor limits must be adhered to. If needing to deal with large numbers of records then use the batch interface.</li>
+                        <li style="padding-bottom: 5px;">always place processing into a try/catch. The UI component will wait for a valid response before displaying anything to the user.</li>
                    </ol>
                 </div>
             </div>
@@ -192,9 +202,9 @@
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li><b>Label -</b> Hello World</li>
-                        <li><b>Object Type -</b> (leave blank - this means the action will be available to all object types)</li>
-                        <li><b>Apex Class Name -</b> ListViewActionHelloWorld</li>
+                        <li style="padding-bottom: 5px;"><b>Label -</b> Hello World</li>
+                        <li style="padding-bottom: 5px;"><b>Object Type -</b> (leave blank - this means the action will be available to all object types)</li>
+                        <li style="padding-bottom: 5px;"><b>Apex Class Name -</b> ListViewActionHelloWorld</li>
                    </ol>
                 </div>
                 <br/>
@@ -202,12 +212,12 @@
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li><b>Label -</b> First Name</li>
-                        <li><b>Field API Name -</b> FirstName</li>
-                        <li><b>Display Order -</b> 1</li>
-                        <li><b>Type -</b> STRING</li>
-                        <li><b>Default Value -</b> (leave blank)</li>
-                        <li><b>Placeholder Text -</b> Put your first name here...</li>
+                        <li style="padding-bottom: 5px;"><b>Label -</b> First Name</li>
+                        <li style="padding-bottom: 5px;"><b>Field API Name -</b> FirstName</li>
+                        <li style="padding-bottom: 5px;"><b>Display Order -</b> 1</li>
+                        <li style="padding-bottom: 5px;"><b>Type -</b> STRING</li>
+                        <li style="padding-bottom: 5px;"><b>Default Value -</b> (leave blank)</li>
+                        <li style="padding-bottom: 5px;"><b>Placeholder Text -</b> Put your first name here...</li>
                    </ol>
                 </div>
             </div>
