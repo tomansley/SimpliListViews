@@ -240,6 +240,8 @@ public with sharing class ListViewController
             jobId = Database.executebatch(b, 40);
         } catch (Exception e) {
             jobId = 'failed';
+            String message = 'Exception during ListViewController.updateAllListViews() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
         }
 		return jobId;
 	}
@@ -277,7 +279,7 @@ public with sharing class ListViewController
             } catch (Exception e) {
                 String message = 'Exception during ListViewController.getListViewAction(' + actionName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
                 ListViewErrorHelper.createUsageError(message); 
-                }
+            }
         }
         return wrapper;
     }
@@ -447,6 +449,8 @@ public with sharing class ListViewController
 
         } catch (Exception e) {
             rtnStr = 'Failed:' + e.getMessage();
+            String message = 'Exception during ListViewController.processParamChange(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
         }
 
         return rtnStr;
@@ -484,7 +488,9 @@ public with sharing class ListViewController
                                                           (String) mapValues.get('color'));
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
-            }
+                String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                ListViewErrorHelper.createUsageError(message); 
+                }
 
         } else if (action == 'remove')
         {
@@ -492,6 +498,8 @@ public with sharing class ListViewController
                 ListViewConfigHelper.deleteListViewCondition(conditionData);
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
+                String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                ListViewErrorHelper.createUsageError(message); 
             }
         }
 
@@ -555,7 +563,9 @@ public with sharing class ListViewController
             responseStr = actionJob.process(listStrIds, mapValues);
         } catch (Exception e) {
             responseStr = ListViewAction.RESULT_ERROR + ':There was an error processing the records  - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-        }
+            String message = 'Exception during ListViewController.processAction(' + actionKey + ', ' + dataIds + ', ' + valuesMap + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageError(message); 
+    }
         return responseStr;
     }
 
@@ -638,6 +648,7 @@ public with sharing class ListViewController
         //set the CUSTOM COLUMN meta data into the rows wrapper
         if (lvConfigWrapper != null 
             && lvConfigWrapper.getParameter('AdditionalFields') != null 
+            && lvConfigWrapper.getParameter('AdditionalFields').getValue() != null
             && lvConfigWrapper.getParameter('AdditionalFields').getValue() != '')
         {
             //get the field names in a list
@@ -705,11 +716,10 @@ public with sharing class ListViewController
             
         }
 
-        System.debug('Checkpoint 1 ListViewController.handleRowsToWrapper - ' + System.now().getTime());
-
         //set the CUSTOM COLUMN meta data into the rows wrapper
         if (lvConfigWrapper != null
             && lvConfigWrapper.getParameter('AdditionalFields') != null 
+            && lvConfigWrapper.getParameter('AdditionalFields').getValue() != null 
             && lvConfigWrapper.getParameter('AdditionalFields').getValue() != '' 
             && dataRows.size() > 0)
         {
@@ -749,8 +759,6 @@ public with sharing class ListViewController
 
             }
         }
-
-        System.debug('Checkpoint 2 ListViewController.handleRowsToWrapper - ' + System.now().getTime());
 
         //for each row of data
         for (SObject row: dataRows)

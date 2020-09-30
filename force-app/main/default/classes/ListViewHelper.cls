@@ -529,7 +529,7 @@ global with sharing class ListViewHelper {
         } catch (Exception e) {
             String message = 'Exception during ListViewHelper.getListViewData(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
             ListViewErrorHelper.createUsageError(message);
-            throw new ListViewHelperException('There was an error during data retrieval. Please try again or notify an administrator.');
+            throw new ListViewHelperException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         
         return objectRows;
