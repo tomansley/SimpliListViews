@@ -12,7 +12,7 @@
     <template if:true={showModal}>
         <div>
             <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
-                <div class="slds-modal__container" style="align-items: center;">
+                <div class="slds-modal__container" style="align-items: center; overflow: initial;">
                     
                     <header class="slds-modal__header" style="min-width: 1100px;">
                         <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
@@ -23,209 +23,213 @@
                         <h2 id="modal-heading-01" class="slds-text-heading_small slds-hyphenate">{listViewConfig.name} List View Config</h2>
                     </header>
 
-                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1100px;">
-                        <lightning-card title="List View Configuration">
-                            <table class="slds-table slds-table_bordered">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">
-                                            <div class="slds-truncate" title="Field Name">Parameter Name</div>
-                                        </th>
-                                        <th scope="col">
-                                            <div class="slds-truncate" title="Value">Value</div>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <template for:each={listViewConfig.parameters} for:item="param">
-                                        <tr key={param.name} class="slds-hint-parent">
+                    <lightning-tabset style="min-height: 400px;background-color: white;">
+                        <lightning-tab label="Settings">
+                            <div class="slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1100px;">
+                                <lightning-card>
+                                    <table class="slds-table slds-table_bordered">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Field Name">Parameter Name</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Value">Value</div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={listViewConfig.parameters} for:item="param">
+                                                <tr key={param.name} class="slds-hint-parent">
+        
+                                                    <td key={param.name} class="">
+                                                        <div key={param.name} class="slds-truncate" title={param.name}>
+                                                            {param.label}
+                                                            &nbsp;
+                                                            <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text="close"></lightning-icon> 
+                                                        </div>
+                                                    </td>
+                                                    <td key={param.name} data-label={param.name}>
+                                                        <div class="slds-form-element__control" title={param.value}>
+                                                            <template if:true={param.updateImmediate}>
+                                                                <template if:true={param.isBoolean}>
+                                                                    <lightning-combobox placeholder="Select a Value..."
+                                                                                        onblur={handleParamUpdate}
+                                                                                        options={booleanList}
+                                                                                        variant=label-hidden
+                                                                                        value={param.value}
+                                                                                        name={param.name}>
+                                                                    </lightning-combobox>                        
+                                                                </template>
+                                                                <template if:false={param.isBoolean}>
+                                                                    <lightning-input type={param.type} 
+                                                                                        variant="label-hidden" 
+                                                                                        name={param.name} 
+                                                                                        onchange={handleParamUpdate}
+                                                                                        placeholder={param.placeHolder}
+                                                                                        value={param.value}>
+                                                                    </lightning-input>
+                                                                </template>
+                                                            </template>
+                                                            <template if:false={param.updateImmediate}>
+                                                                <lightning-input type={param.type} 
+                                                                                    variant="label-hidden" 
+                                                                                    name={param.name} 
+                                                                                    onfocus={handleParamLoad}
+                                                                                    onblur={handleParamUpdate}
+                                                                                    placeholder={param.placeHolder}
+                                                                                    value={param.value}>
+                                                                </lightning-input>
+                                                            </template>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </template>            
+                                        </tbody>
+                                    </table>      
+                                </lightning-card>
+                            </div>        
+                        </lightning-tab>
 
-                                            <td key={param.name} class="">
-                                                <div key={param.name} class="slds-truncate" title={param.name}>
-                                                    {param.label}
-                                                    &nbsp;
-                                                    <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text="close"></lightning-icon> 
-                                                </div>
-                                            </td>
-                                            <td key={param.name} data-label={param.name}>
-                                                <div class="slds-form-element__control" title={param.value}>
-                                                    <template if:true={param.updateImmediate}>
-                                                        <template if:true={param.isBoolean}>
-                                                            <lightning-combobox placeholder="Select a Value..."
-                                                                                onblur={handleParamUpdate}
-                                                                                options={booleanList}
-                                                                                variant=label-hidden
-                                                                                value={param.value}
-                                                                                name={param.name}>
-                                                            </lightning-combobox>                        
-                                                        </template>
-                                                        <template if:false={param.isBoolean}>
-                                                            <lightning-input type={param.type} 
+                        <lightning-tab label="Highlighting">
+                            <div class="slds-modal__content slds-p-around_xx-small" id="modal-condition-content" style="min-width: 1100px; overflow: initial;">
+                                <lightning-card>
+                                    <table class="slds-table slds-table_bordered">
+                                        <thead>
+                                            <tr class="slds-line-height_reset">
+                                                <th class="" scope="col">
+                                                    <div class="slds-truncate" style="padding-left:5px;" title="Field Name">Field</div>
+                                                </th>
+                                                <th class="" scope="col">
+                                                    <div class="slds-truncate" style="padding-left:5px;" title="Operator">Operator</div>
+                                                </th>
+                                                <th class="" scope="col">
+                                                    <div class="slds-truncate" style="padding-left:5px;" title="Value">Value</div>
+                                                </th>
+                                                <th class="" scope="col">
+                                                    <div class="slds-truncate" style="padding-left:5px;" title="Order">Precedence</div>
+                                                </th>
+                                                <th class="" scope="col">
+                                                    <div class="slds-truncate" style="padding-left:5px;" title="Color">Color</div>
+                                                </th>
+                                                <th class="" scope="col" style="width:1.25rem">
+                                                    <div class="slds-truncate" style="padding-left:5px;" title="Add/Remove"></div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={listViewConfig.conditions} for:item="condition">
+                                                <tr key={condition.fieldLabel} class="slds-hint-parent">
+                                                    <td key={condition.fieldLabel} data-label={condition.fieldLabel}>
+                                                        <div class="slds-truncate" title="Field Name">
+                                                            <lightning-formatted-text style="padding-left:5px;" value={condition.fieldLabel}></lightning-formatted-text>
+                                                        </div>
+                                                    </td>
+                                                    <td key={condition.fieldLabel} data-label={condition.operator}>
+                                                        <div title="Operator">
+                                                            <lightning-formatted-text style="padding-left:5px;" value={condition.operator}></lightning-formatted-text>                        
+                                                        </div>
+                                                    </td>
+                                                    <td key={condition.fieldLabel} data-label={condition.value}>
+                                                        <div class="slds-truncate" title="Value">
+                                                            <lightning-formatted-text style="padding-left:5px;" value={condition.value}></lightning-formatted-text>
+                                                        </div>
+                                                    </td>
+                                                    <td key={condition.fieldLabel} data-label={condition.order}>
+                                                        <div title="Order">
+                                                            <lightning-formatted-text style="padding-left:5px;" value={condition.order}></lightning-formatted-text>                        
+                                                        </div>
+                                                    </td>
+                                                    <td key={condition.fieldLabel} data-label={condition.color}>
+                                                        <div class="slds-truncate" title="Color">
+                                                            <lightning-input type="color" 
                                                                                 variant="label-hidden" 
-                                                                                name={param.name} 
-                                                                                onchange={handleParamUpdate}
-                                                                                placeholder={param.placeHolder}
-                                                                                value={param.value}>
+                                                                                onchange={handleConditionColorChange}
+                                                                                value={condition.color}
+                                                                                disabled="">
                                                             </lightning-input>
-                                                        </template>
-                                                    </template>
-                                                    <template if:false={param.updateImmediate}>
-                                                        <lightning-input type={param.type} 
+                                                        </div>
+                                                    </td>
+                                                    <td key={condition.fieldLabel} data-label={condition.fieldLabel} style="width:1.25rem">
+                                                        <div class="slds-truncate">
+                                                            <lightning-button-icon icon-name="utility:dash"  
+                                                                                alternative-text="Remove Condition" 
+                                                                                title="Remove Condition"
+                                                                                name={condition.id}
+                                                                                onclick={handleConditionChange}
+                                                                                value="remove">
+                                                            </lightning-button-icon>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </template>            
+                                            <tr class="slds-hint-parent">
+                                                <td>
+                                                    <div title="Field Label">
+                                                        <lightning-combobox placeholder="Select A Column"  
+                                                                            onchange={handleConditionFieldChange} 
+                                                                            options={listViewColumnLabels}
+                                                                            variant=label-hidden>
+                                                        </lightning-combobox>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div title="Operator">
+                                                        <lightning-combobox placeholder="Select a Value..."
+                                                                            value="Equals"
+                                                                            onblur={handleConditionOperatorChange}
+                                                                            options={operatorList}
+                                                                            variant=label-hidden>
+                                                        </lightning-combobox>                        
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="slds-truncate" title="Value">
+                                                        <lightning-input type="string" 
                                                                             variant="label-hidden" 
-                                                                            name={param.name} 
-                                                                            onfocus={handleParamLoad}
-                                                                            onblur={handleParamUpdate}
-                                                                            placeholder={param.placeHolder}
-                                                                            value={param.value}>
+                                                                            onblur={handleConditionValueChange}
+                                                                            placeholder="Enter a Value..."
+                                                                            value="">
                                                         </lightning-input>
-                                                    </template>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </template>            
-                                </tbody>
-                            </table>      
-                        </lightning-card>
-                    </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div title="Order">
+                                                        <lightning-combobox placeholder="Select a Value..."
+                                                                            value="1" 
+                                                                            onblur={handleConditionOrderChange}
+                                                                            options={orderList}
+                                                                            variant=label-hidden>
+                                                        </lightning-combobox>                        
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div title="Color">
+                                                        <lightning-input type="color" 
+                                                                            variant="label-hidden" 
+                                                                            onchange={handleConditionColorChange}
+                                                                            value="#000000">
+                                                        </lightning-input>
+                                                    </div>
+                                                </td>
+                                                <td style="width:1.25rem">
+                                                    <div>
+                                                        <lightning-button-icon icon-name="utility:add"  
+                                                                            alternative-text="Add Condition" 
+                                                                            title="Add Condition"
+                                                                            onclick={handleConditionChange}
+                                                                            value="add">
+                                                        </lightning-button-icon>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>      
+                                </lightning-card>
+                            </div>
+                        </lightning-tab>
 
-                    <!-- Add a border below the first table for separation -->
-                    <div id="modal-spacer-content" style="max-height: 5px; min-width: 1100px; border-color:#DDDBDA; border-top-style: solid; border-right-style: none; border-left-style: none; border-bottom-style: none; border-width: 2px;"></div>
-
-                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-condition-content" style="min-width: 1100px;">
-                        <lightning-card title="Conditional Highlighting">
-                            <table class="slds-table slds-table_bordered">
-                                <thead>
-                                    <tr class="slds-line-height_reset">
-                                        <th class="" scope="col">
-                                            <div class="slds-truncate" style="padding-left:5px;" title="Field Name">Field</div>
-                                        </th>
-                                        <th class="" scope="col">
-                                            <div class="slds-truncate" style="padding-left:5px;" title="Operator">Operator</div>
-                                        </th>
-                                        <th class="" scope="col">
-                                            <div class="slds-truncate" style="padding-left:5px;" title="Value">Value</div>
-                                        </th>
-                                        <th class="" scope="col">
-                                            <div class="slds-truncate" style="padding-left:5px;" title="Order">Precedence</div>
-                                        </th>
-                                        <th class="" scope="col">
-                                            <div class="slds-truncate" style="padding-left:5px;" title="Color">Color</div>
-                                        </th>
-                                        <th class="" scope="col" style="width:1.25rem">
-                                            <div class="slds-truncate" style="padding-left:5px;" title="Add/Remove"></div>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <template for:each={listViewConfig.conditions} for:item="condition">
-                                        <tr key={condition.fieldLabel} class="slds-hint-parent">
-                                            <td key={condition.fieldLabel} data-label={condition.fieldLabel}>
-                                                <div class="slds-truncate" title="Field Name">
-                                                    <lightning-formatted-text style="padding-left:5px;" value={condition.fieldLabel}></lightning-formatted-text>
-                                                </div>
-                                            </td>
-                                            <td key={condition.fieldLabel} data-label={condition.operator}>
-                                                <div title="Operator">
-                                                    <lightning-formatted-text style="padding-left:5px;" value={condition.operator}></lightning-formatted-text>                        
-                                                </div>
-                                            </td>
-                                            <td key={condition.fieldLabel} data-label={condition.value}>
-                                                <div class="slds-truncate" title="Value">
-                                                    <lightning-formatted-text style="padding-left:5px;" value={condition.value}></lightning-formatted-text>
-                                                </div>
-                                            </td>
-                                            <td key={condition.fieldLabel} data-label={condition.order}>
-                                                <div title="Order">
-                                                    <lightning-formatted-text style="padding-left:5px;" value={condition.order}></lightning-formatted-text>                        
-                                                </div>
-                                            </td>
-                                            <td key={condition.fieldLabel} data-label={condition.color}>
-                                                <div class="slds-truncate" title="Color">
-                                                    <lightning-input type="color" 
-                                                                        variant="label-hidden" 
-                                                                        onchange={handleConditionColorChange}
-                                                                        value={condition.color}
-                                                                        disabled="">
-                                                    </lightning-input>
-                                                </div>
-                                            </td>
-                                            <td key={condition.fieldLabel} data-label={condition.fieldLabel} style="width:1.25rem">
-                                                <div class="slds-truncate">
-                                                    <lightning-button-icon icon-name="utility:dash"  
-                                                                        alternative-text="Remove Condition" 
-                                                                        title="Remove Condition"
-                                                                        name={condition.id}
-                                                                        onclick={handleConditionChange}
-                                                                        value="remove">
-                                                    </lightning-button-icon>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </template>            
-                                    <tr class="slds-hint-parent">
-                                        <td>
-                                            <div title="Field Label">
-                                                <lightning-combobox placeholder="Select A Column"  
-                                                                    onchange={handleConditionFieldChange} 
-                                                                    options={listViewColumnLabels}
-                                                                    variant=label-hidden>
-                                                </lightning-combobox>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div title="Operator">
-                                                <lightning-combobox placeholder="Select a Value..."
-                                                                    value="Equals"
-                                                                    onblur={handleConditionOperatorChange}
-                                                                    options={operatorList}
-                                                                    variant=label-hidden>
-                                                </lightning-combobox>                        
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="slds-truncate" title="Value">
-                                                <lightning-input type="string" 
-                                                                    variant="label-hidden" 
-                                                                    onblur={handleConditionValueChange}
-                                                                    placeholder="Enter a Value..."
-                                                                    value="">
-                                                </lightning-input>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div title="Order">
-                                                <lightning-combobox placeholder="Select a Value..."
-                                                                    value="1" 
-                                                                    onblur={handleConditionOrderChange}
-                                                                    options={orderList}
-                                                                    variant=label-hidden>
-                                                </lightning-combobox>                        
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div title="Color">
-                                                <lightning-input type="color" 
-                                                                    variant="label-hidden" 
-                                                                    onchange={handleConditionColorChange}
-                                                                    value="#000000">
-                                                </lightning-input>
-                                            </div>
-                                        </td>
-                                        <td style="width:1.25rem">
-                                            <div>
-                                                <lightning-button-icon icon-name="utility:add"  
-                                                                    alternative-text="Add Condition" 
-                                                                    title="Add Condition"
-                                                                    onclick={handleConditionChange}
-                                                                    value="add">
-                                                </lightning-button-icon>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>      
-                        </lightning-card>
-                    </div>
+                    </lightning-tabset>
 
                     <footer class="slds-modal__footer" style="min-width: 1100px;">
                         <button class="slds-button slds-button_brand" onclick={handleCloseClick}>Close</button>
