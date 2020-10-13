@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 09-09-2020
+ * @last modified on  : 10-10-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -21,7 +21,7 @@ global with sharing class ListViewHelper {
 
         System.debug(LoggingLevel.DEBUG, 'JSON - ' + jsonStr);
 
-        ListViewConfigHelper.setOrgWideConfigParam('List View Objects', jsonStr);
+        ListViewConfigHelper.setOrgWideConfigParam('ListViewObjects', jsonStr);
 
     }
 
@@ -204,7 +204,7 @@ global with sharing class ListViewHelper {
 
             listViewObjects =  new Map<String, String>();
 
-            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('Excluded Object Types');
+            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
             Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
     
             HelperSchema.checkListViewAccessible();
@@ -228,7 +228,7 @@ global with sharing class ListViewHelper {
         
         } else {
 
-            String jsonStr = ListViewConfigHelper.getOrgWideConfigParam('List View Objects');
+            String jsonStr = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
 
             if (jsonStr != null && jsonStr != '')
                 listViewObjects =  (Map<String, String>) JSON.deserialize(jsonStr, Map<String,String>.class);    
@@ -236,7 +236,7 @@ global with sharing class ListViewHelper {
                 listViewObjects = new Map<String, String>();
         }
 
-        String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('Included Object Types');
+        String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
         Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
 
         for (String objAPIName: listViewObjects.keySet())
@@ -666,7 +666,7 @@ global with sharing class ListViewHelper {
         
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'List View Objects';
+        param2.Parameter_Name__c   = 'ListViewObjects';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = '';
         param2.Parameter_Label__c  = 'List View Objects';
@@ -674,7 +674,7 @@ global with sharing class ListViewHelper {
 
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'Included Object Types';
+        param2.Parameter_Name__c   = 'IncludedObjectTypes';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = '';
         param2.Parameter_Label__c  = 'Included Object Types';
@@ -682,10 +682,74 @@ global with sharing class ListViewHelper {
 
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'Excluded Object Types';
+        param2.Parameter_Name__c   = 'ExcludedObjectTypes';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
         param2.Parameter_Label__c  = 'Excluded Object Types';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'DisplayActionsButton';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Display Actions Button';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Display List View Reprocessing Button';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'DisplayOriginalListViewButton';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Display Original List View Button';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'DisplaySelectedCount';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Display Selected Count';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'IncludedObjectTypes';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Included Object Types';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'AllowDataExport';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Allow Data Export';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'AllowAutomaticDataRefresh';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Allow Automatic Data Refresh';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'DisplayRowCount';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Display Row Count';
         params2.add(param2);
 
         param2 = new List_View_Config_Parameter__c();

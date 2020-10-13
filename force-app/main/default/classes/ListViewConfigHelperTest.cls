@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-09-2020
+ * @last modified on  : 10-10-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -23,11 +23,11 @@ private class ListViewConfigHelperTest {
     
         Test.startTest();
             
-            ListViewConfigHelper.setOrgWideConfigParam('List View Objects', 'Test Setting');
+            ListViewConfigHelper.setOrgWideConfigParam('ListViewObjects', 'Test Setting');
             
         Test.stopTest();
 
-        String value = ListViewConfigHelper.getOrgWideConfigParam('List View Objects');
+        String value = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
 
         System.assert(value == 'Test Setting');
     }

@@ -44,7 +44,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api displayExportButton  = false;
 
     @track modifiedText;                //holds the last modified text that should be displayed based on the component config
-    @track userConfigs;                 //holds all user configuration for this named component.
+    @track userConfigs;                 //holds all user and org wide configuration for this named component.
     @track selectedListView;            //holds the selected list view name
     @track selectedObject;              //holds the selected object name
     @track objectList;                  //holds the list of objects from which a user can choose one.
@@ -138,6 +138,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.userConfigs = result;
 
                 let pinnedListView = this.userConfigs.pinnedListView;
+
+                if (this.userConfigs.DisplayActionsButton === 'false') { this.displayActions = false; }
+                if (this.userConfigs.DisplayListViewReprocessingButton === 'false') { this.displayReprocess = false; }
+                if (this.userConfigs.DisplayOriginalListViewButton === 'false') { this.displayURL = false; }
+                if (this.userConfigs.DisplayRowCount === 'false') { this.displayRowCount = false; }
+                if (this.userConfigs.DisplaySelectedCount === 'false') { this.displaySelectedCount = false; }
+                if (this.userConfigs.AllowDataExport === 'false') { this.displayExportButton = false; }
+                if (this.userConfigs.AllowAutomaticDataRefresh === 'false') { this.allowRefresh = false; }
 
                 //if we have a URL object then use it
                 if (this.urlObject != undefined) {
@@ -584,6 +592,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.listViewList = undefined;
         this.listViewData = undefined;
         this.objectActionList = undefined;
+        this.columnSortDataStr = '';
+        this.columnSortData = new Map(); 
         
         console.log('Object selected - ' + this.selectedObject);
     }
@@ -604,6 +614,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else {
             this.isPinned = false;
         }
+        this.columnSortDataStr = '';
+        this.columnSortData = new Map(); 
 
         refreshApex(this.wiredListViewDataResult);
 

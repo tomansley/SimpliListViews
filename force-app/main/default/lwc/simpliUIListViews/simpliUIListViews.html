@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 09-29-2020
+  @last modified on  : 10-08-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -173,15 +173,15 @@
                                     </template>
                                 </lightning-layout-item>
                             </template>
-                        </template>
-                        <template if:true={allowAdmin}>
-                            <lightning-layout-item>
-                                <lightning-button-icon title="List view administration." 
-                                                        size="medium" 
-                                                        icon-name="utility:settings" 
-                                                        onclick={handleAdminButtonClick}>
-                                </lightning-button-icon>
-                            </lightning-layout-item>
+                            <template if:true={allowAdmin}>
+                                <lightning-layout-item>
+                                    <lightning-button-icon title="List view administration." 
+                                                            size="medium" 
+                                                            icon-name="utility:settings" 
+                                                            onclick={handleAdminButtonClick}>
+                                    </lightning-button-icon>
+                                </lightning-layout-item>
+                            </template>
                         </template>
                     </lightning-layout>
                 </lightning-layout-item>

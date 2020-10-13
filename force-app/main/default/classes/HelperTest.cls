@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-09-2020
+ * @last modified on  : 10-10-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -102,7 +102,7 @@ public with sharing class HelperTest {
         HelperDatabase.insertRecords(conditions, 'Simpli_lv__List_View_Config_Condition__c');
 
         HelperSchema.checkListViewConfigsAccessible();
-		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'List View Objects'];
+		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'ListViewObjects'];
 		orgWideConfig.Parameter_Value__c = '{"Account":"Account"}';
 		HelperDatabase.updateRecord(orgWideConfig, 'simpli_lv__List_View_Config_Parameter__c');
 

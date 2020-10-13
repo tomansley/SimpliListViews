@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-09-2020
+ * @last modified on  : 10-10-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -136,15 +136,27 @@ public with sharing class ListViewController
         return lvConfig;
     }
 
+
+    /**
+    * @description Method which gets the users configuration for the provided COMPONENT.
+    *              Note that this method also gets the org wide defaults
+    * @author tom.h.ansley@medtronic.com | 10-10-2020 
+    * @param compName the component name which is the name of the Lightning component that calls this method.
+    * @return Map<String, String> 
+    **/
     @AuraEnabled
     public static Map<String, String> getUserConfigs(String compName)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getUserConfigs(' + compName + ')');
         Map<String, String> userConfigs = new Map<String, String>();
 
+        //get the users component config
         Map<String, List_View_User_Config__c> configs = ListViewUserConfigHelper.getCurrentUserCompConfig(compName);
         for (List_View_User_Config__c config: configs.values())
             userConfigs.put(config.Name__c, config.Value__c);
+
+        //get the org wide config
+        userConfigs.putAll(getListViewConfigParams('All', 'All'));
 
         System.debug(LoggingLevel.DEBUG, 'User configs - ' + userConfigs);
         return userConfigs;

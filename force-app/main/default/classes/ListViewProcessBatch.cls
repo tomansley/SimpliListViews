@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-09-2020
+ * @last modified on  : 10-10-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -42,7 +42,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
         try {
 
             //never get the excluded objects
-            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('Excluded Object Types');
+            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
             Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
             
             if (!orgWideExcObjs.isEmpty())
@@ -102,7 +102,10 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                     simpliListView.Primary_Key__c           = listview.SObjectType + ':' + listView.DeveloperName;
                     
                     User usr = UserHelper.getUserDetails(listView.CreatedById);
+
+
                     if (usr == null 
+                        || !usr.IsActive
                         || (usr.FirstName == 'Automated' 
                             && usr.LastName == 'Process'))
                     {

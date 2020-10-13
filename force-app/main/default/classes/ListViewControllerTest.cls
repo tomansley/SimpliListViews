@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-09-2020
+ * @last modified on  : 10-13-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -30,7 +30,7 @@ private class ListViewControllerTest {
 
         Map<String, String> configs = ListViewController.getUserConfigs('CompName 1');
 
-        System.assert(configs.size() == 1);
+        System.assert(configs.size() == 11);
         System.assert(configs.get('pinnedListView') == 'Account:AllAccounts');
 
         //update user config
@@ -39,7 +39,7 @@ private class ListViewControllerTest {
 
         configs = ListViewController.getUserConfigs('CompName 1');
 
-        System.assert(configs.size() == 1);
+        System.assert(configs.size() == 11);
         System.assert(configs.get('pinnedListView') == 'Contact:AllContacts');
 
 

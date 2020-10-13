@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 09-09-2020
+ * @Last Modified On   : 10-10-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -43,7 +43,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
         try {
 
             //get objects that should always be excluded
-            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('Excluded Object Types');
+            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
             Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
             
             if (!orgWideExcObjs.isEmpty())
