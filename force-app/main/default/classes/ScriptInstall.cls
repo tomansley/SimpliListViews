@@ -53,13 +53,22 @@ global with sharing class ScriptInstall implements InstallHandler {
                     orgParams.put(param.Parameter_Name__c, param);
 
                 if (orgParams.get('List View Objects') != null) 
+                {
                     orgParams.get('List View Objects').Parameter_Name__c = 'ListViewObjects';
+                    orgParams.get('List View Objects').Parameter_Label__c = 'List View Objects';
+                }
 
                 if (orgParams.get('Excluded Object Types') != null)
+                {
                     orgParams.get('Excluded Object Types').Parameter_Name__c = 'ExcludedObjectTypes';
-                
+                    orgParams.get('Excluded Object Types').Parameter_Label__c = 'Excluded Object Types';
+                }
+
                 if (orgParams.get('Included Object Types') != null) 
+                {
                     orgParams.get('Included Object Types').Parameter_Name__c = 'IncludedObjectTypes';
+                    orgParams.get('Included Object Types').Parameter_Label__c = 'Included Object Types';
+                }
 
                 if (orgParams.get('DisplayActionsButton') == null)
                 {
