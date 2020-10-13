@@ -9,7 +9,7 @@
 * Configure the list view page at the org, page and list view level
 
 ## Overview
-Users spend lots of time working with lists of data. In Salesforce those lists are spread throughout the application. Depending on user process, this can create unnecessary clicks and page loads. Simpli List Views helps reduce the clicks a user needs when moving from one object list view to another. All list views are displayed on one page.
+Users spend lots of time working with lists of data. In Salesforce those lists are spread throughout the application. Depending on user process, this can create unnecessary clicks and page loads. Let's make List Views great again! Simpli List Views helps reduce the clicks a user needs when moving from one object list view to another. All list views are displayed on one page.
 
 Salesforce list views could also do with a spruce-up! Ever needed to look deeper into an object hierarchy? Now you can. Move beyond standard list views and add deeper hierarchical custom fields that reference objects multiple levels deeper. For example, on an Account list view you could see the account owners profile by using Owner.Profile.Name in the list views configuration.
 
@@ -107,3 +107,15 @@ If there are parameters that need to be returned by the user these need to be co
 * <b>Type -</b>STRING
 * <b>Default Value -</b>(leave blank)
 * <b>Placeholder Text -</b>Put your first name here...
+
+## Other Resources
+
+Features Overview Video - https://www.youtube.com/watch?v=deoNfudkpEw
+
+Install Guide - https://www.youtube.com/watch?v=PIzyrWuc1YA
+
+Starting Out - https://www.youtube.com/watch?v=bJQchWEK34I
+
+Sizing and Sorting - https://www.youtube.com/watch?v=Uqur5RiKwU0
+
+Using Multiple Components On One Page - https://www.youtube.com/watch?v=nJyTWEPCUac
