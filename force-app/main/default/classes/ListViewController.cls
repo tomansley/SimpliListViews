@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 10-10-2020
+ * @last modified on  : 10-17-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -21,6 +21,7 @@ public with sharing class ListViewController
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewInitProgress(' + batchId + ')');
         String result = '0';
+        String status = '';
         
         if (batchId != '')
         {
@@ -43,23 +44,26 @@ public with sharing class ListViewController
             } else if (jobs[0].TotalJobItems == 0) {
             
                 result = '0';
+                status = jobs[0].Status;
 
             } else if (jobs[0].Status == 'Completed') { 
             
                 result = '100';
+                status = jobs[0].Status;
 
             } else { 
 
                 Decimal percentComp = (Decimal.valueOf(jobs[0].JobItemsProcessed)/Decimal.valueOf(jobs[0].TotalJobItems)) * 100;
                 result = String.valueOf(percentComp);
+                status = jobs[0].Status;
                 
             }
         } else {
             result = '-1';
         }
 
-        System.debug(LoggingLevel.DEBUG, 'Finishing ListViewController.getListViewInitProgress with result - ' + result);
-        return String.valueOf(result);
+        System.debug(LoggingLevel.DEBUG, 'Finishing ListViewController.getListViewInitProgress with result - ' + result + ':' + status);
+        return String.valueOf(result) + ':' + status;
     }
 
     /*

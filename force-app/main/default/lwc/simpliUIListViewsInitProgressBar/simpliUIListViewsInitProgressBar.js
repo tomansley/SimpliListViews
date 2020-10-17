@@ -10,13 +10,19 @@ export default class SimpliUIListViewsInitProgressBar extends LightningElement {
     @api workingText = 'Working...';
     @api completeText = 'Complete!';
 
+    batchStatus = 'Initializing';
+
     connectedCallback() {
         
         this._interval = setInterval(() => {
 
             getListViewInitProgress({batchId: this.batchId})
             .then(result => {
-                this.progress = Number(result);
+
+                const progressResult = result.split(':'); //response = progress:status               
+
+                this.progress = Number(progressResult[0]);
+                this.batchStatus = progressResult[1] + ' (' + Number(progressResult[0]).toFixed(0) + '%)';
                 this.error = undefined;
 
                 if (this.progress === 100) {
