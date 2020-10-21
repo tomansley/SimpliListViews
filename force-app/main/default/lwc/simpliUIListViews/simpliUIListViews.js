@@ -1031,6 +1031,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
         }
 
+        this.selectedRecordCount  = 0;
         this.showActionModal      = false;
         this.selectedAction       = '';
 
