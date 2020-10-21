@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 09-09-2020
+ * @last modified on  : 10-20-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -64,6 +64,28 @@ public with sharing class ListViewUserConfigHelper {
     }
 
     /*
+     * Method which, given a component name returns all the CURRENT USERS sort configuration for the component
+     */
+    public static List<List_View_User_Config__c> getCurrentUserCompSortConfigs(String compName)
+    {
+        if (currentUsersConfigs == null)
+            getCurrentUserConfigs();
+
+        Map<String, List_View_User_Config__c> compConfig = currentUsersConfigs.get(compName);
+
+        if (compConfig == null) return new List<List_View_User_Config__c>();
+
+        List<List_View_User_Config__c> sortConfigs = new List<List_View_User_Config__c>();
+        for (List_View_User_Config__c config: compConfig.values())
+        {
+            if (config.Name__c.contains('sortOrder'))
+                sortConfigs.add(config);
+        }
+
+        return sortConfigs;
+    }
+
+    /*
      * Method which, given a component name returns all associated configs.
      */
     public static Map<String, List_View_User_Config__c> getCurrentUserCompConfig(String compName)
@@ -76,6 +98,12 @@ public with sharing class ListViewUserConfigHelper {
         if (compConfig == null) return new Map<String, List_View_User_Config__c>();
 
         return compConfig;
+    }
+
+    @future
+    public static void updateSortConfigValue(String compName, String sortStr, String objectName, String listviewName)
+    {
+        updateCurrentUserConfigValue(compName, 'sortOrder:' + objectName + ':' + listviewName, sortStr);
     }
 
     /*

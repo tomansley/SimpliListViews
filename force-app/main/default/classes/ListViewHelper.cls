@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-10-2020
+ * @last modified on  : 10-21-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -399,10 +399,11 @@ global with sharing class ListViewHelper {
     {
 
         String debug = '\n\nStarting getListViewData - \n';
-        debug += 'listview           - ' + listview + '\n';
-        debug += 'lvConfig           - ' + lvConfig + '\n';
-        debug += 'sortData           - ' + sortData + '\n';
-        debug += 'joinFieldName      - ' + joinFieldName + '\n';
+        debug += 'listview                        - ' + listview + '\n';
+        debug += 'listview.Core_ListView_Query__c - ' + listview.Core_ListView_Query__c + '\n';
+        debug += 'lvConfig                        - ' + lvConfig + '\n';
+        debug += 'sortData                        - ' + sortData + '\n';
+        debug += 'joinFieldName                   - ' + joinFieldName + '\n';
         if (joinRecordIds != null)
             debug += 'joinRecordIds Size - ' + joinRecordIds.size() + '\n';
         debug += 'joinRecordIds      - ' + joinRecordIds + '\n\n';
@@ -428,8 +429,6 @@ global with sharing class ListViewHelper {
         if (query.contains(' ORDER BY '))
         {
             whereStr = query.substringBetween(' FROM ', ' ORDER BY ');
-            orderByStr = query.substringAfter(' ORDER BY ');
-
         } else {
             whereStr = query.substringAfter(' FROM ');
         }
@@ -453,7 +452,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Handle all changes to the WHERE statement
         //------------------------------------------------------
-        if (joinFieldName != '' && joinRecordIds != null && joinRecordIds.size() > 0)
+        if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
             if (whereStr.contains(' WHERE '))
                 whereStr += ' AND ' + joinFieldName + ' IN :joinRecordIds';
@@ -464,21 +463,25 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Handle all changes to the ORDER BY statement
         //------------------------------------------------------
-        if (sortData != null && sortData.size() > 0)
+        if (sortData?.size() > 0)
         {
-            orderByStr = '';
+            System.debug('SORT DATA - ' + sortData);
+            orderByStr = ' ORDER BY ';
             
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
             {
-                orderByStr += columnSortData.fieldName + ' ';
-                if (columnSortData.sortDirection == true)
-                    orderByStr += 'ASC NULLS FIRST, ';
-                else
-                    orderByStr += 'DESC NULLS FIRST, ';
-
+                //make sure the field name is valid
+                if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, columnSortData.fieldName))
+                {
+                    orderByStr += columnSortData.fieldName + ' ';
+                    if (columnSortData.sortDirection == true)
+                        orderByStr += 'ASC NULLS LAST, ';
+                    else
+                        orderByStr += 'DESC NULLS FIRST, ';
+                }
             }
 
-            orderByStr = orderByStr.removeEnd(', ');
+            orderByStr = orderByStr.removeEnd(', ').removeEnd('ORDER BY ');
         }
 
         //------------------------------------------------------
@@ -487,7 +490,7 @@ global with sharing class ListViewHelper {
         String limitStr = ' LIMIT ';
         
         //if we are getting join records then do not use a limit
-        if (joinRecordIds != null && joinRecordIds.size() > 0)
+        if (joinRecordIds?.size() > 0)
         {
             limitStr = '';
         
@@ -518,7 +521,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------
-        query = 'SELECT ' + selectStr + ' FROM ' + whereStr + ' ORDER BY ' + orderByStr + limitStr + allRowsStr;
+        query = 'SELECT ' + selectStr + ' FROM ' + whereStr + orderByStr + limitStr + allRowsStr;
 
         System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + query);
 
@@ -842,6 +845,15 @@ global with sharing class ListViewHelper {
         public String fieldName;
         public Boolean sortDirection;
         public Integer sortIndex;
+
+        /*
+         * Method to create the user config string for this sorted column
+         * which gets saved as part of the users list view config.
+         */
+        public String getUserConfigString()
+        {
+            return sortIndex + ':' + sortDirection + ':' + fieldName;
+        }
 
         public Integer compareTo(Object compareTo) {
             ColumnSortData sortData2 = (ColumnSortData) compareTo;

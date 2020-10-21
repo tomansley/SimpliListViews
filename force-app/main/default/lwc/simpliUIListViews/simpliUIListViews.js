@@ -17,6 +17,7 @@ import updateAllListViews from '@salesforce/apex/ListViewController.updateAllLis
 import updateSingleListView from '@salesforce/apex/ListViewController.updateSingleListView';
 import updateObjectListViews from '@salesforce/apex/ListViewController.updateObjectListViews';
 import getUserConfigs from '@salesforce/apex/ListViewController.getUserConfigs';
+import getUserSortConfigs from '@salesforce/apex/ListViewController.getUserSortConfigs';
 import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConfig';
 import isValidListViewDataRequest from '@salesforce/apex/ListViewController.isValidListViewDataRequest';
 
@@ -44,6 +45,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api displayExportButton  = false;
 
     @track modifiedText;                //holds the last modified text that should be displayed based on the component config
+    @track userSortConfigs;             //holds all user sort configuration for this named component.
     @track userConfigs;                 //holds all user and org wide configuration for this named component.
     @track selectedListView;            //holds the selected list view name
     @track selectedObject;              //holds the selected object name
@@ -67,12 +69,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isRefreshed = false;         //identifies whether this list views data is being refreshed at intervals.
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
     @track allowAdmin = true;           //indicates whether the admin button should display to the user
+    @track firstListViewGet = true;     //indicates whether this is the first time the list views are being retrieved.
     //for handling column width changes
     @track mouseStart;
     @track oldWidth;
     @track parentObj;
 
     //for handling sorting
+    @track listViewSortData = new Map();
     @track columnSortData = new Map();
     @track columnSortDataStr = '';
 
@@ -147,6 +151,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 if (this.userConfigs.AllowDataExport === 'false') { this.displayExportButton = false; }
                 if (this.userConfigs.AllowAutomaticDataRefresh === 'false') { this.allowRefresh = false; }
 
+                //if (this.userConfigs.)
+
                 //if we have a URL object then use it
                 if (this.urlObject != undefined) {
                     this.selectedObject = this.urlObject
@@ -170,6 +176,80 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     mode: 'sticky'
                 }));
             });
+
+            getUserSortConfigs({compName: this.pageName })
+            .then(result => {
+                console.log('User sort configs retrieved successful - ' + result);
+                this.userSortConfigs = result;
+
+                var listViewSortFields = JSON.parse(result);
+
+                //EXAMPLE JSON - {"listviews": [{"name": "Account:Simpli_LV_Acct_1","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"}]}, {"name": "Account:PlatinumandGoldSLACustomers","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"},{"sortIndex": "2", "fieldName": "Id", "sortDirection": "false"}]}]}
+                for (var m in listViewSortFields.listviews) {
+
+                    let listviewSorting = listViewSortFields.listviews[m];
+                    //if we are working with the current list view
+                    if (listviewSorting.name === this.pinnedObject + ':' + this.pinnedListView) {
+                        
+                        for (var i = 0; i < listviewSorting.fields.length; i++) {
+
+                            let sortDirection = listviewSorting.fields[i].sortDirection;
+
+                            if (sortDirection === undefined || sortDirection === '') {
+                                sortDirection = true;
+                            } else if (sortDirection === 'true') {
+                                sortDirection = true; //turning the STRING 'true' into the BOOLEAN true
+                            } else if (sortDirection === 'false') {
+                                sortDirection = false; //turning the STRING 'false' into the BOOLEAN false
+                            }
+
+                            let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
+                            this.columnSortData.set(listviewSorting.fields[i].sortIndex, columnData);
+                        }
+
+                        this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
+                        
+                        this.listViewSortData.set(listviewSorting.name, this.columnSortData);
+                    
+                        console.log('5. ' + this.selectedObject + ':' + this.selectedListView + ' - SORT ORDER - ' + this.columnSortDataStr);
+
+                        //for all other list views
+                    } else {
+                        let columnSortData = new Map();
+                
+                        for (var i = 0; i < listviewSorting.fields.length; i++) {
+
+                            let sortDirection = listviewSorting.fields[i].sortDirection;
+                            
+                            if (sortDirection === undefined || sortDirection === '') {
+                                sortDirection = true;
+                            } else if (sortDirection === 'true') {
+                                sortDirection = true; //turning the STRING 'true' into the BOOLEAN true
+                            } else if (sortDirection === 'false') {
+                                sortDirection = false; //turning the STRING 'false' into the BOOLEAN false
+                            }
+
+                            let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
+                            columnSortData.set(listviewSorting.fields[i].sortIndex, columnData);
+                        }
+
+                        this.listViewSortData.set(listviewSorting.name, columnSortData);
+
+                        console.log('4. ' + this.selectedObject + ':' + this.selectedListView + ' - SORT ORDER - ' + this.columnSortDataStr);
+                    }
+                } 
+            })
+            .catch(error => {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Handling User Config',
+                    message: 'There was an error handling the user sort config. Please see an administrator\n\n' + error.message,
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
+                console.log(error.stack)
+
+            });
+
         }
     }
     
@@ -230,7 +310,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     /*
      * Wiring to get the list of objects in the system using a LISTVIEW NAME
      */
-    @wire (getListViewData, { objectName: '$selectedObject', listViewName: '$selectedListView', sortData: '$columnSortDataStr', joinFieldName: '$joinFieldName', joinData: '' })
+    @wire (getListViewData, { pageName: '$pageName', objectName: '$selectedObject', listViewName: '$selectedListView', sortData: '$columnSortDataStr', joinFieldName: '$joinFieldName', joinData: '' })
     wiredListViewData(wiredListViewDataResult) {
         this.spinnerOn();
         console.log('SELECTED LIST VIEW - ' + this.selectedListView);
@@ -316,8 +396,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.error = undefined; 
             if (this.urlListView != undefined) {
                 this.selectedListView = this.urlListView;
-            } else if (this.pinnedListView != undefined) {
+            } else if (this.pinnedListView != undefined && this.firstListViewGet === true) {
                 this.selectedListView = this.pinnedListView;
+                this.firstListViewGet = false;
             }
             this.spinnerOff(); 
         } else if (error) { 
@@ -383,7 +464,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 if (result === 'success') {
 
-                    getListViewData({objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: joinData })
+                    getListViewData({pageName: this.pageName, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: joinData })
                         .then(result => {
                             console.log('List view data retrieval successful'); 
                             this.listViewData = result;
@@ -595,6 +676,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.columnSortDataStr = '';
         this.columnSortData = new Map(); 
         
+        console.log('1. ' + this.selectedObject + ':' + this.selectedListView + ' - SORT ORDER - ' + this.columnSortDataStr);
+
         console.log('Object selected - ' + this.selectedObject);
     }
 
@@ -603,9 +686,36 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * to retrieve record data.
      */
     handleListViewSelected(event) {
-        this.spinnerOn();
-        this.selectedListView = event.target.value;
+
         console.log('List view selected - ' + this.selectedListView);
+
+        //turn on the spinner
+        this.spinnerOn();
+
+        console.log('7. ' + this.selectedObject + ':' + this.selectedListView + ' - SORT ORDER - ' + this.columnSortDataStr);
+
+        //set the old column sort information into the list view sort data for caching otherwise it disappears.
+        if (this.columnSortDataStr !== '')
+        {
+            this.listViewSortData.set(this.selectedObject + ':' + this.selectedListView, this.columnSortData);
+        }
+
+        //set the new selected list view
+        this.selectedListView = event.target.value;
+
+        //set the column sort information for the NEW list view
+        if (this.listViewSortData.get(this.selectedObject + ':' + this.selectedListView) !== undefined)
+        {
+            this.columnSortData = this.listViewSortData.get(this.selectedObject + ':' + this.selectedListView);
+            this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
+        
+        } else {
+            this.columnSortDataStr = '';
+            this.columnSortData = new Map();  
+        }
+
+        console.log('2. ' + this.selectedObject + ':' + this.selectedListView + ' - SORT ORDER - ' + this.columnSortDataStr);
+
         this.listViewData = undefined;
 
         //if we are not in the construction of the page and we change the list view and its the pinned list view
@@ -614,8 +724,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else {
             this.isPinned = false;
         }
-        this.columnSortDataStr = '';
-        this.columnSortData = new Map(); 
 
         refreshApex(this.wiredListViewDataResult);
 
@@ -696,8 +804,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     spinnerOff() {
         this.spinner = false;
         console.log('Spinner OFF');
-        var stack = new Error().stack
-        console.log( stack )
+        //var stack = new Error().stack
+        //console.log( stack )
     }
 
     //called when a user clicks the button to refresh the list views.
@@ -1028,7 +1136,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
 
         this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
+        this.listViewSortData.set(this.selectedObject + ':' + this.selectedListView, this.columnSortData);
         
+        console.log('3. ' + this.selectedObject + ':' + this.selectedListView + ' - SORT ORDER - ' + this.columnSortDataStr);
       }
 
 }

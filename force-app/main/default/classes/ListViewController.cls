@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 10-17-2020
+ * @last modified on  : 10-20-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -142,6 +142,44 @@ public with sharing class ListViewController
 
 
     /**
+    * @description Method which gets the users SORT configuration for the provided COMPONENT. The method manually creates
+                   the JSON request as it makes it easier on the front end to handle. Here is an example JSON response - 
+                   {"listviews": [{"name": "Account:Simpli_LV_Acct_1","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"}]}, {"name": "Account:PlatinumandGoldSLACustomers","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"},{"sortIndex": "2", "fieldName": "Id", "sortDirection": "false"}]}]}
+
+    * @author tom.h.ansley@medtronic.com | 10-10-2020 
+    * @param compName the component name which is the name of the Lightning component that calls this method.
+    * @return Map<String, String> 
+    **/
+    @AuraEnabled
+    public static String getUserSortConfigs(String compName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getUserSortConfigs(' + compName + ')');
+
+        String sortConfigJSON = '{"listviews": [';
+        //String sortJSON = '{';
+        //get the users component config
+        List<List_View_User_Config__c> configs = ListViewUserConfigHelper.getCurrentUserCompSortConfigs(compName);
+        for (List_View_User_Config__c config: configs)
+        {
+            sortConfigJSON += '{"name": "' + config.Name__c.removeStart('sortOrder:') + '","fields": [';
+
+            List<String> sortFields = config.Value__c.split(';');
+
+            for (String sortField: sortFields)
+            {
+                List<String> sortParts = sortField.split(':');
+                sortConfigJSON += '{"sortIndex": "' + sortParts[0] + '", "fieldName": "' + sortParts[2] + '", "sortDirection": "' + sortParts[1] + '"},';
+            }
+
+            sortConfigJSON = sortConfigJSON.removeEnd(',') + ']},';
+
+        }
+        sortConfigJSON = sortConfigJSON.removeEnd(',') + ']}';
+
+        return sortConfigJSON;
+    }
+
+    /**
     * @description Method which gets the users configuration for the provided COMPONENT.
     *              Note that this method also gets the org wide defaults
     * @author tom.h.ansley@medtronic.com | 10-10-2020 
@@ -162,7 +200,8 @@ public with sharing class ListViewController
         //get the org wide config
         userConfigs.putAll(getListViewConfigParams('All', 'All'));
 
-        System.debug(LoggingLevel.DEBUG, 'User configs - ' + userConfigs);
+        for (String config: userConfigs.keySet())
+            System.debug(LoggingLevel.DEBUG, config + ' - ' + userConfigs.get(config));
         return userConfigs;
     }
 
@@ -350,9 +389,9 @@ public with sharing class ListViewController
        
      */
     @AuraEnabled(cacheable=true)
-    public static RowsWrapper getListViewData(String objectName, String listViewName, String sortData, String joinFieldName, String joinData)
+    public static RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String joinFieldName, String joinData)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ')');
         
         //if we have join information then get the record Ids
         Set<String> joinRecordIds = null;
@@ -411,6 +450,7 @@ public with sharing class ListViewController
 
             //handle the sorting data
             List<ListViewHelper.ColumnSortData> columnSortData = new List<ListViewHelper.ColumnSortData>();
+            String sortStr = '';
             if (sortData.length() > 0)
             {
                 //below is a bit of a mess at the moment because Map objects cannot be stringified
@@ -428,10 +468,15 @@ public with sharing class ListViewController
                     columnData.sortDirection = (Boolean) tst[2];
 
                     columnSortData.add(columnData);
+                    sortStr += columnData.getUserConfigString() + ';';
                 }
 
                 columnSortData.sort();
+                sortStr = sortStr.removeEnd(';');
+
             }
+
+            ListViewUserConfigHelper.updateSortConfigValue(pageName, sortStr, objectName, listviewName);
 
             //get list view data
             List<SObject> objectRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinFieldName, joinRecordIds);
