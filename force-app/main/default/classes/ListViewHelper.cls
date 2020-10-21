@@ -436,6 +436,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Update all additional fields on the SELECT statement
         //------------------------------------------------------
+        selectStr += ', IsDeleted';
         if (lvConfigParams.get('AdditionalFields') != null)
         {
             List<String> allFields = lvConfigParams.get('AdditionalFields').split(',');

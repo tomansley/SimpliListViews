@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 10-17-2020
+  @last modified on  : 10-21-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -262,14 +262,28 @@
                             <template for:each={rowData.fields} for:item="fieldData">
                                 <td key={fieldData.label} data-label={fieldData.label}>
                                     <template if:true={fieldData.uRL}>
-                                        <div class="slds-truncate" title={fieldData.value}>
-                                            <a href={fieldData.uRL} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
-                                        </div>
+                                        <template if:true={rowData.isDeleted}>
+                                            <div class="slds-truncate" title={fieldData.value}>
+                                                <a style="color:red;" href={fieldData.uRL} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
+                                            </div>
+                                        </template>
+                                        <template if:false={rowData.isDeleted}>
+                                            <div class="slds-truncate" title={fieldData.value}>
+                                                <a href={fieldData.uRL} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
+                                            </div>
+                                        </template>
                                     </template>
                                     <template if:false={fieldData.uRL}>
-                                        <div class="slds-truncate" title={fieldData.value}>
-                                            {fieldData.value}
-                                        </div>
+                                        <template if:true={rowData.isDeleted}>
+                                            <div style="color:red;" class="slds-truncate" title={fieldData.value}>
+                                                {fieldData.value}
+                                            </div>
+                                        </template>
+                                        <template if:false={rowData.isDeleted}>
+                                            <div class="slds-truncate" title={fieldData.value}>
+                                                {fieldData.value}
+                                            </div>
+                                        </template>
                                     </template>
                                 </td>
                             </template>

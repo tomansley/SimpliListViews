@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 10-20-2020
+ * @last modified on  : 10-21-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -826,6 +826,7 @@ public with sharing class ListViewController
         {
 
             RowWrapper rowWrapper = new RowWrapper((String.valueOf(row.get('Id'))));
+            rowWrapper.isDeleted = (Boolean) row.get('IsDeleted');
             rows.addRow(rowWrapper);
 
             //for each listview column
@@ -1080,6 +1081,7 @@ public with sharing class ListViewController
         public Boolean highlight;                //indicates whether the row should be highlighted due to conditions set by user
         public String highlightColor;            //the color the row should be set to if being highlighted.
         public Boolean isTotals;                 //indicates whether this row is a totals row.
+        public Boolean isDeleted;                //indicates whether this row is for a deleted record.
 
         public RowWrapper(String rowId)
         {
@@ -1128,6 +1130,12 @@ public with sharing class ListViewController
         public Boolean getIsTotals()
         {
             return isTotals;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDeleted()
+        {
+            return isDeleted;
         }
 
         @AuraEnabled(cacheable=true)
