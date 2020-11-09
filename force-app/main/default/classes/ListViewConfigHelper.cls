@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 09-09-2020
+ * @Last Modified On   : 11-05-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -13,7 +13,6 @@ public with sharing class ListViewConfigHelper {
 
     private static Map<String,Object> orgWideConfigParams           = null;
     private static List_View_Config__c orgWideConfig                = null;
-    private static Map<String, List_View_Config__c> listViewConfigs = new Map<String, List_View_Config__c>();
 
     public static final String OPER_EQUAL = 'Equals';
     public static final String OPER_NOT_EQUAL = 'Not Equal';
@@ -30,7 +29,7 @@ public with sharing class ListViewConfigHelper {
         {
             String message = 'Org wide list view config could not be retrieved';
             ListViewErrorHelper.createUsageError(message);
-            throw new ListViewConfigHelperException(message);
+            throw new ListViewException(message);
         }
 
         for (List_View_Config_Parameter__c param: configs[0].List_View_Config_Parameters__r)
@@ -70,7 +69,7 @@ public with sharing class ListViewConfigHelper {
             {
                 String message = 'Org wide list view config could not be retrieved';
                 ListViewErrorHelper.createUsageError(message);
-                throw new ListViewConfigHelperException(message);
+                throw new ListViewException(message);
             }
 
             orgWideConfig = configs[0];
@@ -91,7 +90,7 @@ public with sharing class ListViewConfigHelper {
         return (String) orgWideConfigParams.get(settingName);
     }
 
-    public static String updateListViewParam(String objectName, String listViewName, String paramName, String paramValue)
+    public static String updateListViewParam(String objectName, String listViewName, String paramName, String paramValue, String paramLabel, String paramType)
     {
 
         System.debug(LoggingLevel.DEBUG, 'Starting updateListViewParam(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ')');
@@ -121,25 +120,16 @@ public with sharing class ListViewConfigHelper {
             //we have no parameter so we need to create one
             } else {
 
-                System.debug(LoggingLevel.DEBUG, 'Creating param as nothing found');
-
-                //get the list view config for the parameter
-                List<List_View_Config__c> lvConfig = getListViewConfig(objectName, listViewName);
-                
-                //get the defaults for the parameters
-                ListViewConfigDefaults defaults = new ListViewConfigDefaults();
-
-                //create the parameter
+                List_View_Config__c config = getListViewConfig(objectName, listViewName)[0];
                 List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
-                param.Parameter_Label__c = defaults.params.get(paramName).label;
-                param.Parameter_Name__c = paramName;
-                param.Parameter_Value__c = paramValue;
-                param.List_View_Config__c = lvConfig[0].Id;
-                param.Parameter_Type__c = defaults.params.get(paramName).type;
-
-                System.debug(LoggingLevel.DEBUG, 'Param created - ' + param);
-
+                param.List_View_Config__c = config.Id;
+                param.Parameter_Name__c   = paramName;
+                param.Parameter_Type__c   = paramType;
+                param.Parameter_Value__c  = paramValue;
+                param.Parameter_Label__c  = paramLabel;
                 params.add(param);
+        
+                //throw new ListViewException('No parameter with provided list view name, object name and parameter name found - ' + listViewName + ', ' + objectName + ', ' + paramName);
 
             }
 
@@ -153,11 +143,11 @@ public with sharing class ListViewConfigHelper {
         
     }
 
-    public static void addListViewCondition(String objectType, String listViewName, String fieldName, String fieldOperator, String fieldValue, String fieldOrder, String fieldColor)
+    public static void addListViewCondition(String objectName, String listViewName, String fieldName, String fieldOperator, String fieldValue, String fieldOrder, String fieldColor)
     {
 
         //get the list view config for the parameter
-        List<List_View_Config__c> lvConfig = getListViewConfig(objectType, listViewName);
+        List<List_View_Config__c> lvConfig = getListViewConfig(objectName, listViewName);
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = fieldName;
@@ -189,45 +179,79 @@ public with sharing class ListViewConfigHelper {
      * to see if it has already been retrieved. If not it goes and gets it. After retrieving it then
      * checks against default configuration params to ensure all values have been set appropriately
      */
-    public static List<List_View_Config__c> getListViewConfig(String objectType, String listViewName) 
+    public static List<List_View_Config__c> getListViewConfig(String objectName, String listViewName) 
     {
+        System.debug(LoggingLEvel.DEBUG, 'Starting getListViewConfig(' + objectName + ', ' + listViewName + ')');
 
         List<List_View_Config__c> configs = new List<List_View_Config__c>();
 
-        List_View_Config__c config = listViewConfigs.get(objectType + ':' + listViewName);
+        HelperSchema.checkListViewConfigsAccessible();
 
-        if (config == null)
+        configs = [SELECT Name,
+                            List_View_Object__c,
+                            LastModifiedDate,
+                            LastModifiedBy.Name,
+                            Primary_Key__c,
+                            (SELECT Parameter_Name__c,
+                                    Parameter_Type__c,
+                                    Parameter_Label__c,
+                                    Parameter_Value__c
+                            FROM List_View_Config_Parameters__r
+                            ORDER BY Parameter_Label__c),
+                            (SELECT Field_Name__c,
+                                        Highlight_Color__c,
+                                        Operator__c,
+                                        Order__c,
+                                        Value__c
+                            FROM List_View_Config_Conditions__r
+                            ORDER BY Order__c ASC)
+                FROM List_View_Config__c
+                        WHERE Name = :listViewName
+                            AND List_View_Object__c = :objectName];
+
+        if (configs.size() > 1)
+            throw new ListViewException('Found more than one list view config with name - ' + listViewName + ' and object - ' + objectName);
+
+        System.debug(LoggingLevel.DEBUG, 'Returning configs - ' + configs);
+        return configs;
+    }
+
+    public static String getPrimaryKey(String objectName, String listViewName)
+    {
+        return objectName.replace(' ', '_') + ':' + listViewName;
+    }
+
+    public static Map<String, List_View_Config__c> getListViewConfigs(Set<String> primaryKeys) 
+    {
+        List<List_View_Config__c> configs = [SELECT Name,
+                                                List_View_Object__c,
+                                                LastModifiedDate,
+                                                LastModifiedBy.Name,
+                                                Primary_Key__c,
+                                                (SELECT Parameter_Name__c,
+                                                        Parameter_Type__c,
+                                                        Parameter_Label__c,
+                                                        Parameter_Value__c
+                                                FROM List_View_Config_Parameters__r
+                                                ORDER BY Parameter_Label__c),
+                                                (SELECT Field_Name__c,
+                                                            Highlight_Color__c,
+                                                            Operator__c,
+                                                            Order__c,
+                                                            Value__c
+                                                FROM List_View_Config_Conditions__r
+                                                ORDER BY Order__c ASC)
+                                    FROM List_View_Config__c
+                                            WHERE Primary_Key__c IN :primaryKeys];
+
+        Map<String, List_View_Config__c> mappedConfigs = new Map<String, List_View_Config__c>();
+        for (List_View_Config__c config: configs)
         {
-
-            HelperSchema.checkListViewConfigsAccessible();
-
-            configs = [SELECT Name,
-                                List_View_Object__c,
-                                LastModifiedDate,
-                                LastModifiedBy.Name,
-                                Primary_Key__c,
-                                (SELECT Parameter_Name__c,
-                                        Parameter_Type__c,
-                                        Parameter_Label__c,
-                                        Parameter_Value__c
-                                FROM List_View_Config_Parameters__r
-                                ORDER BY Parameter_Label__c),
-                                (SELECT Field_Name__c,
-                                            Highlight_Color__c,
-                                            Operator__c,
-                                            Order__c,
-                                            Value__c
-                                FROM List_View_Config_Conditions__r
-                                ORDER BY Order__c ASC)
-                    FROM List_View_Config__c
-                            WHERE Name = :listViewName
-                                AND List_View_Object__c = :objectType];
-
-        } else {
-            configs.add(config);
+            mappedConfigs.put(getPrimaryKey(config.List_View_Object__c, config.Name), config);
         }
 
-        return configs;
+        return mappedConfigs;
+
     }
 
     public static String getParameterDescription(String name)
@@ -288,22 +312,40 @@ public with sharing class ListViewConfigHelper {
         {
             if (paramValue != '')
             {
-                String soql = 'SELECT ' + paramValue + ' FROM ' + objectName + ' LIMIT 1';
 
                 try {
 
+                    //check security on object
                     HelperSchema.checkObjectAccessible(objectName);
-                    for (String field: paramValue.split(','))
+
+                    //get the list view
+                    List_View__c listview = ListViewHelper.getListViews(objectName, listViewName).values()[0];
+            
+                    //get the list views query
+                    String query = listview.Core_ListView_Query__c;
+
+                    //get the fields on the SELECT
+                    String selectStr = query.substringBetween('SELECT ', ' FROM ');
+
+                    //check all added fields for security
+                    List<String> allFields = paramValue.split(',');
+                    for (String field: allFields)
                     {
+                        //do security validation on additional fields. If the field is a lookup the security is performed later
                         if (!field.contains('.'))
-                        {
                             HelperSchema.checkObjectFieldAccessible(objectName, field);
-                        }
                     }
+        
+                    selectStr += ', ' + paramValue;
+            
+                    String soql = 'SELECT ' + selectStr + ' FROM ' + objectName + ' LIMIT 1';
+
+                    System.debug(LoggingLevel.DEBUG, 'Param Validation SOQL - ' + soql);
 
                     List<SObject> result = Database.query(soql);
+
                 } catch (Exception e) {
-                    error = 'There was an error testing the additional fields. Please ensure the names are valid API field names - ' + e.getMessage();
+                    error = 'The additional fields are invalid. Please ensure syntax is correct, there are no duplicate fields, and the names are valid API field names - ' + e.getMessage();
                 }
             }
         }
@@ -327,99 +369,34 @@ public with sharing class ListViewConfigHelper {
         System.debug(LoggingLevel.DEBUG, 'Conditions - ' + conditions);
 
         if (value == null || conditions == null || conditions.size() == 0) return '';
-
-        String valueStr = String.valueOf(value);
     
         for (List_View_Config_Condition__c condition: conditions)
         {
-            System.debug(LoggingLevel.DEBUG, 'ValueStr        = ' + valueStr);
-            System.debug(LoggingLevel.DEBUG, 'Operator        = ' + condition.Operator__c);
-            System.debug(LoggingLevel.DEBUG, 'Condition Value = ' + condition.Value__c);
+            System.debug(LoggingLevel.DEBUG, 'Value     = ' + value);
+            System.debug(LoggingLevel.DEBUG, 'Operator  = ' + condition.Operator__c);
+            System.debug(LoggingLevel.DEBUG, 'condValue = ' + condition.Value__c);
 
             if (condition.Operator__c == OPER_EQUAL) {
-                if (valueStr == condition.Value__c) return condition.Highlight_Color__c;
+                if (value == condition.Value__c) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_NOT_EQUAL) {
-                if (valueStr != condition.Value__c) return condition.Highlight_Color__c;
+                if (value != condition.Value__c) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_GREATER) {
-                if (valueStr > condition.Value__c) return condition.Highlight_Color__c;
+                Decimal inputValue = Decimal.valueOf(String.valueOf(value));
+                Decimal condValue = Decimal.valueOf(condition.Value__c);
+                if (inputValue > condValue) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_LESS) {
-                if (valueStr < condition.Value__c) return condition.Highlight_Color__c;
+                Decimal inputValue = Decimal.valueOf(String.valueOf(value));
+                Decimal condValue = Decimal.valueOf(condition.Value__c);
+                if (inputValue < condValue) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_CONTAINS) {
-                if (valueStr.contains(condition.Value__c)) return condition.Highlight_Color__c;
+                if (((String) value).contains((String) condition.Value__c)) return condition.Highlight_Color__c;
             }
 
         }
 
         return '';
     }
-
-    public class ListViewConfigHelperException extends Exception { }
     
-    public class ListViewConfigDefaults
-    {
-        public Map<String, ListViewConfigDefault> params {get; set;}
-
-        public ListViewConfigDefaults()
-        {
-            params = new Map<String, ListViewConfigDefault>();
-
-            ListViewConfigDefault defaultConfig = new ListViewConfigDefault();
-            defaultConfig.label       = 'Additional Fields';
-            defaultConfig.name        = 'AdditionalFields';
-            defaultConfig.type        = 'String';
-            defaultConfig.value       = '';
-            defaultConfig.description = 'String holding the additional API field names that should be returned in the list view data (comma delimited).';
-    
-            params.put(defaultConfig.name, defaultConfig);
-
-            defaultConfig = new ListViewConfigDefault();
-            defaultConfig.label       = 'Return Size';
-            defaultConfig.name        = 'ReturnSize';
-            defaultConfig.type        = 'Number';
-            defaultConfig.value       = '100';
-            defaultConfig.description = 'The maximum number of rows of data that can be returned. Note that org and list view configuration takes precedence.';
-
-            params.put(defaultConfig.name, defaultConfig);
-
-            defaultConfig = new ListViewConfigDefault();
-            defaultConfig.label       = 'Refresh Rate';
-            defaultConfig.name        = 'RefreshRate';
-            defaultConfig.type        = 'Number';
-            defaultConfig.value       = '30';
-            defaultConfig.description = 'The number of seconds between refreshes if the list view can be auto refreshed.';
-
-            params.put(defaultConfig.name, defaultConfig);
-
-            defaultConfig = new ListViewConfigDefault();
-            defaultConfig.label       = 'Total Column Names';
-            defaultConfig.name        = 'TotalColumns';
-            defaultConfig.type        = 'String';
-            defaultConfig.value       = '';
-            defaultConfig.description = 'String holding the columns within the list view that should have a total in the footer.';
-
-            params.put(defaultConfig.name, defaultConfig);
-
-            defaultConfig = new ListViewConfigDefault();
-            defaultConfig.label       = 'Total Row Color';
-            defaultConfig.name        = 'TotalColumnsColor';
-            defaultConfig.type        = 'Color';
-            defaultConfig.value       = '#E5F0FA';
-            defaultConfig.description = 'The HTML color that the footer row should be displayed in. i.e. #E5F0FA.';
-
-            params.put(defaultConfig.name, defaultConfig);
-
-            defaultConfig = new ListViewConfigDefault();
-            defaultConfig.label       = 'Include All Rows';
-            defaultConfig.name        = 'AllRows';
-            defaultConfig.type        = 'Boolean';
-            defaultConfig.value       = 'false';
-            defaultConfig.description = 'Indicates whether deleted and archived records should be included in list view results.';
-
-            params.put(defaultConfig.name, defaultConfig);
-
-        }
-    }
-
     public class ListViewConfigDefault
     {
         public String name  {get; set;}
