@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-13-2020
+ * @last modified on  : 11-04-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -38,9 +38,41 @@ global with sharing class ScriptInstall implements InstallHandler {
 		if(context.isUpgrade())
 		{
 
-            //-----------------------------------------------------------
-            // Fix issue where config parameter names had spaces. Doh!
-            //-----------------------------------------------------------
+            //------------------------------------------------------------------------------------
+            // Fix issue where some list view actions might not have record types - through v1.60
+            //------------------------------------------------------------------------------------
+            List<List_View__c> listviews = [SELECT Id, RecordTypeId FROM List_View__c LIMIT 2000];
+            List<List_View__c> updatedListViews = new List<List_View__c>();
+            for (List_View__c lv: listviews)
+            {
+                if (lv.RecordTypeId == null || lv.RecordTypeId == '')
+                {
+                    lv.RecordTypeId = ListViewHelper.coreRTId;
+                    updatedListViews.add(lv);
+                }
+            }
+
+            update updatedListViews;
+
+            //------------------------------------------------------------------------------------
+            // Fix issue where some list view actions might not have record types - through v1.60
+            //------------------------------------------------------------------------------------
+            List<List_View_Action__c> actions = [SELECT Id, RecordTypeId FROM List_View_Action__c LIMIT 2000];
+            List<List_View_Action__c> updatedActions = new List<List_View_Action__c>();
+            for (List_View_Action__c action: actions)
+            {
+                if (action.RecordTypeId == null || action.RecordTypeId == '')
+                {
+                    action.RecordTypeId = ListViewActionHelper.coreRTId;
+                    updatedActions.add(action);
+                }
+            }
+
+            update updatedActions;
+
+            //---------------------------------------------------------------------------------
+            // Fix issue where config parameter names had spaces. Doh! - through v1.60
+            //---------------------------------------------------------------------------------
             List<List_View_Config__c> orgWideConfigs = ListViewConfigHelper.getListViewConfig('All', 'All');  
             
             if (!orgWideConfigs.isEmpty())
