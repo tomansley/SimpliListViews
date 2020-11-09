@@ -1,3 +1,12 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @last modified on  : 11-02-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   11-02-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 public with sharing class ListViewActionTriggerHandler {
 
     /*
@@ -7,7 +16,7 @@ public with sharing class ListViewActionTriggerHandler {
      */ 
     public static void onBeforeInsert(List<List_View_Action__c> newRecords)
     {
-        ListViewActionBL.validateObjectType(newRecords);
+        ListViewActionBL.validate(newRecords);
         ListViewActionBL.setPrimaryKey(newRecords);
     }
     
@@ -29,7 +38,7 @@ public with sharing class ListViewActionTriggerHandler {
      */ 
     public static void onBeforeUpdate(Map<Id, List_View_Action__c> newRecords, Map<Id, List_View_Action__c> oldRecords)
     {
-        ListViewActionBL.validateObjectType(newRecords.values());
+        ListViewActionBL.validate(newRecords.values());
         ListViewActionBL.setPrimaryKey(newRecords.values());
     }
 

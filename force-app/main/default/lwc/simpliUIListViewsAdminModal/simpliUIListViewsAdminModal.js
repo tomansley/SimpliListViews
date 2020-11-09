@@ -92,7 +92,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     /*
      * Wiring to get the list of config parameters for the chosen object and list view
      */
-    @wire (getListViewConfig, { objectType: '$listViewObject', listViewName: '$listViewName' })
+    @wire (getListViewConfig, { objectName: '$listViewObject', listViewName: '$listViewName' })
     wiredListViewConfig(wiredListViewConfigResult) {
         this.wiredListViewConfigResult = wiredListViewConfigResult;
         const { data, error } = wiredListViewConfigResult;
@@ -103,11 +103,11 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             this.error = undefined; 
         } else if (error) { 
             this.error = error; 
-            console.log('Error Detected ' + error.message); 
+            console.log('Error Detected ' + error.body.message); 
             this.listViewConfig = undefined;
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Config',
-                message: 'There was an error retrieving the list view configuration. Please see an administrator - ' + error.message,
+                message: 'There was an error retrieving the list view configuration. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -129,7 +129,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             this.listViewColumnLabels = undefined; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Column Labels',
-                message: 'There was an error retrieving the list view column labels. Please see an administrator\n\n' + error.message + '\n\n' + error.stackTrace,
+                message: 'There was an error retrieving the list view column labels. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -151,7 +151,13 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
         var name = event.target.name;
         var value = event.target.value;
+        var type = event.target.type;
+        var label = event.target.label;
 
+        if (type === undefined) {
+            type = 'Boolean';
+        }
+        
         console.log('Inside handleParamChange - ' + name + '/' + value);
 
         //if we are leaving the param with no value change then do nothing.
@@ -164,7 +170,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         this.configChanged = true;
         console.log('Param being processed');
 
-        processParamChange({ objectName: this.listViewObject, listViewName: this.listViewName, paramName: name, paramValue: value})
+        processParamChange({ objectName: this.listViewObject, listViewName: this.listViewName, paramName: name, paramValue: value, paramLabel: label, paramType: type})
             .then(result => {
                 var resultStr = result;
                 this.error = undefined;

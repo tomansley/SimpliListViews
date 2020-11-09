@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 09-29-2020
+ * @Last Modified On   : 11-06-2020
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -36,248 +36,6 @@ public with sharing class HelperSchema {
 		return id.getSObjectType().getDescribe().getName();
 	}
 
-    public static void checkSelectAccessible(String selectStr) 
-    {
-
-        List<String> fields = selectStr.substringBetween('SELECT', 'FROM').split(',');
-        
-        String objAPIName = null;
-        if (!selectStr.containsIgnoreCase('WHERE'))
-            objAPIName = selectStr.substringAfter('FROM ');
-        else
-            objAPIName = selectStr.substringBetween('FROM ', ' WHERE');
-        
-        HelperSchema.checkObjectAccessible(objAPIName);
-
-        for (String field: fields)
-        {
-            //do security validation on additional fields. If the field is a lookup the security is performed later
-            if (!field.contains('.'))
-                HelperSchema.checkObjectFieldAccessible(objAPIName, field);
-        }
- 
-    }
-
-	/*
-	 * Method to determine if an SObject field is accessible. This is used
-	 * for security to ensure user is allowed to see a field for the given object.
-	 */
-	public static Boolean checkObjectFieldAccessible(String objName, String fieldName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldAccessible called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
-
-        fieldName = scrubFieldName(fieldName);
-
-        Schema.DescribeFieldResult fieldDesc = getFieldDescribeResult(objName, fieldName);
-		if (fieldDesc != null && fieldDesc.isAccessible()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName + ' is not accessible or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject field is accessible. This is used
-	 * for security to ensure user is allowed to see a field for the given object.
-	 */
-	public static void checkObjectFieldAccessible(String objName, String fieldName)
-	{
-		checkObjectFieldAccessible(objName, fieldName, true);
-	}
-
-    /*
-	 * Method to determine if an SObject field is createable. This is used
-	 * for security to ensure user is allowed to set a field for the given object.
-	 */
-	public static Boolean checkObjectFieldCreateable(String objName, String fieldName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldCreateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
-
-        fieldName = scrubFieldName(fieldName);
-
-		if (getFieldDescribeResult(objName, fieldName).isCreateable()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName.deleteWhitespace() + ' is not creatable or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject field is createable. This is used
-	 * for security to ensure user is allowed to set a field for the given object.
-	 */
-	public static void checkObjectFieldCreateable(String objName, String fieldName)
-	{
-		checkObjectFieldCreateable(objName, fieldName, true);
-	}
-
-	/*
-	 * Method to determine if an SObject field is createable. This is used
-	 * for security to ensure user is allowed to set a field for the given object.
-	 */
-	public static Boolean checkObjectFieldUpdateable(String objName, String fieldName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldUpdateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
-
-        fieldName = scrubFieldName(fieldName);
-
-		if (getFieldDescribeResult(objName, fieldName).isUpdateable()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new HelperSchemaException('Field with name ' + objName + '.' + fieldName + ' is not updateable or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject field is createable. This is used
-	 * for security to ensure user is allowed to set a field for the given object.
-	 */
-	public static void checkObjectFieldUpdateable(String objName, String fieldName)
-	{
-		checkObjectFieldUpdateable(objName, fieldName, true);
-	}
-
-	/*
-	 * Method to determine if an SObject is createable. This is used
-	 * for security to ensure user is allowed to create records for the given object.
-	 */
-	public static Boolean checkObjectCreateable(String objName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectCreateable called with objName - ' + objName);
-
-		if (getObjectSchema(objName).isCreateable()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not creatable or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject is createable. This is used
-	 * for security to ensure user is allowed to create records for the given object.
-	 */
-	public static void checkObjectCreatable(String objName)
-	{
-		checkObjectCreateable(objName, true);
-	}
-
-	/*
-	 * Method to determine if an SObject is accessible. This is used
-	 * for security to ensure user is allowed to create records for the given object.
-	 */
-	public static Boolean checkObjectAccessible(String objName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectAccessible called with objName - ' + objName);
-
-		if (getObjectSchema(objName).isAccessible()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not accessible or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject is accessible. This is used
-	 * for security to ensure user is allowed to create records for the given object.
-	 */
-	public static void checkObjectAccessible(String objName)
-	{
-		checkObjectAccessible(objName, true);
-	}
-
-    /*
-	 * Method to determine if an SObject is createable. This is used
-	 * for security to ensure user is allowed to create records for the given object.
-	 */
-	public static Boolean checkObjectUpdateable(String objName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectUpdateable called with objName - ' + objName);
-
-		if (getObjectSchema(objName).isUpdateable()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not updateable or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject is createable. This is used
-	 * for security to ensure user is allowed to create records for the given object.
-	 */
-	public static void checkObjectUpdateable(String objName)
-	{
-		checkObjectUpdateable(objName, true);
-	}
-
-	/*
-	 * Method to determine if an SObject is deletable. This is used
-	 * for security to ensure data being queried is deletable by the user.
-	 */
-	public static Boolean checkObjectDeletable(SObject obj, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectDeletable called with obj - ' + obj);
-
-		if (obj == null || obj.Id == null)
-			throw new HelperSchemaException('HelperSchema.checkObjectDeletable called with null Object or object with empty Id');
-
-		String objName = getSObjectTypeFromId(obj.Id);
-
-		if (getObjectSchema(objName).isDeletable()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not deletable or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject is deletable. This is used
-	 * for security to ensure data being queried is deletable by the user.
-	 */
-	public static void checkObjectDeletable(SObject obj)
-	{
-		checkObjectDeletable(obj, true);
-	}
-
-	/*
-	 * Method to determine if an SObject type is deletable. This is used
-	 * for security to ensure data being queried is deletable by the user.
-	 */
-	public static Boolean checkObjectDeletable(String objName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectDeletable called with objName - ' + objName);
-
-		if (getObjectSchema(objName).isDeletable()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new HelperSchemaException('Object of type ' + objName + ' is not deletable or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-	
-	/*
-	 * Method to determine if an SObject type is deletable. This is used
-	 * for security to ensure data being queried is deletable by the user.
-	 */
-	public static void checkObjectDeletable(String objName)
-	{
-		checkObjectDeletable(objName, true);
-	}
-
 	/*
 	 * Method to return the object that a given objects field looks up to. For example, if the 
 	 * obj = User and the field = ProfileId the value returned will be "Profile"
@@ -289,11 +47,11 @@ public with sharing class HelperSchema {
 
 		Schema.SObjectField fieldSchema = getFieldByKey(obj, field, NAME);
 
-		if (fieldSchema == null) throw new HelperSchemaException('Cannot find provided field - ' + obj + '.' + field + '. Please ensure to use field API name, not label name');
+		if (fieldSchema == null) throw new ListViewException('Cannot find provided field - ' + obj + '.' + field + '. Please ensure to use field API name, not label name');
 
 		Schema.DescribeFieldResult fDescribe = fieldSchema.getDescribe();
 
-		//if (fDescribe != null) throw new HelperSchemaException('FDescribe - ' + fDescribe);
+		//if (fDescribe != null) throw new ListViewException('FDescribe - ' + fDescribe);
 
 		String objString = null;
 		
@@ -309,34 +67,74 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method to return a describe result for a given object and field.
+     * HelperSchema.getFieldDescribeResult('Opportunity','Alias');  
 	 */
 	public static Schema.DescribeFieldResult getFieldDescribeResult(String obj, String field)
 	{
-		initSObjectSchema(obj);
-
-		Schema.SObjectField fieldSchema = getFieldByKey(obj, field, NAME);
-
-        if (fieldSchema == null)
-            fieldSchema = getFieldByKey(obj, field + 'Id', NAME);
+        System.debug(LoggingLEvel.DEBUG, 'getFieldDescribeResult(' + obj + ', ' + field + ')');
+        Schema.DescribeFieldResult result = null;
         
-        if (fieldSchema == null)
-            fieldSchema = getFieldByKey(obj, field.removeEnd('__r') + '__c', NAME);
-            
-        if (fieldSchema == null)
-            return null;
+        initSObjectSchema(obj);
 
-		return fieldSchema.getDescribe();
+        //see if there is a regular field name
+        Schema.SObjectField sField = getFieldByKey(obj, field, NAME);
+
+        //see if there is a field with an Id at the end. i.e. ContactId
+        if (sField == null)
+            sField = getFieldByKey(obj, field + 'Id', NAME);
+        
+        //see if there is a lookup field name
+        if (sField == null)
+            sField = getFieldByKey(obj, field.removeEnd('__r') + '__c', NAME);
+
+        if (sField != null)
+             result = sField.getDescribe();
+
+            //see if we are working with a relationship field
+        if (result == null)
+        {
+            List<Schema.ChildRelationship> relationships = getObjectSchema(obj).getChildRelationships();
+
+            for (Schema.ChildRelationship relationship: relationships)
+            {
+                if (relationship.getRelationshipName() == field)
+                {
+                    result = getFieldDescribeResult(relationship.getChildSObject().getDescribe().getName(), field);
+                }
+            }
+        }
+
+		return result;
 	}
 
 	/*
 	 * Method that returns the describe result of an SObject.
+     * System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getObjectSchema('simpli_lv__List_View_Org_Wide_Setting__mdt'));
 	 */
 	public static Schema.DescribeSObjectResult getObjectSchema(String name)
 	{
 		initSObjectSchema(name);
+        Schema.SObjectType objType = objectDescribeByName.get(name);
+        if (objType != null)
+            return objType.getDescribe();
+        
+        return null;
+    }
+    
+    /*
+       System.debug(LoggingLEvel.DEBUG, 'FAKE RESULT - ' + HelperSchema.isObject('Fake Object'));
+       System.debug(LoggingLEvel.DEBUG, 'FAKE RESULT - ' + HelperSchema.isObject('ApexLog'));
+     */
+    public static Boolean isObject(String objName)
+    {
+        Boolean isObject = false;
+		initSObjectSchema(objName);
 
-		return objectDescribeByName.get(name).getDescribe();
-	}
+        if (objectDescribeByName.get(objName) != null)
+            isObject = true;
+
+        return isObject;
+    }
 
 	/*
 	 * Returns the API object type for a provided lookup field name. Currently
@@ -445,6 +243,7 @@ public with sharing class HelperSchema {
 	 * Method which given an object API name returns those fields that are available for the object.
 	 * The returned map has its keys based on either the fields Label or Name, depending on the 
 	 * provided keyType.
+     * System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getFieldsForObject('simpli_lv__List_View_Org_Wide_Setting__mdt', HelperSchema.NAME));
 	 */
 	public static Map<String, Schema.SObjectField> getFieldsForObject(String obj, String keyType)
 	{
@@ -476,14 +275,17 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean isValidSFDCFieldName(String objName, String sfdcFieldName)
 	{
-		Boolean isValid = false;
+        if (objName == null || sfdcFieldName == null) return false;
+        Boolean isValid = false;
 		try {
 			Map<String, Schema.SObjectField> fields = HelperSchema.getFieldsForObject(objName, NAME);
-			if (fields.get(sfdcFieldName.toLowerCase()) != null)
+			if (fields != null && fields.get(sfdcFieldName.toLowerCase()) != null)
 				isValid = true;
         } catch (Exception e) {
             String message = 'Exception during HelperSchema.isValidSFDCFieldName(' + objName + ',' + sfdcFieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            ListViewErrorHelper.createUsageError(message); 
+            System.debug(LoggingLevel.ERROR, 'ERROR - ' + message);
+            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
+                ListViewErrorHelper.createUsageError(message); 
             isValid = false;
         }
 
@@ -503,7 +305,9 @@ public with sharing class HelperSchema {
 			Schema.describeSObjects(objName);
         } catch (Exception e) {
             String message = 'Exception during HelperSchema.isValidSFDCObjectName(' + sfdcObjectName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            ListViewErrorHelper.createUsageError(message); 
+            System.debug(LoggingLevel.ERROR, 'ERROR - ' + message);
+            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
+                ListViewErrorHelper.createUsageError(message); 
             isValid = false;
         }
 		
@@ -530,22 +334,26 @@ public with sharing class HelperSchema {
      */
     public static FieldData getFieldData(SObject obj, String fieldName)
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting getFieldData(' + obj + ', ' + fieldName + ')');
 		FieldData data = null;
 		String label = '';
 
 		try {
-			System.debug(LoggingLevel.DEBUG, 'HelperSchema.getFieldData - obj = ' + obj + ', fieldName = ' + fieldName);
 
 			fieldName = scrubFieldName(fieldName);
 			
 			if (obj == null || fieldName == null || fieldName == '')
-				throw new HelperSchemaException('HelperSchema.getFieldData() called with empty values. obj = ' + obj + ', fieldName = ' + fieldName);
+				throw new ListViewException('HelperSchema.getFieldData() called with empty values. obj = ' + obj + ', fieldName = ' + fieldName);
 
 			List<String> fieldHierarchy = fieldName.split('\\.');
 
-			System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
+            System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
 
-			SObject currentObj = obj;
+            SObject currentObj = obj;
+            
+            String objType = getObjectType(currentObj);
+
+            Schema.DescribeSObjectResult objDescribe = HelperSchema.getObjectSchema(objType);
 
 			for (String field: fieldHierarchy)
 			{
@@ -553,13 +361,15 @@ public with sharing class HelperSchema {
 				//if we are at the last field then get the value and return
 				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
 				{
-					//get the object type
-					String objType = getObjectType(currentObj);
+					//get the object type                    
+                    System.debug(LoggingLevel.DEBUG, 'Object Type - ' + objType);
+                    System.debug(LoggingLevel.DEBUG, 'Field       - ' + field);
+
 
 					//get the field describe
 					Schema.DescribeFieldResult fieldDesc = getFieldDescribeResult(objType, field);
 
-					//if we do not have a field describe it could be because there is no data in the relationship
+                    //if we do not have a field describe it could be because there is no data in the relationship
 					if (fieldDesc == null) {
                         data = new FieldData(field, label, Schema.DisplayType.STRING, '', currentObj);
                         System.debug(LoggingLevel.ERROR, 'Cannot find field with name ' + field + ' for object of type ' + objType);
@@ -572,19 +382,44 @@ public with sharing class HelperSchema {
 					    else
 						    label = objType + ' ' + fieldDesc.getLabel();
 
-						data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
+                        data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
 						data.fieldObjType = getObjectType(currentObj);
 					}
 					
 				//if we are not at the last field then get the fields object
 				} else {
-					
-					//get sobject with field in it if there is a value.
-					if (currentObj.getSObject(field) != null)
-						currentObj = currentObj.getSObject(field);
+                    
+                    Boolean isSet = false;
+                    //check if we have a CHILD relationship
+                    List<Schema.ChildRelationship> objRels = objDescribe.getChildRelationships();
+                    for (Schema.ChildRelationship rel: objRels)
+                    {
+                        if (rel.getRelationshipName() == field)
+                        {
+                            List<Sobject> children = currentObj.getSObjects(field);
+                            if (children != null && children.size() > 0)
+                            {
+                                currentObj = children[0];
+                                isSet = true;
+                                objType = getObjectType(currentObj);
+                            } else {
+                                data = new FieldData(field, label, Schema.DisplayType.STRING, '', null);
+                                data.isChildRel = true;
+                                return data;
+                            }
+                             break;
+                        }
+                    }
 
+					//Check if we have a LOOKUP relationship.
+                    if (!isSet && currentObj.getSObject(field) != null)
+                    {
+						currentObj = currentObj.getSObject(field);
+                        objType = getObjectType(currentObj);
+                    }
+                    
 					//if there is no value then return empty string
-					else
+					if (!isSet)
 						data = new FieldData(field, label, Schema.DisplayType.STRING, '', currentObj);
 
 				}
@@ -592,7 +427,8 @@ public with sharing class HelperSchema {
         } catch (Exception e) {
             String message = 'Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
             System.debug(LoggingLevel.ERROR, 'ERROR - ' + message);
-            ListViewErrorHelper.createUsageError(message); 
+            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
+                ListViewErrorHelper.createUsageError(message); 
 			data = null;
         }
 
@@ -607,56 +443,56 @@ public with sharing class HelperSchema {
             else if (action == UPDATEABLE) HelperSchema.checkListViewUpdateable();
             else if (action == ACCESSIBLE) HelperSchema.checkObjectAccessible(objAPIName);
             else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View__c');
-            else throw new HelperSchemaException('No permission check for Simpli_lv__List_View__c with action - ' + action);
+            else throw new ListViewException('No permission check for Simpli_lv__List_View__c with action - ' + action);
 
         } else if (objAPIName == 'Simpli_lv__List_View_Config__c')
         {
             if (action == CREATABLE) checkListViewConfigsCreatable();
             else if (action == UPDATEABLE) checkListViewConfigsUpdateable();
             else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Config__c');
-            else throw new HelperSchemaException('No permission check for Simpli_lv__List_View_Config__c with action - ' + action);
+            else throw new ListViewException('No permission check for Simpli_lv__List_View_Config__c with action - ' + action);
         
         }  else if (objAPIName == 'Simpli_lv__List_View_Config_Parameter__c')
         {
             if (action == CREATABLE) checkListViewConfigsCreatable();
             else if (action == UPDATEABLE) checkListViewConfigsUpdateable();
             else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Config_Parameter__c');
-            else throw new HelperSchemaException('No permission check for Simpli_lv__List_View_Config_Parameter__c with action - ' + action);
+            else throw new ListViewException('No permission check for Simpli_lv__List_View_Config_Parameter__c with action - ' + action);
         
         }  else if (objAPIName == 'simpli_lv__List_View_Config_Condition__c')
         {
             if (action == CREATABLE) checkListViewConfigsCreatable();
             else if (action == UPDATEABLE) checkListViewConfigsUpdateable();
             else if (action == DELETABLE) checkObjectDeletable('simpli_lv__List_View_Config_Condition__c');
-            else throw new HelperSchemaException('No permission check for simpli_lv__List_View_Config_Condition__c with action - ' + action);
+            else throw new ListViewException('No permission check for simpli_lv__List_View_Config_Condition__c with action - ' + action);
         
         } else if (objAPIName == 'Simpli_lv__List_View_Action__c')
         {
             if (action == CREATABLE) checkListViewActionsCreatable();
             else if (action == UPDATEABLE) checkListViewActionsCreatable();
             else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Action__c');
-            else throw new HelperSchemaException('No permission check for Simpli_lv__List_View_Action__c with action - ' + action);
+            else throw new ListViewException('No permission check for Simpli_lv__List_View_Action__c with action - ' + action);
         
         } else if (objAPIName == 'Simpli_lv__List_View_Action_Parameter__c')
         {
             if (action == CREATABLE) checkListViewConfigsCreatable();
             else if (action == UPDATEABLE) checkListViewConfigsUpdateable();
             else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Action_Parameter__c');
-            else throw new HelperSchemaException('No permission check for Simpli_lv__List_View_Action_Parameter__c with action - ' + action);
+            else throw new ListViewException('No permission check for Simpli_lv__List_View_Action_Parameter__c with action - ' + action);
         
         }  else if (objAPIName == 'simpli_lv__List_View_User_Config__c')
         {
             if (action == CREATABLE) checkListViewUserConfigsCreatable();
             else if (action == UPDATEABLE) checkListViewUserConfigsUpdateable();
             else if (action == DELETABLE) checkObjectDeletable('simpli_lv__List_View_User_Config__c');
-            else throw new HelperSchemaException('No permission check for simpli_lv__List_View_User_Config__c with action - ' + action);
+            else throw new ListViewException('No permission check for simpli_lv__List_View_User_Config__c with action - ' + action);
         
         }else {
             if (action == CREATABLE) HelperSchema.checkObjectCreatable(objAPIName);
             else if (action == UPDATEABLE) HelperSchema.checkObjectUpdateable(objAPIName);
             else if (action == DELETABLE) HelperSchema.checkObjectDeletable(objAPIName);
             else if (action == ACCESSIBLE) HelperSchema.checkObjectAccessible(objAPIName);
-            else throw new HelperSchemaException('No permission check for ' + objAPIName + ' with action - ' + action);
+            else throw new ListViewException('No permission check for ' + objAPIName + ' with action - ' + action);
             
         }
     }
@@ -841,14 +677,16 @@ public with sharing class HelperSchema {
         public String label            {get; set;}
         public Schema.DisplayType type {get; set;}
         public Object value            {get; set;}
+        public Boolean isChildRel      {get; set;}
 
         public FieldData(String name, String label, Schema.DisplayType type, Object value, SObject fieldObj)
         {
-			this.fieldObj = fieldObj;
-            this.name     = name;
-            this.label    = label;
-            this.type     = type;
-            this.value    = value;
+			this.fieldObj   = fieldObj;
+            this.name       = name;
+            this.label      = label;
+            this.type       = type;
+            this.value      = value;
+            this.isChildRel = false;
         }
 	}
 	
@@ -930,6 +768,250 @@ public with sharing class HelperSchema {
         return fieldName;
     }
 
-	public class HelperSchemaException extends Exception { }
+
+    //---------------------------------------------------------------------------------
+    // ACCESSIBILITY METHODS
+    //---------------------------------------------------------------------------------
+    public static void checkSelectAccessible(String selectStr) 
+    {
+
+        List<String> fields = selectStr.substringBetween('SELECT', 'FROM').split(',');
+        
+        String objAPIName = null;
+        if (!selectStr.containsIgnoreCase('WHERE'))
+            objAPIName = selectStr.substringAfter('FROM ');
+        else
+            objAPIName = selectStr.substringBetween('FROM ', ' WHERE');
+        
+        HelperSchema.checkObjectAccessible(objAPIName);
+
+        for (String field: fields)
+        {
+            //do security validation on additional fields. If the field is a lookup the security is performed later
+            if (!field.contains('.'))
+                HelperSchema.checkObjectFieldAccessible(objAPIName, field);
+        }
+ 
+    }
+
+	/*
+	 * Method to determine if an SObject field is accessible. This is used
+	 * for security to ensure user is allowed to see a field for the given object.
+	 */
+	public static Boolean checkObjectFieldAccessible(String objName, String fieldName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldAccessible called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
+
+        fieldName = scrubFieldName(fieldName);
+
+        Schema.DescribeFieldResult fieldDesc = getFieldDescribeResult(objName, fieldName);
+		if (fieldDesc != null && fieldDesc.isAccessible()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new ListViewException('Field with name ' + objName + '.' + fieldName + ' is not accessible or does not exist. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject field is accessible. This is used
+	 * for security to ensure user is allowed to see a field for the given object.
+	 */
+	public static void checkObjectFieldAccessible(String objName, String fieldName)
+	{
+		checkObjectFieldAccessible(objName, fieldName, true);
+	}
+
+    /*
+	 * Method to determine if an SObject field is createable. This is used
+	 * for security to ensure user is allowed to set a field for the given object.
+	 */
+	public static Boolean checkObjectFieldCreateable(String objName, String fieldName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldCreateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
+
+        fieldName = scrubFieldName(fieldName);
+
+		if (getFieldDescribeResult(objName, fieldName).isCreateable()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new ListViewException('Field with name ' + objName + '.' + fieldName.deleteWhitespace() + ' is not creatable or does not exist. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject field is createable. This is used
+	 * for security to ensure user is allowed to set a field for the given object.
+	 */
+	public static void checkObjectFieldCreateable(String objName, String fieldName)
+	{
+		checkObjectFieldCreateable(objName, fieldName, true);
+	}
+
+	/*
+	 * Method to determine if an SObject field is createable. This is used
+	 * for security to ensure user is allowed to set a field for the given object.
+	 */
+	public static Boolean checkObjectFieldUpdateable(String objName, String fieldName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldUpdateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
+
+        fieldName = scrubFieldName(fieldName);
+
+		if (getFieldDescribeResult(objName, fieldName).isUpdateable()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new ListViewException('Field with name ' + objName + '.' + fieldName + ' is not updateable or does not exist. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject field is createable. This is used
+	 * for security to ensure user is allowed to set a field for the given object.
+	 */
+	public static void checkObjectFieldUpdateable(String objName, String fieldName)
+	{
+		checkObjectFieldUpdateable(objName, fieldName, true);
+	}
+
+	/*
+	 * Method to determine if an SObject is createable. This is used
+	 * for security to ensure user is allowed to create records for the given object.
+	 */
+	public static Boolean checkObjectCreateable(String objName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectCreateable called with objName - ' + objName);
+
+		if (getObjectSchema(objName).isCreateable()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new ListViewException('Records of type ' + objName + ' are not creatable or do not exist. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject is createable. This is used
+	 * for security to ensure user is allowed to create records for the given object.
+	 */
+	public static void checkObjectCreatable(String objName)
+	{
+		checkObjectCreateable(objName, true);
+	}
+
+	/*
+	 * Method to determine if an SObject is accessible. This is used
+	 * for security to ensure user is allowed to create records for the given object.
+	 */
+	public static Boolean checkObjectAccessible(String objName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectAccessible called with objName - ' + objName);
+
+		if (getObjectSchema(objName).isAccessible()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new ListViewException('Records of type ' + objName + ' are not accessible or do not exist. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject is accessible. This is used
+	 * for security to ensure user is allowed to create records for the given object.
+	 */
+	public static void checkObjectAccessible(String objName)
+	{
+		checkObjectAccessible(objName, true);
+	}
+
+    /*
+	 * Method to determine if an SObject is createable. This is used
+	 * for security to ensure user is allowed to create records for the given object.
+	 */
+	public static Boolean checkObjectUpdateable(String objName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectUpdateable called with objName - ' + objName);
+
+		if (getObjectSchema(objName).isUpdateable()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new ListViewException('Records of type ' + objName + ' are not updateable or do not exist. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject is createable. This is used
+	 * for security to ensure user is allowed to create records for the given object.
+	 */
+	public static void checkObjectUpdateable(String objName)
+	{
+		checkObjectUpdateable(objName, true);
+	}
+
+	/*
+	 * Method to determine if an SObject is deletable. This is used
+	 * for security to ensure data being queried is deletable by the user.
+	 */
+	public static Boolean checkObjectDeletable(SObject obj, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectDeletable called with obj - ' + obj);
+
+		if (obj == null || obj.Id == null)
+			throw new ListViewException('HelperSchema.checkObjectDeletable called with null Object or object with empty Id');
+
+		String objName = getSObjectTypeFromId(obj.Id);
+
+		if (getObjectSchema(objName).isDeletable()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new ListViewException('Records of type ' + objName + ' are not deletable or do not exist. Please check user permissions');
+			return false;
+		}
+	}
+
+	/*
+	 * Method to determine if an SObject is deletable. This is used
+	 * for security to ensure data being queried is deletable by the user.
+	 */
+	public static void checkObjectDeletable(SObject obj)
+	{
+		checkObjectDeletable(obj, true);
+	}
+
+	/*
+	 * Method to determine if an SObject type is deletable. This is used
+	 * for security to ensure data being queried is deletable by the user.
+	 */
+	public static Boolean checkObjectDeletable(String objName, Boolean throwExc)
+	{
+		System.debug(LoggingLevel.DEBUG, 'checkObjectDeletable called with objName - ' + objName);
+
+		if (getObjectSchema(objName).isDeletable()) {
+			return true;
+		} else {
+			if (throwExc)
+				throw new ListViewException('Records of type ' + objName + ' are not deletable or do not exist. Please check user permissions');
+			return false;
+		}
+	}
+	
+	/*
+	 * Method to determine if an SObject type is deletable. This is used
+	 * for security to ensure data being queried is deletable by the user.
+	 */
+	public static void checkObjectDeletable(String objName)
+	{
+		checkObjectDeletable(objName, true);
+	}
 
 }

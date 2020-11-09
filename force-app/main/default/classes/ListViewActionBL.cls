@@ -1,3 +1,12 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @last modified on  : 11-05-2020
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   10-31-2020   tom.h.ansley@medtronic.com   Initial Version
+**/
 public with sharing class ListViewActionBL {
     
     /*
@@ -7,24 +16,32 @@ public with sharing class ListViewActionBL {
     {
         for (List_View_Action__c newRecord: newRecords)
         {
-            newRecord.Primary_Key__c = newRecord.Label__c.deleteWhitespace() + ':' + newRecord.Object_Type__c;
+            newRecord.Primary_Key__c = ListViewActionHelper.getPrimaryKey(newRecord);
         }
     }
 
     /*
-     * Method to ensure the object type is valid
+     * Method to validate the action
      */
-    public static void validateObjectType(List<List_View_Action__c> newRecords)
+    public static void validate(List<List_View_Action__c> newRecords)
     {
 
         for (List_View_Action__c action: newRecords)
         {
             if (action.Object_Type__c != null && !HelperSchema.isValidSFDCObjectName(action.Object_Type__c))
-                throw new ListViewActionException('Invalid object type (' + action.Object_Type__c + ') provided for list view action.');
+                throw new ListViewException('Invalid object type (' + action.Object_Type__c + ') provided for list view action.');
+
+            if (action.RecordTypeId == ListViewActionHelper.customRTId && action.Subtype__c == null)
+                throw new ListViewException('Custom actions must have a subtype.');
+            
+            if (action.RecordTypeId == ListViewActionHelper.coreRTId && action.Subtype__c != null)
+                throw new ListViewException('Core actions cannot have a subtype.');
+
+            if (action.RecordTypeId == ListViewActionHelper.customRTId && action.Subtype__c == 'Manual' && action.Object_Type__c == null)
+                throw new ListViewException('Custom actions of subtype "Manual" must have an object type.');
+
         }
 
     }
-
-    public class ListViewActionException extends Exception {}
 
 }
