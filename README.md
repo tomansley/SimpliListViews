@@ -21,13 +21,13 @@ And since you have decided to use Simpli List Views and plan on spending all you
 
 ## Examples
 A number of example lightning pages have been created to showcase the different configuration options available. The following examples can be seen as tabs in the Simpli List View app.
-* List Views Example 1 - displays all available widgets as well as all list views.
-* List Views Example 2 - displays list views with no widgets except header text.
-* List Views Example 3 - displays list views with no widgets or header text. The simplest it gets!
-* List Views Example 4 - displays only those list view objects that have been specified at the page layout level.
-* List Views Example 5 - displays a more mobile centric view with all widgets removed.
-* List Views Example 6 - displays the list view component along with other standard SFDC components.
-* List Views Example 7 - displays two list view components next to each other. Useful for related information viewing.
+* Everything Example - displays all available list views with all available widgets.
+* Admin Example - displays list views useful for admins. This includes a list of debug logs highlighting metadata list views.
+* List Views Example - displays all list views for the Simpli List Views app. A capability type approach!
+* Locked Down Example - displays only those list view objects that have been specified at the page layout level.
+* Multi Component Example - displays the list view component along with other standard SFDC components.
+* 2 List Views Example - displays two list view components next to each other and passes data between them based on selections.
+* 3 List Views Example - displays three list view components and passes data between them based on selections.
 
 ## Configuration
 There are 3 different levels of configuration that are available in the app.</p>
@@ -37,21 +37,42 @@ There are 3 different levels of configuration that are available in the app.</p>
 
 ### Org-Wide Custom Settings
 These settings are maintained in the "List View Org Wide Setting" custom metadata type in the org setup. They affect all list views displayed in the SFDC org and are typically set by a system administrator at initial setup
-* <b>Included Object Types -</b> Indicates those object types that should always be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.
-* <b>Excluded Object Types -</b> Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.
+* <b>Included Object Types - </b>Indicates only those object types that should be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.
+* <b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.
+* <b>List View Objects - </b>Do not touch this setting unless you know what you are doing!
+* <b>Allow Automatic Data Refresh - </b>
+* <b>Allow Data Export - </b>
+* <b>Display Actions Button - </b>
+* <b>Display List View Reprocessing Button - </b>
+* <b>Display Original List View Button - </b>
+* <b>Display Row Count - </b>
+* <b>Display Selected Count - </b>
 
 ### Component/Page Level Settings
 These settings are maintained as part of the Lightning app that the component is a part of and deal with the look and feel of the Lightning component. They affect all list views displayed on the component in the page and are typically set by a system administrator when a new page is created. The settings are typically dictated by how the page is being used and perhaps what device.</p>
-* <b>Has Main Title - </b> Indicates whether the main title on the list view component should be displayed.
-* <b>Main Title - </b>Identifies what the title on the component should be if the title is being displayed.
+* <b>Show Title - </b>Indicates whether the main title on the list view component should be displayed.
+* <b>Title - </b>Identifies what the title on the component should be if the title is being displayed.
 * <b>Display Actions - </b>Indicates whether the actions dropdown should be displayed.
 * <b>Display List View Reprocessing Button - </b>Indicates whether the list view reprocessing button should be displayed. This button allows the user to refresh the list view data based on core list view configuration that may have been changed.
-* <b>Included Objects - </b>A comma delimited list of API object names that are to be included on the page. If blank, all objects are included.
-* <b>Excluded Objects - </b>A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded.
+* <b>Display Original List View Button - </b>Indicates whether to display the button which links to the original related Salesforce list view. This button allows the user to quickly go to the original list view allowing them to make changes to the list view columns or filters as necessary.
+* <b>Included Objects - </b>A comma delimited list of API object names that are to be included on the page. If blank, all objects are included. Note that org-wide settings take precedence over these page-level settings.
+* <b>Excluded Objects - </b>A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded. Note that org-wide settings take precedence over these page-level settings.
+* <b>Display Row Count - </b>Indicates whether the row count should be displayed.
+* <b>Display Selected Count - </b>Indicates whether the selected row count should be displayed.
+* <b>Display Modified Details - </b>Indicates whether the last modified date and user should be displayed.
+* <b>Allow Data Export - </b>Indicates whether the list view data should be made available for download as a CSV file.
+* <b>Allow Automatic Data Refresh - </b>Indicates whether the data refresh checkbox should be made available. This checkbox allows the user to automatically have the page data refreshed. Use with caution!
+* <b>Joined Field Name - </b>The API field name of the field that should be used by this component if it receives ids from another component. If blank, no joining takes place.
+* <b>Use Message Channel - </b>Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!
 
 ### List View Configuration</b>
 These settings affect individual list views in the SFDC org. They would typically be set at a user level after the list view has been created. The settings are found in the List View Configs object. Each config has a set of parameters that can be set based on needs.</p>
-* <b>AdditionalFields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available.
+* <b>Additional Fields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available via the standard Salesforce list view builder.
+* <b>Include All Rows - </b>Indicates whether deleted and archived records should be included in list view results.
+* <b>Return Size - </b>Indicates the number of rows that should be returned. This value is defaulted to 250. The higher this value, the more page performance will be reduced.
+* <b>Refresh Rate - </b>Holds the number of seconds between refreshes if the list view can be auto refreshed.
+* <b>Total Column Names - </b>Indicates the API field names of the columns within the list view that should have a total in the footer.
+* <b>Total Row Color - </b>The color that the footer row should be displayed in.
 
 ## Actions
 Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. Currently 2 actions have been implemented and made available in the app exchange package. Delete and Account Update.
