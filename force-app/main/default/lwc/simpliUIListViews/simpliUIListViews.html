@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 10-21-2020
+  @last modified on  : 11-06-2020
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -36,7 +36,7 @@
                 <template if:true={showProgress}>
                     <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
                                                                working-text="List Views Processing Status"
-                                                               complete-text="List views have been initialized!">
+                                                               complete-text="List views have been initialized. A full refresh of the current page is required to see results.">
                     </c-simpli-u-i-list-views-init-progress-bar>
                 </template>
         </lightning-card>
@@ -75,17 +75,19 @@
                 </template>
                 <template if:true={displayURL}>
                     <template if:true={listViewData}>
-                        <lightning-layout-item padding="horizontal-small">
-                            <a href={listViewData.coreListViewURL} target="_blank">
-                                <lightning-button-icon title="Go to the original SFDC list view." 
-                                                        size="medium" 
-                                                        icon-name="utility:picklist_choice">
-                                </lightning-button-icon></a>
-                        </lightning-layout-item>
+                        <template if:true={listViewData.isCoreListView}>
+                            <lightning-layout-item padding="horizontal-small">
+                                <a href={listViewData.coreListViewURL} target="_blank">
+                                    <lightning-button-icon title="Go to the original SFDC list view." 
+                                                            size="medium" 
+                                                            icon-name="utility:picklist_choice">
+                                    </lightning-button-icon></a>
+                            </lightning-layout-item>
+                        </template>
                     </template>
                 </template>
                 <template if:true={listViewData}>
-                    <lightning-layout-item>
+                    <lightning-layout-item padding="horizontal-small">
                         <template if:false={isPinned}>
                             <lightning-button-icon title="Pin this list view." 
                                                     size="medium" 
@@ -213,25 +215,34 @@
                                 scope="col">
 
                                 <div onmouseup={setNewWidth}>
-                                    <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
-                                        <span class="slds-assistive-text">Sort by: </span>
-                                        <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                            <span class="slds-truncate" 
-                                                  title={field.label} 
-                                                  onclick={sortColumns} 
-                                                  data-sortdir={field.sortDir}
-                                                  data-name={field.name}
-                                                  data-sortindex={field.sortIndex}>{field.label}</span>
-                                            <div if:true={field.sortIndex}>
-                                                <div if:true={field.sortDir}>
-                                                    &nbsp;(&#9660;{field.sortIndexDisplay})
-                                                </div>
-                                                <div if:false={field.sortDir}>
-                                                    &nbsp;(&#9650;{field.sortIndexDisplay})
+                                    <template if:true={field.sortable}>
+                                        <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
+                                            <span class="slds-assistive-text">Sort by: </span>
+                                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                <span class="slds-truncate" 
+                                                    title={field.sortingTooltip} 
+                                                    onclick={sortColumns} 
+                                                    data-sortdir={field.sortDir}
+                                                    data-name={field.name}
+                                                    data-sortindex={field.sortIndex}>{field.label}</span>
+                                                <div if:true={field.sortIndex}>
+                                                    <div if:true={field.sortDir}>
+                                                        &nbsp;(&#9660;{field.sortIndexDisplay})
+                                                    </div>
+                                                    <div if:false={field.sortDir}>
+                                                        &nbsp;(&#9650;{field.sortIndexDisplay})
+                                                    </div>
                                                 </div>
                                             </div>
+                                        </a>
+                                    </template>
+                                    <template if:false={field.sortable}>
+                                        <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                            <span class="slds-truncate" title={field.label}>
+                                                {field.label}
+                                            </span>
                                         </div>
-                                    </a>
+                                    </template>
                                 </div>
                                 <div class="slds-resizable">
                                     <input type="range" min="20" max="1000" class="slds-assistive-text" id={field.label} tabindex="0" />
@@ -260,16 +271,16 @@
                                 </div>
                             </td>
                             <template for:each={rowData.fields} for:item="fieldData">
-                                <td key={fieldData.label} data-label={fieldData.label}>
+                                <td key={fieldData.key} data-label={fieldData.label}>
                                     <template if:true={fieldData.uRL}>
                                         <template if:true={rowData.isDeleted}>
                                             <div class="slds-truncate" title={fieldData.value}>
-                                                <a style="color:red;" href={fieldData.uRL} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
+                                                <a style="color:red;" href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
                                             </div>
                                         </template>
                                         <template if:false={rowData.isDeleted}>
                                             <div class="slds-truncate" title={fieldData.value}>
-                                                <a href={fieldData.uRL} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
+                                                <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
                                             </div>
                                         </template>
                                     </template>

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 10-10-2020
+ * @last modified on  : 11-05-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -23,6 +23,9 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
     /*
      * Constructor used to only process those list views who's Ids are provided.
+       Set<Id> ids = new Set<Id>{'00B3h000007cUeiEAE'};
+       ListViewProcessBatch job = new ListViewProcessBatch(ids);
+       Database.executeBatch(job);
      */
     global ListViewProcessBatch(Set<Id> listViewIds)
     {
@@ -81,7 +84,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                 System.debug(LoggingLevel.DEBUG, 'Getting ListView - ' + listView);
 
                 //create URL to find the list view query
-                String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v40.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
+                String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v50.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
                 
                 //get list view describe
                 String callResponse = HelperREST.performInternalCallout(endPoint, null);
@@ -100,6 +103,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                     simpliListView.Label__c                 = listView.Name;
                     simpliListView.Core_ListView_Id__c      = listView.Id;
                     simpliListView.Primary_Key__c           = listview.SObjectType + ':' + listView.DeveloperName;
+                    simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
                     
                     User usr = UserHelper.getUserDetails(listView.CreatedById);
 

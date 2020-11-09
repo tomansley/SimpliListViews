@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 10-13-2020
+ * @last modified on  : 11-05-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -50,7 +50,7 @@ private class ListViewControllerTest {
 
     static testMethod void updateObjectListViewsTest()
     {
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
 
         String result = ListViewController.updateObjectListViews('Account');
 
@@ -59,7 +59,7 @@ private class ListViewControllerTest {
 
     static testMethod void updateSingleListViewTest()
     {
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
 
         String result = ListViewController.updateSingleListView('Account', 'AllAccounts');
 
@@ -68,9 +68,9 @@ private class ListViewControllerTest {
 
     static testMethod void processParamChangeTest()
     {
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
 
-        String result = ListViewController.processParamChange('Account', 'AllAccounts', 'RefreshRate', '45');
+        String result = ListViewController.processParamChange('Account', 'AllAccounts', 'RefreshRate', '45', 'Refresh Rate', 'Number');
 
         System.assert(result == 'Ok:');
 
@@ -78,7 +78,7 @@ private class ListViewControllerTest {
 
     static testMethod void processConditionChangeTest()
     {
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
 
         String result = ListViewController.processConditionChange('Account', 'AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"]]');
 
@@ -95,7 +95,7 @@ private class ListViewControllerTest {
 
     static testMethod void getListViewColumnLabelsTest()
     {
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
 
         List<ListViewController.SelectOption> labels = ListViewController.getListViewColumnLabels('Account', 'AllAccounts');
 
@@ -105,9 +105,9 @@ private class ListViewControllerTest {
 
     static testMethod void getListViewConfigTest()
     {
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
 
-        ListViewController.ListViewConfigWrapper lvConfig = ListViewController.getListViewConfig('Account', 'AllAccounts');
+        ListViewAbstract.ListViewConfigWrapper lvConfig = ListViewController.getListViewConfig('Account', 'AllAccounts');
 
         System.assert(lvConfig.listViewConfig != null);
 
@@ -116,7 +116,7 @@ private class ListViewControllerTest {
         System.assert(lvConfig.getLastModifiedText() != null);
         System.assert(lvConfig.getLastModifiedBy() != null);
         System.assert(lvConfig.getLastModifiedDate() != null);
-        List<ListViewController.ListViewParam> params = lvConfig.getParameters();
+        List<ListViewAbstract.ListViewParam> params = lvConfig.getParameters();
         System.assert(params.size() > 0);
         System.assert(params[0].getLabel() != null);
         System.assert(params[0].getName() != null);
@@ -125,10 +125,10 @@ private class ListViewControllerTest {
         System.assert(params[0].getDescription() != null);
         System.assert(params[0].getUpdateImmediate() != null);
         System.assert(params[0].getIsBoolean() != null);
-        List<ListViewController.ListViewCondition> conditions = lvConfig.getConditions();
+        List<ListViewAbstract.ListViewCondition> conditions = lvConfig.getConditions();
         System.assert(conditions.size() > 0);
         System.assert(conditions[0].getCondition() != null);
-        System.assert(conditions[0].getFieldLabel() != null);
+        System.assert(conditions[0].getFieldName() != null);
         System.assert(conditions[0].getOperator() != null);
         System.assert(conditions[0].getValue() != null);
         System.assert(conditions[0].getOrder() != null);
@@ -139,7 +139,7 @@ private class ListViewControllerTest {
 
     static testMethod void updateChangedListViewTest()
     {
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
 
         String result = ListViewController.updateChangedListViews();
 
@@ -149,7 +149,7 @@ private class ListViewControllerTest {
 
     static testMethod void updateAllListViewsTest()
     {
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
 
         String result = ListViewController.updateAllListViews();
 
@@ -159,7 +159,7 @@ private class ListViewControllerTest {
 
     static testMethod void listViewControllerTest() {
 
-        HelperTest.createListViews();
+        HelperTest.createCoreListViews();
         Account acct = HelperTest.insertAccount('List View Account');
 
         List<ListViewController.SelectOption> objs = ListViewController.getListViewObjects('',''); 
@@ -173,8 +173,7 @@ private class ListViewControllerTest {
         System.assert(listviews != null);
         System.assert(listviews.size() > 0);
 
-
-        ListViewController.RowsWrapper rows = ListViewController.getListViewData('Account', 'AllAccounts', '', '', '');
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'AllAccounts', '', '', '', '');
 
         System.assert(rows != null);
         System.assert(rows.getFieldMetaData() != null);
@@ -186,13 +185,13 @@ private class ListViewControllerTest {
         System.assert(rows.getDataAsString() != null);
         System.assert(rows.getListView() != null);
 
-        ListViewController.ListViewWrapper listViewWrapper = rows.getListView();
+        ListViewAbstract.ListViewWrapper listViewWrapper = rows.getListView();
         System.assert(listViewWrapper.getLastModifiedText() != null);
         System.assert(listViewWrapper.getLastModifiedBy() != null);
         System.assert(listViewWrapper.getLastModifiedDate() != null);
 
 
-        ListViewController.RowWrapper row = rows.rows[0];
+        ListViewAbstract.RowWrapper row = rows.rows[0];
         System.assert(row != null);
         System.assert(row.getRowId() != null);
         System.assert(row.getCheckboxId() != null);
@@ -201,7 +200,7 @@ private class ListViewControllerTest {
         System.assert(row.getHighlight() != null);
         System.assert(row.getHighlightColor() != null);
 
-        ListViewController.FieldWrapper field = row.getFields()[0];
+        ListViewAbstract.FieldWrapper field = row.getFields()[0];
         System.assert(field != null);
         System.assert(field.getLabel() != null);
         System.assert(field.getName() != null);
@@ -214,13 +213,13 @@ private class ListViewControllerTest {
         System.assert(field.getURL() != null);
 
         
-        List<ListViewController.SelectOption> actions = ListViewController.getListViewsActions('Account');
+        List<ListViewController.SelectOption> actions = ListViewController.getListViewsActions('Account', 'AllAccounts');
 
         System.assert(actions != null);
         System.assert(actions.size() > 0);
         
 
-        ListViewController.ActionWrapper action = ListViewController.getListViewAction('Update:Account');
+        ListViewAbstract.ActionWrapper action = ListViewController.getListViewAction('Update:Account');
         System.assert(action.getLabel() != null);
         System.assert(action.getObjectType() != null);
         System.assert(action.getParameters() != null);
@@ -235,10 +234,6 @@ private class ListViewControllerTest {
         String result = ListViewController.processAction('Delete:null', '["' + acct.Id + '"]', '[]');
 
         System.assert(result.startsWith(ListViewAction.RESULT_OK));
-
-        Map<String, String> params = ListViewController.getListViewConfigParams('Account', 'PlatinumandGoldSLACustomers');
-
-        System.assert(params.size() > 0);
 
         String validResult =  ListViewController.isValidListViewDataRequest('Account', 'OwnerId', '');
 

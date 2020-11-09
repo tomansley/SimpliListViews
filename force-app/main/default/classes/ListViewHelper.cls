@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-21-2020
+ * @last modified on  : 11-09-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -8,6 +8,18 @@
 **/
 global with sharing class ListViewHelper {
     
+    public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
+    public static final Id customRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
+   
+    public static final String TYPE_ALL = 'All';
+    public static final String TYPE_CORE = 'Core';
+    public static final String TYPE_CUSTOM = 'Custom';
+
+    public static String getPrimaryKey(List_View__c listView)
+    {
+        return listView.Object_Name__c.replace(' ', '_') + ':' + listView.API_Name__c;
+    }
+
     /*
      ListViewHelper.updateListViewObjectsSetting();
      */
@@ -88,6 +100,7 @@ global with sharing class ListViewHelper {
                 simpliListView.OwnerId                  = listView.CreatedById;
                 simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
                 simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
+                simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
 
                 updatedListViews.add(simpliListView);
 
@@ -112,13 +125,15 @@ global with sharing class ListViewHelper {
      * Method to retrieve list view describe details including the SOQL statement.
      * The set passed in is the CUSTOM list view Ids. This method should not be used 
      * for more than 50 list views. If more need to be updated then use the batch job.
+     * 
+     * HANDLES CORE ONLY
      */
     public static Boolean updateListViews(Set<Id> lvIds)
     {
         List<List_View__c> updatedListViews = new List<List_View__c>();
 
         //get the CUSTOM list views.
-        List<List_View__c> listViews = getListViewsById(lvIds).values();
+        List<List_View__c> listViews = getListViewsById(lvIds, true).values();
         Map<Id, List_View__c> listViewsByCoreId = new Map<Id, List_View__c>();
 
         //get the CORE list view Ids from the CUSTOM list views.
@@ -156,6 +171,7 @@ global with sharing class ListViewHelper {
                 simpliListView.OwnerId                  = listView.CreatedById;
                 simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
                 simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
+                simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
 
                 updatedListViews.add(simpliListView);
 
@@ -190,7 +206,12 @@ global with sharing class ListViewHelper {
     * if includedObjects is passed in those objects will be returned. If
     * includedObjects is empty or null all objects are returned.
     * The map is returned as follows - (API Name, Label)
-    ListViewHelper.getListViewObjects(new Set<String>(), new Set<String>());
+    *
+        Map<String, String> objs = ListViewHelper.getListViewObjects(new Set<String>(), new Set<String>(), true);
+        for (String key: objs.keySet())
+        {
+            System.debug(key + ' - ' + objs.get(key));
+        }
     */
     public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs, Boolean fresh)
     {
@@ -209,10 +230,13 @@ global with sharing class ListViewHelper {
     
             HelperSchema.checkListViewAccessible();
 
+            //------------------------------------
+            //CORE LIST VIEWS
+            //------------------------------------
             AggregateResult[] aggListViewObjects = [SELECT Object_Name__c 
                                                  FROM List_View__c 
                                                  WHERE Object_Name__c NOT IN :orgWideExcObjs 
-                                                    AND Object_Name__c NOT IN :pageWideExcObjs 
+                                                    AND Object_Name__c NOT IN :pageWideExcObjs
                                                  GROUP BY Object_Name__c 
                                                  LIMIT 2000]; //limit for security review. No other reason
     
@@ -221,11 +245,33 @@ global with sharing class ListViewHelper {
             {
                 String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
     
-                String objLabel = HelperSchema.getObjectSchema(objAPIName).getLabel();
+                System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
 
-                listViewObjects.put(objAPIName, objLabel);
+                Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objAPIName);
+                if (objDesc != null)
+                {
+                    String objLabel = objDesc.getLabel();
+                    listViewObjects.put(objAPIName, objLabel);
+                }
             }
-        
+
+            //------------------------------------
+            //OTHER LIST VIEWS
+            //------------------------------------
+            Map<Id, List_View__c> listViews = getListViewsByType(TYPE_CUSTOM);
+
+            for (List_View__c listView: listViews.values())
+            {
+                Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(listView.Object_Name__c);
+                if (objDesc != null)
+                {
+                    String objLabel = objDesc.getLabel();
+                    listViewObjects.put(listView.Object_Name__c, objLabel);
+                } else {
+                    listViewObjects.put(listView.Object_Name__c, listView.Object_Name__c);
+                }
+            }
+
         } else {
 
             String jsonStr = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
@@ -257,12 +303,15 @@ global with sharing class ListViewHelper {
         return mappedListviewObjects;
     }
 
-    /*
-     * Method to get list views by Id
-     */
-    public static Map<Id, List_View__c> getListViewsById(Set<Id> lvIds)
+    public static Map<Id, List_View__c> getListViewsByType(String type)
     {
-        System.debug(LoggingLevel.DEBUG, 'lvIds - ' + lvIds);
+        System.debug(LoggingLevel.DEBUG, 'Called getListViewsByType(type ' + type);
+
+        Set<Id> rtIds = new Set<Id>();
+        if (type == TYPE_ALL || type == TYPE_CUSTOM)
+            rtIds.add(ListViewHelper.customRTId);
+        if (type == TYPE_ALL || type == TYPE_CORE)
+            rtIds.add(ListViewHelper.coreRTId);
 
         HelperSchema.checkListViewAccessible();
 
@@ -284,17 +333,70 @@ global with sharing class ListViewHelper {
                                                  Territories__c,
                                                  Territories_And_Subordinates__c,
                                                  LastModifiedDate,
-                                                 LastModifiedBy.Name
+                                                 LastModifiedBy.Name,
+                                                 RecordType.Name,
+                                                 Custom_Apex_Class__c,
+                                                 Subtype__c
                                            FROM List_View__c
-                                          WHERE Id IN :lvIds];
+                                          WHERE RecordTypeId IN :rtIds];
 
         Map<Id, List_View__c> lvs = new Map<Id, List_View__c>();
 
         //now check security
         for (List_View__c lv: listviews)
         {
-            if (isVisible(lv))
-                lvs.put(lv.Id, lv);
+            lvs.put(lv.Id, lv);
+        }
+        return lvs;
+
+    }
+
+    /*
+     * Method to get list views by Id
+     */
+    public static Map<Id, List_View__c> getListViewsById(Set<Id> lvIds, Boolean onlyCore)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Called getListViewsById(lvIds ' + lvIds + ', onlyCore ' + onlyCore);
+
+        Set<Id> rtIds = new Set<Id>();
+        rtIds.add(ListViewHelper.coreRTId);
+        if (!onlyCore)
+            rtIds.add(ListViewHelper.customRTId);
+
+        HelperSchema.checkListViewAccessible();
+
+        List<List_View__c> listviews = [SELECT Label__c,
+                                                 Describe__c,
+                                                 Core_ListView_Id__c,
+                                                 Object_Name__c,
+                                                 Primary_Key__c,
+                                                 API_Name__c,
+                                                 Core_ListView_Columns__c,
+                                                 Core_ListView_Query__c,
+                                                 OwnerId,
+                                                 All_Internal_Users__c,
+                                                 Boolean_Filter__c,
+                                                 Filter_Scope__c,
+                                                 Groups__c,
+                                                 Roles__c,
+                                                 Roles_And_Subordinates__c,
+                                                 Territories__c,
+                                                 Territories_And_Subordinates__c,
+                                                 LastModifiedDate,
+                                                 LastModifiedBy.Name,
+                                                 RecordType.Name,
+                                                 Custom_Apex_Class__c,
+                                                 Subtype__c
+                                           FROM List_View__c
+                                          WHERE Id IN :lvIds
+                                                AND RecordTypeId IN :rtIds];
+
+        Map<Id, List_View__c> lvs = new Map<Id, List_View__c>();
+
+        //now check security
+        for (List_View__c lv: listviews)
+        {
+            lvs.put(lv.Id, lv);
         }
         return lvs;
     }
@@ -308,9 +410,9 @@ global with sharing class ListViewHelper {
 
         System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
 
-        //make sure that the user has access to the object itself.
-        if (!HelperSchema.checkObjectAccessible(objAPIName, false))
-            return new Map<String, List_View__c>();
+        //if we have a core list view object make sure that the user has access to the object itself if its
+        if (HelperSchema.isObject(objAPIName) && !HelperSchema.checkObjectAccessible(objAPIName, false))
+            throw new ListViewException('Object ' + objAPIName + ' is not accessible to the current user');
 
         //get list view data
         HelperSchema.checkListViewAccessible();
@@ -332,7 +434,10 @@ global with sharing class ListViewHelper {
                                                 Territories__c,
                                                 Territories_And_Subordinates__c,
                                                 LastModifiedDate,
-                                                LastModifiedBy.Name
+                                                LastModifiedBy.Name,
+                                                RecordType.Name,
+                                                Custom_Apex_Class__c,
+                                                Subtype__c
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
                                         ORDER BY Label__c];
@@ -342,8 +447,7 @@ global with sharing class ListViewHelper {
         //now check security
         for (List_View__c listview: listviews)
         {
-            if (isVisible(listview))
-                listViewsByName.put(listview.API_Name__c, listview);
+            listViewsByName.put(listview.API_Name__c, listview);
         }
 
         return listviewsByName;
@@ -378,7 +482,10 @@ global with sharing class ListViewHelper {
                                                 Territories__c,
                                                 Territories_And_Subordinates__c,
                                                 LastModifiedDate,
-                                                LastModifiedBy.Name
+                                                LastModifiedBy.Name,
+                                                RecordType.Name,
+                                                Custom_Apex_Class__c,
+                                                Subtype__c
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
                                             AND API_Name__c = :listViewAPIName];
@@ -388,14 +495,13 @@ global with sharing class ListViewHelper {
         //now check security
         for (List_View__c listview: listviews)
         {
-            if (isVisible(listview))
-                listViewsById.put(listview.Id, listview);
+            listViewsById.put(listview.Id, listview);
         }
 
         return listviewsById;
     }
 
-    public static List<SObject> getListViewData(List_View__c listview, List_View_Config__c lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
+    public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
     {
 
         String debug = '\n\nStarting getListViewData - \n';
@@ -410,9 +516,9 @@ global with sharing class ListViewHelper {
         System.debug(LoggingLevel.DEBUG, debug);
 
         Map<String, String> lvConfigParams = new Map<String, String>();
-        if (lvConfig != null) //there might not e a config yet for this list view
+        if (lvConfig != null) //there might not be config yet for this list view
         {
-            for (List_View_Config_Parameter__c param: lvConfig.List_View_Config_Parameters__r)
+            for (List_View_Config_Parameter__c param: lvConfig.listViewConfig.List_View_Config_Parameters__r)
                 lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
         }
         
@@ -436,7 +542,28 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Update all additional fields on the SELECT statement
         //------------------------------------------------------
-        selectStr += ', IsDeleted';
+        List<String> selectFields = selectStr.split(',');
+        selectStr = '';
+        for (String field: selectFields)
+        {
+            //do security validation on regular fields. If the field is a lookup the security is performed later
+            Boolean isAccessible = false;
+            if (!field.contains('.'))
+            {
+                if (field.contains('toLabel(')) field = field.substringBetween('toLabel(', ')');
+                isAccessible = HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field, false);
+            } else {
+                isAccessible = true;
+            }
+            if (isAccessible)
+                selectStr += field + ', ';
+        }
+        selectStr = selectStr.removeEnd(', ');
+
+
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted'))
+            selectStr += ', IsDeleted';
+
         if (lvConfigParams.get('AdditionalFields') != null)
         {
             List<String> allFields = lvConfigParams.get('AdditionalFields').split(',');
@@ -504,7 +631,6 @@ global with sharing class ListViewHelper {
             //if we have a list view limit then use it
             if (lvConfigParams.get('ReturnSize') != null)
                 limitStr += lvConfigParams.get('ReturnSize');
-            
             //otherwise use 250
             else
                 limitStr += '250';
@@ -532,8 +658,9 @@ global with sharing class ListViewHelper {
             objectRows = Database.query(query);
         } catch (Exception e) {
             String message = 'Exception during ListViewHelper.getListViewData(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            ListViewErrorHelper.createUsageError(message);
-            throw new ListViewHelperException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
+            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
+                ListViewErrorHelper.createUsageError(message);
+            throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         
         return objectRows;
@@ -544,9 +671,161 @@ global with sharing class ListViewHelper {
      * Method to use the SOQL query retrieved from the core listview describe, amend it to include
      * the possible additional fields added by the user and then use it to get the data.
      */ 
-    public static List<SObject> getListViewData(List_View__c listview, List_View_Config__c lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
         return getListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false);
+    }
+
+    /*
+     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
+     * the possible additional fields added by the user and then use it to get the data.
+     */ 
+    public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    {
+        return getListViewData(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false);
+    }
+
+    /*
+      ListViewHelper.getListViewData('SELECT Name, List_View_Object__c, LastModifiedDate, LastModifiedBy.Name, Primary_Key__c, (SELECT Parameter_Name__c, Parameter_Type__c, Parameter_Label__c, Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c), (SELECT Field_Name__c, Highlight_Color__c, Operator__c, Order__c, Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c', null, null, null, null, false);
+     */
+    public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
+    {
+        soql = getSOQLQuery(soql, lvConfig, sortData, joinFieldName, joinRecordIds, example);
+        
+        //get rows of data from query
+        List<SObject> objectRows = null;
+        try {
+            objectRows = Database.query(soql);
+        } catch (Exception e) {
+            String message = 'Exception during ListViewHelper.getListViewData(' + soql + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
+                ListViewErrorHelper.createUsageError(message);
+            throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
+        }
+        
+        return objectRows;
+
+    }
+
+    public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
+    {
+
+        String debug = '\n\nStarting getListViewData - \n';
+        debug += 'soql                            - ' + soql + '\n';
+        debug += 'lvConfig                        - ' + lvConfig + '\n';
+        debug += 'sortData                        - ' + sortData + '\n';
+        debug += 'joinFieldName                   - ' + joinFieldName + '\n';
+
+        if (joinRecordIds != null)
+            debug += 'joinRecordIds Size - ' + joinRecordIds.size() + '\n';
+        debug += 'joinRecordIds      - ' + joinRecordIds + '\n\n';
+        System.debug(LoggingLevel.DEBUG, debug);
+
+        Map<String, String> lvConfigParams = new Map<String, String>();
+        if (lvConfig != null) //there might not be config yet for this list view
+        {
+            for (List_View_Config_Parameter__c param: lvConfig.listViewConfig.List_View_Config_Parameters__r)
+                lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
+        }
+        
+        //---------------------------------------------------
+        // Parse out the query retrieved from the list view.
+        //---------------------------------------------------
+        String selectStr = soql.substringBeforeLast(' FROM ');
+        System.debug(LoggingLevel.DEBUG, 'selectStr - ' + selectStr);
+        String objectName = soql.substringAfterLast(' FROM ');
+        if (objectName.contains(' '))
+            objectName = objectName.substringBefore(' ');
+        System.debug(LoggingLevel.DEBUG, 'objectName - ' + objectName);
+        String whereStr = soql.substringAfterLast(' WHERE ');
+        if (whereStr.contains(' ORDER BY '))
+            whereStr = whereStr.substringBefore(' ORDER BY ');
+        System.debug(LoggingLevel.DEBUG, 'whereStr - ' + whereStr);
+        String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ');
+        System.debug(LoggingLevel.DEBUG, 'orderByStr - ' + orderByStr);
+
+        //check the object is accessible by this user
+        HelperSchema.checkObjectAccessible(objectName);
+
+        //------------------------------------------------------
+        // Handle all changes to the WHERE statement
+        //------------------------------------------------------
+        if (joinFieldName != '' && joinRecordIds?.size() > 0)
+        {
+            if (whereStr.contains(' WHERE '))
+                whereStr += ' AND ' + joinFieldName + ' IN :joinRecordIds';
+            else
+                whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
+        }
+
+        //------------------------------------------------------
+        // Handle all changes to the ORDER BY statement
+        //------------------------------------------------------
+        if (sortData?.size() > 0)
+        {
+            System.debug('SORT DATA - ' + sortData);
+            orderByStr = ' ORDER BY ';
+            
+            for (ListViewHelper.ColumnSortData columnSortData: sortData)
+            {
+                //make sure the field name is valid
+                if (HelperSchema.isValidSFDCFieldName(objectName, columnSortData.fieldName))
+                {
+                    orderByStr += columnSortData.fieldName + ' ';
+                    if (columnSortData.sortDirection == true)
+                        orderByStr += 'ASC NULLS LAST, ';
+                    else
+                        orderByStr += 'DESC NULLS FIRST, ';
+                }
+            }
+
+            orderByStr = orderByStr.removeEnd(', ').removeEnd('ORDER BY ');
+        } else {
+            if (orderByStr != '')
+                orderByStr = ' ORDER BY ' + orderByStr;
+        }
+
+        //------------------------------------------------------
+        // Handle the LIMIT statement
+        //------------------------------------------------------
+        String limitStr = ' LIMIT ';
+        
+        //if we are getting join records then do not use a limit
+        if (joinRecordIds?.size() > 0)
+        {
+            limitStr = '';
+        
+        } else {
+
+            //if we only need an example record
+            if (example)
+                limitStr += '1';
+                
+            //if we have a list view limit then use it
+            else if (lvConfigParams.get('ReturnSize') != null)
+                limitStr += lvConfigParams.get('ReturnSize');
+            //otherwise use 250
+            else
+                limitStr += '250';
+        }
+
+        //------------------------------------------------------
+        // Handle the ALL ROWS statement
+        //------------------------------------------------------
+        String allRowsStr = '';
+        if (lvConfigParams.get('AllRows') != null && lvConfigParams.get('AllRows') == 'true')
+        {
+            allRowsStr += ' ALL ROWS';
+        }
+
+        //------------------------------------------------------
+        // Put the query back together again
+        //------------------------------------------------------
+        soql = selectStr + ' FROM ' + objectName + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
+
+        System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + soql);
+
+        return soql;
     }
 
     global static void insertCoreConfiguration()
@@ -559,22 +838,25 @@ global with sharing class ListViewHelper {
         List<List_View_Action__c> actions = new List<List_View_Action__c>();
 
         List_View_Action__c orgDeleteAction = new List_View_Action__c();
-        orgDeleteAction.Apex_Class_Name__c = 'ListViewActionDelete';
-        orgDeleteAction.Label__c           = 'Delete';
+        orgDeleteAction.Apex_Class_Name__c  = 'ListViewActionDelete';
+        orgDeleteAction.Label__c            = 'Delete';
+        orgDeleteAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 
         actions.add(orgDeleteAction);
 
         List_View_Action__c acctUpdateAction = new List_View_Action__c();
-        acctUpdateAction.Apex_Class_Name__c = 'ListViewActionUpdate';
-        acctUpdateAction.Label__c           = 'Update';
-        acctUpdateAction.Object_Type__c     = 'Account';
+        acctUpdateAction.Apex_Class_Name__c  = 'ListViewActionUpdate';
+        acctUpdateAction.Label__c            = 'Update';
+        acctUpdateAction.Object_Type__c      = 'Account';
+        acctUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 
         actions.add(acctUpdateAction);
 
         List_View_Action__c oppsCloseUpdateAction = new List_View_Action__c();
-        oppsCloseUpdateAction.Apex_Class_Name__c = 'ListViewActionOppsClose';
-        oppsCloseUpdateAction.Label__c           = 'Set Close Lost';
-        oppsCloseUpdateAction.Object_Type__c     = 'Opportunity';
+        oppsCloseUpdateAction.Apex_Class_Name__c  = 'ListViewActionOppsClose';
+        oppsCloseUpdateAction.Label__c            = 'Set Close Lost';
+        oppsCloseUpdateAction.Object_Type__c      = 'Opportunity';
+        oppsCloseUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 
         actions.add(oppsCloseUpdateAction);
 
@@ -623,24 +905,22 @@ global with sharing class ListViewHelper {
         List_View_Config__c config = new List_View_Config__c();
         config.Name                = 'PlatinumandGoldSLACustomers';
         config.List_View_Object__c = 'Account';
-        config.Primary_Key__c      = 'Account:PlatinumandGoldSLACustomers';
+        config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
         configs.add(config);
 
         List_View_Config__c config2 = new List_View_Config__c();
         config2.Name                = 'All';
         config2.List_View_Object__c = 'All';
-        config2.Primary_Key__c       = 'All:All';
+        config2.Primary_Key__c      = config2.List_View_Object__c + ':' + config2.Name;
         configs.add(config2);
 
         List_View_Config__c config3 = new List_View_Config__c();
         config3.Name                = 'AllAccounts';
         config3.List_View_Object__c = 'Account';
-        config3.Primary_Key__c       = 'Account:AllAccounts';
+        config3.Primary_Key__c      = config3.List_View_Object__c + ':' + config3.Name;
         configs.add(config3);
 
         HelperDatabase.insertRecords(configs, 'Simpli_lv__List_View_Config__c');
-
-        ListViewConfigHelper.ListViewConfigDefaults defaults = new ListViewConfigHelper.ListViewConfigDefaults();
 
         List<List_View_Config_Parameter__c> params2 = new List<List_View_Config_Parameter__c>();
       
@@ -649,7 +929,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'AdditionalFields';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
-        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
+        param2.Parameter_Label__c  = 'Additional Fields';
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -657,7 +937,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'TotalColumns';
         param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = 'AnnualRevenue';
-        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
+        param2.Parameter_Label__c  = 'Total Columns';
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -665,7 +945,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Name__c   = 'TotalColumnsColor';
         param2.Parameter_Type__c   = 'Color';
         param2.Parameter_Value__c  = '#E5F0FA';
-        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
+        param2.Parameter_Label__c  = 'Total Row Color';
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -726,14 +1006,6 @@ global with sharing class ListViewHelper {
 
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'IncludedObjectTypes';
-        param2.Parameter_Type__c   = 'Boolean';
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Included Object Types';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'AllowDataExport';
         param2.Parameter_Type__c   = 'Boolean';
         param2.Parameter_Value__c  = 'true';
@@ -761,7 +1033,7 @@ global with sharing class ListViewHelper {
 		param2.Parameter_Type__c = 'String';
 		param2.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
 		param2.List_View_Config__c = config3.Id;
-        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
+        param2.Parameter_Label__c  = 'Additional Fields';
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -769,7 +1041,7 @@ global with sharing class ListViewHelper {
 		param2.Parameter_Type__c = 'String';
 		param2.Parameter_Value__c = 'AnnualRevenue';
 		param2.List_View_Config__c = config3.Id;
-        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
+        param2.Parameter_Label__c  = 'Total Columns';
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
@@ -777,7 +1049,7 @@ global with sharing class ListViewHelper {
 		param2.Parameter_Type__c = 'Color';
 		param2.Parameter_Value__c = '#E5F0FA';
 		param2.List_View_Config__c = config3.Id;
-        param2.Parameter_Label__c  = defaults.params.get(param2.Parameter_Name__c).label;
+        param2.Parameter_Label__c  = 'Total Row Color';
         params2.add(param2);
         
         HelperDatabase.insertRecords(params2, 'Simpli_lv__List_View_Config_Parameter__c');
@@ -795,6 +1067,34 @@ global with sharing class ListViewHelper {
 
         HelperDatabase.insertRecords(conditions, 'Simpli_lv__List_View_Config_Condition__c');
 
+        //-----------------------------------------------------
+        // Create List Views
+        //-----------------------------------------------------
+        List<List_View__c> listViews = new List<List_View__c>();
+
+        List_View__c lv             = new List_View__c();
+        lv.Custom_Apex_Class__c     = 'ListViewCustomToolingQuery';
+        lv.Label__c                 = 'Apex Logs';
+        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"DurationMilliseconds","type":"string","label":"Duration"},{"fieldNameOrPath":"Id","type":"string","label":"Id"},{"fieldNameOrPath":"LogLength","type":"string","label":"Length"},{"fieldNameOrPath":"LogUserId","type":"string","label":"User"},{"fieldNameOrPath":"Operation","type":"string","label":"Operation"},{"fieldNameOrPath":"Request","type":"string","label":"Request"},{"fieldNameOrPath":"StartTime","type":"string","label":"Start Time"},{"fieldNameOrPath":"Status","type":"string","label":"Status"}]';
+        lv.Core_ListView_Query__c   = 'SELECT DurationMilliseconds,Id,LogLength,LogUserId,Operation,Request,StartTime,Status FROM ApexLog ORDER BY StartTime DESC';
+        lv.Object_Name__c           = 'ApexLog';
+        lv.RecordTypeId             = ListViewHelper.customRTId;
+        lv.Subtype__c               = 'Tooling';
+
+        listViews.add(lv);
+
+        lv                          = new List_View__c();
+        lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+        lv.Label__c                 = 'Custom Non-Core Example';
+        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"simpli_lv__List_View_Object__c","type":"string","label":"Object"},{"fieldNameOrPath":"LastModifiedDate","type":"string","label":"Last Modified"},{"fieldNameOrPath":"LastModifiedBy.Name","type":"string","label":"Last Modified By"},{"fieldNameOrPath":"simpli_lv__Primary_Key__c","type":"string","label":"Primary Key"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Name__c","type":"string","label":"Parameter Name"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Type__c","type":"string","label":"Parameter Type"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Label__c","type":"string","label":"Parameter Label"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Value__c","type":"string","label":"Parameter Value"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Field_Name__c","type":"string","label":"Field Name"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Highlight_Color__c","type":"string","label":"Highlight Color"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Operator__c","type":"string","label":"Operator"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Order__c","type":"string","label":"Order"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Value__c","type":"string","label":"Value"}]';
+        lv.Core_ListView_Query__c   = 'SELECT Name,List_View_Object__c,LastModifiedDate,LastModifiedBy.Name,Primary_Key__c,(SELECT Parameter_Name__c,Parameter_Type__c,Parameter_Label__c,Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c),( SELECT Field_Name__c,Highlight_Color__c,Operator__c,Order__c,Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c';
+        lv.Object_Name__c           = 'simpli_lv__List_View_Config__c';
+        lv.RecordTypeId             = ListViewHelper.customRTId;
+        lv.Subtype__c               = 'Manual';
+
+        listViews.add(lv);
+
+        HelperDatabase.insertRecords(listViews, 'Simpli_lv__List_View__c');
     }
 
     /*
@@ -806,7 +1106,7 @@ global with sharing class ListViewHelper {
      * 4. if user is in allowed groups
      * 5. if user is in allowed territories
      */
-    public static Boolean isVisible(List_View__c lv)
+/*    public static Boolean isVisible(List_View__c lv)
     {
         if (lv.OwnerId == UserInfo.getUserId()) return true;
 
@@ -818,7 +1118,7 @@ global with sharing class ListViewHelper {
 
         return false;
     }
-
+*/
     /*
      * Method to check security and determine whether the list view is updateable
      * to the requesting user. The following security is performed.
@@ -867,5 +1167,4 @@ global with sharing class ListViewHelper {
         }
     }
 
-    public class ListViewHelperException extends Exception { }
 }
