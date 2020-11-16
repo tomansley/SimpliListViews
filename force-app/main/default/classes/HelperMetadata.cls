@@ -20,7 +20,7 @@ global with sharing class HelperMetadata implements Metadata.DeployCallback {
         //we build the SOQL query to get the data based on the returned API information.        
         Map<String, Schema.SObjectField> objFields = HelperSchema.getFieldsForObject(name, HelperSchema.NAME);
         
-        String soql = 'SELECT ' + String.escapeSingleQuotes(String.join(new List<String>(objFields.keySet()), ',')) + ' FROM ' + name;
+        String soql = 'SELECT ' + String.escapeSingleQuotes(String.join(new List<String>(objFields.keySet()), ',')) + ' FROM ' + String.escapeSingleQuotes(name);
         
         List<SObject> metaData = Database.query(soql);
         

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-04-2020
+ * @last modified on  : 11-10-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -52,7 +52,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 }
             }
 
-            update updatedListViews;
+            HelperDatabase.updateRecords(updatedListViews, 'simpli_lv__List_View__c');
 
             //------------------------------------------------------------------------------------
             // Fix issue where some list view actions might not have record types - through v1.60
@@ -68,7 +68,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 }
             }
 
-            update updatedActions;
+            HelperDatabase.updateRecords(updatedActions, 'simpli_lv__List_View_Action__c');
 
             //---------------------------------------------------------------------------------
             // Fix issue where config parameter names had spaces. Doh! - through v1.60
@@ -179,7 +179,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                     orgParams.put(param.Parameter_Name__c, param);
                 }
 
-                upsert orgParams.values();
+                HelperDatabase.upsertRecords(orgParams.values(), 'simpli_lv__List_View_Config_Parameter__c');
             }
 		}
 

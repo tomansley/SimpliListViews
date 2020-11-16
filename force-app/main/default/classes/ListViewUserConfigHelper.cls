@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-20-2020
+ * @last modified on  : 10-29-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -129,6 +129,8 @@ public with sharing class ListViewUserConfigHelper {
             } else {
                 config.Value__c = value;
             }
+
+            System.debug(LoggingLevel.DEBUG, 'Updating user config - ' + config);
             HelperDatabase.upsertRecord(config, 'simpli_lv__List_View_User_Config__c', 'simpli_lv__Primary_Key__c');
 
             //update the current users config

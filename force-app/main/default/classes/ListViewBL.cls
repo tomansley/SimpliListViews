@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-26-2020
+ * @last modified on  : 11-10-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -70,7 +70,7 @@ public with sharing class ListViewBL {
             }
         }
 
-        update updatedNewRecords;
+        HelperDatabase.updateRecords(updatedNewRecords, 'simpli_lv__List_View__c');
     }
 
     /**
