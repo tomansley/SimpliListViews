@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-09-2020
+ * @last modified on  : 11-19-2020
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -741,8 +741,12 @@ global with sharing class ListViewHelper {
         if (whereStr.contains(' ORDER BY '))
             whereStr = whereStr.substringBefore(' ORDER BY ');
         System.debug(LoggingLevel.DEBUG, 'whereStr - ' + whereStr);
-        String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ');
+        String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ').substringBeforeLast(' LIMIT ');
         System.debug(LoggingLevel.DEBUG, 'orderByStr - ' + orderByStr);
+        String limitStr = '';
+        if (soql.contains(' LIMIT '))
+            limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
+        System.debug(LoggingLevel.DEBUG, 'limitStr - ' + limitStr);
 
         //check the object is accessible by this user
         HelperSchema.checkObjectAccessible(objectName);
@@ -788,7 +792,6 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Handle the LIMIT statement
         //------------------------------------------------------
-        String limitStr = ' LIMIT ';
         
         //if we are getting join records then do not use a limit
         if (joinRecordIds?.size() > 0)
@@ -799,14 +802,14 @@ global with sharing class ListViewHelper {
 
             //if we only need an example record
             if (example)
-                limitStr += '1';
+                limitStr = ' LIMIT 1';
                 
             //if we have a list view limit then use it
             else if (lvConfigParams.get('ReturnSize') != null)
-                limitStr += lvConfigParams.get('ReturnSize');
+                limitStr = ' LIMIT ' + lvConfigParams.get('ReturnSize');
             //otherwise use 250
             else
-                limitStr += '250';
+                limitStr = ' LIMIT 250';
         }
 
         //------------------------------------------------------
@@ -1146,6 +1149,18 @@ global with sharing class ListViewHelper {
         public String fieldName;
         public Boolean sortDirection;
         public Integer sortIndex;
+
+        public ColumnSortData()
+        {
+
+        }
+
+        public ColumnSortData(String fieldName, Boolean sortDirection, Integer sortIndex)
+        {
+            this.fieldName     = fieldName;
+            this.sortDirection = sortDirection;
+            this.sortIndex     = sortIndex;
+        }
 
         /*
          * Method to create the user config string for this sorted column
