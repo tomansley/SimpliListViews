@@ -57,7 +57,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             //------------------------------------------------------------------------------------
             // Fix issue where some list view actions might not have record types - through v1.60
             //------------------------------------------------------------------------------------
-            List<List_View_Action__c> actions = [SELECT Id, RecordTypeId FROM List_View_Action__c LIMIT 2000];
+            List<List_View_Action__c> actions = [SELECT Id, Apex_Class_Name__c, Label__c, RecordTypeId FROM List_View_Action__c LIMIT 2000];
             List<List_View_Action__c> updatedActions = new List<List_View_Action__c>();
             for (List_View_Action__c action: actions)
             {
