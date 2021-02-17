@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-08-2020
+ * @last modified on  : 02-17-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -26,7 +26,7 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
             System.debug(LoggingLevel.DEBUG, 'Record Ids        - ' + recordIds);
 
             //get the type of object from the provided Ids
-            String objType = HelperSchema.getObjectTypeFromId((String) recordIds[0]);
+            String objType = HelperSchema.getObjectTypeFromId(((String) recordIds[0]).substringBefore(':'));
 
             //get an apex Type of the object type
             Type t = Type.forName(objType);
@@ -40,9 +40,9 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
                 SObject obj = (SObject) t.newInstance();
 
                 //set the Id
-                obj.put('Id', recordId);
+                obj.put('Id', recordId.substringBefore(':'));
 
-                deletedObjs.put(recordId, obj);
+                deletedObjs.put(recordId.substringBefore(':'), obj);
             }
 
             HelperDatabase.deleteRecords(deletedObjs.values(), objType);
