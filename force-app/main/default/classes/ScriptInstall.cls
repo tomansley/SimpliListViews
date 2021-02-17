@@ -183,14 +183,22 @@ global with sharing class ScriptInstall implements InstallHandler {
             }
 
             //------------------------------------------------------------------------------------
-            // Add New action - through v1.63
+            // Add New, Edit, Clone actions - through v1.63
             //------------------------------------------------------------------------------------
             Boolean hasNew = false;
+            Boolean hasClone = false;
+            Boolean hasEdit = false;
+            List<List_View_Action__c> newActions = new List<List_View_Action__c>();
             for (List_View_Action__c action: actions) //use actions from earlier request
             {
                 if (action.Label__c == 'New' && action.Apex_Class_Name__c == 'ListViewActionNull')
                     hasNew = true;
+                if (action.Label__c == 'Clone' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                    hasClone = true;
+                if (action.Label__c == 'Edit' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                    hasEdit = true;
             }
+            
             if (!hasNew)
             {
                 List_View_Action__c orgNewAction = new List_View_Action__c();
@@ -198,9 +206,30 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgNewAction.Label__c            = 'New';
                 orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
         
-                HelperDatabase.insertRecord(orgNewAction, 'simpli_lv__List_View_Action__c');
+                newActions.add(orgNewAction);
             }
 
+            if (!hasClone)
+            {
+                List_View_Action__c orgCloneAction = new List_View_Action__c();
+                orgCloneAction.Apex_Class_Name__c  = 'ListViewActionNull';
+                orgCloneAction.Label__c            = 'Clone';
+                orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+        
+                newActions.add(orgCloneAction);
+            }
+    
+            if (!hasEdit)
+            {
+                List_View_Action__c orgEditAction = new List_View_Action__c();
+                orgEditAction.Apex_Class_Name__c  = 'ListViewActionNull';
+                orgEditAction.Label__c            = 'Edit';
+                orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+                    
+                newActions.add(orgEditAction);
+            }
+
+            HelperDatabase.insertRecords(newActions, 'simpli_lv__List_View_Action__c');
 		}
 
 		if(context.isPush()) 

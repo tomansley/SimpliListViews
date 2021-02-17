@@ -274,6 +274,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             });
 
         }
+        refreshApex(this.wiredListViewDataResult);
         console.log('Finished renderedCallback');
     }
     
@@ -778,6 +779,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
 
         this.listViewData = undefined;
+        this.wiredListViewDataResult = undefined;
 
         //if we are not in the construction of the page and we change the list view and its the pinned list view
         if (this.userConfigs != undefined && this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
@@ -785,8 +787,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else {
             this.isPinned = false;
         }
-
-        //refreshApex(this.wiredListViewDataResult);
 
     }
 
@@ -1055,11 +1055,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleActionSelect(event) {
 
         var selectedRecords = new Set();
+        var selectedRowId = '';
         
         this.selectedAction = event.target.value;
 
         console.log('Chosen Action - ' + this.selectedAction);
 
+        //------------------------------------------------------
+        //NEW
+        //------------------------------------------------------
         if (this.selectedAction.startsWith('New:'))
         {
             this[NavigationMixin.Navigate]({
@@ -1069,11 +1073,94 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     actionName: 'new',
                 },
             });
-
+            
             this.selectedAction = '';
 
-            processActionModal();   
+        //------------------------------------------------------
+        //CLONE
+        //------------------------------------------------------
+        } else if (this.selectedAction.startsWith('Clone:'))
+        {
 
+            //get the selected record Id
+            let selectedRows = this.template.querySelectorAll('lightning-input');
+            for(let i = 0; i < selectedRows.length; i++) {
+                if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
+                {
+                    selectedRecords.add(selectedRows[i].value);
+                    selectedRowId = selectedRows[i].value.substring(0, selectedRows[i].value.indexOf(':'));
+                }
+            }
+
+            if (selectedRecords.size !== 1) {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Processing Action',
+                    message: 'A single row must be selected for cloning.',
+                    variant: 'error',
+                    mode: 'dismissable'
+                }));
+                this.dispatchEvent(new CustomEvent('processclick'));
+
+                this.selectedAction = '';            
+            } else {
+                console.log('We are cloning the following id - ' + selectedRowId);
+
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__recordPage',
+                    attributes: {
+                        objectApiName: this.selectedObject,
+                        actionName: 'clone',
+                        recordId: selectedRowId,
+                    },
+                });            
+                this.selectedAction = '';
+            }
+
+        //------------------------------------------------------
+        //EDIT
+        //------------------------------------------------------
+        } else if (this.selectedAction.startsWith('Edit:'))
+        {
+
+            //get the selected record Id
+            let selectedRows = this.template.querySelectorAll('lightning-input');
+            for(let i = 0; i < selectedRows.length; i++) {
+                if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
+                {
+                    selectedRecords.add(selectedRows[i].value);
+                    selectedRowId = selectedRows[i].value.substring(0, selectedRows[i].value.indexOf(':'));
+                }
+            }
+
+            if (selectedRecords.size !== 1) {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Processing Action',
+                    message: 'A single row must be selected for editing.',
+                    variant: 'error',
+                    mode: 'dismissable'
+                }));
+                this.dispatchEvent(new CustomEvent('processclick'));
+
+                this.selectedAction = '';            
+            } else {
+
+                console.log('We are editing the following id - ' + selectedRowId);
+
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__recordPage',
+                    attributes: {
+                        objectApiName: this.selectedObject,
+                        actionName: 'edit',
+                        recordId: selectedRowId,
+                    },
+                });            
+                
+                this.selectedAction = '';
+            }
+
+        //------------------------------------------------------
+        //CUSTOM
+        //------------------------------------------------------
         } else {
 
             //get the selected record Ids

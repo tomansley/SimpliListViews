@@ -848,6 +848,20 @@ global with sharing class ListViewHelper {
 
         actions.add(orgNewAction);
 
+        List_View_Action__c orgCloneAction = new List_View_Action__c();
+        orgCloneAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        orgCloneAction.Label__c            = 'Clone';
+        orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+
+        actions.add(orgCloneAction);
+
+        List_View_Action__c orgEditAction = new List_View_Action__c();
+        orgEditAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        orgEditAction.Label__c            = 'Edit';
+        orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+
+        actions.add(orgEditAction);
+
         List_View_Action__c orgDeleteAction = new List_View_Action__c();
         orgDeleteAction.Apex_Class_Name__c  = 'ListViewActionDelete';
         orgDeleteAction.Label__c            = 'Delete';
