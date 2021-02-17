@@ -1058,37 +1058,57 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         
         this.selectedAction = event.target.value;
 
-        //get the selected record Ids
-        let selectedRows = this.template.querySelectorAll('lightning-input');
-        for(let i = 0; i < selectedRows.length; i++) {
-            if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
-            {
-                selectedRecords.add(selectedRows[i].value);
-            }
-        }
+        console.log('Chosen Action - ' + this.selectedAction);
 
-        if (selectedRecords.size === 0) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error Processing Action',
-                message: 'No rows selected for processing.',
-                variant: 'error',
-                mode: 'dismissable'
-            }));
-            this.dispatchEvent(new CustomEvent('processclick'));
+        if (this.selectedAction.startsWith('New:'))
+        {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__objectPage',
+                attributes: {
+                    objectApiName: this.selectedObject,
+                    actionName: 'new',
+                },
+            });
 
             this.selectedAction = '';
-            return;
-        
-        } else {
-            this.showActionModal = true;
-            this.selectedRecordIdsStr = JSON.stringify( Array.from(selectedRecords));
 
-            this.selectedActionLabel = 'Label ' + this.selectedAction;               //   <-- This to be fixed.
+            processActionModal();   
+
+        } else {
+
+            //get the selected record Ids
+            let selectedRows = this.template.querySelectorAll('lightning-input');
+            for(let i = 0; i < selectedRows.length; i++) {
+                if (selectedRows[i].checked === true && selectedRows[i].value != 'all')
+                {
+                    selectedRecords.add(selectedRows[i].value);
+                }
+            }
+
+            if (selectedRecords.size === 0) {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Processing Action',
+                    message: 'No rows selected for processing.',
+                    variant: 'error',
+                    mode: 'dismissable'
+                }));
+                this.dispatchEvent(new CustomEvent('processclick'));
+
+                this.selectedAction = '';
+                return;
             
-            console.log('Action Label selected - ' + this.selectedActionLabel);
-            console.log('Action name           - ' + this.selectedAction);
-            console.log('Action Record Ids     - ' + this.selectedRecordIdsStr);
-    
+            } else {
+                this.showActionModal = true;
+                this.selectedRecordIdsStr = JSON.stringify( Array.from(selectedRecords));
+
+                this.selectedActionLabel = 'Label ' + this.selectedAction;               //   <-- This to be fixed.
+                
+                console.log('Action Label selected - ' + this.selectedActionLabel);
+                console.log('Action name           - ' + this.selectedAction);
+                console.log('Action Record Ids     - ' + this.selectedRecordIdsStr);
+        
+            }
+
         }
 
     }

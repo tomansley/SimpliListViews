@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-10-2020
+ * @last modified on  : 02-17-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -181,6 +181,26 @@ global with sharing class ScriptInstall implements InstallHandler {
 
                 HelperDatabase.upsertRecords(orgParams.values(), 'simpli_lv__List_View_Config_Parameter__c');
             }
+
+            //------------------------------------------------------------------------------------
+            // Add New action - through v1.63
+            //------------------------------------------------------------------------------------
+            Boolean hasNew = false;
+            for (List_View_Action__c action: actions) //use actions from earlier request
+            {
+                if (action.Label__c == 'New' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                    hasNew = true;
+            }
+            if (!hasNew)
+            {
+                List_View_Action__c orgNewAction = new List_View_Action__c();
+                orgNewAction.Apex_Class_Name__c  = 'ListViewActionNull';
+                orgNewAction.Label__c            = 'New';
+                orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+        
+                HelperDatabase.insertRecord(orgNewAction, 'simpli_lv__List_View_Action__c');
+            }
+
 		}
 
 		if(context.isPush()) 

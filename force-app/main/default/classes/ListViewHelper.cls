@@ -1,10 +1,11 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-19-2020
+ * @last modified on  : 02-17-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   02-17-2021   tom.h.ansley@medtronic.com   Added New action config
 **/
 global with sharing class ListViewHelper {
     
@@ -839,6 +840,13 @@ global with sharing class ListViewHelper {
         //-----------------------------------------------------
 
         List<List_View_Action__c> actions = new List<List_View_Action__c>();
+
+        List_View_Action__c orgNewAction = new List_View_Action__c();
+        orgNewAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        orgNewAction.Label__c            = 'New';
+        orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+
+        actions.add(orgNewAction);
 
         List_View_Action__c orgDeleteAction = new List_View_Action__c();
         orgDeleteAction.Apex_Class_Name__c  = 'ListViewActionDelete';
