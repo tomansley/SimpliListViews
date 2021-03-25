@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-02-2020
+ * @last modified on  : 03-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -129,7 +129,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         {
             Map<String, Object> columnData = (Map<String, Object>) column;
 
-            String fieldName = (String) columnData.get('fieldNameOrPath');
+            String fieldName = ((String) columnData.get('fieldNameOrPath')).toLowerCase();
 
             FieldWrapper field = new FieldWrapper((String) columnData.get('label'), 
                                                     (String) columnData.get('type'),
@@ -152,16 +152,20 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         for (SObject row: dataRows)
         {
             
-            Map<String,Object> popFields = row.getPopulatedFieldsAsMap();
-            Map<String,Object> normalFields = new Map<String, Object>();
-            Map<String,Object> childFields = new Map<String, Object>();
+            Map<String,Object> popFields = row.getPopulatedFieldsAsMap(); //a map of all populated fields 
+            Map<String,Object> normalFields = new Map<String, Object>(); //a map of all NON-CHILD fields
+            Map<String,Object> childFields = new Map<String, Object>(); //a map of all CHILD fields
             for (String field: popFields.keySet())
             {
                 //if its a relationship field
                 if (popFields.get(field) instanceof List<SObject>)
-                    childFields.put(field, popFields.get(field));
-                else
-                    normalFields.put(field, popFields.get(field));
+                {
+                    System.debug('Adding CHILD field - ' + field);
+                    childFields.put(field.toLowerCase(), popFields.get(field));
+                } else {
+                    System.debug('Adding NORMAL field - ' + field);
+                    normalFields.put(field.toLowerCase(), popFields.get(field));
+                }
             }
 
             RowWrapper rowWrapper = new RowWrapper((String.valueOf(row.get('Id'))));
@@ -170,17 +174,21 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             //this for loop ONLY GOES THROUGH NONE CHILD FIELDS
             for (FieldWrapper columnMetaData: rows.getFieldMetaData())
             {
-                if (normalFields.keySet().contains(columnMetaData.name.substringBefore('.')))
+                System.debug(LoggingLevel.DEBUG, 'Going through column metadata');
+                System.debug(LoggingLevel.DEBUG, 'normalFields.keySet() - ' + normalFields.keySet());
+                System.debug(LoggingLevel.DEBUG, 'columnMetaData.name.substringBefore(\'.\') - ' + columnMetaData.name.substringBefore('.'));
+                if (normalFields.keySet().contains(columnMetaData.name.substringBefore('.').toLowerCase()))
                 {
+                    System.debug(LoggingLevel.DEBUG, 'Contains field - ' + columnMetaData.name.substringBefore('.'));
                     HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnMetaData.name);
-
+                    System.debug(LoggingLevel.DEBUG, 'fieldData - ' + fieldData);
                     FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                         String.valueOf(fieldData.value), 
                                                         fieldData.type.name().toLowerCase(),
                                                         columnMetaData.name,
                                                         columnMetaData.columnIndex);
 
-                    if (fieldData.name == 'Name') {
+                    if (fieldData.name.toLowerCase() == 'name') {
                         if (fieldData.fieldObj != null)
                         {
                             String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';
@@ -230,7 +238,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                                 fieldName,
                                                                 columnMetaData.columnIndex);
 
-                            if (fieldData.name == 'Name') {
+                            if (fieldData.name.toLowerCase() == 'name') {
                                 if (fieldData.fieldObj != null)
                                 {
                                     String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';

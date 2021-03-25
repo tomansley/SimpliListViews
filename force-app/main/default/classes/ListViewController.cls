@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 11-06-2020
+ * @last modified on  : 03-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -494,6 +494,21 @@ public without sharing class ListViewController
             lvlogic.setRequestData(listview, columnSortData, joinFieldName, joinRecordIds);
 
             rowData = lvLogic.getData();
+
+            String debug = '\n\n=======================================================================================\n';
+            for (ListViewAbstract.RowWrapper row: rowData.rows)
+            {
+                debug += '-------------------------------------\n';
+                debug += 'Row Id - ' + row.getRowId() + '\n';
+                for (String field: row.fields.keySet())
+                {
+                    ListViewAbstract.FieldWrapper fWrapper = row.fields.get(field);
+                    debug += 'Field - ' + fWrapper + '\n';
+                }                
+                debug += '-------------------------------------\n';
+            }
+            debug       += '=======================================================================================\n';
+            System.debug(LoggingLevel.FINE, debug);
             
             //update the sorting for this user for this list view for this component. This MUST be done at the end!
             if (sortChanged != null && sortChanged == 'true')
