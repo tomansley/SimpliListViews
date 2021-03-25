@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 02-17-2021
+ * @last modified on  : 03-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -286,9 +286,13 @@ global with sharing class ListViewHelper {
         String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
         Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
 
+        System.debug(LoggingLevel.DEBUG, 'pageWideIncObjs ' + pageWideIncObjs);
+        System.debug(LoggingLevel.DEBUG, 'orgWideIncObjs ' + orgWideIncObjs);
+    
         for (String objAPIName: listViewObjects.keySet())
         {
 
+            System.debug('Working ' + objAPIName);
             //if there are PAGE included objects then only include those.
             if (pageWideIncObjs.isEmpty() || pageWideIncObjs.contains(objAPIName))
             {
@@ -297,10 +301,17 @@ global with sharing class ListViewHelper {
                 if (orgWideIncObjs.isEmpty() || orgWideIncObjs.contains(objAPIName))
                 {
                     mappedListviewObjects.put(objAPIName, listViewObjects.get(objAPIName));
+                    System.debug(LoggingLevel.DEBUG, 'Adding mapping - ' + objAPIName);
                 }
             }
         }
 
+        String resultStr = '\n\n-------------------------------------------------\n';
+        for (String objectName: mappedListviewObjects.keySet())
+            resultStr += 'Object ' + objectName + ' - ' + mappedListviewObjects.get(objectName) + '\n';
+        resultStr = '-------------------------------------------------\n\n';
+
+        System.debug(LoggingLevel.DEBUG, resultStr);
         return mappedListviewObjects;
     }
 
@@ -533,7 +544,7 @@ global with sharing class ListViewHelper {
         String selectStr = query.substringBetween('SELECT ', ' FROM ');
         String whereStr = null;
         String orderByStr = '';
-        if (query.contains(' ORDER BY '))
+        if (query.containsIgnoreCase(' ORDER BY '))
         {
             whereStr = query.substringBetween(' FROM ', ' ORDER BY ');
         } else {
@@ -583,7 +594,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
-            if (whereStr.contains(' WHERE '))
+            if (whereStr.containsIgnoreCase(' WHERE '))
                 whereStr += ' AND ' + joinFieldName + ' IN :joinRecordIds';
             else
                 whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
@@ -599,8 +610,10 @@ global with sharing class ListViewHelper {
             
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
             {
-                //make sure the field name is valid
-                if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, columnSortData.fieldName))
+                //if the field name is a lookup to another object then just assume its correct
+                //otherwise make sure the field name is valid
+                if (columnSortData.fieldName.contains('.')
+                    || HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, columnSortData.fieldName))
                 {
                     orderByStr += columnSortData.fieldName + ' ';
                     if (columnSortData.sortDirection == true)
@@ -738,14 +751,16 @@ global with sharing class ListViewHelper {
         if (objectName.contains(' '))
             objectName = objectName.substringBefore(' ');
         System.debug(LoggingLevel.DEBUG, 'objectName - ' + objectName);
-        String whereStr = soql.substringAfterLast(' WHERE ');
-        if (whereStr.contains(' ORDER BY '))
+        String whereStr = 'WHERE ' + soql.substringAfterLast(' WHERE ');
+        if (whereStr == 'WHERE ') 
+            whereStr = '';
+        if (whereStr.containsIgnoreCase(' ORDER BY '))
             whereStr = whereStr.substringBefore(' ORDER BY ');
         System.debug(LoggingLevel.DEBUG, 'whereStr - ' + whereStr);
         String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ').substringBeforeLast(' LIMIT ');
         System.debug(LoggingLevel.DEBUG, 'orderByStr - ' + orderByStr);
         String limitStr = '';
-        if (soql.contains(' LIMIT '))
+        if (soql.containsIgnoreCase(' LIMIT '))
             limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
         System.debug(LoggingLevel.DEBUG, 'limitStr - ' + limitStr);
 
@@ -757,7 +772,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
-            if (whereStr.contains(' WHERE '))
+            if (whereStr.containsIgnoreCase(' WHERE '))
                 whereStr += ' AND ' + joinFieldName + ' IN :joinRecordIds';
             else
                 whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
@@ -1179,7 +1194,7 @@ global with sharing class ListViewHelper {
 
         public ColumnSortData(String fieldName, Boolean sortDirection, Integer sortIndex)
         {
-            this.fieldName     = fieldName;
+            this.fieldName     = fieldName.toLowerCase();
             this.sortDirection = sortDirection;
             this.sortIndex     = sortIndex;
         }
