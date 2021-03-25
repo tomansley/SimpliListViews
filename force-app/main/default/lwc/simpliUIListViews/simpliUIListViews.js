@@ -47,6 +47,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track userSortConfigs;             //holds all user sort configuration for this named component.
     @track userConfigs;                 //holds all user and org wide configuration for this named component.
     @track selectedListView;            //holds the selected list view name
+    @track selectedListViewExportName;  //holds the selected list view name + .csv
     @track selectedObject;              //holds the selected object name
     @track objectList;                  //holds the list of objects from which a user can choose one.
     @track listViewList;                //holds the set of list views for the chosen object
@@ -441,6 +442,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 }));
             } else if (this.urlListView != undefined) {
                 this.selectedListView = this.urlListView;
+                this.selectedListViewExportName = this.selectedListView + '.csv';
             } else if (this.pinnedListView != undefined && this.firstListViewGet === true) {
 
                 console.log('We have a pinned list view'); 
@@ -452,6 +454,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 {
                     console.log('Found a list view with the pinned list view name'); 
                     this.selectedListView = this.pinnedListView;
+                    this.selectedListViewExportName = this.selectedListView + '.csv';
 
                 //if we do not then bail.
                 } else {
@@ -737,6 +740,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleObjectChange(event) {
         this.spinnerOn();
         this.selectedListView = undefined;
+        this.selectedListViewExportName = undefined;
         this.selectedObject = event.target.value;
         this.listViewList = undefined;
         this.listViewData = undefined;
@@ -766,6 +770,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         //set the new selected list view
         this.selectedListView = event.target.value;
+        this.selectedListViewExportName = this.selectedListView + '.csv';
 
         //set the column sort information for the NEW list view
         if (this.listViewSortData.get(this.selectedObject + ':' + this.selectedListView) !== undefined)
@@ -1099,8 +1104,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     variant: 'error',
                     mode: 'dismissable'
                 }));
-                this.dispatchEvent(new CustomEvent('processclick'));
-
                 this.selectedAction = '';            
             } else {
                 console.log('We are cloning the following id - ' + selectedRowId);
@@ -1112,8 +1115,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         actionName: 'clone',
                         recordId: selectedRowId,
                     },
-                });            
+                });
                 this.selectedAction = '';
+                this.dispatchEvent(new CustomEvent('processclick'));
             }
 
         //------------------------------------------------------
@@ -1139,8 +1143,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     variant: 'error',
                     mode: 'dismissable'
                 }));
-                this.dispatchEvent(new CustomEvent('processclick'));
-
                 this.selectedAction = '';            
             } else {
 
@@ -1153,9 +1155,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         actionName: 'edit',
                         recordId: selectedRowId,
                     },
-                });            
-                
+                });
                 this.selectedAction = '';
+                this.dispatchEvent(new CustomEvent('processclick'));
             }
 
         //------------------------------------------------------
@@ -1197,6 +1199,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
 
         }
+
+        this.selectedAction = '';
 
     }
 
