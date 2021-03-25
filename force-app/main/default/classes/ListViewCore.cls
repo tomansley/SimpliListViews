@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-29-2020
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 03-03-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
@@ -244,8 +244,14 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, fieldName);
 
+                String fieldDataValue = String.valueOf(fieldData.value);
+                String fieldDataType = fieldData.type.name().toLowerCase();
+
+                if (fieldDataType == 'date' && fieldDataValue != null)
+                    fieldDataValue = fieldDataValue.removeEnd(' 00:00:00');
+
                 FieldWrapper field = new FieldWrapper(fieldData.label, 
-                                                    String.valueOf(fieldData.value), 
+                                                    fieldDataValue, 
                                                     fieldData.type.name().toLowerCase(),
                                                     fieldName,
                                                     columnIndex);

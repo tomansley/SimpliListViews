@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 11-05-2020
+ * @last modified on  : 03-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -37,6 +37,7 @@ private class ListViewConfigHelperTest {
     {
 
         String name = 'Burlington Coat Factory';
+        String type = 'string';
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
 
@@ -48,13 +49,13 @@ private class ListViewConfigHelperTest {
         condition.Highlight_Color__c  = '#c59e9e';
         conditions.add(condition);
 
-        String result = ListViewConfigHelper.validateFieldCondition(name, conditions);
+        String result = ListViewConfigHelper.validateFieldCondition(name, type, conditions);
 
         System.assert(result != '');
 
         name = 'Sterlington Coat Factory';
         
-        result = ListViewConfigHelper.validateFieldCondition(name, conditions);
+        result = ListViewConfigHelper.validateFieldCondition(name, type, conditions);
 
         System.assert(result == '');
 

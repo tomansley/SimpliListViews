@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 11-05-2020
+ * @Last Modified On   : 03-08-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -359,13 +359,14 @@ public with sharing class ListViewConfigHelper {
     * color was returned the value did meet any criteria.
     * @author tom.h.ansley@medtronic.com | 08-05-2020 
     * @param value the value being validated against
+    * @param type the type of the value being validated against
     * @param conditions the conditions the value is being validated against
-    * @return String either an HTML color (condition match) or empty string (condition not met) 
+    * @return String either an HTML color (condition match) or empty string (condition not met)
     **/
-    public static String validateFieldCondition(Object value, List<List_View_Config_Condition__c> conditions)
+    public static String validateFieldCondition(Object value, String type, List<List_View_Config_Condition__c> conditions)
     {
 
-        System.debug(LoggingLevel.DEBUG, 'STARTING validateFieldCondition with value - ' + value);
+        System.debug(LoggingLevel.DEBUG, 'Starting validateFieldCondition(' + value + ',' + type + ')');
         System.debug(LoggingLevel.DEBUG, 'Conditions - ' + conditions);
 
         if (value == null || conditions == null || conditions.size() == 0) return '';
@@ -373,21 +374,21 @@ public with sharing class ListViewConfigHelper {
         for (List_View_Config_Condition__c condition: conditions)
         {
             System.debug(LoggingLevel.DEBUG, 'Value     = ' + value);
+            System.debug(LoggingLevel.DEBUG, 'Type      = ' + type);
             System.debug(LoggingLevel.DEBUG, 'Operator  = ' + condition.Operator__c);
             System.debug(LoggingLevel.DEBUG, 'condValue = ' + condition.Value__c);
+
+            //if we have a meaningless comparison then skip
+            if ((value == null || value == '') && type != 'string') continue;
 
             if (condition.Operator__c == OPER_EQUAL) {
                 if (value == condition.Value__c) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_NOT_EQUAL) {
                 if (value != condition.Value__c) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_GREATER) {
-                Decimal inputValue = Decimal.valueOf(String.valueOf(value));
-                Decimal condValue = Decimal.valueOf(condition.Value__c);
-                if (inputValue > condValue) return condition.Highlight_Color__c;
+                if (String.valueOf(value) > condition.Value__c) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_LESS) {
-                Decimal inputValue = Decimal.valueOf(String.valueOf(value));
-                Decimal condValue = Decimal.valueOf(condition.Value__c);
-                if (inputValue < condValue) return condition.Highlight_Color__c;
+                if (String.valueOf(value) < condition.Value__c) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_CONTAINS) {
                 if (((String) value).contains((String) condition.Value__c)) return condition.Highlight_Color__c;
             }

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-05-2020
+ * @last modified on  : 03-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -337,7 +337,8 @@ public with sharing abstract class ListViewAbstract {
 
         public void addField(FieldWrapper field)
         {
-            fields.put(field.getName(), field);
+            System.debug(LoggingLevel.FINE, 'Adding Field - ' + field.getName() + ':' + field.columnIndex + ' -- ' + field);
+            fields.put(field.getName() + ':' + field.columnIndex, field);
             field.key = rowId + ':' + String.valueOf(field.columnIndex);
         }
 
@@ -459,7 +460,7 @@ public with sharing abstract class ListViewAbstract {
                     for (ListViewCondition condition: conditions)
                         lvConditions.add(condition.getCondition());
 
-                    String color = ListViewConfigHelper.validateFieldCondition(field.value, lvConditions);
+                    String color = ListViewConfigHelper.validateFieldCondition(field.value, field.type, lvConditions);
 
                     System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + color);
 
@@ -505,6 +506,15 @@ public with sharing abstract class ListViewAbstract {
 
             if (this.value == null)
                 this.value = '';
+
+            String debug = '\n\n---------------------------------------------------------------\n';
+            debug       += 'Label - ' + label + '\n';
+            debug       += 'type - ' + type + '\n';
+            debug       += 'value - ' + this.value + '\n';
+            debug       += 'name - ' + name + '\n';
+            debug       += 'columnIndex - ' + columnIndex + '\n';
+            debug       += '---------------------------------------------------------------\n';
+            System.debug(LoggingLevel.FINE, debug);
         }
         
         public FieldWrapper(String label, String type, String name, Integer columnIndex)
@@ -516,6 +526,14 @@ public with sharing abstract class ListViewAbstract {
             this.sortIndex = '';
             this.columnIndex = columnIndex;
             isSortable   = true;
+            String debug = '\n\n---------------------------------------------------------------\n';
+            debug       += 'Label - ' + label + '\n';
+            debug       += 'type - ' + type + '\n';
+            debug       += 'value - ' + this.value + '\n';
+            debug       += 'name - ' + name + '\n';
+            debug       += 'columnIndex - ' + columnIndex + '\n';
+            debug       += '---------------------------------------------------------------\n';
+            System.debug(LoggingLevel.FINE, debug);
         }
         
         @AuraEnabled(cacheable=true)
