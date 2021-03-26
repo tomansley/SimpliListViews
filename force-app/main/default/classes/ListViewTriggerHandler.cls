@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-26-2020
+ * @last modified on  : 03-26-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -41,7 +41,7 @@ public with sharing class ListViewTriggerHandler {
          */ 
         public static void onBeforeUpdate(Map<Id, List_View__c> newRecords, Map<Id, List_View__c> oldRecords)
         {
-
+            ListViewBL.updateFields(newRecords, oldRecords);
         }
     
         /*

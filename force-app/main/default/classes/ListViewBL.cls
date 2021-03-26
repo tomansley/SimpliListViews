@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 01-07-2021
+ * @last modified on  : 03-26-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -48,6 +48,23 @@ public with sharing class ListViewBL {
             }
 
         }
+    }
+
+    /**
+    * @description Method to update fields based on provided data.
+    * @author tom.h.ansley@medtronic.com | 03-26-2021 
+    * @param newRecords 
+    * @param oldRecords 
+    **/
+    public static void updateFields(Map<Id, List_View__c> newRecords, Map<Id, List_View__c> oldRecords)
+    {
+        for (List_View__c newRecord: newRecords.values())
+        {
+            //UPDATE SOQL QUERY TO UPPER CASE
+            if (newRecord.Core_ListView_Query__c != null)
+                newRecord.Core_ListView_Query__c = newRecord.Core_ListView_Query__c.replaceAll('(\\r|\\n)+', ' ');
+        }
+
     }
 
     /**
