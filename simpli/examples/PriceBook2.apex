@@ -1,3 +1,6 @@
+/*
+ * Code to create a custom manual list view for Pricebook2 as one does not exist OOTB.
+ */
 simpli_lv__List_View__c lv = new simpli_lv__List_View__c();
 lv.RecordTypeId                               = [SELECT Id FROM RecordType WHERE SObjectType = 'simpli_lv__List_View__c' AND Name = 'Custom'].Id;
 lv.simpli_lv__All_Internal_Users__c           = false;
@@ -8,7 +11,6 @@ lv.simpli_lv__Core_ListView_Query__c          = 'SELECT CreatedDate,IsActive,IsS
 lv.simpli_lv__Custom_Apex_Class__c            = 'ListViewCustomManual';
 lv.simpli_lv__Describe__c                     = null;
 lv.simpli_lv__Filter_Scope__c                 = null;
-lv.simpli_lv__Full_Name__c                    = 'Pricebook2.PricebookStandard';
 lv.simpli_lv__Groups__c                       = null;
 lv.simpli_lv__Label__c                        = Pricebook Standard
 lv.simpli_lv__Object_Name__c                  = Pricebook2
