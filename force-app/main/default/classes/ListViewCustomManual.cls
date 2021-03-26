@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 03-25-2021
+ * @last modified on  : 03-26-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -110,7 +110,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                    ListViewConfigWrapper lvConfig,
                                                    List<ListViewHelper.ColumnSortData> sortData)
     {
-        System.debug('Starting ListViewCore.handleRowsToWrapper - ' + System.now().getTime());
+        Long startTime = System.now().getTime();
+        System.debug('Starting ListViewCore.handleRowsToWrapper');
 
         Map<String, ListViewHelper.ColumnSortData> sortDataByFieldName = new Map<String, ListViewHelper.ColumnSortData>();
         for (ListViewHelper.ColumnSortData columnData: sortData)
@@ -148,9 +149,11 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             columnIndex++;
         }
 
+        System.debug(LoggingLevel.FINE, 'SObject row count - ' + dataRows.size());
         //for each row of data
         for (SObject row: dataRows)
         {
+            System.debug(LoggingLevel.FINE, 'SObject row Id - ' + row.Id);
             
             Map<String,Object> popFields = row.getPopulatedFieldsAsMap(); //a map of all populated fields 
             Map<String,Object> normalFields = new Map<String, Object>(); //a map of all NON-CHILD fields
@@ -160,10 +163,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 //if its a relationship field
                 if (popFields.get(field) instanceof List<SObject>)
                 {
-                    System.debug('Adding CHILD field - ' + field);
                     childFields.put(field.toLowerCase(), popFields.get(field));
                 } else {
-                    System.debug('Adding NORMAL field - ' + field);
                     normalFields.put(field.toLowerCase(), popFields.get(field));
                 }
             }
@@ -174,14 +175,10 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             //this for loop ONLY GOES THROUGH NONE CHILD FIELDS
             for (FieldWrapper columnMetaData: rows.getFieldMetaData())
             {
-                System.debug(LoggingLevel.DEBUG, 'Going through column metadata');
-                System.debug(LoggingLevel.DEBUG, 'normalFields.keySet() - ' + normalFields.keySet());
-                System.debug(LoggingLevel.DEBUG, 'columnMetaData.name.substringBefore(\'.\') - ' + columnMetaData.name.substringBefore('.'));
                 if (normalFields.keySet().contains(columnMetaData.name.substringBefore('.').toLowerCase()))
                 {
-                    System.debug(LoggingLevel.DEBUG, 'Contains field - ' + columnMetaData.name.substringBefore('.'));
                     HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnMetaData.name);
-                    System.debug(LoggingLevel.DEBUG, 'fieldData - ' + fieldData);
+
                     FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                         String.valueOf(fieldData.value), 
                                                         fieldData.type.name().toLowerCase(),
@@ -212,15 +209,17 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             Boolean hasChildRow = false;
             for (String childFieldKey: childFields.keySet())
             {
-
                 //get children
                 List<SObject> children = (List<SObject>) childFields.get(childFieldKey);
 
+                Boolean deleteHeaderData = false;
                 for (SObject child: children)
                 {
-
-                    RowWrapper clonedWrapper = rowWrapper.cloneWrapper();
+                    RowWrapper clonedWrapper = rowWrapper.cloneWrapper(deleteHeaderData);
                     rows.addRow(clonedWrapper);
+
+                    if (deleteHeaderData == false) 
+                        deleteHeaderData = true; //once we have cloned the first wrapper with all fields this ensures all other rows have their header fields removed.
 
                     //this for loop ONLY GOES THROUGH CHILD FIELDS
                     for (FieldWrapper columnMetaData: rows.getFieldMetaData())
@@ -270,7 +269,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             }
         }
 
-        System.debug('Ending ListViewCore.handleRowsToWrapper - ' + System.now().getTime());
+        System.debug(LoggingLevel.DEBUG, rows.getDebugString());
+        System.debug('Ending ListViewCore.handleRowsToWrapper - ' + (System.now().getTime() - startTime));
         return rows;
     }
 

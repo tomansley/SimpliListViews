@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 03-25-2021
+ * @last modified on  : 03-26-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -310,6 +310,38 @@ public with sharing abstract class ListViewAbstract {
             else
                 return '';
         }
+
+        public String getDebugString()
+        {
+            String debug = '\n\n----------------------------------------------------------\n';
+            debug += 'Row Object          - ' + objName + '\n';
+            debug += 'Core List Id        - ' + coreListId + '\n';
+            debug += 'Row Count           - ' + rows.size() + '\n';
+            debug += 'Has Totals Row      - ' + hasTotalsRow + '\n';
+            debug += 'Is Core List View   - ' + isCoreListView + '\n';
+            debug += 'Field Metadata Size - ' + fieldMetaData.size() + '\n\n';
+            debug += '    Field Metadata' + '\n';
+            for (FieldWrapper metadata: fieldMetaData)
+            {
+                debug += '    Name - ' + metadata.name + ', Column Index - ' + metadata.columnIndex + ', Label - ' + metadata.label + ', Type - ' + metadata.type + '\n';
+            }
+            debug += '' + '\n';
+            debug += '    Row Data' + '\n';
+
+            for (RowWrapper row: rows)
+            {
+                debug += '    Id - ' + row.rowId + ', Fields Size - ' + row.fields.size() + ', Is Deleted - ' + row.isDeleted + ', Is Totals - ' + row.isTotals + '\n';
+                for (String fieldKey: row.fields.keySet())
+                {
+                    FieldWrapper field = row.fields.get(fieldKey);
+                    debug += '        Key - ' + fieldKey + ', Name - ' + field.name + ', Label - ' + field.label + ', Value - ' + field.getValue() + ', Type - ' + field.getType() + '\n';
+                }                    
+                debug += '' + '\n';
+            }
+            debug += '----------------------------------------------------------\n\n';
+
+            return debug;
+        }
         
     }
     
@@ -421,11 +453,25 @@ public with sharing abstract class ListViewAbstract {
             return dataStr;
         }
 
-        public RowWrapper cloneWrapper()
+        /**
+        * @description Method which clones a row wrapper. 
+        * @author tom.h.ansley@medtronic.com | 03-26-2021 
+        * @param deleteFieldData identifies if the field values within the field wrappers should be deleted.
+        * @return RowWrapper 
+        **/
+        public RowWrapper cloneWrapper(Boolean deleteFieldData)
         {
             RowWrapper clone = new RowWrapper(rowId);
             clone.fields = new Map<String, FieldWrapper>();
-            clone.fields = this.fields.clone();
+            for (FieldWrapper field: fields.values())
+            {
+                String value = '';
+                if (!deleteFieldData)
+                    value = field.value;
+                FieldWrapper cloneField = new FieldWrapper(field.label, value, field.type, field.name, field.columnIndex);
+                cloneField.setURL(field.getURL());
+                clone.addField(cloneField);
+            }
             clone.highlight = this.highlight;
             clone.highlightColor = this.highlightColor;
             clone.isTotals = this.isTotals;
