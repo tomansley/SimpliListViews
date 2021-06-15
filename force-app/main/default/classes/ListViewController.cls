@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 03-25-2021
+ * @last modified on  : 06-15-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -321,7 +321,7 @@ public without sharing class ListViewController
     @AuraEnabled(cacheable=true)
     public static ListViewAbstract.ActionWrapper getListViewAction(String actionName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateSingleListView(' + actionName + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewAction(' + actionName + ')');
 
         ListViewAbstract.ActionWrapper wrapper = null;
         if (actionName != '')

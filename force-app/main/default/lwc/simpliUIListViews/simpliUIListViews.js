@@ -1187,7 +1187,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 return;
             
             } else {
-                this.showActionModal = true;
                 this.selectedRecordIdsStr = JSON.stringify( Array.from(selectedRecords));
 
                 this.selectedActionLabel = 'Label ' + this.selectedAction;               //   <-- This to be fixed.
@@ -1196,11 +1195,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 console.log('Action name           - ' + this.selectedAction);
                 console.log('Action Record Ids     - ' + this.selectedRecordIdsStr);
         
+                this.showActionModal = true;
             }
 
         }
-
-        this.selectedAction = '';
 
     }
 
@@ -1219,7 +1217,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
     }
  
-    cancelModal() {    
+    cancelActionModal() {    
         this.selectedAction = '';
         this.showActionModal = false;
     }
