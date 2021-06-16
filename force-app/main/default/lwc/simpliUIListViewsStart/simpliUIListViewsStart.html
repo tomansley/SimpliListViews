@@ -2,7 +2,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 11-09-2020
+  @last modified on  : 06-16-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -55,7 +55,7 @@
     </lightning-card>
     <br/>
     <lightning-card title="Feature Overview" icon-name="standard:announcement">
-        <div class="slds-m-around_medium">
+        <div class="slds-var-m-around_medium">
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
                     <li style="padding-bottom: 5px;">All list views on one page = reduction of clicks.</li>
@@ -77,7 +77,7 @@
     </lightning-card>
     <br/>
     <lightning-card title="Quick Start" icon-name="standard:custom_notification">
-        <div class="slds-m-around_medium">
+        <div class="slds-var-m-around_medium">
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:decimal; list-style-position: inside;">
                     <li style="padding-bottom: 5px;"><b>Initialize List Views - </b>Click the <lightning-button-icon style="padding: 5px;" 
@@ -93,7 +93,7 @@
     </lightning-card>
     <br/>
     <lightning-card title="Issues, Questions, Ideas and Resources" icon-name="standard:custom_notification">
-        <div class="slds-m-around_medium">
+        <div class="slds-var-m-around_medium">
             <p>If you have any issues, questions or ideas please go to the <a target="_blank" href="https://github.com/tomansley/SimpliListViews">github repository</a> to log them - </p>
             <br/>
             <p>Other resources which might be of interest - </p>
@@ -111,7 +111,7 @@
     </lightning-card>
     <br/>
     <lightning-card title="Configuration" icon-name="standard:settings">
-        <div class="slds-m-around_medium">
+        <div class="slds-var-m-around_medium">
 
             <p>There are 3 different levels of configuration that are available.</p>
             <br/>
@@ -191,7 +191,7 @@
     </lightning-card>
     <br>
     <lightning-card title="Actions" icon-name="standard:invocable_action">
-        <div class="slds-m-around_medium">
+        <div class="slds-var-m-around_medium">
             <p>Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. Currently 2 actions have been implemented and made available in the app exchange package. Delete and Account Update.</p>
             <br/>
             <p>If an action is needed that is not currently available it can be implemented and then configured. It is highly encouraged to submit actions back to the app exchange package developer for addition in later releases.</p>
@@ -228,7 +228,9 @@
                     <ol style="list-style-type:decimal; list-style-position: inside;">
                         <li style="padding-bottom: 5px;">the class must be global, otherwise the app will not be able to see it.</li>
                         <li style="padding-bottom: 5px;">the action is performed as a single transaction. All governor limits must be adhered to. If needing to deal with large numbers of records then use the batch interface.</li>
+                        <li style="padding-bottom: 5px;">it is suggested to perform processing in an asynchronous way using queueable or batch processing.</li>
                         <li style="padding-bottom: 5px;">always place processing into a try/catch. The UI component will wait for a valid response before displaying anything to the user.</li>
+                        <li style="padding-bottom: 5px;">the app looks for the following string at the beginning of the returned result "Ok:". If this string is not found it is assumed the processing has failed and displays the returned string to the user.</li>
                    </ol>
                 </div>
             </div>
