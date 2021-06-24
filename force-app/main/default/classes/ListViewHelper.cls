@@ -1,20 +1,23 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 03-25-2021
+ * @last modified on  : 06-24-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   02-17-2021   tom.h.ansley@medtronic.com   Added New action config
+ * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
 **/
 global with sharing class ListViewHelper {
     
     public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
    
-    public static final String TYPE_ALL = 'All';
-    public static final String TYPE_CORE = 'Core';
+    public static final String TYPE_ALL    = 'All';
+    public static final String TYPE_CORE   = 'Core';
     public static final String TYPE_CUSTOM = 'Custom';
+    
+    public static Integer offset           = -1;                  //used to hold the offset that is set when performing a query.
 
     public static String getPrimaryKey(List_View__c listView)
     {
@@ -513,7 +516,7 @@ global with sharing class ListViewHelper {
         return listviewsById;
     }
 
-    public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
+    public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
 
         String debug = '\n\nStarting getListViewData - \n';
@@ -640,21 +643,64 @@ global with sharing class ListViewHelper {
 
             //if we only need an example record
             if (example)
-                limitStr += '1';
+            {
+                limitStr = ' LIMIT 1';
                 
             //if we have a list view limit then use it
-            if (lvConfigParams.get('ReturnSize') != null)
-                limitStr += lvConfigParams.get('ReturnSize');
-            //otherwise use 250
-            else
-                limitStr += '250';
+            } else if (lvConfigParams.get('ReturnSize') != null)
+            {
+                Integer returnSize = Integer.valueOf(lvConfigParams.get('ReturnSize'));
+                limitStr = ' LIMIT ' + returnSize;
+                if (offset == null) offset = -1;
+
+                //if we have an offset or we are returning LARGE datasets
+                if (offset != -1 || returnSize > 500)
+                {
+                    Integer queryPagingSize = Integer.valueOf(ListViewConfigHelper.getOrgWideConfigParam('QueryPagingSize'));
+                    Integer rowLimit = queryPagingSize;
+                    //if we DO NOT have an offset then set to 0
+                    if (offset == -1)
+                    {
+                        offset = 0;
+
+                    //if we DO have an offset then increase it but not above the return size max
+                    } else {
+                        System.debug(LoggingLEvel.DEBUG, 'Offset - ' + offset);
+                        System.debug(LoggingLEvel.DEBUG, 'returnSize - ' + returnSize);
+                        
+                        //if we have NOT hit the max
+                        if ((offset + rowLimit) < returnSize)
+                        {
+                            offset = offset + queryPagingSize;
+                        }
+
+                        if ((offset + rowLimit) > returnSize)
+                        {
+                            rowLimit = returnSize - offset;
+                        }
+                    }
+                    limitStr = ' LIMIT ' + rowLimit + ' OFFSET ' + offset;
+
+                    ListViewHelper.offset = offset; //set the offset as static to be used up the stack.
+                }
+
+            //otherwise use 200
+            } else {
+                limitStr = ' LIMIT 200';
+            }
         }
+
+        System.debug(LoggingLevel.DEBUG, 'LIMIT STR - ' + limitStr);
 
         //------------------------------------------------------
         // Handle the ALL ROWS statement
         //------------------------------------------------------
         String allRowsStr = '';
-        if (lvConfigParams.get('AllRows') != null && lvConfigParams.get('AllRows') == 'true')
+        if (offset == -1                                                   //Cannot use ALL ROWS with OFFSET
+            && lvConfigParams.get('AllRows') != null                      //if we have AllRows variable
+            && lvConfigParams.get('AllRows') == 'true'                     //if AllRows = true
+            && lvConfigParams.get('ReturnSize') != null                    //if we have ReturnSize variable
+            && (Integer.valueOf(lvConfigParams.get('ReturnSize')) < 750)) //if ReturnSize < 750
         {
             allRowsStr += ' ALL ROWS';
         }
@@ -687,7 +733,16 @@ global with sharing class ListViewHelper {
      */ 
     public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
-        return getListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false);
+        return getListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
+    }
+
+    /*
+     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
+     * the possible additional fields added by the user and then use it to get the data.
+     */ 
+    public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Integer offset)
+    {
+        return getListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false, offset);
     }
 
     /*
@@ -696,15 +751,24 @@ global with sharing class ListViewHelper {
      */ 
     public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
-        return getListViewData(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false);
+        return getListViewData(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
+    }
+
+    /*
+     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
+     * the possible additional fields added by the user and then use it to get the data.
+     */ 
+    public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Integer offset)
+    {
+        return getListViewData(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false, offset);
     }
 
     /*
       ListViewHelper.getListViewData('SELECT Name, List_View_Object__c, LastModifiedDate, LastModifiedBy.Name, Primary_Key__c, (SELECT Parameter_Name__c, Parameter_Type__c, Parameter_Label__c, Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c), (SELECT Field_Name__c, Highlight_Color__c, Operator__c, Order__c, Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c', null, null, null, null, false);
      */
-    public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
+    public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
-        soql = getSOQLQuery(soql, lvConfig, sortData, joinFieldName, joinRecordIds, example);
+        soql = getSOQLQuery(soql, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
         
         //get rows of data from query
         List<SObject> objectRows = null;
@@ -720,8 +784,19 @@ global with sharing class ListViewHelper {
         return objectRows;
 
     }
+    
+    /**
+    * @description Convenience method which assumes the following - 
+                   i.  This is not to retrieve an example.
+                   ii. This does not have any paging requirements
+    * @author tom.h.ansley@medtronic.com | 06-21-2021 
+    **/
+    public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    {
+        return getSOQLQuery(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
+    }
 
-    public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
+    public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
 
         String debug = '\n\nStarting getListViewData - \n';
@@ -818,21 +893,62 @@ global with sharing class ListViewHelper {
 
             //if we only need an example record
             if (example)
+            {
                 limitStr = ' LIMIT 1';
                 
             //if we have a list view limit then use it
-            else if (lvConfigParams.get('ReturnSize') != null)
-                limitStr = ' LIMIT ' + lvConfigParams.get('ReturnSize');
-            //otherwise use 250
-            else
-                limitStr = ' LIMIT 250';
+            } else if (lvConfigParams.get('ReturnSize') != null)
+            {
+                Integer returnSize = Integer.valueOf(lvConfigParams.get('ReturnSize'));
+                limitStr = ' LIMIT ' + returnSize;
+                if (offset == null) offset = -1;
+
+                //if we have an offset or we are returning LARGE datasets
+                if (offset != -1 || returnSize > 500)
+                {
+                    Integer rowLimit = 500;
+                    //if we DO NOT have an offset then set to 0
+                    if (offset == -1)
+                    {
+                        offset = 0;
+
+                    //if we DO have an offset then increase it but not above the return size max
+                    } else {
+                        System.debug(LoggingLEvel.DEBUG, 'Offset - ' + offset);
+                        System.debug(LoggingLEvel.DEBUG, 'returnSize - ' + returnSize);
+                        
+                        //if we have NOT hit the max
+                        if ((offset + rowLimit) < returnSize)
+                        {
+                            offset = offset + 500;
+                        }
+
+                        if ((offset + rowLimit) > returnSize)
+                        {
+                            rowLimit = returnSize - offset;
+                        }
+                    }
+                    limitStr = ' LIMIT ' + rowLimit + ' OFFSET ' + offset;
+
+                    ListViewHelper.offset = offset; //set the offset as static to be used up the stack.
+                }
+
+            //otherwise use 200
+            } else {
+                limitStr = ' LIMIT 200';
+            }
         }
+        System.debug(LoggingLevel.DEBUG, 'LIMIT STR 2 - ' + limitStr);
 
         //------------------------------------------------------
         // Handle the ALL ROWS statement
         //------------------------------------------------------
         String allRowsStr = '';
-        if (lvConfigParams.get('AllRows') != null && lvConfigParams.get('AllRows') == 'true')
+        if (offset == -1                                                   //Cannot use ALL ROWS with OFFSET
+            && lvConfigParams.get('AllRows') != null                       //if we have AllRows variable
+            && lvConfigParams.get('AllRows') == 'true'                     //if AllRows = true
+            && lvConfigParams.get('ReturnSize') != null                    //if we have ReturnSize variable
+            && (Integer.valueOf(lvConfigParams.get('ReturnSize')) < 750))  //if ReturnSize < 750
         {
             allRowsStr += ' ALL ROWS';
         }

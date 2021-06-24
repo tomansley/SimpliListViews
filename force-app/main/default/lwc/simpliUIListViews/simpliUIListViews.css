@@ -1,3 +1,19 @@
 .button-short { line-height: inherit; }
 
 .toastMessage.forceActionsText{ white-space : pre-line !important; }
+
+.dataSpinnerHolder{
+    position: relative;
+    display: inline-block;
+    margin-left: 30px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.pageSpinnerHolder{
+    position: absolute;
+}
+
+.outerDiv{
+    position: relative;
+}

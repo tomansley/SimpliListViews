@@ -1,11 +1,12 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 03-26-2021
+ * @last modified on  : 06-24-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
 **/
 public with sharing class ListViewCustomManual extends ListViewCustomManualAbstract {
 
@@ -95,7 +96,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
     public override RowsWrapper getData()
     {
-        List<SObject> dataRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, columnSortData, joinField, joinRecordIds);
+        List<SObject> dataRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, columnSortData, joinField, joinRecordIds, offset);
 
         RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData);
 

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-05-2020
+ * @last modified on  : 06-21-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -22,7 +22,7 @@ private class ListViewCustomManualTest {
 
     static testMethod void getListViewDataTest() 
     {
-        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'simpli_lv__List_View_Config__c', 'ManualListView', '', '', '', '');
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'simpli_lv__List_View_Config__c', 'ManualListView', '', '', '', '', -1);
 
         System.assert(rows != null);
         System.assert(rows.getFieldMetaData() != null);

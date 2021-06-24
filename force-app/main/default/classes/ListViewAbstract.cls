@@ -1,11 +1,12 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 03-26-2021
+ * @last modified on  : 06-24-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
 **/
 public with sharing abstract class ListViewAbstract {
     
@@ -17,6 +18,7 @@ public with sharing abstract class ListViewAbstract {
     public List<ListViewHelper.ColumnSortData> columnSortData = null; //holds any sorting data coming in on the request
     public Set<String> joinRecordIds = null;                          //holds any join Ids that might be used to identify records.
     public String joinField = null;                                   //if getting data based on join Ids this field describes the join field to use.
+    public Integer offset = -1;                                       //holds the offset value if we need to page data into the list view.
 
     //----------------------------------------------------------------------------------
     // Method to be overridden
@@ -67,9 +69,9 @@ public with sharing abstract class ListViewAbstract {
         if (listview.SubType__c != 'Tooling') //cannot get an example row if we are working with the tooling API
         {
             if (listview.RecordTypeId == ListViewHelper.coreRTId)
-                objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true);
+                objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true, -1);
             else 
-                objectRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, null, null, null, true);
+                objectRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, null, null, null, true, -1);
         }
         
         if (objectRows != null && objectRows.size() > 0) 
@@ -129,16 +131,17 @@ public with sharing abstract class ListViewAbstract {
 
     public void setRequestData(List_View__c listview)
     {
-        setRequestData(listview, null, null, null);
+        setRequestData(listview, null, null, null, -1);
     }
 
-    public void setRequestData(List_View__c listview, List<ListViewHelper.ColumnSortData> columnSortData, String joinField, Set<String> joinRecordIds)
+    public void setRequestData(List_View__c listview, List<ListViewHelper.ColumnSortData> columnSortData, String joinField, Set<String> joinRecordIds, Integer offset)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewAbstract.setRequestData - ' + listview);
         this.listview       = listview;
         this.columnSortData = columnSortData;
         this.joinField      = joinField;
         this.joinRecordIds  = joinRecordIds;
+        this.offset         = offset;
 
         List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig(listview.Object_Name__c, listview.API_Name__c);
 
@@ -166,11 +169,25 @@ public with sharing abstract class ListViewAbstract {
     {
         public DateTime lastModifiedDate;
         public String lastModifiedBy;
-
+        public Integer offset = -1;
+        public Integer rowLimit = -1;
+    
         public ListViewWrapper(List_View__c listView)
         {
             lastModifiedDate = listView.LastModifiedDate;
             lastModifiedBy   = listView.LastModifiedBy.Name;
+        }
+
+        @AuraEnabled(cacheable=false)
+        public Integer getOffset()
+        {
+            return offset;
+        }
+
+        @AuraEnabled(cacheable=false)
+        public Integer getRowLimit()
+        {
+            return rowLimit;
         }
 
         @AuraEnabled(cacheable=true)
@@ -222,9 +239,21 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
+        public String getCoreListId()
+        {
+            return coreListId;
+        }
+
+        @AuraEnabled(cacheable=true)
         public Boolean getIsCoreListView()
         {
             return isCoreListView;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getHasTotalsRow()
+        {
+            return hasTotalsRow;
         }
 
         @AuraEnabled(cacheable=true)

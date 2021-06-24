@@ -2,11 +2,12 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 06-15-2021
+ * @last modified on  : 06-24-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-04-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
 **/
 public without sharing class ListViewController
 {
@@ -390,7 +391,7 @@ public without sharing class ListViewController
        
      */
     @AuraEnabled(cacheable=true)
-    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String sortChanged, String joinFieldName, String joinData)
+    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String sortChanged, String joinFieldName, String joinData, Integer offset)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + sortChanged + ',' + joinFieldName + ',' + joinData + ')');
         
@@ -491,7 +492,7 @@ public without sharing class ListViewController
             ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
     
             //set all request information into the apex processing class.
-            lvlogic.setRequestData(listview, columnSortData, joinFieldName, joinRecordIds);
+            lvlogic.setRequestData(listview, columnSortData, joinFieldName, joinRecordIds, offset);
 
             rowData = lvLogic.getData();
 

@@ -4,10 +4,11 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 03-08-2021
+ * @Last Modified On   : 06-24-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
+ * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
 **/
 public with sharing class ListViewConfigHelper {
 
@@ -297,9 +298,11 @@ public with sharing class ListViewConfigHelper {
             try {
                 Integer size = Integer.valueOf(paramValue);
 
-                if (size > 500)
+                Integer maxRowsDisplayed = Integer.valueOf(ListViewConfigHelper.getOrgWideConfigParam('MaxRowsDisplayed'));
+
+                if (size > maxRowsDisplayed)
                 {
-                    error = 'Return size must be less than 500';
+                    error = 'Return size must be no greater than ' + maxRowsDisplayed;
                 }
             } catch (Exception e) {
                 error = 'Return size must be an integer value';

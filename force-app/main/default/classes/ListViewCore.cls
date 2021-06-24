@@ -1,19 +1,24 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 03-03-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 06-24-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
 **/
 public with sharing class ListViewCore extends ListViewAbstract {
 
     public override RowsWrapper getData()
     {
-        List<SObject> dataRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds);
+        List<SObject> dataRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, offset);
 
-        RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData);
+        RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData, ListViewHelper.offset);
+        if (lvConfig.getParameter('ReturnSize') != null && !String.isEmpty(lvConfig.getParameter('ReturnSize').getValue()))
+            rowData.listView.rowLimit = Integer.valueOf(lvConfig.getParameter('ReturnSize').getValue());
+        else
+            rowData.listView.rowLimit = 250;
 
         return rowData;
     }
@@ -122,7 +127,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
         */
     private static ListViewAbstract.RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, 
                                                    ListViewConfigWrapper lvConfig,
-                                                   List<ListViewHelper.ColumnSortData> sortData)
+                                                   List<ListViewHelper.ColumnSortData> sortData,
+                                                   Integer offset)
     {
         System.debug('Starting ListViewCore.handleRowsToWrapper - ' + System.now().getTime());
 
@@ -131,6 +137,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             sortDataByFieldName.put(columnData.fieldName, columnData);
 
         ListViewAbstract.RowsWrapper rows = new ListViewAbstract.RowsWrapper(listView);
+        rows.listView.offset = offset;
         
         //get all columns from the list view
         List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
@@ -279,10 +286,11 @@ public with sharing class ListViewCore extends ListViewAbstract {
             rowWrapper.calculateHighlighting(lvConfig.conditions);
         }
 
-        //if totals have been configured
+        //if totals have been configured and we are not paging.
         if (lvConfig != null
             && lvConfig.getParameter('TotalColumns') != null 
-            && lvConfig.getParameter('TotalColumns').getValue() != '')
+            && lvConfig.getParameter('TotalColumns').getValue() != ''
+            && offset == -1)
         {
 
             rows.hasTotalsRow = true;
@@ -315,7 +323,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 for (FieldWrapper fieldWrapper: fields)
                 {
 
-                    FieldWrapper totalField = totalWrapper.getField(fieldWrapper.getName());
+                    FieldWrapper totalField = totalWrapper.getField(fieldWrapper.getName() + ':' + fieldWrapper.columnIndex);
 
                     //if this is the first pass then we will need to create a wrapper 
                     //regardless of whether its a column that is to be calculated.
@@ -348,18 +356,25 @@ public with sharing class ListViewCore extends ListViewAbstract {
                     {
                         System.debug(LoggingLevel.DEBUG, 'Found a column to total - ' + fieldWrapper.getName());
 
+                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper            - ' + fieldWrapper);
                         System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getValue() - ' + fieldWrapper.getValue());
-                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getType() - ' + fieldWrapper.getType());
-                        System.debug(LoggingLevel.DEBUG, 'totalField.value - ' + totalField.value);
-                        System.debug(LoggingLevel.DEBUG, 'totalField.getType() - ' + totalField.getType());
+                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getType()  - ' + fieldWrapper.getType());
+                        System.debug(LoggingLevel.DEBUG, 'totalField.value        - ' + totalField.value);
+                        System.debug(LoggingLevel.DEBUG, 'totalField.getType()    - ' + totalField.getType());
 
                         //if this is a valid column for total calculation and there is a value to calculate
                         if (ListViewAbstract.validTotalColumns.contains(totalField.getType()) && fieldWrapper.getValue() != null && fieldWrapper.getValue() != '')
                         {
                             if (totalField.getType() == 'currency')
-                                totalField.value = String.valueOf(Decimal.valueOf(String.valueOf(fieldWrapper.getValue())) + Decimal.valueOf(totalField.value));
-                            else
+                            {
+                                if (!String.isEmpty(fieldWrapper.getValue()))
+                                {
+                                    Decimal total = Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.value);
+                                    totalField.value = String.valueOf(total);
+                                }
+                            } else {
                                 totalField.value = String.valueOf(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.value));
+                            }
 
                             
                         }

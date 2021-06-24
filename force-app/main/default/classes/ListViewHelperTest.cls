@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-19-2020
+ * @last modified on  : 06-16-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -29,12 +29,12 @@ private class ListViewHelperTest {
                         'FROM List_View_Config__c';
 
         //(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
-        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null, false);
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null, false, -1);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true);
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -44,7 +44,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null, false);
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -62,12 +62,12 @@ private class ListViewHelperTest {
                         'FROM List_View_Config__c ' +
                         'ORDER BY List_View_Object__c';
 
-        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null, false);
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true);
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -77,7 +77,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null, false);
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -94,12 +94,12 @@ private class ListViewHelperTest {
                        'FROM List_View_Config__c ' +
                        'LIMIT 100';
 
-        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null, false);
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true);
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -109,7 +109,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null, false);
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -127,12 +127,12 @@ private class ListViewHelperTest {
                         'ORDER BY List_View_Object__c ' +
                         'LIMIT 100';
 
-        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null, false);
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true);
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -142,7 +142,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null, false);
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -171,12 +171,12 @@ private class ListViewHelperTest {
                               'ORDER BY Order__c ASC) ' + 
                         'FROM List_View_Config__c';
 
-        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null, false);
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true);
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -186,7 +186,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null, false);
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -202,12 +202,12 @@ private class ListViewHelperTest {
                                 'ORDER BY Name) ' + 
                         'FROM Account';
 
-        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null, false);
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true);
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -216,7 +216,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Name', true, 1));
         sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
 
-        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null, false);
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -234,12 +234,12 @@ private class ListViewHelperTest {
                                 'ORDER BY Name) ' + 
                         'FROM Account';
 
-        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null, false);
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true);
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -247,7 +247,7 @@ private class ListViewHelperTest {
         List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
         sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
 
-        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null, false);
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
         System.assert(objs.size() > 0);
 
         //-------------------------------------

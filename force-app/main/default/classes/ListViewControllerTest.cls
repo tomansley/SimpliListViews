@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 11-05-2020
+ * @last modified on  : 06-21-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -173,7 +173,7 @@ private class ListViewControllerTest {
         System.assert(listviews != null);
         System.assert(listviews.size() > 0);
 
-        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'AllAccounts', '', '', '', '');
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'AllAccounts', '', '', '', '', -1);
 
         System.assert(rows != null);
         System.assert(rows.getFieldMetaData() != null);

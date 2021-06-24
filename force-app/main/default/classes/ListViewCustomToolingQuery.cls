@@ -1,11 +1,12 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-02-2020
+ * @last modified on  : 06-24-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-22-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Updated getListViewData method to use convenience method
 **/
 public with sharing class ListViewCustomToolingQuery extends ListViewCustomToolingAbstract 
 {
@@ -41,7 +42,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
         String soql = requestData.data.get(DATA_QUERY);
 
-        soql = ListViewHelper.getSOQLQuery(soql, lvConfig, columnSortData, joinField, joinRecordIds, false);
+        soql = ListViewHelper.getSOQLQuery(soql, lvConfig, columnSortData, joinField, joinRecordIds);
 
 
         String endPoint = URL.getSalesforceBaseUrl().toExternalForm();

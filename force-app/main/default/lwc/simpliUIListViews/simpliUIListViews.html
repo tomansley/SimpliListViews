@@ -2,323 +2,335 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 06-15-2021
+  @last modified on  : 06-23-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-03-2020   tom.h.ansley@medtronic.com   Initial Version
 -->
 <template>
-    <template if:true={spinner}>
-        <lightning-spinner alternative-text="Loading"></lightning-spinner>
-    </template>
+    <div class="outerDiv">
+        <template if:true={spinner}>
+            <lightning-spinner alternative-text="Loading" class="pageSpinnerHolder"></lightning-spinner>
+        </template>
 
-    <!-- ------------------------------------------------------------------------ -->
-    <!-- Section which handles the initialization of the list views if its needed -->
-    <!-- ------------------------------------------------------------------------ -->
-    <template if:false={isInit}>
-        <lightning-card>
-                <template if:false={showProgress}>
-                    <div style="padding-left: 10px;">
-                        <lightning-icon icon-name="standard:first_non_empty" 
-                                        alternative-text="List Views Not Initialized" 
-                                        title="List Views Not Initialized">
-                        </lightning-icon>&nbsp;&nbsp;
-                        List views must be initialized. Click  
-                        <lightning-button-icon style="padding: 10px;" title="Process List Views" 
-                            size="small" 
-                            icon-name="action:new_task" 
-                            onclick={handleProcessListViewsButtonClick}>
-                        </lightning-button-icon>
-                        to process the list views.
+        <!-- ------------------------------------------------------------------------ -->
+        <!-- Section which handles the initialization of the list views if its needed -->
+        <!-- ------------------------------------------------------------------------ -->
+        <template if:false={isInit}>
+            <lightning-card>
+                    <template if:false={showProgress}>
+                        <div style="padding-left: 10px;">
+                            <lightning-icon icon-name="standard:first_non_empty" 
+                                            alternative-text="List Views Not Initialized" 
+                                            title="List Views Not Initialized">
+                            </lightning-icon>&nbsp;&nbsp;
+                            List views must be initialized. Click  
+                            <lightning-button-icon style="padding: 10px;" title="Process List Views" 
+                                size="small" 
+                                icon-name="action:new_task" 
+                                onclick={handleProcessListViewsButtonClick}>
+                            </lightning-button-icon>
+                            to process the list views.
+                        </div>
+                    </template>
+                    <template if:true={showProgress}>
+                        <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
+                                                                working-text="List Views Processing Status"
+                                                                complete-text="List views have been initialized. A full refresh of the current page is required to see results.">
+                        </c-simpli-u-i-list-views-init-progress-bar>
+                    </template>
+            </lightning-card>
+            <br/>
+        </template>
+
+        <template if:true={isInit}>
+            <lightning-card>
+                <template if:true={hasMainTitle}>
+                    <div slot="title">
+                        {mainTitle}
                     </div>
                 </template>
-                <template if:true={showProgress}>
-                    <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
-                                                               working-text="List Views Processing Status"
-                                                               complete-text="List views have been initialized. A full refresh of the current page is required to see results.">
-                    </c-simpli-u-i-list-views-init-progress-bar>
-                </template>
-        </lightning-card>
-        <br/>
-    </template>
+                
+                <lightning-layout>
+                    <lightning-layout-item padding="horizontal-small" style="width: 20%;">
+                        <lightning-combobox placeholder="Select Object" 
+                                            label="Object" 
+                                            value={selectedObject} 
+                                            onchange={handleObjectChange} 
+                                            options={objectList}
+                                            variant=label-hidden>
+                        </lightning-combobox>                        
+                    </lightning-layout-item>
+                    <template if:true={selectedObject}>
+                        <lightning-layout-item style="width: 20%;">
+                            <lightning-combobox placeholder="Select List View" 
+                                                label="List View" 
+                                                value={selectedListView} 
+                                                onchange={handleListViewSelected} 
+                                                options={listViewList}
+                                                variant=label-hidden
+                                                title={modifiedText}>
+                            </lightning-combobox>
+                        </lightning-layout-item>
+                    </template>
 
-    <template if:true={isInit}>
-        <lightning-card>
-            <template if:true={hasMainTitle}>
-                <div slot="title">
-                    {mainTitle}
-                </div>
-            </template>
-            
-            <lightning-layout>
-                <lightning-layout-item padding="horizontal-small" style="width: 20%;">
-                    <lightning-combobox placeholder="Select Object" 
-                                        label="Object" 
-                                        value={selectedObject} 
-                                        onchange={handleObjectChange} 
-                                        options={objectList}
-                                        variant=label-hidden>
-                    </lightning-combobox>                        
-                </lightning-layout-item>
-                <template if:true={selectedObject}>
-                    <lightning-layout-item style="width: 20%;">
-                        <lightning-combobox placeholder="Select List View" 
-                                            label="List View" 
-                                            value={selectedListView} 
-                                            onchange={handleListViewSelected} 
-                                            options={listViewList}
-                                            variant=label-hidden
-                                            title={modifiedText}>
-                        </lightning-combobox>
-                    </lightning-layout-item>
-                </template>
-                <template if:true={displayURL}>
-                    <template if:true={listViewData}>
-                        <template if:true={listViewData.isCoreListView}>
-                            <lightning-layout-item padding="horizontal-small">
-                                <a href={listViewData.coreListViewURL} target="_blank">
-                                    <lightning-button-icon title="Go to the original SFDC list view." 
-                                                            size="medium" 
-                                                            icon-name="utility:picklist_choice">
-                                    </lightning-button-icon></a>
-                            </lightning-layout-item>
-                        </template>
-                    </template>
-                </template>
-                <template if:true={listViewData}>
-                    <lightning-layout-item padding="horizontal-small">
-                        <template if:false={isPinned}>
-                            <lightning-button-icon title="Pin this list view." 
-                                                    size="medium" 
-                                                    icon-name="utility:pin" 
-                                                    onclick={handlePinningClick}>
-                            </lightning-button-icon>
-                        </template>
-                        <template if:true={isPinned}>
-                            <lightning-button-icon title="Unpin this list view." 
-                                                    size="medium" 
-                                                    icon-name="utility:pinned" 
-                                                    onclick={handleUnpinningClick}>
-                            </lightning-button-icon>
-                        </template>
-                    </lightning-layout-item>
-                </template>
-                <template if:true={displayRowCount}>
-                    <template if:true={listViewData}>
-                        <template if:true={displayExportButton}>
-                            <lightning-layout-item title="Click to export list view data" padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                                Rows:&nbsp;<a download={selectedListViewExportName} type='text/csv' onclick={handleDownloadData}>{listViewData.rowCount}</a>
-                            </lightning-layout-item>
-                        </template>
-                        <template if:false={displayExportButton}>
-                            <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                                Rows: {listViewData.rowCount}
-                            </lightning-layout-item>
-                        </template>
-                    </template>
-                </template>
-                <template if:true={displaySelectedCount}>
-                    <template if:true={listViewData}>
-                        <template if:true={displayExportButton}>
-                            <lightning-layout-item title="Click to export selected list view data" padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                                Selected:&nbsp;<a download={selectedListViewExportName} type='text/csv' onclick={handleSelectedDownloadData}>{selectedRecordCount}</a>
-                            </lightning-layout-item>
-                        </template>
-                        <template if:false={displayExportButton}>
-                            <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                                Selected: {selectedRecordCount}
-                            </lightning-layout-item>
-                        </template>
-                    </template>
-                </template>
-                <lightning-layout-item alignment-bump="left"  padding="horizontal-small">
-                    <lightning-layout>
-                        <template if:true={displayActions}>
-                            <template if:true={listViewData}>
-                                <lightning-layout-item padding="horizontal-small">
-                                    <lightning-combobox placeholder="Select an Action"
-                                                    label="Action" 
-                                                    value={selectedAction} 
-                                                    onchange={handleActionSelect} 
-                                                    options={objectActionList}
-                                                    variant=label-hidden>
-                                    </lightning-combobox>
-                                </lightning-layout-item>
+                    <lightning-layout-item style="width: 3%;">
+                        <div style="font-size: 1.1rem;">
+                            <template if:true={dataSpinner}>
+                                <div class="dataSpinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                </div>
                             </template>
-                        </template>
-                        <template if:true={displayReprocess}>
-                            <lightning-layout-item>
-                                <lightning-button-icon title="List view not showing up or refreshing? Reprocess by clicking here." 
-                                                    size="medium" 
-                                                    icon-name="action:new_task" 
-                                                    onclick={handleProcessListViewsButtonClick}>
-                                </lightning-button-icon>
-                            </lightning-layout-item>
-                        </template>
+                        </div>
+                    </lightning-layout-item>
+
+                    <template if:true={displayURL}>
                         <template if:true={listViewData}>
-                            <template if:true={allowRefresh}>
-                                <lightning-layout-item  padding="horizontal-small">
-                                    <template if:true={isRefreshed}>
-                                        <lightning-button-icon title="Click to STOP auto refreshing." 
+                            <template if:true={listViewData.isCoreListView}>
+                                <lightning-layout-item padding="horizontal-small">
+                                    <a href={listViewData.coreListViewURL} target="_blank">
+                                        <lightning-button-icon title="Go to the original SFDC list view." 
                                                                 size="medium" 
-                                                                icon-name="utility:routing_offline" 
-                                                                onclick={handleAutoRefreshButtonClick}>
-                                        </lightning-button-icon>
-                                    </template>
-                                    <template if:false={isRefreshed}>
-                                        <lightning-button-icon title="Click to START auto refreshing." 
-                                                                size="medium" 
-                                                                icon-name="utility:refresh" 
-                                                                onclick={handleAutoRefreshButtonClick}>
-                                        </lightning-button-icon>
-                                    </template>
+                                                                icon-name="utility:picklist_choice">
+                                        </lightning-button-icon></a>
                                 </lightning-layout-item>
                             </template>
-                            <template if:true={allowAdmin}>
+                        </template>
+                    </template>
+                    <template if:true={listViewData}>
+                        <lightning-layout-item padding="horizontal-small">
+                            <template if:false={isPinned}>
+                                <lightning-button-icon title="Pin this list view." 
+                                                        size="medium" 
+                                                        icon-name="utility:pin" 
+                                                        onclick={handlePinningClick}>
+                                </lightning-button-icon>
+                            </template>
+                            <template if:true={isPinned}>
+                                <lightning-button-icon title="Unpin this list view." 
+                                                        size="medium" 
+                                                        icon-name="utility:pinned" 
+                                                        onclick={handleUnpinningClick}>
+                                </lightning-button-icon>
+                            </template>
+                        </lightning-layout-item>
+                    </template>
+                    <template if:true={displayRowCount}>
+                        <template if:true={listViewData}>
+                            <template if:true={displayExportButton}>
+                                <lightning-layout-item title="Click to export list view data" padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                    Rows:&nbsp;<a download={selectedListViewExportName} type='text/csv' onclick={handleDownloadData}>{listViewDataRowsSize}</a>
+                                </lightning-layout-item>
+                            </template>
+                            <template if:false={displayExportButton}>
+                                <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                    Rows: {listViewDataRowsSize}
+                                </lightning-layout-item>
+                            </template>
+                        </template>
+                    </template>
+                    <template if:true={displaySelectedCount}>
+                        <template if:true={listViewData}>
+                            <template if:true={displayExportButton}>
+                                <lightning-layout-item title="Click to export selected list view data" padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                    Selected:&nbsp;<a download={selectedListViewExportName} type='text/csv' onclick={handleSelectedDownloadData}>{selectedRecordCount}</a>
+                                </lightning-layout-item>
+                            </template>
+                            <template if:false={displayExportButton}>
+                                <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                    Selected: {selectedRecordCount}
+                                </lightning-layout-item>
+                            </template>
+                        </template>
+                    </template>
+                    <lightning-layout-item alignment-bump="left"  padding="horizontal-small">
+                        <lightning-layout>
+                            <template if:true={canDisplayActions}>
+                                <template if:true={listViewData}>
+                                    <lightning-layout-item padding="horizontal-small">
+                                        <lightning-combobox placeholder="Select an Action"
+                                                        label="Action" 
+                                                        value={selectedAction} 
+                                                        onchange={handleActionSelect} 
+                                                        options={objectActionList}
+                                                        variant=label-hidden>
+                                        </lightning-combobox>
+                                    </lightning-layout-item>
+                                </template>
+                            </template>
+                            <template if:true={displayReprocess}>
                                 <lightning-layout-item>
-                                    <lightning-button-icon title="List view administration." 
-                                                            size="medium" 
-                                                            icon-name="utility:settings" 
-                                                            onclick={handleAdminButtonClick}>
+                                    <lightning-button-icon title="List view not showing up or refreshing? Reprocess by clicking here." 
+                                                        size="medium" 
+                                                        icon-name="action:new_task" 
+                                                        onclick={handleProcessListViewsButtonClick}>
                                     </lightning-button-icon>
                                 </lightning-layout-item>
                             </template>
-                        </template>
-                    </lightning-layout>
-                </lightning-layout-item>
-            </lightning-layout>
-        </lightning-card>
-    </template>
+                            <template if:true={listViewData}>
+                                <template if:true={allowRefresh}>
+                                    <lightning-layout-item  padding="horizontal-small">
+                                        <template if:true={isRefreshed}>
+                                            <lightning-button-icon title="Click to STOP auto refreshing." 
+                                                                    size="medium" 
+                                                                    icon-name="utility:routing_offline" 
+                                                                    onclick={handleAutoRefreshButtonClick}>
+                                            </lightning-button-icon>
+                                        </template>
+                                        <template if:false={isRefreshed}>
+                                            <lightning-button-icon title="Click to START auto refreshing." 
+                                                                    size="medium" 
+                                                                    icon-name="utility:refresh" 
+                                                                    onclick={handleAutoRefreshButtonClick}>
+                                            </lightning-button-icon>
+                                        </template>
+                                    </lightning-layout-item>
+                                </template>
+                                <template if:true={allowAdmin}>
+                                    <lightning-layout-item>
+                                        <lightning-button-icon title="List view administration." 
+                                                                size="medium" 
+                                                                icon-name="utility:settings" 
+                                                                onclick={handleAdminButtonClick}>
+                                        </lightning-button-icon>
+                                    </lightning-layout-item>
+                                </template>
+                            </template>
+                        </lightning-layout>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </lightning-card>
+        </template>
 
-    <template if:true={listViewData}>
-        <lightning-card>
-            <table aria-multiselectable="true" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" style="table-layout:fixed" role="grid">
-                <thead>
-                    <tr class="slds-line-height_reset">
-                        <th class="slds-text-align_right" scope="col" style="width:3.25rem">
-                            <div class="slds-th__action slds-th__action_form">
-                                <div class="slds-checkbox">
-                                    <lightning-input type="checkbox" 
-                                                    variant="label-hidden" 
-                                                    value="all" 
-                                                    onchange={handleRecordSelectChange}>
-                                    </lightning-input>
-                                </div>
-                            </div>
-                        </th>
-                        <template for:each={listViewData.fieldMetaData} for:item="field">
-                            <th key={field.label} 
-                                aria-label={field.label} 
-                                aria-sort="ascending" 
-                                class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc" 
-                                scope="col">
-
-                                <div onmouseup={setNewWidth}>
-                                    <template if:true={field.sortable}>
-                                        <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
-                                            <span class="slds-assistive-text">Sort by: </span>
-                                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                                <span class="slds-truncate" 
-                                                    title={field.sortingTooltip} 
-                                                    onclick={sortColumns} 
-                                                    data-sortdir={field.sortDir}
-                                                    data-name={field.name}
-                                                    data-sortindex={field.sortIndex}>{field.label}</span>
-                                                <div if:true={field.sortIndex}>
-                                                    <div if:true={field.sortDir}>
-                                                        &nbsp;(&#9660;{field.sortIndexDisplay})
-                                                    </div>
-                                                    <div if:false={field.sortDir}>
-                                                        &nbsp;(&#9650;{field.sortIndexDisplay})
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </template>
-                                    <template if:false={field.sortable}>
-                                        <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                            <span class="slds-truncate" title={field.label}>
-                                                {field.label}
-                                            </span>
-                                        </div>
-                                    </template>
-                                </div>
-                                <div class="slds-resizable">
-                                    <input type="range" min="20" max="1000" class="slds-assistive-text" id={field.label} tabindex="0" />
-                                    <span class="slds-resizable__handle" onmousedown={calculateWidth}>
-                                        <span class="slds-resizable__divider"></span>
-                                    </span>
-                                </div>
-
-                            </th>
-                        </template>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template for:each={listViewData.rows} for:item="rowData">
-                        <tr key={rowData.rowId} style="height: 30px;" bgcolor={rowData.highlightColor}>
-                           <td class="slds-text-align_right" style="width:3.25rem">
-                                <div class="slds-checkbox">
-                                    <template if:false={rowData.isTotals}>
+        <template if:true={listViewData}>
+            <lightning-card>
+                <table aria-multiselectable="true" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" style="table-layout:fixed" role="grid">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th class="slds-text-align_right" scope="col" style="width:3.25rem">
+                                <div class="slds-th__action slds-th__action_form">
+                                    <div class="slds-checkbox">
                                         <lightning-input type="checkbox" 
                                                         variant="label-hidden" 
-                                                        name={rowData.checkBoxId} 
-                                                        value={rowData.rowId} 
+                                                        value="all" 
                                                         onchange={handleRecordSelectChange}>
                                         </lightning-input>
-                                    </template>
+                                    </div>
                                 </div>
-                            </td>
-                            <template for:each={rowData.fields} for:item="fieldData">
-                                <td key={fieldData.key} data-label={fieldData.label}>
-                                    <template if:true={fieldData.uRL}>
-                                        <template if:true={rowData.isDeleted}>
-                                            <div class="slds-truncate" title={fieldData.value}>
-                                                <a style="color:red;" href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
+                            </th>
+                            <template for:each={listViewData.fieldMetaData} for:item="field">
+                                <th key={field.label} 
+                                    aria-label={field.label} 
+                                    aria-sort="ascending" 
+                                    class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc" 
+                                    scope="col">
+
+                                    <div onmouseup={setNewWidth}>
+                                        <template if:true={field.sortable}>
+                                            <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
+                                                <span class="slds-assistive-text">Sort by: </span>
+                                                <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                    <span class="slds-truncate" 
+                                                        title={field.sortingTooltip} 
+                                                        onclick={sortColumns} 
+                                                        data-sortdir={field.sortDir}
+                                                        data-name={field.name}
+                                                        data-sortindex={field.sortIndex}>{field.label}</span>
+                                                    <div if:true={field.sortIndex}>
+                                                        <div if:true={field.sortDir}>
+                                                            &nbsp;(&#9660;{field.sortIndexDisplay})
+                                                        </div>
+                                                        <div if:false={field.sortDir}>
+                                                            &nbsp;(&#9650;{field.sortIndexDisplay})
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </template>
+                                        <template if:false={field.sortable}>
+                                            <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                <span class="slds-truncate" title={field.label}>
+                                                    {field.label}
+                                                </span>
                                             </div>
                                         </template>
-                                        <template if:false={rowData.isDeleted}>
-                                            <div class="slds-truncate" title={fieldData.value}>
-                                                <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
-                                            </div>
-                                        </template>
-                                    </template>
-                                    <template if:false={fieldData.uRL}>
-                                        <template if:true={rowData.isDeleted}>
-                                            <div style="color:red;" class="slds-truncate" title={fieldData.value}>
-                                                {fieldData.value}
-                                            </div>
-                                        </template>
-                                        <template if:false={rowData.isDeleted}>
-                                            <div class="slds-truncate" title={fieldData.value}>
-                                                {fieldData.value}
-                                            </div>
-                                        </template>
-                                    </template>
-                                </td>
+                                    </div>
+                                    <div class="slds-resizable">
+                                        <input type="range" min="20" max="1000" class="slds-assistive-text" id={field.label} tabindex="0" />
+                                        <span class="slds-resizable__handle" onmousedown={calculateWidth}>
+                                            <span class="slds-resizable__divider"></span>
+                                        </span>
+                                    </div>
+
+                                </th>
                             </template>
                         </tr>
-                    </template>            
-                </tbody>
-            </table>
-        </lightning-card>
-    </template>
+                    </thead>
+                    <tbody>
+                        <template for:each={listViewDataRows} for:item="rowData">
+                            <tr key={rowData.rowId} style="height: 30px;" bgcolor={rowData.highlightColor}>
+                            <td class="slds-text-align_right" style="width:3.25rem">
+                                    <div class="slds-checkbox">
+                                        <template if:false={rowData.isTotals}>
+                                            <lightning-input type="checkbox" 
+                                                            variant="label-hidden" 
+                                                            name={rowData.checkBoxId} 
+                                                            value={rowData.rowId} 
+                                                            onchange={handleRecordSelectChange}>
+                                            </lightning-input>
+                                        </template>
+                                    </div>
+                                </td>
+                                <template for:each={rowData.fields} for:item="fieldData">
+                                    <td key={fieldData.key} data-label={fieldData.label}>
+                                        <template if:true={fieldData.uRL}>
+                                            <template if:true={rowData.isDeleted}>
+                                                <div class="slds-truncate" title={fieldData.value}>
+                                                    <a style="color:red;" href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
+                                                </div>
+                                            </template>
+                                            <template if:false={rowData.isDeleted}>
+                                                <div class="slds-truncate" title={fieldData.value}>
+                                                    <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick}>{fieldData.value}</a>
+                                                </div>
+                                            </template>
+                                        </template>
+                                        <template if:false={fieldData.uRL}>
+                                            <template if:true={rowData.isDeleted}>
+                                                <div style="color:red;" class="slds-truncate" title={fieldData.value}>
+                                                    {fieldData.value}
+                                                </div>
+                                            </template>
+                                            <template if:false={rowData.isDeleted}>
+                                                <div class="slds-truncate" title={fieldData.value}>
+                                                    {fieldData.value}
+                                                </div>
+                                            </template>
+                                        </template>
+                                    </td>
+                                </template>
+                            </tr>
+                        </template>            
+                    </tbody>
+                </table>
+            </lightning-card>
+        </template>
 
-    <!-- The modal view if the ACTION button is pressed and we need to display something -->
-    <c-simpli-u-i-list-views-action-modal show-modal={showActionModal}
-                                    action-api-name={selectedAction}
-                                    record-count={selectedRecordCount}
-                                    record-ids={selectedRecordIdsStr}
-                                    onprocessed={processActionModal}
-                                    oncancelled={cancelActionModal}>
-    </c-simpli-u-i-list-views-action-modal>
+        <!-- The modal view if the ACTION button is pressed and we need to display something -->
+        <c-simpli-u-i-list-views-action-modal show-modal={showActionModal}
+                                        action-api-name={selectedAction}
+                                        record-count={selectedRecordCount}
+                                        record-ids={selectedRecordIdsStr}
+                                        onprocessed={processActionModal}
+                                        oncancelled={cancelActionModal}>
+        </c-simpli-u-i-list-views-action-modal>
 
-    <!-- The modal view if the ADMIN button is pressed and we need to display something -->
-    <c-simpli-u-i-list-views-admin-modal show-modal={showAdminModal}
-                                    list-view-object={selectedObject}
-                                    list-view-name={selectedListView}
-                                    onclose={processAdminModal}>
-    </c-simpli-u-i-list-views-admin-modal>
-
+        <!-- The modal view if the ADMIN button is pressed and we need to display something -->
+        <c-simpli-u-i-list-views-admin-modal show-modal={showAdminModal}
+                                        list-view-object={selectedObject}
+                                        list-view-name={selectedListView}
+                                        onclose={processAdminModal}>
+        </c-simpli-u-i-list-views-admin-modal>
+    </div>
 </template>
