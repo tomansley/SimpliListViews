@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-24-2021
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -613,16 +613,17 @@ global with sharing class ListViewHelper {
             
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
             {
-                //if the field name is a lookup to another object then just assume its correct
-                //otherwise make sure the field name is valid
-                if (columnSortData.fieldName.contains('.')
-                    || HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, columnSortData.fieldName))
+                //make sure the field name is valid
+                if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, columnSortData.fieldName))
                 {
                     orderByStr += columnSortData.fieldName + ' ';
                     if (columnSortData.sortDirection == true)
                         orderByStr += 'ASC NULLS LAST, ';
                     else
                         orderByStr += 'DESC NULLS FIRST, ';
+                } else {
+                    System.debug(LoggingLevel.DEBUG, 'Sort column not valid - ' + columnSortData.fieldName);
+                    throw new ListViewException('Sort column not valid - ' + columnSortData.fieldName);
                 }
             }
 
@@ -871,6 +872,8 @@ global with sharing class ListViewHelper {
                         orderByStr += 'ASC NULLS LAST, ';
                     else
                         orderByStr += 'DESC NULLS FIRST, ';
+                } else {
+                    System.debug(LoggingLevel.DEBUG, 'Sort column not valid - ' + columnSortData.fieldName);
                 }
             }
 
@@ -1100,10 +1103,13 @@ global with sharing class ListViewHelper {
         param2.List_View_Config__c = config.Id;
         param2.Parameter_Name__c   = 'TotalColumnsColor';
         param2.Parameter_Type__c   = 'Color';
-        param2.Parameter_Value__c  = '#E5F0FA';
+        param2.Parameter_Value__c  = '#6C95BD';
         param2.Parameter_Label__c  = 'Total Row Color';
         params2.add(param2);
         
+        //---------------------------------------
+        // ALL:ALL Config
+        //---------------------------------------
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'ListViewObjects';
@@ -1185,6 +1191,25 @@ global with sharing class ListViewHelper {
         params2.add(param2);
 
         param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'MaxRowsDisplayed';
+        param2.Parameter_Type__c   = 'Number';
+        param2.Parameter_Value__c  = '2500';
+        param2.Parameter_Label__c  = 'Max Rows Displayed';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'QueryPagingSize';
+        param2.Parameter_Type__c   = 'Number';
+        param2.Parameter_Value__c  = '250';
+        param2.Parameter_Label__c  = 'Query Paging Size';
+        params2.add(param2);
+
+        //---------------------------------------
+        // 
+        //---------------------------------------
+        param2 = new List_View_Config_Parameter__c();
 		param2.Parameter_Name__c = 'AdditionalFields';
 		param2.Parameter_Type__c = 'String';
 		param2.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
@@ -1203,7 +1228,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
 		param2.Parameter_Name__c = 'TotalColumnsColor';
 		param2.Parameter_Type__c = 'Color';
-		param2.Parameter_Value__c = '#E5F0FA';
+		param2.Parameter_Value__c = '#6C95BD';
 		param2.List_View_Config__c = config3.Id;
         param2.Parameter_Label__c  = 'Total Row Color';
         params2.add(param2);
@@ -1231,7 +1256,7 @@ global with sharing class ListViewHelper {
         List_View__c lv             = new List_View__c();
         lv.Custom_Apex_Class__c     = 'ListViewCustomToolingQuery';
         lv.Label__c                 = 'Apex Logs';
-        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"DurationMilliseconds","type":"string","label":"Duration"},{"fieldNameOrPath":"Id","type":"string","label":"Id"},{"fieldNameOrPath":"LogLength","type":"string","label":"Length"},{"fieldNameOrPath":"LogUserId","type":"string","label":"User"},{"fieldNameOrPath":"Operation","type":"string","label":"Operation"},{"fieldNameOrPath":"Request","type":"string","label":"Request"},{"fieldNameOrPath":"StartTime","type":"string","label":"Start Time"},{"fieldNameOrPath":"Status","type":"string","label":"Status"}]';
+        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"DurationMilliseconds","type":"decimal","label":"Duration"},{"fieldNameOrPath":"Id","type":"string","label":"Id"},{"fieldNameOrPath":"LogLength","type":"decimal","label":"Length"},{"fieldNameOrPath":"LogUserId","type":"string","label":"User"},{"fieldNameOrPath":"Operation","type":"string","label":"Operation"},{"fieldNameOrPath":"Request","type":"string","label":"Request"},{"fieldNameOrPath":"StartTime","type":"string","label":"Start Time"},{"fieldNameOrPath":"Status","type":"string","label":"Status"}]';
         lv.Core_ListView_Query__c   = 'SELECT DurationMilliseconds,Id,LogLength,LogUserId,Operation,Request,StartTime,Status FROM ApexLog ORDER BY StartTime DESC';
         lv.Object_Name__c           = 'ApexLog';
         lv.RecordTypeId             = ListViewHelper.customRTId;
@@ -1245,6 +1270,15 @@ global with sharing class ListViewHelper {
         lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"simpli_lv__List_View_Object__c","type":"string","label":"Object"},{"fieldNameOrPath":"LastModifiedDate","type":"string","label":"Last Modified"},{"fieldNameOrPath":"LastModifiedBy.Name","type":"string","label":"Last Modified By"},{"fieldNameOrPath":"simpli_lv__Primary_Key__c","type":"string","label":"Primary Key"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Name__c","type":"string","label":"Parameter Name"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Type__c","type":"string","label":"Parameter Type"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Label__c","type":"string","label":"Parameter Label"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Value__c","type":"string","label":"Parameter Value"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Field_Name__c","type":"string","label":"Field Name"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Highlight_Color__c","type":"string","label":"Highlight Color"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Operator__c","type":"string","label":"Operator"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Order__c","type":"string","label":"Order"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Value__c","type":"string","label":"Value"}]';
         lv.Core_ListView_Query__c   = 'SELECT Name,List_View_Object__c,LastModifiedDate,LastModifiedBy.Name,Primary_Key__c,(SELECT Parameter_Name__c,Parameter_Type__c,Parameter_Label__c,Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c),( SELECT Field_Name__c,Highlight_Color__c,Operator__c,Order__c,Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c';
         lv.Object_Name__c           = 'simpli_lv__List_View_Config__c';
+        lv.RecordTypeId             = ListViewHelper.customRTId;
+        lv.Subtype__c               = 'Manual';
+
+        lv                          = new List_View__c();
+        lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+        lv.Label__c                 = 'Custom Opportunity Example';
+        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath": "Name","type": "string","label": "Opp Name"},{"fieldNameOrPath": "StageName","type": "string","label": "Stage"},{"fieldNameOrPath": "CloseDate","type": "date","label": "Close Date"},{"fieldNameOrPath": "ExpectedRevenue","type": "currency","label": "Revenue"},{"fieldNameOrPath": "Account.Name","type": "string","label": "Acct Name"},{"fieldNameOrPath": "Account.Type","type": "string","label": "Acct Type"},{"fieldNameOrPath": "Account.Industry","type": "string","label": "Acct Industry"},{"fieldNameOrPath": "PriceBook2.Name","type": "string","label": "Price Book"},{"fieldNameOrPath": "PriceBook2.IsActive","type": "string","label": "PB Active"},{"fieldNameOrPath": "OpportunityLineItems.Name","type": "string","label": "LI Name"},{"fieldNameOrPath": "OpportunityLineItems.ListPrice","type": "currency","label": "Price"},{"fieldNameOrPath": "OpportunityLineItems.Product2.ProductCode","type": "string","label": "Prod Code"},{"fieldNameOrPath": "OpportunityLineItems.Product2.LastModifiedBy.Name","type": "string","label": "Last Modified"},{"fieldNameOrPath": "OpportunityLineItems.Quantity","type": "decimal","label": "Quantity"},{"fieldNameOrPath": "OpportunityLineItems.TotalPrice","type": "currency","label": "Total"}]';
+        lv.Core_ListView_Query__c   = 'SELECT Name, StageName, CloseDate, ExpectedRevenue, Account.Name, Account.Type, Account.Industry, Pricebook2.Name, PriceBook2.IsActive, (SELECT Name, ListPrice, Product2.Name, Product2.ProductCode, Product2.LastModifiedBy.Name, Quantity, TotalPrice FROM OpportunityLineItems) FROM Opportunity WHERE HasOpportunityLineItem = true AND IsWon = false AND IsClosed = false';
+        lv.Object_Name__c           = 'Opportunity';
         lv.RecordTypeId             = ListViewHelper.customRTId;
         lv.Subtype__c               = 'Manual';
 

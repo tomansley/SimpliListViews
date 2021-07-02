@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 06-24-2021
+ * @Last Modified On   : 06-28-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -20,6 +20,12 @@ public with sharing class ListViewConfigHelper {
     public static final String OPER_GREATER = 'Greater Than';
     public static final String OPER_LESS = 'Less Than';
     public static final String OPER_CONTAINS = 'Contains';
+
+    public static final String TYPE_STRING = 'string';
+    public static final String TYPE_DECIMAL = 'decimal';
+    public static final String TYPE_CURRENCY = 'currency';
+    public static final String TYPE_DATE = 'date';
+    public static final String TYPE_DATETIME = 'datetime';
 
     public static void setOrgWideConfigParam(String settingName, String value)
     {
@@ -263,7 +269,7 @@ public with sharing class ListViewConfigHelper {
         else if (name == 'RefreshRate') descr = 'The number of seconds between refreshes if the list view can be auto refreshed.';
         else if (name == 'ReturnSize') descr = 'The maximum number of rows of data that can be returned. Note that org and list view configuration takes precedence.';
         else if (name == 'TotalColumns') descr = 'String holding the API field names of the columns within the list view that should have a total in the footer.';
-        else if (name == 'TotalColumnsColor') descr = 'The HTML color that the footer row should be displayed in. i.e. #E5F0FA.';
+        else if (name == 'TotalColumnsColor') descr = 'The HTML color that the footer row should be displayed in. i.e. #6C95BD.';
         else if (name == 'AllRows') descr = 'Indicates whether deleted and archived records should be included in list view results.';
         return descr;
     }
@@ -389,9 +395,13 @@ public with sharing class ListViewConfigHelper {
             } else if (condition.Operator__c == OPER_NOT_EQUAL) {
                 if (value != condition.Value__c) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_GREATER) {
-                if (String.valueOf(value) > condition.Value__c) return condition.Highlight_Color__c;
+                if (type == TYPE_STRING && String.valueOf(value) > condition.Value__c) return condition.Highlight_Color__c;
+                else if (type == TYPE_DECIMAL && Decimal.valueOf(String.valueOf(value)) > Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == TYPE_DATE && Date.valueOf(value) > Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_LESS) {
-                if (String.valueOf(value) < condition.Value__c) return condition.Highlight_Color__c;
+                if (type == TYPE_STRING && String.valueOf(value) < condition.Value__c) return condition.Highlight_Color__c;
+                else if (type == TYPE_DECIMAL && Decimal.valueOf(String.valueOf(value)) < Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == TYPE_DATE && Date.valueOf(value) < Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_CONTAINS) {
                 if (((String) value).contains((String) condition.Value__c)) return condition.Highlight_Color__c;
             }

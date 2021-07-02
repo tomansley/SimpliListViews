@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-24-2021
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -11,6 +11,7 @@
 public with sharing abstract class ListViewAbstract {
     
     public static Set<String> validTotalColumns = new Set<String>{'integer', 'decimal', 'currency'};
+    public static Set<String> validNameColumnNames = new Set<String>{'name', 'casenumber'}; //holds the list of column names that if found will produce a link to the record.
 
     public List_View__c listview = null;                              //holds the list view record associated with this request.
     public List_View_Config__c config = null;                         //holds the SFDC list view config SObject
@@ -524,6 +525,8 @@ public with sharing abstract class ListViewAbstract {
 
                 //check of there is a condition name which matches a field
                 List<ListViewCondition> conditions = lvConfigConditions.get(field.name.toLowerCase());
+                if (conditions == null && !String.isEmpty(field.getLongName()))
+                    conditions = lvConfigConditions.get(field.getLongName().toLowerCase());
 
                 //if there is then validate
                 if (conditions != null)
@@ -560,7 +563,8 @@ public with sharing abstract class ListViewAbstract {
         public String type;
         public String url;             //the URL that the field should display if one is available.
         public String urlTarget;      //identifies the target of the URL
-        public String name;
+        public String name;            //the short API name of the field. i.e. quantity
+        public String longName;        //the long API name of the field i.e. opportunitylineitems.quantity
         public Boolean sortDir;        //true = asc, false = desc
         public String sortIndex;
         public Integer columnIndex;    //identifies the column that this field is a part of
@@ -627,6 +631,11 @@ public with sharing abstract class ListViewAbstract {
         public String getName()
         {
             return name;
+        }
+
+        public String getLongName()
+        {
+            return longName;
         }
         
         @AuraEnabled(cacheable=true)
@@ -956,7 +965,7 @@ public with sharing abstract class ListViewAbstract {
             else if (name == 'TotalColumns')
                 description = 'Comma delimited string holding the column API names within the list view that should have a total in the footer.';
             else if (name == 'TotalColumnsColor')
-                description = 'The HTML color that the footer row should be displayed in. i.e. #E5F0FA.';
+                description = 'The HTML color that the footer row should be displayed in. i.e. #6C95BD.';
             else if (name == 'AllRows')
                 description = 'Indicates whether deleted and archived records should be included in list view results. Deleted records are displayed in red in the list';
             return description;

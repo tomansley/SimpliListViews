@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-24-2021
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -173,7 +173,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
         //if totals have been configured
         if (lvConfig != null
             && lvConfig.getParameter('TotalColumns') != null 
-            && lvConfig.getParameter('TotalColumns').getValue() != '')
+            && !String.isEmpty(lvConfig.getParameter('TotalColumns').getValue()))
         {
 
             rows.hasTotalsRow = true;
@@ -206,7 +206,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                 for (FieldWrapper fieldWrapper: fields)
                 {
 
-                    FieldWrapper totalField = totalWrapper.getField(fieldWrapper.getName());
+                    FieldWrapper totalField = totalWrapper.getField(fieldWrapper.getName() + ':' + fieldWrapper.columnIndex);
 
                     //if this is the first pass then we will need to create a wrapper 
                     //regardless of whether its a column that is to be calculated.
@@ -214,11 +214,9 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                     {
                         String initValue = '';
 
-                        //for the very first column add the TOTALS string
-                        if (totalWrapper.fields.size() == 0)
-                            initValue = 'TOTALS';
                         //for any VALID calculation columns
-                        else if (ListViewAbstract.validTotalColumns.contains(fieldWrapper.getType()))
+                        if (ListViewAbstract.validTotalColumns.contains(fieldWrapper.getType())
+                            && totalColumns.contains(fieldWrapper.getName()))
                             initValue = '0';
                         else 
                             initValue = '';
@@ -245,12 +243,15 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                         System.debug(LoggingLevel.DEBUG, 'totalField.getType() - ' + totalField.getType());
 
                         //if this is a valid column for total calculation and there is a value to calculate
-                        if (ListViewAbstract.validTotalColumns.contains(totalField.getType()) && fieldWrapper.getValue() != null && fieldWrapper.getValue() != '')
+                        if (ListViewAbstract.validTotalColumns.contains(totalField.getType()) && !String.isEmpty(fieldWrapper.getValue()))
                         {
+                            System.debug(LoggingLevel.DEBUG, 'We have a valid column value to add to total');
+                            System.debug(LoggingLevel.DEBUG, 'Old value - ' + totalField.value);
                             if (totalField.getType() == 'currency')
                                 totalField.value = String.valueOf(Decimal.valueOf(String.valueOf(fieldWrapper.getValue())) + Decimal.valueOf(totalField.value));
                             else
                                 totalField.value = String.valueOf(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.value));
+                            System.debug(LoggingLevel.DEBUG, 'New value - ' + totalField.value);
 
                             
                         }

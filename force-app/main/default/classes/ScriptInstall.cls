@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 02-17-2021
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -45,7 +45,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             List<List_View__c> updatedListViews = new List<List_View__c>();
             for (List_View__c lv: listviews)
             {
-                if (lv.RecordTypeId == null || lv.RecordTypeId == '')
+                if (lv.RecordTypeId == null)
                 {
                     lv.RecordTypeId = ListViewHelper.coreRTId;
                     updatedListViews.add(lv);
@@ -61,7 +61,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             List<List_View_Action__c> updatedActions = new List<List_View_Action__c>();
             for (List_View_Action__c action: actions)
             {
-                if (action.RecordTypeId == null || action.RecordTypeId == '')
+                if (action.RecordTypeId == null)
                 {
                     action.RecordTypeId = ListViewActionHelper.coreRTId;
                     updatedActions.add(action);
@@ -168,6 +168,28 @@ global with sharing class ScriptInstall implements InstallHandler {
                     orgParams.put(param.Parameter_Name__c, param);
                 }
             
+                if (orgParams.get('MaxRowsDisplayed') == null)
+                {
+                    List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                    param.List_View_Config__c = orgWideConfig.Id;
+                    param.Parameter_Name__c   = 'MaxRowsDisplayed';
+                    param.Parameter_Type__c   = 'Number';
+                    param.Parameter_Value__c  = '2500';
+                    param.Parameter_Label__c  = 'Max Rows Displayed';
+                    orgParams.put(param.Parameter_Name__c, param);
+                }
+
+                if (orgParams.get('QueryPagingSize') == null)
+                {
+                    List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                    param.List_View_Config__c = orgWideConfig.Id;
+                    param.Parameter_Name__c   = 'QueryPagingSize';
+                    param.Parameter_Type__c   = 'Number';
+                    param.Parameter_Value__c  = '250';
+                    param.Parameter_Label__c  = 'Query Paging Size';
+                    orgParams.put(param.Parameter_Name__c, param);
+                }
+
                 if (orgParams.get('DisplayRowCount') == null)
                 {
                     List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
@@ -178,7 +200,6 @@ global with sharing class ScriptInstall implements InstallHandler {
                     param.Parameter_Label__c  = 'Display Row Count';
                     orgParams.put(param.Parameter_Name__c, param);
                 }
-
                 HelperDatabase.upsertRecords(orgParams.values(), 'simpli_lv__List_View_Config_Parameter__c');
             }
 

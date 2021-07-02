@@ -27,7 +27,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track newConditionValue;
     @track newConditionOrder;
     @track newConditionColor;
-    @track configChanged;
+    @track configChanged;               //identifies if a change has been made which needs to force a data refresh
 
     get booleanList() {
         return [
@@ -167,7 +167,6 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             return;
         }
 
-        this.configChanged = true;
         console.log('Param being processed');
 
         processParamChange({ objectName: this.listViewObject, listViewName: this.listViewName, paramName: name, paramValue: value, paramLabel: label, paramType: type})
@@ -191,6 +190,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                         variant: 'success',
                         mode: 'dismissable'
                     }));
+                    this.configChanged = true;
                 
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
@@ -291,6 +291,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                         mode: 'dismissable'
                     }));
                     refreshApex(this.wiredListViewConfigResult);
+                    this.configChanged = true;
                 
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
@@ -321,12 +322,14 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
     handleClose() {
         refreshApex(this.wiredListViewConfigResult);
-        this.dispatchEvent(new CustomEvent('close'));
+        this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
+        this.configChanged = false;
     }
 
     handleCloseClick(event) {
         refreshApex(this.wiredListViewConfigResult);
-        this.dispatchEvent(new CustomEvent('close'));
+        this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
+        this.configChanged = false;
     }
 
     handleConditionFieldChange(event) {

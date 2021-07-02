@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-05-2020
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -10,12 +10,18 @@
 @isTest
 private class ScriptInstallTest {
 
-	@isTest
+    @testSetup
+    static void createSampleData()
+    {
+        ListViewHelper.insertCoreConfiguration();
+    }
+
+ 	@isTest
 	static void ScriptInstallTest()
 	{
 		ScriptInstall postinstall = new ScriptInstall();
         Test.testInstall(postinstall, null);
-        
+        Test.testInstall(postinstall,  new Version(1, 0));
         System.assert(true);
 	}
 }

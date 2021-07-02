@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-24-2021
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -125,10 +125,11 @@ public with sharing class ListViewCore extends ListViewAbstract {
         * Method to take a list of SObjects retrieved using a listviews query and convert the
         * rows into something that front end lightning components can handle.
         */
-    private static ListViewAbstract.RowsWrapper handleRowsToWrapper(List<SObject> dataRows, List_View__c listView, 
-                                                   ListViewConfigWrapper lvConfig,
-                                                   List<ListViewHelper.ColumnSortData> sortData,
-                                                   Integer offset)
+    private static ListViewAbstract.RowsWrapper handleRowsToWrapper(List<SObject> dataRows, 
+                                                                    List_View__c listView, 
+                                                                    ListViewConfigWrapper lvConfig,
+                                                                    List<ListViewHelper.ColumnSortData> sortData,
+                                                                    Integer offset)
     {
         System.debug('Starting ListViewCore.handleRowsToWrapper - ' + System.now().getTime());
 
@@ -251,8 +252,12 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, fieldName);
 
+                System.debug(LoggingLevel.DEBUG, 'Field Data - ' + fieldData);
+
                 String fieldDataValue = String.valueOf(fieldData.value);
                 String fieldDataType = fieldData.type.name().toLowerCase();
+
+                System.debug(LoggingLevel.DEBUG, 'Field Data Type - ' + fieldDataType + ', Value - ' + fieldDataValue);
 
                 if (fieldDataType == 'date' && fieldDataValue != null)
                     fieldDataValue = fieldDataValue.removeEnd(' 00:00:00');
@@ -263,12 +268,14 @@ public with sharing class ListViewCore extends ListViewAbstract {
                                                     fieldName,
                                                     columnIndex);
 
-                if (fieldData.name == 'Name') {
-                    if (fieldData.fieldObj != null)
-                    {
-                        String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';
-                        field.setURL(url);
-                    }
+                System.debug(LoggingLevel.DEBUG, 'Field - ' + field);
+
+                if (ListViewAbstract.validNameColumnNames.contains(fieldData.name.toLowerCase())             //if we have the name of the object
+                    && fieldData.fieldObj != null        //if we have field data.
+                    && fieldData.value != null)  //if we have a display value
+                {
+                    String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';
+                    field.setURL(url);
                 }
 
                 if (sortDataByFieldName.containsKey(fieldName))
@@ -289,7 +296,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
         //if totals have been configured and we are not paging.
         if (lvConfig != null
             && lvConfig.getParameter('TotalColumns') != null 
-            && lvConfig.getParameter('TotalColumns').getValue() != ''
+            && !String.isEmpty(lvConfig.getParameter('TotalColumns').getValue())
             && offset == -1)
         {
 
@@ -335,7 +342,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
                         if (totalWrapper.fields.size() == 0) //USE "fields" instead of getFields() to ensure UI works correctly.
                             initValue = 'TOTALS';
                         //for any VALID calculation columns
-                        else if (ListViewAbstract.validTotalColumns.contains(fieldWrapper.getType()))
+                        else if (ListViewAbstract.validTotalColumns.contains(fieldWrapper.getType())
+                                && totalColumns.contains(fieldWrapper.getName()))
                             initValue = '0';
                         else 
                             initValue = '';

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 06-24-2021
+ * @last modified on  : 07-01-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -387,13 +387,22 @@ public without sharing class ListViewController
         return result;
     }
 
-    /*
-       
-     */
-    @AuraEnabled(cacheable=true)
-    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String sortChanged, String joinFieldName, String joinData, Integer offset)
+    /**
+    * @description Method to retrieve list view data based on user provided criteria.
+    * @author tom.h.ansley@medtronic.com | 06-28-2021 
+    * @param pageName the name of the lightning page that the list is being displayed on. This is used for list view config retrieval
+    * @param objectName the name of the list view object
+    * @param listViewName the name of the list view
+    * @param sortData the sorting information for the list view.
+    * @param joinFieldName used by a list view component listening on the same page. Indicates the field name used to join the data between the two list views.
+    * @param joinData the joined field data to use when performing the query.
+    * @param offset indicates the offset if the data is being paged.
+    * @return ListViewAbstract.RowsWrapper 
+    **/
+    @AuraEnabled
+    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + sortChanged + ',' + joinFieldName + ',' + joinData + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ')');
         
         ListViewAbstract.RowsWrapper rowData                   = null;
 
@@ -512,8 +521,7 @@ public without sharing class ListViewController
             System.debug(LoggingLevel.FINE, debug);
             
             //update the sorting for this user for this list view for this component. This MUST be done at the end!
-            if (sortChanged != null && sortChanged == 'true')
-                ListViewUserConfigHelper.updateSortConfigValue(pageName, sortStr, objectName, listviewName);
+            ListViewUserConfigHelper.updateSortConfigValue(pageName, sortStr, objectName, listviewName);
 
         }
         return rowData;
