@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-29-2020
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -51,13 +51,7 @@ public with sharing class HelperREST {
         Http h = new Http();
         HttpResponse res = null;
         
-        if (!Test.isRunningTest())
-            res = h.send(req);
-        else {
-            res = new HttpResponse();
-            res.setBody('');
-            res.setStatusCode(200);
-        }
+        res = h.send(req);
 
         System.debug(LoggingLevel.DEBUG, 'RESPONSE - ' + res);
         System.debug(LoggingLevel.DEBUG, 'RESPONSE BODY - ' + res.getBody());
@@ -77,7 +71,12 @@ public with sharing class HelperREST {
 
         String url = URL.getSalesforceBaseUrl().toExternalForm() + '/services/data';
 
-        String json = performInternalCallout(url, null);
+        String json = null;
+        if (!Test.isRunningTest())
+            json = performInternalCallout(url, null);
+        else {
+            json = '[{"label":"Winter \'21","url":"/services/data/v50.0","version":"50.0"},{"label":"Spring \'21","url":"/services/data/v51.0","version":"51.0"},{"label":"Summer \'21","url":"/services/data/v52.0","version":"52.0"}]';
+        }
     
         List<VersionResponse> parsedList = (List<VersionResponse>)System.JSON.deserialize(json, List<VersionResponse>.class); 
     
