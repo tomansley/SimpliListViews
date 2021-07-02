@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-16-2021
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -15,7 +15,9 @@ private class ListViewHelperTest {
     {
         ListViewHelper.insertCoreConfiguration();
 
-        HelperTest.insertAccount('Testy Account');
+        Account acct = HelperTest.insertAccount('Testy Account');
+        Opportunity opp = HelperTest.insertOpportunity(acct, 'Opportunity 1');
+        opp = HelperTest.insertOpportunity(acct, 'Opportunity 2');
     }
 
     @IsTest
@@ -251,5 +253,16 @@ private class ListViewHelperTest {
         System.assert(objs.size() > 0);
 
         //-------------------------------------
+    }
+
+    @IsTest
+    static void CustomOpportunityConfigTest() {
+
+        Test.startTest();
+            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Opportunity', 'CustomOpportunityExample', '', '', '', -1);
+        Test.stopTest();
+
+        //not complete yet as creating pricebook entries and products is a pain in the butt!
+        System.assert(true);
     }
 }

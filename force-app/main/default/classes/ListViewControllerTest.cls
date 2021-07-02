@@ -2,17 +2,17 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 06-21-2021
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-06-2020   tom.h.ansley@medtronic.com   Initial Version
 **/
 @isTest
-private class ListViewControllerTest {
+global class ListViewControllerTest {
 
     @testSetup
-    private static void createSampleData()
+    static void createSampleData()
     {
         ListViewHelper.insertCoreConfiguration();
 
@@ -30,8 +30,8 @@ private class ListViewControllerTest {
 
         Map<String, String> configs = ListViewController.getUserConfigs('CompName 1');
 
-        System.assert(configs.size() == 11);
-        System.assert(configs.get('pinnedListView') == 'Account:AllAccounts');
+        System.assertEquals(configs.size(), 13);
+        System.assertEquals(configs.get('pinnedListView'), 'Account:AllAccounts');
 
         //update user config
         ListViewController.updateUserConfig('CompName 1', 'pinnedListView', 'Contact:AllContacts');
@@ -39,8 +39,8 @@ private class ListViewControllerTest {
 
         configs = ListViewController.getUserConfigs('CompName 1');
 
-        System.assert(configs.size() == 11);
-        System.assert(configs.get('pinnedListView') == 'Contact:AllContacts');
+        System.assertEquals(configs.size(), 13);
+        System.assertEquals(configs.get('pinnedListView'), 'Contact:AllContacts');
 
 
 
@@ -52,18 +52,30 @@ private class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.updateObjectListViews('Account');
+        Test.startTest();
 
-        System.assert(result == 'success');
+            Test.setMock(HttpCalloutMock.class, new ListViewControllerTest.ListViewControllerTest_CalloutMock());
+
+            String result = ListViewController.updateObjectListViews('Account');
+
+        Test.stopTest();
+
+        System.assertEquals(result, 'success');
     }
 
     static testMethod void updateSingleListViewTest()
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.updateSingleListView('Account', 'AllAccounts');
+        Test.startTest();
 
-        System.assert(result == 'success');
+            Test.setMock(HttpCalloutMock.class, new ListViewControllerTest.ListViewControllerTest_CalloutMock());
+
+            String result = ListViewController.updateSingleListView('Account', 'AllAccounts');
+
+        Test.stopTest();
+
+        System.assertEquals(result, 'success');
     }
 
     static testMethod void processParamChangeTest()
@@ -72,7 +84,7 @@ private class ListViewControllerTest {
 
         String result = ListViewController.processParamChange('Account', 'AllAccounts', 'RefreshRate', '45', 'Refresh Rate', 'Number');
 
-        System.assert(result == 'Ok:');
+        System.assertEquals(result, 'Ok:');
 
     }
 
@@ -82,14 +94,14 @@ private class ListViewControllerTest {
 
         String result = ListViewController.processConditionChange('Account', 'AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"]]');
 
-        System.assert(result == 'Ok:');
+        System.assertEquals(result, 'Ok:');
 
         HelperSchema.checkListViewConfigsAccessible();
         List_View_Config_Condition__c condition = [SELECT ID FROM List_View_Config_Condition__c WHERE Value__c = 'Dickenson plc'];
 
         result = ListViewController.processConditionChange('Account', 'AllAccounts', 'remove', condition.Id);
 
-        System.assert(result == 'Ok:');
+        System.assertEquals(result, 'Ok:');
 
     }
 
@@ -109,31 +121,31 @@ private class ListViewControllerTest {
 
         ListViewAbstract.ListViewConfigWrapper lvConfig = ListViewController.getListViewConfig('Account', 'AllAccounts');
 
-        System.assert(lvConfig.listViewConfig != null);
+        System.assertNotEquals(lvConfig.listViewConfig, null);
 
-        System.assert(lvConfig.getName() != null);
-        System.assert(lvConfig.getObject() != null);
-        System.assert(lvConfig.getLastModifiedText() != null);
-        System.assert(lvConfig.getLastModifiedBy() != null);
-        System.assert(lvConfig.getLastModifiedDate() != null);
+        System.assertNotEquals(lvConfig.getName(), null);
+        System.assertNotEquals(lvConfig.getObject(), null);
+        System.assertNotEquals(lvConfig.getLastModifiedText(), null);
+        System.assertNotEquals(lvConfig.getLastModifiedBy(), null);
+        System.assertNotEquals(lvConfig.getLastModifiedDate(), null);
         List<ListViewAbstract.ListViewParam> params = lvConfig.getParameters();
         System.assert(params.size() > 0);
-        System.assert(params[0].getLabel() != null);
-        System.assert(params[0].getName() != null);
-        System.assert(params[0].getType() != null);
-        System.assert(params[0].getPlaceHolder() != null);
-        System.assert(params[0].getDescription() != null);
-        System.assert(params[0].getUpdateImmediate() != null);
-        System.assert(params[0].getIsBoolean() != null);
+        System.assertNotEquals(params[0].getLabel(), null);
+        System.assertNotEquals(params[0].getName(), null);
+        System.assertNotEquals(params[0].getType(), null);
+        System.assertNotEquals(params[0].getPlaceHolder(), null);
+        System.assertNotEquals(params[0].getDescription(), null);
+        System.assertNotEquals(params[0].getUpdateImmediate(), null);
+        System.assertNotEquals(params[0].getIsBoolean(), null);
         List<ListViewAbstract.ListViewCondition> conditions = lvConfig.getConditions();
         System.assert(conditions.size() > 0);
-        System.assert(conditions[0].getCondition() != null);
-        System.assert(conditions[0].getFieldName() != null);
-        System.assert(conditions[0].getOperator() != null);
-        System.assert(conditions[0].getValue() != null);
-        System.assert(conditions[0].getOrder() != null);
-        System.assert(conditions[0].getColor() != null);
-        System.assert(conditions[0].getId() != null);
+        System.assertNotEquals(conditions[0].getCondition(), null);
+        System.assertNotEquals(conditions[0].getFieldName(), null);
+        System.assertNotEquals(conditions[0].getOperator(), null);
+        System.assertNotEquals(conditions[0].getValue(), null);
+        System.assertNotEquals(conditions[0].getOrder(), null);
+        System.assertNotEquals(conditions[0].getColor(), null);
+        System.assertNotEquals(conditions[0].getId(), null);
 
     }
 
@@ -143,7 +155,7 @@ private class ListViewControllerTest {
 
         String result = ListViewController.updateChangedListViews();
 
-        System.assert(result == 'success');
+        System.assertEquals(result, 'success');
     }
 
 
@@ -153,7 +165,7 @@ private class ListViewControllerTest {
 
         String result = ListViewController.updateAllListViews();
 
-        System.assert(result != 'failed');
+        System.assertNotEquals(result, 'failed');
     }
 
 
@@ -164,71 +176,71 @@ private class ListViewControllerTest {
 
         List<ListViewController.SelectOption> objs = ListViewController.getListViewObjects('',''); 
 
-        System.assert(objs != null);
+        System.assertNotEquals(objs, null);
         System.assert(objs.size() > 0);
         
 
         List<ListViewController.SelectOption> listviews = ListViewController.getObjectListViews('Account');
 
-        System.assert(listviews != null);
+        System.assertNotEquals(listviews, null);
         System.assert(listviews.size() > 0);
 
-        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'AllAccounts', '', '', '', '', -1);
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'AllAccounts', '', '', '', -1);
 
-        System.assert(rows != null);
-        System.assert(rows.getFieldMetaData() != null);
+        System.assertNotEquals(rows, null);
+        System.assertNotEquals(rows.getFieldMetaData(), null);
         System.assert(rows.getFieldMetaData().size() > 0);
-        System.assert(rows.getRows() != null);
+        System.assertNotEquals(rows.getRows(), null);
         System.assert(rows.getRows().size() > 0);
         System.assert(rows.getRowCount() > 0);
-        System.assert(rows.getCoreListViewURL() != '');
-        System.assert(rows.getDataAsString() != null);
-        System.assert(rows.getListView() != null);
+        System.assertNotEquals(rows.getCoreListViewURL(), '');
+        System.assertNotEquals(rows.getDataAsString(), null);
+        System.assertNotEquals(rows.getListView(), null);
 
         ListViewAbstract.ListViewWrapper listViewWrapper = rows.getListView();
-        System.assert(listViewWrapper.getLastModifiedText() != null);
-        System.assert(listViewWrapper.getLastModifiedBy() != null);
-        System.assert(listViewWrapper.getLastModifiedDate() != null);
+        System.assertNotEquals(listViewWrapper.getLastModifiedText(), null);
+        System.assertNotEquals(listViewWrapper.getLastModifiedBy(), null);
+        System.assertNotEquals(listViewWrapper.getLastModifiedDate(), null);
 
 
         ListViewAbstract.RowWrapper row = rows.rows[0];
-        System.assert(row != null);
-        System.assert(row.getRowId() != null);
-        System.assert(row.getCheckboxId() != null);
-        System.assert(row.getFields() != null);
+        System.assertNotEquals(row, null);
+        System.assertNotEquals(row.getRowId(), null);
+        System.assertNotEquals(row.getCheckboxId(), null);
+        System.assertNotEquals(row.getFields(), null);
         System.assert(row.getFields().size() > 0);
-        System.assert(row.getHighlight() != null);
-        System.assert(row.getHighlightColor() != null);
+        System.assertNotEquals(row.getHighlight(), null);
+        System.assertNotEquals(row.getHighlightColor(), null);
 
         ListViewAbstract.FieldWrapper field = row.getFields()[0];
-        System.assert(field != null);
-        System.assert(field.getLabel() != null);
-        System.assert(field.getName() != null);
-        System.assert(field.getSortIndex() != null);
-        System.assert(field.getSortIndexDisplay() != null);
-        System.assert(field.getSortDir() != null);
-        System.assert(field.getType() != null);
-        System.assert(field.getValue() != null);
-        System.assert(field.getHasURL() != null);
-        System.assert(field.getURL() != null);
+        System.assertNotEquals(field, null);
+        System.assertNotEquals(field.getLabel(), null);
+        System.assertNotEquals(field.getName(), null);
+        System.assertNotEquals(field.getSortIndex(), null);
+        System.assertNotEquals(field.getSortIndexDisplay(), null);
+        System.assertNotEquals(field.getSortDir(), null);
+        System.assertNotEquals(field.getType(), null);
+        System.assertNotEquals(field.getValue(), null);
+        System.assertNotEquals(field.getHasURL(), null);
+        System.assertNotEquals(field.getURL(), null);
 
         
         List<ListViewController.SelectOption> actions = ListViewController.getListViewsActions('Account', 'AllAccounts');
 
-        System.assert(actions != null);
+        System.assertNotEquals(actions, null);
         System.assert(actions.size() > 0);
         
 
         ListViewAbstract.ActionWrapper action = ListViewController.getListViewAction('Update:Account');
-        System.assert(action.getLabel() != null);
-        System.assert(action.getObjectType() != null);
-        System.assert(action.getParameters() != null);
+        System.assertNotEquals(action.getLabel(), null);
+        System.assertNotEquals(action.getObjectType(), null);
+        System.assertNotEquals(action.getParameters(), null);
         System.assert(action.getParameters().size() > 0);
-        System.assert(action.getParameters()[0].getAPIName() != null);
-        System.assert(action.getParameters()[0].getLabel() != null);
-        System.assert(action.getParameters()[0].getType() != null);
-        //System.assert(action.getParameters()[0].getValue() != null);
-        System.assert(action.getParameters()[0].getPlaceholder() != null);
+        System.assertNotEquals(action.getParameters()[0].getAPIName(), null);
+        System.assertNotEquals(action.getParameters()[0].getLabel(), null);
+        System.assertNotEquals(action.getParameters()[0].getType(), null);
+        //System.assertNotEquals(action.getParameters()[0].getValue(), null);
+        System.assertNotEquals(action.getParameters()[0].getPlaceholder(), null);
         
 
         String result = ListViewController.processAction('Delete:null', '["' + acct.Id + '"]', '[]');
@@ -254,6 +266,26 @@ private class ListViewControllerTest {
         ListViewMetadataAPIService.readListViewResponse_element r4 = new ListViewMetadataAPIService.readListViewResponse_element();
 
         System.assert(true);
+    }
+
+    global class ListViewControllerTest_CalloutMock implements HttpCalloutMock  {
+   
+        //method to send mock respose
+        global HTTPResponse respond(HTTPRequest request) {
+    
+            HTTPResponse wsResponse = new HTTPResponse();
+
+            String body = '';
+            System.debug(LoggingLEvel.DEBUG, 'END POINT - ' + request.getEndPoint());
+            if (request.getEndpoint().contains('Account/listviews/'))
+                body = '{"columns":[{"ascendingLabel":"Z-A","descendingLabel":"A-Z","fieldNameOrPath":"Name","hidden":false,"label":"Account Name","selectListItem":"Name","sortDirection":"ascending","sortIndex":0,"sortable":true,"type":"string"},{"ascendingLabel":"Z-A","descendingLabel":"A-Z","fieldNameOrPath":"Site","hidden":false,"label":"Account Site","selectListItem":"Site","sortDirection":null,"sortIndex":null,"sortable":true,"type":"string"},{"ascendingLabel":"New to Old","descendingLabel":"Old to New","fieldNameOrPath":"simpli_lv__Test_Date__c","hidden":false,"label":"Test Date","selectListItem":"simpli_lv__Test_Date__c","sortDirection":null,"sortIndex":null,"sortable":true,"type":"date"},{"ascendingLabel":"New to Old","descendingLabel":"Old to New","fieldNameOrPath":"simpli_lv__Test_Date_Time__c","hidden":false,"label":"Test Date Time","selectListItem":"simpli_lv__Test_Date_Time__c","sortDirection":null,"sortIndex":null,"sortable":true,"type":"datetime"},{"ascendingLabel":"Z-A","descendingLabel":"A-Z","fieldNameOrPath":"BillingState","hidden":false,"label":"Billing State/Province","selectListItem":"BillingState","sortDirection":null,"sortIndex":null,"sortable":true,"type":"string"},{"ascendingLabel":"Low to High","descendingLabel":"High to Low","fieldNameOrPath":"Type","hidden":false,"label":"Type","selectListItem":"toLabel(Type)","sortDirection":null,"sortIndex":null,"sortable":true,"type":"picklist"},{"ascendingLabel":"Z-A","descendingLabel":"A-Z","fieldNameOrPath":"Owner.Alias","hidden":false,"label":"Account Owner Alias","selectListItem":"Owner.Alias","sortDirection":null,"sortIndex":null,"sortable":true,"type":"string"},{"ascendingLabel":null,"descendingLabel":null,"fieldNameOrPath":"Id","hidden":true,"label":"Account ID","selectListItem":"Id","sortDirection":null,"sortIndex":null,"sortable":false,"type":"id"},{"ascendingLabel":null,"descendingLabel":null,"fieldNameOrPath":"CreatedDate","hidden":true,"label":"Created Date","selectListItem":"CreatedDate","sortDirection":null,"sortIndex":null,"sortable":false,"type":"datetime"},{"ascendingLabel":null,"descendingLabel":null,"fieldNameOrPath":"LastModifiedDate","hidden":true,"label":"Last Modified Date","selectListItem":"LastModifiedDate","sortDirection":null,"sortIndex":null,"sortable":false,"type":"datetime"},{"ascendingLabel":null,"descendingLabel":null,"fieldNameOrPath":"SystemModstamp","hidden":true,"label":"System Modstamp","selectListItem":"SystemModstamp","sortDirection":null,"sortIndex":null,"sortable":false,"type":"datetime"},{"ascendingLabel":null,"descendingLabel":null,"fieldNameOrPath":"Owner.Id","hidden":true,"label":"User ID","selectListItem":"Owner.Id","sortDirection":null,"sortIndex":null,"sortable":false,"type":"id"},{"ascendingLabel":null,"descendingLabel":null,"fieldNameOrPath":"OwnerId","hidden":true,"label":"Owner ID","selectListItem":"OwnerId","sortDirection":null,"sortIndex":null,"sortable":false,"type":"reference"}],"id":"00B3h000003ZfMK","orderBy":[{"fieldNameOrPath":"Name","nullsPosition":"first","sortDirection":"ascending"},{"fieldNameOrPath":"Id","nullsPosition":"first","sortDirection":"ascending"}],"query":"SELECT Name, Site, simpli_lv__Test_Date__c, simpli_lv__Test_Date_Time__c, BillingState, toLabel(Type), Owner.Alias, Id, CreatedDate, LastModifiedDate, SystemModstamp, Owner.Id, OwnerId FROM Account ORDER BY Name ASC NULLS FIRST, Id ASC NULLS FIRST","scope":"everything","sobjectType":"Account","whereCondition":{"conditions":[],"conjunction":"and"}}';
+
+            wsResponse.setHeader('Content-Type', 'application/json');
+            wsResponse.setBody(body);
+            wsResponse.setStatusCode(200);    
+            return wsResponse;
+        }
+    
     }
 
 }

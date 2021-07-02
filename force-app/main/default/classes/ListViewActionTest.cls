@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 11-05-2020
+ * @last modified on  : 06-30-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -123,6 +123,18 @@ private class ListViewActionTest {
 
         System.assert(result.startsWith(ListViewAction.RESULT_OK));
     
+    }
+
+    static testMethod void listViewActionNullTest() {
+
+        Test.startTest();
+
+            ListViewActionNull action = new ListViewActionNull();
+            String result = action.process(null, null);
+            System.assertEquals(result, ListViewAction.RESULT_OK + ':');
+
+        Test.stopTest();
+
     }
 
 }
