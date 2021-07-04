@@ -1426,7 +1426,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
         this.listViewSortData.set(this.selectedObject + ':' + this.selectedListView, this.columnSortData);
-        this.fullRefreshListViewData();
+        this.refreshAllListViewData();
     }
 
 }
