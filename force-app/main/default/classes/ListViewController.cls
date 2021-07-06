@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-01-2021
+ * @last modified on  : 07-06-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -106,10 +106,18 @@ public without sharing class ListViewController
         return configListOptions;
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static ListViewAbstract.ListViewConfigWrapper getListViewConfig(String objectName, String listViewName)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfig(' + objectName + ', ' + listViewName + ')');
+
+        return getCachedListViewConfig(objectName, listViewName);
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static ListViewAbstract.ListViewConfigWrapper getCachedListViewConfig(String objectName, String listViewName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getCachedListViewConfig(' + objectName + ', ' + listViewName + ')');
         ListViewAbstract.ListViewConfigWrapper lvConfigWrapper = null;
 
         List_View__c listview = ListViewHelper.getListViews(objectName, listViewName).values()[0];

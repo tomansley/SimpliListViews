@@ -4,13 +4,13 @@ import { refreshApex } from '@salesforce/apex';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
+import getCachedListViewConfig from '@salesforce/apex/ListViewController.getCachedListViewConfig';
 import getListViewColumnLabels from '@salesforce/apex/ListViewController.getListViewColumnLabels';
 import processParamChange from '@salesforce/apex/ListViewController.processParamChange';
 import processConditionChange from '@salesforce/apex/ListViewController.processConditionChange';
 
 export default class simpliUIListViewsAdminModal extends NavigationMixin(LightningElement) {
 
-    wiredListViewConfigResult;
     currentPageReference;
 
     @api showModal;                     //indicates whether this modal dialog should be displayed or not.
@@ -67,6 +67,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
      */
     renderedCallback() {
 
+        console.log('Starting simpliUIListViewsAdminModal.renderedCallback');
+    
         this.newConditionField;
         this.newConditionOperator = 'Equals';
         this.newConditionValue;
@@ -89,16 +91,41 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         console.log('OBJ Name - ' + testparam);
     }
 
+    getListViewConfig() {
+        console.log('Starting getListViewConfig - ' + this.listViewObject + ' - ' + this.listViewName);
+
+        getListViewConfig({objectName: this.listViewObject, listViewName: this.listViewName})
+        .then(result => {
+            console.log('List view config retrieval successful'); 
+            this.listViewConfig = result; 
+            this.error = undefined;             
+        })
+        .catch(error => {
+            this.error = error; 
+            console.log('Error Detected ' + error.body.message); 
+            this.listViewConfig = undefined;
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Retrieving List View Config',
+                message: 'There was an error retrieving the list view configuration. Please see an administrator - ' + error.body.message,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        });
+
+
+    }
     /*
-     * Wiring to get the list of config parameters for the chosen object and list view
+     * Wiring to get the list of config parameters for the chosen object and list view. Note that this wired
+     * method only gets called on INITIALIZATION of the modal dialog. After that the data is updated by calling
+     * the getListViewConfig() method. This is because we do not want the cached results but the updated results.
      */
-    @wire (getListViewConfig, { objectName: '$listViewObject', listViewName: '$listViewName' })
+    @wire (getCachedListViewConfig, { objectName: '$listViewObject', listViewName: '$listViewName' })
     wiredListViewConfig(wiredListViewConfigResult) {
         this.wiredListViewConfigResult = wiredListViewConfigResult;
         const { data, error } = wiredListViewConfigResult;
 
         if (data) { 
-            console.log('List view config retrieval successful'); 
+            console.log('Cached list view config retrieval successful'); 
             this.listViewConfig = data; 
             this.error = undefined; 
         } else if (error) { 
@@ -191,6 +218,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                         mode: 'dismissable'
                     }));
                     this.configChanged = true;
+                    this.getListViewConfig(); //reget the config
                 
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
@@ -290,7 +318,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                         variant: 'success',
                         mode: 'dismissable'
                     }));
-                    refreshApex(this.wiredListViewConfigResult);
+                    this.getListViewConfig();
                     this.configChanged = true;
                 
                 } else {
@@ -321,13 +349,11 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     }
 
     handleClose() {
-        refreshApex(this.wiredListViewConfigResult);
         this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
         this.configChanged = false;
     }
 
     handleCloseClick(event) {
-        refreshApex(this.wiredListViewConfigResult);
         this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
         this.configChanged = false;
     }

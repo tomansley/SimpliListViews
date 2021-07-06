@@ -135,7 +135,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      */
     async renderedCallback() {
 
-        console.log('Starting renderedCallback');
+        console.log('Starting simpliUIListViews.renderedCallback');
         //this ensures we only call this once for each page load
         if (this.userConfigs === undefined) {
 
