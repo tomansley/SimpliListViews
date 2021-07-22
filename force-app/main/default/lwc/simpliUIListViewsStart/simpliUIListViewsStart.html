@@ -1,8 +1,9 @@
+<!-- sldsValidatorIgnore -->
 <!--
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 07-04-2021
+  @last modified on  : 07-22-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -18,12 +19,12 @@
     <lightning-card>
         <template if:false={showProgress}>  
             <div style="padding-left: 10px;">
-                <template if:false={isInit}>
+                <template if:false={isInitialized}>
                     <lightning-icon icon-name="standard:first_non_empty" 
                                     alternative-text="List Views Not Initialized" 
                                     title="List Views Not Initialized">
                     </lightning-icon>&nbsp;&nbsp;
-                    List views need to be initialized. Click  
+                    List views need to be initialized or updated. Click  
                     <lightning-button-icon style="padding: 10px;" title="Process List Views" 
                         size="small" 
                         icon-name="action:new_task" 
@@ -31,7 +32,7 @@
                     </lightning-button-icon>
                     to process the list views.
                 </template>
-                <template if:true={isInit}>    
+                <template if:true={isInitialized}>    
                     <lightning-icon icon-name="standard:task2" 
                                     alternative-text="List Views Initialized" 
                                     title="List Views Initialized">
@@ -64,6 +65,7 @@
                     <li style="padding-bottom: 5px;">Include any field in list view</li>
                     <li style="padding-bottom: 5px;">Create list views based on complex SOQL query's and tooling API queries</li>
                     <li style="padding-bottom: 5px;">Create list view actions</li>
+                    <li style="padding-bottom: 5px;">Inline editing</li>
                     <li style="padding-bottom: 5px;">Pin your favorite list view</li>
                     <li style="padding-bottom: 5px;">Multiple column sorting</li>
                     <li style="padding-bottom: 5px;">Footer calculations</li>
@@ -136,13 +138,18 @@
                         <li style="padding-bottom: 5px;"><b>Included Object Types - </b>Indicates only those object types that should be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.</li>
                         <li style="padding-bottom: 5px;"><b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.</li>
                         <li style="padding-bottom: 5px;"><b>List View Objects - </b>Do not touch this setting unless you know what you are doing!</li>
-                        <li style="padding-bottom: 5px;"><b>Allow Automatic Data Refresh - </b></li>
-                        <li style="padding-bottom: 5px;"><b>Allow Data Export - </b></li>
-                        <li style="padding-bottom: 5px;"><b>Display Actions Button - </b></li>
-                        <li style="padding-bottom: 5px;"><b>Display List View Reprocessing Button - </b></li>
-                        <li style="padding-bottom: 5px;"><b>Display Original List View Button - </b></li>
-                        <li style="padding-bottom: 5px;"><b>Display Row Count - </b></li>
-                        <li style="padding-bottom: 5px;"><b>Display Selected Count - </b></li>
+                        <li style="padding-bottom: 5px;"><b>Allow Automatic Data Refresh - </b>Indicates whether automatic refreshing shold be allowed.</li>
+                        <li style="padding-bottom: 5px;"><b>Allow Data Export - </b>Indicates whether data exporting should be allowed.</li>
+                        <li style="padding-bottom: 5px;"><b>Display Actions Button - </b>Indicates whether the action drop-down list should be displayed.</li>
+                        <li style="padding-bottom: 5px;"><b>Display List View Reprocessing Button - </b>Indicates whether reprocessing of the list view by the user should be allowed.</li>
+                        <li style="padding-bottom: 5px;"><b>Display Original List View Button - </b>Indicates whether a button should be displayed allowing the user to go directly to the core list view.</li>
+                        <li style="padding-bottom: 5px;"><b>Display Row Count - </b>Indicates whether the row count should be displayed.</li>
+                        <li style="padding-bottom: 5px;"><b>Display Selected Count - </b>Indicates whether the count of the selected rows should be displayed.</li>
+                        <li style="padding-bottom: 5px;"><b>Allow Inline Editing - </b>Indicates whether inline editing should be available. Note that inline editing is only available for core list views.</li>
+                        <li style="padding-bottom: 5px;"><b>Is Initialized - </b>Indicates whether the core list views have been initialized. This setting is auto-populated and should not be altered.</li>
+                        <li style="padding-bottom: 5px;"><b>Max Rows Displayed - </b>Indicates the maximum number of rows that any list view should be able to display. Defaulted to 2500.</li>
+                        <li style="padding-bottom: 5px;"><b>Display Selected Count - </b>Indicates whether the count of the selected rows should be displayed.</li>
+                        <li style="padding-bottom: 5px;"><b>Query Paging Size - </b>Indicates the paging size when data is paged due to large record counts. Defaulted to 250.</li>
                     </ol>
                 </div>
             </div>

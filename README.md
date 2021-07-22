@@ -1,11 +1,19 @@
 # SimpliListViews
 
 ## Feature Overview
-* A Salesforce lightning app exchange managed package
-* Only for Lightning (uses LWC therefore My Domain must be set)
-* Reduces number of clicks
-* Customize list view fields beyond standard list view field options
-* Create custom list view actions
+* List views for all objects on one page
+* Lists up to 2500 records allowed
+* Include any field in list view
+* Create list views based on complex SOQL query's and tooling API queries
+* Create list view actions
+* Inline editing
+* Pin your favorite list view
+* Multiple column sorting
+* Footer calculations
+* Row highlighting based on criteria
+* Auto-refresh at configured intervals
+* Export list view data with the click of a button
+* Include deleted records in list view (records show in red)
 * Configure the list view page at the org, page and list view level
 
 ## Overview
@@ -39,14 +47,21 @@ There are 3 different levels of configuration that are available in the app.</p>
 These settings are maintained in the "List View Org Wide Setting" custom metadata type in the org setup. They affect all list views displayed in the SFDC org and are typically set by a system administrator at initial setup
 * <b>Included Object Types - </b>Indicates only those object types that should be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.
 * <b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.
-* <b>List View Objects - </b>Do not touch this setting unless you know what you are doing!
-* <b>Allow Automatic Data Refresh - </b>
-* <b>Allow Data Export - </b>
-* <b>Display Actions Button - </b>
-* <b>Display List View Reprocessing Button - </b>
-* <b>Display Original List View Button - </b>
-* <b>Display Row Count - </b>
-* <b>Display Selected Count - </b>
+* <b>List View Objects - </b>Holds those objects for which core list views have been created. This setting is auto-populated and should not be altered.
+* <b>Allow Automatic Data Refresh - </b>Indicates whether automatic refreshing shold be allowed.
+* <b>Allow Data Export - </b>Indicates whether data exporting should be allowed.
+* <b>Display Actions Button - </b>Indicates whether the action drop-down list should be displayed.
+* <b>Display List View Reprocessing Button - </b>Indicates whether reprocessing of the list view by the user should be allowed.
+* <b>Display Original List View Button - </b>Indicates whether a button should be displayed allowing the user to go directly to the core list view.
+* <b>Display Row Count - </b>Indicates whether the row count should be displayed.
+* <b>Display Selected Count - </b>Indicates whether the count of the selected rows should be displayed.
+
+* <b>Allow Inline Editing - </b>Indicates whether inline editing should be available. Note that inline editing is only available for core list views.
+* <b>Is Initialized - </b>Indicates whether the core list views have been initialized. This setting is auto-populated and should not be altered.
+* <b>Max Rows Displayed - </b>Indicates the maximum number of rows that any list view should be able to display. Defaulted to 2500.
+* <b>Display Selected Count - </b>Indicates whether the count of the selected rows should be displayed.
+* <b>Query Paging Size - </b>Indicates the paging size when data is paged due to large record counts. Defaulted to 250.
+
 
 ### Component/Page Level Settings
 These settings are maintained as part of the Lightning app that the component is a part of and deal with the look and feel of the Lightning component. They affect all list views displayed on the component in the page and are typically set by a system administrator when a new page is created. The settings are typically dictated by how the page is being used and perhaps what device.</p>
@@ -75,7 +90,12 @@ These settings affect individual list views in the SFDC org. They would typicall
 * <b>Total Row Color - </b>The color that the footer row should be displayed in.
 
 ## Actions
-Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. Currently 2 actions have been implemented and made available in the app exchange package. Delete and Account Update.
+Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. The following actions have been implemented and made available in the app exchange package.
+* Edit (single record)
+* Delete (multiple records)
+* Clone (single record)
+* New (single record)
+* Account Update (multiple records)
 
 ### Action Configuration
 All actions are configured for use by the application. Their configuration is held in the List View Actions table (simpli_lv__List_View_Action__c). The following described each field - 
@@ -140,3 +160,7 @@ Starting Out - https://www.youtube.com/watch?v=bJQchWEK34I
 Sizing and Sorting - https://www.youtube.com/watch?v=Uqur5RiKwU0
 
 Using Multiple Components On One Page - https://www.youtube.com/watch?v=nJyTWEPCUac
+
+Creating Custom List View - https://www.youtube.com/watch?v=OLLpIvXqfWc
+
+Large Datasets and Paging - https://www.youtube.com/watch?v=9eHD7ntFFs0
