@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 07-18-2021
+  @last modified on  : 07-27-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -77,14 +77,16 @@
                 <template for:each={config.parameters} for:item="param">
                     <tr key={param.name} class="slds-hint-parent">
 
-                        <td key={param.name} class="">
+                        <td key={param.name} style="width: 30%;">
                             <div key={param.name} class="slds-truncate" title={param.name}>
                                 {param.label}
                                 &nbsp;
-                                <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text="close"></lightning-icon> 
+                                <div key={param.name} class="slds-wrap" style="white-space:normal; font-size:0.75em" title={param.name}>
+                                    {param.description}
+                                </div>
                             </div>
                         </td>
-                        <td key={param.name} data-label={param.name}>
+                        <td key={param.name} data-label={param.name} style="width: 70%;">
                             <div class="slds-form-element__control" title={param.value}>
                                 <template if:true={param.isBoolean}>
                                     <lightning-combobox placeholder="Select a Value..."
@@ -107,7 +109,7 @@
                                                                 onchange={handleParamUpdate}
                                                                 variant=label-hidden
                                                                 value={param.listValues}
-                                                                size=7
+                                                                size=4
                                                                 disabled={param.readOnly}>
                                         </lightning-dual-listbox>
                                     </template>
