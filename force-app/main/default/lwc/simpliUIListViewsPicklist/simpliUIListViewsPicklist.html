@@ -1,0 +1,33 @@
+<!--
+  @description       : 
+  @author            : tom.h.ansley@medtronic.com
+  @last modified on  : 07-26-2021
+  @last modified by  : tom.h.ansley@medtronic.com
+  Modifications Log 
+  Ver   Date         Author                       Modification
+  1.0   07-19-2021   tom.h.ansley@medtronic.com   Initial Version
+-->
+<template>
+    <template if:true={isPicklist}>
+        <lightning-combobox id="dependentPickList"
+                            name="Hello"
+                            label={label}
+                            value={value}
+                            placeholder="--None--"
+                            variant={variant}
+                            options={options}
+                            onchange={handleChange}>
+        </lightning-combobox>
+    </template>
+    <template if:true={isMultiPicklist}>
+        <lightning-dual-listbox name="OtherHello"
+                                source-label={sourceLabel}
+                                selected-label={selectedLabel}
+                                options={options}
+                                onchange={handleChange}
+                                variant={variant}
+                                value={value}
+                                size={size}>
+        </lightning-dual-listbox>
+    </template>
+</template>

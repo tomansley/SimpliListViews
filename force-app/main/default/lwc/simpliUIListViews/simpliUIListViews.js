@@ -7,6 +7,7 @@ import  LISTVIEW_MC  from '@salesforce/messageChannel/SimpliListViewMessageChann
 import { refreshApex } from '@salesforce/apex';
 import { subscribe, unsubscribe, publish, APPLICATION_SCOPE, MessageContext } from 'lightning/messageService';
 
+import getIsInitialized from '@salesforce/apex/ListViewController.getIsInitialized';
 import getListViewObjects from '@salesforce/apex/ListViewController.getListViewObjects';
 import getObjectListViews from '@salesforce/apex/ListViewController.getObjectListViews';
 import getListViewData from '@salesforce/apex/ListViewController.getListViewData';
@@ -19,6 +20,7 @@ import getUserConfigs from '@salesforce/apex/ListViewController.getUserConfigs';
 import getUserSortConfigs from '@salesforce/apex/ListViewController.getUserSortConfigs';
 import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConfig';
 import isValidListViewDataRequest from '@salesforce/apex/ListViewController.isValidListViewDataRequest';
+import updateRecord from '@salesforce/apex/ListViewController.updateRecord';
 
 export default class simpliUIListViews extends NavigationMixin(LightningElement) {
 
@@ -34,6 +36,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api joinFieldName        = '';
     @api useMessageChannel    = false;
     @api allowRefresh         = false; //config indicating whether the auto refresh checkbox is made available.
+    @api allowInlineEditing   = false; //config indicating whether inline editing is available
     @api displayActions       = false;
     @api displayReprocess     = false;
     @api displayURL           = false;
@@ -74,8 +77,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track dataSpinner = false;         //identifies if the DATA spinner should be displayed or not.
     @track allowAdmin = true;           //indicates whether the admin button should display to the user
     @track firstListViewGet = true;     //indicates whether this is the first time the list views are being retrieved.
-    @track canDisplayActions = true;    //indicates whether the page is in a position where the actions list is active
-    
+    @track canDisplayActions = false;    //indicates whether the page is in a position where the actions list is active
     @track offset = -1;
     @track rowLimit = -1;
 
@@ -89,12 +91,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track columnSortData = new Map();
     @track columnSortDataStr = '';
 
+    //for handling edited records
+    updatedRowData = new Map();
+
     //for tracking list view init process
-    @track isInit = true;               //indicates whether the list views have been initialized for the first time or not.
+    @track isInitialized = false;               //indicates whether the list views have been initialized for the first time or not.
     @track showProgress = false;        //indicates whether the progress bar should be displayed
     @track batchId = '';                //indicates the batch Id of the list view batch process.
     @track isInitializing = true;       //indicates whether we are initializing the page or not.
 
+    @track refreshTitle = 'Click to perform full list view refresh';
   
     //for message channel handlers
     subscription = null;
@@ -154,20 +160,21 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             getUserConfigs({compName: this.pageName })
             .then(result => {
-                console.log('User configs retrieved successful - ' + result);
+                console.log('User configs retrieved successfully - ' + result);
                 this.userConfigs = result;
                 console.log('User config size - ' + this.userConfigs.length); 
 
                 let pinnedListView = this.userConfigs.pinnedListView;
                 console.log('Pinned list view string - ' + pinnedListView);
 
-                if (this.userConfigs.DisplayActionsButton === 'false') { this.displayActions = false; }
-                if (this.userConfigs.DisplayListViewReprocessingButton === 'false') { this.displayReprocess = false; }
-                if (this.userConfigs.DisplayOriginalListViewButton === 'false') { this.displayURL = false; }
-                if (this.userConfigs.DisplayRowCount === 'false') { this.displayRowCount = false; }
-                if (this.userConfigs.DisplaySelectedCount === 'false') { this.displaySelectedCount = false; }
-                if (this.userConfigs.AllowDataExport === 'false') { this.displayExportButton = false; }
-                if (this.userConfigs.AllowAutomaticDataRefresh === 'false') { this.allowRefresh = false; }
+                if (this.userConfigs.DisplayActionsButton === 'true') { this.displayActions = true; this.canDisplayActions = true }
+                if (this.userConfigs.DisplayListViewReprocessingButton === 'true') { this.displayReprocess = true; }
+                if (this.userConfigs.DisplayOriginalListViewButton === 'true') { this.displayURL = true; }
+                if (this.userConfigs.DisplayRowCount === 'true') { this.displayRowCount = true; }
+                if (this.userConfigs.DisplaySelectedCount === 'true') { this.displaySelectedCount = true; }
+                if (this.userConfigs.AllowDataExport === 'true') { this.displayExportButton = true; }
+                if (this.userConfigs.AllowAutomaticDataRefresh === 'true') { this.allowRefresh = true; }
+                if (this.userConfigs.AllowInlineEditing === 'true') { this.allowInlineEditing = true; }
 
                 //if we have a URL object then use it
                 if (this.urlObject != undefined) {
@@ -296,6 +303,26 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @wire(MessageContext)
     messageContext;
     
+
+    @wire (getIsInitialized, { })
+    wiredIsInitialized({ error, data }) {
+        if (data) { 
+            console.log('Is Initialized called successfully - ' + data); 
+            this.isInitialized = data; 
+            this.error = undefined; 
+        } else if (error) { 
+            this.error = error; 
+            console.log('Error Detected ' + error.message + ' - ' + error.stackTrace); 
+            this.objectActionList = undefined; 
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Checking Initialization',
+                message: 'There was an error checking for Simpli List Views initialization. Please see an administrator\n\n' + error.message,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        }
+    }
+
     /*
      * Wiring to get the list of actions available for the provided object type
      */
@@ -305,6 +332,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('List view actions retrieval successful'); 
             this.objectActionList = data; 
             console.log('Object action list size - ' + this.objectActionList.length); 
+            if (this.objectActionList.length === 0 || this.displayActions === false) {
+                this.canDisplayActions = false;
+            } else if (this.displayActions === true) {
+                this.canDisplayActions = true;
+            }
             this.error = undefined; 
         } else if (error) { 
             this.error = error; 
@@ -321,6 +353,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     refreshAllListViewData() {
         this.offset = -1;
+        this.selectedRecordCount = 0;
+        this.isEdited = false;
+        let selectedRows = this.template.querySelectorAll('lightning-input');
+        selectedRows.forEach(element => element.checked = false);
+
         this.getListViewDataPage();
     }
 
@@ -401,6 +438,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.modifiedText = '';
             }
 
+            if (this.listViewData.listView.listViewType === 'Core') {
+                this.displayReprocess = true;
+            } else {
+                this.displayReprocess = false;
+            }
+
             this.error = undefined;  
             this.isInitializing = false;
             this.spinnerOff();
@@ -430,13 +473,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('List view objects retrieval successful'); 
         this.objectList = data; 
         this.error = undefined;
-        
 
-        if (this.objectList === undefined || this.objectList.length === 0)
+        if (this.objectList !== undefined && this.objectList.length > 0)
         {
-            console.log('Object list is null'); 
-            this.isInit = false;
-        } else {
             console.log('Object list has been populated with size - ' + this.objectList.length); 
 
             if (this.pinnedObject !== undefined)
@@ -536,6 +575,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 this.firstListViewGet = false;
             }
+
+            this.refreshTitle = 'Click to perform a refresh on all ' + this.selectedObject + ' list views';
+
             this.spinnerOff(); 
         } else if (error) { 
             this.error = error; 
@@ -845,21 +887,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.selectedListViewExportName = this.selectedListView + '.csv';
 
         //set the column sort information for the NEW list view
-        console.log('Test1');
         if (this.listViewSortData.get(this.selectedObject + ':' + this.selectedListView) !== undefined)
         {
-            console.log('Test2');
             this.columnSortData = this.listViewSortData.get(this.selectedObject + ':' + this.selectedListView);
             this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
-            console.log('Test3');
         
         } else {
-            console.log('Test4');
             this.columnSortDataStr = '';
             this.columnSortData = new Map();  
-            console.log('Test5');
         }
-        console.log('Test6');
 
         //if we are not in the construction of the page and we change the list view and its the pinned list view
         if (this.userConfigs != undefined && this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
@@ -867,6 +903,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else {
             this.isPinned = false;
         }
+        this.refreshTitle = 'Click to perform list view refresh on current list view';
+
         console.log('Starting ListView Data Refresh');
 
         this.refreshAllListViewData();
@@ -976,7 +1014,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     dataSpinnerOff() {
         this.dataSpinner = false;
-        this.canDisplayActions = true;
+        if (this.objectActionList !== undefined && this.objectActionList.length > 0 && this.displayActions === true) {
+            this.canDisplayActions = true;
+        }
         console.log('Data Spinner OFF');
     }
 
@@ -1004,7 +1044,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('selectedListView - ' + this.selectedListView);
 
         //if we have selected a specific list view to update
-        if (this.selectedObject != undefined && this.selectedListView != undefined && this.isInit === true)
+        if (this.selectedObject != undefined && this.selectedListView != undefined && this.isInitialized === true)
         {
             console.log('Updating SINGLE list view');
 
@@ -1016,13 +1056,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'List View Updated Successfully',
-                            message: 'List view has been updated successfully. Refresh entire page to see the changes.',
+                            message: 'List view has been updated and refreshed successfully.',
                             variant: 'success',
                             mode: 'dismissable'
                         }));
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
                         this.refreshAllListViewData();
-                        this.spinnerOff();
 
                     //else send an ERROR toast.
                     } else {
@@ -1050,7 +1089,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
         
         //if we have selected an objects list views to update
-        else if (this.selectedObject != undefined && this.selectedListView === undefined && this.isInit === true)
+        else if (this.selectedObject != undefined && this.selectedListView === undefined && this.isInitialized === true)
         {
             console.log('Updating OBJECT list views');
 
@@ -1062,13 +1101,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'List Views Updated Successfully',
-                            message: 'List views have been updated successfully. Refresh entire page to see the changes.',
+                            message: 'List views have been updated successfully.',
                             variant: 'success',
                             mode: 'dismissable'
                         }));
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
                         refreshApex(this.wiredObjectListViewsResult);
-                        this.refreshAllListViewData();
                         this.spinnerOff();
 
                     //else send an ERROR toast.
@@ -1080,7 +1118,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             mode: 'sticky'
                         }));
                         this.spinnerOff();
-                
                     }
                 })
                 .catch(error => {
@@ -1096,7 +1133,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
 
         //if we have selected ALL list views to update
-        else if (this.selectedObject === undefined && this.selectedListView === undefined ||  this.isInit === false)
+        else if (this.selectedObject === undefined && this.selectedListView === undefined ||  this.isInitialized === false)
         {
             console.log('Updating ALL list views');
 
@@ -1119,6 +1156,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                         this.batchId = result;
 
+                        this.isInitialized = false;
                         this.showProgress = true;
 
                         this.dispatchEvent(new ShowToastEvent({
@@ -1167,7 +1205,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 },
             });
             
-            this.selectedAction = '';
 
         //------------------------------------------------------
         //CLONE
@@ -1185,8 +1222,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                                 }            
                                             });
 
-            if (selectedRecords.size !== 1) {
-                this.selectedAction = '';            
+            if (selectedRecords.size !== 1) {    
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'A single row must be selected for cloning.',
@@ -1195,7 +1231,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 }));
             } else {
                 console.log('We are cloning the following id - ' + selectedRowId);
-                this.selectedAction = '';
 
                 this[NavigationMixin.Navigate]({
                     type: 'standard__recordPage',
@@ -1225,8 +1260,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                                 }            
                                             });
 
-            if (selectedRecords.size !== 1) {
-                this.selectedAction = '';            
+            if (selectedRecords.size !== 1) {      
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'A single row must be selected for editing.',
@@ -1236,7 +1270,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             } else {
 
                 console.log('We are editing the following id - ' + selectedRowId);
-                this.selectedAction = '';
 
                 this[NavigationMixin.Navigate]({
                     type: 'standard__recordPage',
@@ -1247,6 +1280,26 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     },
                 });
                 this.dispatchEvent(new CustomEvent('processclick'));
+            }
+
+        //------------------------------------------------------
+        //EDIT All
+        //------------------------------------------------------
+        } else if (this.selectedAction.startsWith('EditAll:'))
+        {
+
+            console.log('We are editing all records');
+
+            if (this.listViewDataRows.length > 101) {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Too Many Rows!',
+                    message: 'Inline editing only available for up to 100 rows.',
+                    variant: 'error',
+                    mode: 'dismissable'
+                }));
+
+            } else {
+                this.setAllRowsEdited();
             }
 
         //------------------------------------------------------
@@ -1265,7 +1318,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                             });
 
             if (selectedRecords.size === 0) {
-                this.selectedAction = '';
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'No rows selected for processing.',
@@ -1290,6 +1342,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         }
 
+        this.resetActionComboBox();
+
+    }
+
+    resetActionComboBox() {
+        this.template.querySelectorAll('lightning-combobox').forEach(each => {
+            if (each.label === 'Action')
+                each.value = undefined;
+        });
     }
 
     handleAdminButtonClick(event) {
@@ -1308,7 +1369,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     }
  
     cancelActionModal() {    
-        this.selectedAction = '';
+        this.resetActionComboBox();
         this.showActionModal = false;
     }
 
@@ -1316,7 +1377,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         //reset the selected record Ids
         let selectedRows = this.template.querySelectorAll('lightning-input');
-        
         selectedRows.forEach(element => element.checked = false);
         this.selectedRecordCount  = 0;
         this.showActionModal      = false;
@@ -1427,6 +1487,200 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
         this.listViewSortData.set(this.selectedObject + ':' + this.selectedListView, this.columnSortData);
         this.refreshAllListViewData();
+    }
+
+    /*
+     * Method which sets all rows in the current data set to be editable
+     */
+    setAllRowsEdited() {
+        if (this.allowInlineEditing === true && this.listViewData.isCoreListView === true)
+        {
+            this.isEdited = true;
+            this.listViewData.isEdited = true;
+            this.listViewDataRows.forEach(element => { 
+                if (element.isDeleted === false)
+                {
+                    element.isEdited = true;      
+                }
+            });        
+        }
+    }
+
+    /*
+     * Method which sets a single row in the current data set to be editable based on the provided row Id
+     */
+    setRowEdited(event) {
+        console.log('Row set to be edited - ' + event.target.id);
+        const rowId = event.target.id.split('-')[0];
+
+        if (this.allowInlineEditing === true && this.listViewData.isCoreListView === true)
+        {
+            this.isEdited = true;
+            this.listViewData.isEdited = true;
+            this.listViewDataRows.forEach(element => { 
+                if (element.isDeleted === false && element.rowId === rowId)
+                {
+                    element.isEdited = true;      
+                }
+            });        
+        }
+    }
+
+    /*
+     * Method called when a row is edited and the SAVE button on the row is clicked.
+     */
+    handleRowDataSave(event) {
+        console.log('Row data saved');
+
+        let rowId = event.target.value;
+
+        let rowData = this.updatedRowData.get(rowId);
+
+        if (rowData !== undefined)
+        {
+            let rowDataStr = JSON.stringify( Array.from(rowData)); //map objects cannot be stringified
+            console.log('SAVE RESULT - ' + rowDataStr);
+
+            updateRecord({rowId: rowId, rowData: rowDataStr})
+            .then(result => {
+                console.log('Save successful'); 
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Success',
+                    message: 'Record saved successfully.',
+                    variant: 'success',
+                    mode: 'dismissable'
+                }));
+                this.refreshAllListViewData();
+            })
+            .catch(error => {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error',
+                    message: 'There was an error saving the record. Please try again\n\n' + error.message,
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
+            });
+        }
+    }
+
+     /*
+     * Method called when a row is edited and the SAVE ALL button on the column header is clicked.
+     */
+     handleAllRowDataSave(event)
+    {
+        let rowCount = 0;
+        if (this.updatedRowData !== undefined) {
+            rowCount = this.updatedRowData.size;
+        }
+
+        if (rowCount > 0) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Success',
+                message: rowCount + ' record(s) saved successfully.',
+                variant: 'success',
+                mode: 'dismissable'
+            }));
+        }
+
+        this.refreshAllListViewData();
+
+        this.listViewDataRows.forEach(element => { 
+            element.isEdited = false;      
+        });
+
+        this.updatedRowData = new Map();
+        this.isEdited = false;
+
+    }
+
+    /*
+     * Method called when a row is edited and the RESET button on the row is clicked forcing a full data reset of the row.
+     */
+    handleRowDataReset(event) {
+        console.log('Row data reset');
+
+        let rowId = event.target.value;
+
+        this.updatedRowData.delete(rowId);
+
+        let editedCount = 0;
+        this.listViewDataRows.forEach(element => { 
+            if (element.rowId === rowId)
+            {
+                element.isEdited = false;      
+            } else {
+                if (element.isEdited === true)
+                    editedCount++;
+            }
+        });
+
+        //set form to not editing if no rows are processing.
+        if (editedCount === 0) {
+            this.isEdited = false;
+        }
+
+    }
+
+    /*
+     * Method called when a row is edited and the ALL RESET button on the column is clicked forcing a full data reset of the entire dataset.
+     */
+    handleAllRowDataReset(event) {
+
+        this.listViewDataRows.forEach(element => { 
+            element.isEdited = false;      
+        });
+
+        this.isEdited = false;
+    }
+
+    /*
+     * Method called when a row is edited and a field within that row is changed.
+     */
+    handleFieldDataChange(event) {
+        console.log('Field changed');
+
+        //if data is coming in from a component
+        let fieldValue = '';
+        let rowId = '';
+        let fieldName = '';
+
+        //if data is coming in from a component
+        if (event.currentTarget.dataset.type === undefined)
+        {
+            fieldValue = event.detail.selectedValue;
+            rowId = event.detail.rowId;
+            fieldName  = event.detail.field;
+        
+        } else {
+            if (event.currentTarget.dataset.type === 'boolean') {
+                if (event.target.checked === true) {
+                    fieldValue = 'true'; //have to turn boolean into string
+                } else { 
+                    fieldValue = 'false'
+                }
+                rowId  = event.currentTarget.dataset.rowId;
+                fieldName  = event.currentTarget.dataset.field;    
+            } else {
+                fieldValue = event.target.value;
+                rowId  = event.currentTarget.dataset.rowId;
+                fieldName  = event.currentTarget.dataset.field;
+            }
+        }
+
+        console.log('fieldValue - ' + fieldValue);
+        console.log('rowId - ' + rowId);
+        console.log('fieldName - ' + fieldName);
+
+        let rowData = this.updatedRowData.get(rowId);
+
+        if (rowData === undefined)
+        {
+            rowData = new Map();
+            this.updatedRowData.set(rowId, rowData);
+        }
+
+        rowData.set(fieldName, fieldValue);
+
     }
 
 }

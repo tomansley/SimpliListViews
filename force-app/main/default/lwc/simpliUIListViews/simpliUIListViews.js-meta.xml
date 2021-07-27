@@ -7,9 +7,11 @@
         <target>lightning__RecordPage</target>
         <target>lightning__HomePage</target>
         <target>lightning__UtilityBar</target>
+        <target>lightning__Tab</target>
     </targets>
-    <!-- Configuring the design attributes --><targetConfigs>
-        <targetConfig targets="lightning__HomePage,lightning__AppPage">
+    <!-- Configuring the design attributes -->
+    <targetConfigs>
+        <targetConfig targets="lightning__UtilityBar,lightning__RecordPage,lightning__HomePage,lightning__AppPage">
             <property name="pageName" type="String" default="My_Component_Name" required="true" label="Component Name" description="String used to identify the list view component. It is used to identify user configuration for the component. Names should be distinct and should NEVER be changed."/>
             <property name="hasMainTitle" type="Boolean" default="true" label="Show Title" description="Indicates whether the name should be displayed or not."/>
             <property name="mainTitle" type="String" default="My List View Title" label="Title" description="String used if the title is displayed. Names should be distinct within a lightning page."/>

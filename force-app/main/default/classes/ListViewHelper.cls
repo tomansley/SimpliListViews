@@ -1,13 +1,14 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-30-2021
+ * @last modified on  : 07-27-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   02-17-2021   tom.h.ansley@medtronic.com   Added New action config
  * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
-**/
+ * 4.0   06-18-2021   tom.h.ansley@medtronic.com   Added updateRecord() method to update records based on inline editing, added Edit All action for inline-editing of all list view rows, added org wide config params for identifying if inline-editing is allowed and whether the list views have been initialized.
+ **/
 global with sharing class ListViewHelper {
     
     public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
@@ -24,13 +25,61 @@ global with sharing class ListViewHelper {
         return listView.Object_Name__c.replace(' ', '_') + ':' + listView.API_Name__c;
     }
 
+    /**
+    * @description Method to update a record given its record Id and a map of field updates
+    * @author tom.h.ansley@medtronic.com | 07-22-2021 
+    * @param rowId the record Id of the record to be updated
+    * @param fieldValues map of field values with the field name being the key
+    * @return String blank string = success. Anything else is failure.
+    **/
+    public static String updateRecord(String rowId, Map<String, String> fieldValues)
+    {
+        String result = '';
+
+        //get object type from id
+        String objType = HelperSchema.getSObjectTypeFromId(rowId);
+
+        //instantiate object
+        Type t = Type.forName(objType);
+        SObject rec = (SObject) t.newInstance();
+
+        //add record Id to object
+        rec.put('Id', rowId);
+
+        for (String fieldName: fieldValues.keySet())
+        {
+            Object fieldValue = null;
+            
+            //if we have a lookup
+            if (fieldName.contains('.'))
+            {
+                fieldValue = fieldValues.get(fieldName);
+                String fixedFieldName = fieldName.substringBefore('.');
+
+                //if we have an OOTB lookup name then we need to add "Id"
+                if (!fixedFieldName.contains('__'))
+                    fixedFieldName += 'Id';
+
+                rec.put(fixedFieldName, fieldValue);
+            } else {
+                fieldValue = HelperSchema.getValueForField(objType, fieldName, fieldValues.get(fieldName));
+                rec.put(fieldName, fieldValue);
+            }
+
+        }
+
+        HelperDatabase.updateRecord(rec, objType);
+
+        return result;
+    }
+
     /*
      ListViewHelper.updateListViewObjectsSetting();
      */
     public static void updateListViewObjectsSetting()
     {
         //get API Name/Label of all list view objects
-        Map<String, String> listViewObjects = getListViewObjects(new Set<String>(), new Set<String>(), true);
+        Map<String, String> listViewObjects = getListViewObjects();
 
         //turn to JSON
         String jsonStr = JSON.serialize(listViewObjects);
@@ -202,7 +251,7 @@ global with sharing class ListViewHelper {
     */
     public static Map<String, String> getListViewObjects()
     {
-        return getListViewObjects(new Set<String>(), new Set<String>(), false);
+        return getListViewObjects(new Set<String>(), new Set<String>());
     }
     
     /*
@@ -217,73 +266,62 @@ global with sharing class ListViewHelper {
             System.debug(key + ' - ' + objs.get(key));
         }
     */
-    public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs, Boolean fresh)
+    public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs)
     {
-        System.debug(LoggingLevel.DEBUG, 'ListViewHelper.getListViewObjects(' + pageWideIncObjs + ', ' + pageWideExcObjs + ', ' + fresh + ')');
+        System.debug(LoggingLevel.DEBUG, 'ListViewHelper.getListViewObjects(' + pageWideIncObjs + ', ' + pageWideExcObjs + ')');
 
         Map<String, String> mappedListviewObjects = new Map<String, String>();
         Map<String, String> listViewObjects =  null;
 
-        if (fresh)
+        listViewObjects =  new Map<String, String>();
+
+        String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
+        System.debug(LoggingLevel.DEBUG, 'Org Wide Excluded Object Types - ' + exclObjs);
+        Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
+        System.debug(LoggingLevel.DEBUG, 'orgWideExcObjs size - ' + orgWideExcObjs.size());
+
+        HelperSchema.checkListViewAccessible();
+
+        //------------------------------------
+        //CORE LIST VIEWS
+        //------------------------------------
+        AggregateResult[] aggListViewObjects = [SELECT Object_Name__c 
+                                                FROM List_View__c 
+                                                WHERE Object_Name__c NOT IN :orgWideExcObjs 
+                                                AND Object_Name__c NOT IN :pageWideExcObjs
+                                                GROUP BY Object_Name__c 
+                                                LIMIT 2000]; //limit for security review. No other reason
+
+
+        for (AggregateResult result: aggListViewObjects)
         {
+            String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
 
-            listViewObjects =  new Map<String, String>();
+            System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
 
-            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
-            Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
-    
-            HelperSchema.checkListViewAccessible();
-
-            //------------------------------------
-            //CORE LIST VIEWS
-            //------------------------------------
-            AggregateResult[] aggListViewObjects = [SELECT Object_Name__c 
-                                                 FROM List_View__c 
-                                                 WHERE Object_Name__c NOT IN :orgWideExcObjs 
-                                                    AND Object_Name__c NOT IN :pageWideExcObjs
-                                                 GROUP BY Object_Name__c 
-                                                 LIMIT 2000]; //limit for security review. No other reason
-    
-    
-            for (AggregateResult result: aggListViewObjects)
+            Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objAPIName);
+            if (objDesc != null)
             {
-                String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
-    
-                System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
-
-                Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objAPIName);
-                if (objDesc != null)
-                {
-                    String objLabel = objDesc.getLabel();
-                    listViewObjects.put(objAPIName, objLabel);
-                }
+                String objLabel = objDesc.getLabel();
+                listViewObjects.put(objAPIName, objLabel);
             }
+        }
 
-            //------------------------------------
-            //OTHER LIST VIEWS
-            //------------------------------------
-            Map<Id, List_View__c> listViews = getListViewsByType(TYPE_CUSTOM);
+        //------------------------------------
+        //OTHER LIST VIEWS
+        //------------------------------------
+        Map<Id, List_View__c> listViews = getListViewsByType(TYPE_CUSTOM);
 
-            for (List_View__c listView: listViews.values())
+        for (List_View__c listView: listViews.values())
+        {
+            Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(listView.Object_Name__c);
+            if (objDesc != null && !orgWideExcObjs.contains(objDesc.getName()) && !pageWideExcObjs.contains(objDesc.getName()))
             {
-                Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(listView.Object_Name__c);
-                if (objDesc != null)
-                {
-                    String objLabel = objDesc.getLabel();
-                    listViewObjects.put(listView.Object_Name__c, objLabel);
-                } else {
-                    listViewObjects.put(listView.Object_Name__c, listView.Object_Name__c);
-                }
+                String objLabel = objDesc.getLabel();
+                listViewObjects.put(listView.Object_Name__c, objLabel);
+            } else if (!orgWideExcObjs.contains(listView.Object_Name__c) && !pageWideExcObjs.contains(listView.Object_Name__c)) {
+                listViewObjects.put(listView.Object_Name__c, listView.Object_Name__c);
             }
-
-        } else {
-
-            String jsonStr = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
-
-            if (jsonStr != null && jsonStr != '')
-                listViewObjects =  (Map<String, String>) JSON.deserialize(jsonStr, Map<String,String>.class);    
-            else
-                listViewObjects = new Map<String, String>();
         }
 
         String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
@@ -996,6 +1034,13 @@ global with sharing class ListViewHelper {
 
         actions.add(orgEditAction);
 
+        List_View_Action__c orgEditAllAction = new List_View_Action__c();
+        orgEditAllAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        orgEditAllAction.Label__c            = 'Edit All';
+        orgEditAllAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+
+        actions.add(orgEditAllAction);
+
         List_View_Action__c orgDeleteAction = new List_View_Action__c();
         orgDeleteAction.Apex_Class_Name__c  = 'ListViewActionDelete';
         orgDeleteAction.Label__c            = 'Delete';
@@ -1121,7 +1166,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'IncludedObjectTypes';
-        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Type__c   = 'List(String)';
         param2.Parameter_Value__c  = '';
         param2.Parameter_Label__c  = 'Included Object Types';
         params2.add(param2);
@@ -1129,7 +1174,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'ExcludedObjectTypes';
-        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Type__c   = 'List(String)';
         param2.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
         param2.Parameter_Label__c  = 'Excluded Object Types';
         params2.add(param2);
@@ -1204,6 +1249,22 @@ global with sharing class ListViewHelper {
         param2.Parameter_Type__c   = 'Number';
         param2.Parameter_Value__c  = '250';
         param2.Parameter_Label__c  = 'Query Paging Size';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'IsInitialized';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'false';
+        param2.Parameter_Label__c  = 'Is Initialized';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'AllowInlineEditing';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Allow Inline Editing';
         params2.add(param2);
 
         //---------------------------------------

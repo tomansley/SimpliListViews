@@ -1,12 +1,13 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-30-2021
+ * @last modified on  : 07-27-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
+ * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic to handle identification of inline-editing for rows and fields. Beefed up FieldWrapper to handle inline-editing (mainly type identification methods), 
 **/
 public with sharing abstract class ListViewAbstract {
     
@@ -135,6 +136,10 @@ public with sharing abstract class ListViewAbstract {
         setRequestData(listview, null, null, null, -1);
     }
 
+    /*
+        List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig('All', 'All');
+
+    */
     public void setRequestData(List_View__c listview, List<ListViewHelper.ColumnSortData> columnSortData, String joinField, Set<String> joinRecordIds, Integer offset)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewAbstract.setRequestData - ' + listview);
@@ -170,13 +175,15 @@ public with sharing abstract class ListViewAbstract {
     {
         public DateTime lastModifiedDate;
         public String lastModifiedBy;
-        public Integer offset = -1;
+        public String listviewType;
+        public Integer offset   = -1;
         public Integer rowLimit = -1;
     
         public ListViewWrapper(List_View__c listView)
         {
             lastModifiedDate = listView.LastModifiedDate;
             lastModifiedBy   = listView.LastModifiedBy.Name;
+            listviewType     = listView.RecordType.Name;
         }
 
         @AuraEnabled(cacheable=false)
@@ -209,6 +216,12 @@ public with sharing abstract class ListViewAbstract {
             return lastModifiedDate;
         }
         
+        @AuraEnabled(cacheable=true)
+        public String getListViewType()
+        {
+            return listviewType;
+        }
+        
     }
 
     //-------------------------------------------------------------------
@@ -226,6 +239,7 @@ public with sharing abstract class ListViewAbstract {
         public String csvData;
         public Boolean hasTotalsRow;
         public Boolean isCoreListView = false;
+        public Boolean isEdited;
         
         public RowsWrapper(List_View__c listView)
         {
@@ -237,12 +251,25 @@ public with sharing abstract class ListViewAbstract {
             coreListId = listview.Core_ListView_Id__c;
             if (listView.RecordTypeId == ListViewHelper.coreRTId)
                 isCoreListView = true;
+            isEdited = false;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getObjectName()
+        {
+            return objName;
         }
 
         @AuraEnabled(cacheable=true)
         public String getCoreListId()
         {
             return coreListId;
+        }
+
+        @AuraEnabled
+        public Boolean getIsEdited()
+        {
+            return isEdited;
         }
 
         @AuraEnabled(cacheable=true)
@@ -387,6 +414,7 @@ public with sharing abstract class ListViewAbstract {
         public String highlightColor;            //the color the row should be set to if being highlighted.
         public Boolean isTotals;                 //indicates whether this row is a totals row.
         public Boolean isDeleted;                //indicates whether this row is for a deleted record.
+        public Boolean isEdited;                 //indicates whether the row has been edited or not.
 
         public RowWrapper(String rowId)
         {
@@ -395,6 +423,7 @@ public with sharing abstract class ListViewAbstract {
             this.highlightColor = '';
             fields = new Map<String, FieldWrapper>();
             isTotals = false;
+            isEdited = false;
         }
 
         public void addField(FieldWrapper field)
@@ -459,6 +488,12 @@ public with sharing abstract class ListViewAbstract {
         public Boolean getIsDeleted()
         {
             return isDeleted;
+        }
+
+        @AuraEnabled
+        public Boolean getIsEdited()
+        {
+            return isEdited;
         }
 
         @AuraEnabled(cacheable=true)
@@ -560,6 +595,7 @@ public with sharing abstract class ListViewAbstract {
 
         public String label;
         public String value;
+        public String idValue;
         public String type;
         public String url;             //the URL that the field should display if one is available.
         public String urlTarget;      //identifies the target of the URL
@@ -570,47 +606,49 @@ public with sharing abstract class ListViewAbstract {
         public Integer columnIndex;    //identifies the column that this field is a part of
         public String key;
         public Boolean isSortable;     //identifies whether the field is sortable.
+        public Boolean isEditable;     //identifies whether the field can be edited inline.
+        public String fieldObjName;    //the API name of the object that this field looks up to
 
         public FieldWrapper(String label, String value, String type, String name, Integer columnIndex)
         {
-            this.label     = label;
-            this.type      = type;
-            this.value     = value;
-            this.name      = name;
-            this.sortDir   = true;
-            this.sortIndex = '';
+            this.label       = label;
+            this.name        = name;
+            this.sortDir     = true;
+            this.sortIndex   = '';
             this.columnIndex = columnIndex;
-            this.isSortable = true;
+            this.isSortable  = true;
             this.urlTarget   = '_self';
 
-            if (this.value == null)
-                this.value = '';
+            this.setValue(value);
+            this.setType(type);
 
             String debug = '\n\n---------------------------------------------------------------\n';
-            debug       += 'Label - ' + label + '\n';
-            debug       += 'type - ' + type + '\n';
+            debug       += 'Label - ' + this.label + '\n';
+            debug       += 'type - ' + this.type + '\n';
             debug       += 'value - ' + this.value + '\n';
-            debug       += 'name - ' + name + '\n';
-            debug       += 'columnIndex - ' + columnIndex + '\n';
+            debug       += 'name - ' + this.name + '\n';
+            debug       += 'columnIndex - ' + this.columnIndex + '\n';
             debug       += '---------------------------------------------------------------\n';
             System.debug(LoggingLevel.FINE, debug);
         }
         
         public FieldWrapper(String label, String type, String name, Integer columnIndex)
         {
-            this.label   = label;
-            this.type    = type;
-            this.name    = name;
-            this.sortdir = true;
-            this.sortIndex = '';
+            this.label       = label;
+            this.name        = name;
+            this.sortdir     = true;
+            this.sortIndex   = '';
             this.columnIndex = columnIndex;
-            isSortable   = true;
+            this.isSortable  = true;
+
+            this.setType(type);
+
             String debug = '\n\n---------------------------------------------------------------\n';
-            debug       += 'Label - ' + label + '\n';
-            debug       += 'type - ' + type + '\n';
+            debug       += 'Label - ' + this.label + '\n';
+            debug       += 'type - ' + this.type + '\n';
             debug       += 'value - ' + this.value + '\n';
-            debug       += 'name - ' + name + '\n';
-            debug       += 'columnIndex - ' + columnIndex + '\n';
+            debug       += 'name - ' + this.name + '\n';
+            debug       += 'columnIndex - ' + this.columnIndex + '\n';
             debug       += '---------------------------------------------------------------\n';
             System.debug(LoggingLevel.FINE, debug);
         }
@@ -670,15 +708,62 @@ public with sharing abstract class ListViewAbstract {
         }
         
         @AuraEnabled(cacheable=true)
+        public Boolean getIsEditable()
+        {
+            //only editable if its a field that is on the main object or a lookup.
+            if (this.name.countMatches('.') > 1 || (this.name.countMatches('.') == 1 && !this.name.contains('.Name'))) return false;
+            
+            return isEditable;    
+        }
+
+        public void setIsEditable(Boolean isEditable)
+        {
+            //cannot edit geolocation fields individually
+            if (name.contains('__s'))
+                this.isEditable = false;
+            else 
+                this.isEditable = isEditable;
+        }
+        
+        @AuraEnabled(cacheable=true)
         public String getType()
         {
             return type;
+        }
+
+        public void setType(String type)
+        {
+            if (type == 'string' && this.name.contains('.Name'))
+                this.type = 'lookup';
+            else 
+                this.type = type;
         }
         
         @AuraEnabled(cacheable=true)
         public String getValue()
         {
             return value;
+        }
+
+        public void setValue(String value)
+        {
+            if (value == null)
+                this.value = '';
+            else if (this.type == 'date')
+                this.value = value.removeEnd(' 00:00:00');
+            else    
+                this.value = value;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getIdValue()
+        {
+            return idValue;
+        }
+
+        public void setIdValue(String idValue)
+        {
+            this.idValue = idValue;
         }
 
         @AuraEnabled
@@ -703,6 +788,159 @@ public with sharing abstract class ListViewAbstract {
         public String getURLTarget()
         {
             return urlTarget;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getFieldObjName()
+        {
+            return fieldObjName;
+        }
+
+        public void setFieldObjName(String fieldObjName)
+        {
+            this.fieldObjName = fieldObjName;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsString()
+        {
+            if (this.type == 'string') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsURL()
+        {
+            if (this.type == 'url') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsBoolean()
+        {
+            if (this.type == 'boolean') return true;
+            return false;    
+        }
+        
+        /**
+        * @description the value that is sent to the UI widgets. Sometimes that is different that what is displayed as text.
+        **/
+        @AuraEnabled(cacheable=true)
+        public String getUIValue()
+        {
+            String uiStr = value;
+            if (getIsBoolean()) //if boolean value is FALSE then send NOTHING
+            {
+                if (uiStr == 'false')
+                    uiStr = null;
+            } else if (getIsDateTime()) { //replace string value of '2021-03-04 1
+                if (!String.isEmpty(uiStr))
+                    uiStr = uiStr.replace(' ', 'T') + 'Z';
+            }
+            return uiStr;
+        }
+        
+        /*
+         * For those values that need to be returned as a list for display purposes.
+         */
+        @AuraEnabled(cacheable=true)
+        public List<String> getUIMultiPicklistValues()
+        {
+            if (value != null)
+                return value.split(';');
+            else
+                return new List<String>();
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsLookup()
+        {
+            if (this.type == 'lookup') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsCurrency()
+        {
+            if (this.type == 'currency') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDate()
+        {
+            if (this.type == 'date') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDateTime()
+        {
+            if (this.type == 'datetime') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTime()
+        {
+            if (this.type == 'time') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPicklist()
+        {
+            if (this.type == 'picklist') return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsMultiPicklist()
+        {
+            if (this.type == 'multipicklist') return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDecimal()
+        {
+            if (this.type == 'decimal') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsInteger()
+        {
+            if (this.type == 'integer') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDouble()
+        {
+            if (this.type == 'double') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPercent()
+        {
+            if (this.type == 'percent') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPhone()
+        {
+            if (this.type == 'phone') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsEmail()
+        {
+            if (this.type == 'email') return true;
+            return false;    
         }
         
         public Integer compareTo(Object compareTo) {
@@ -815,10 +1053,16 @@ public with sharing abstract class ListViewAbstract {
 
             for (List_View_Config_Parameter__c param: params)
             {
+                Boolean readonly = false;
+                //these params are read only and are created/updated by automated process on refresh
+                if (param.Parameter_Name__c == 'ListViewObjects' || param.Parameter_Name__c == 'IsInitialized')
+                    readonly = true;
+
                 parameters.put(param.Parameter_Name__c, new ListViewParam(param.Parameter_Label__c,
-                                                                          param.Parameter_Name__c, 
-                                                                          param.Parameter_Value__c, 
-                                                                          param.Parameter_Type__c));
+                                                                        param.Parameter_Name__c, 
+                                                                        param.Parameter_Value__c, 
+                                                                        param.Parameter_Type__c,
+                                                                        readonly));
             }
 
             System.debug(LoggingLevel.DEBUG, 'All config params - ' + parameters);
@@ -913,14 +1157,22 @@ public with sharing abstract class ListViewAbstract {
         public String value;
         public String type;
         public String description;
+        public Boolean readonly;
 
-        public ListViewParam(String label, String name, String value, String type)
+        public ListViewParam(String label, String name, String value, String type, Boolean readonly)
         {
             this.label = label;
             this.name = name;
             this.value = value;
             this.type = type;
             this.description = '';
+            this.readonly = readonly;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getReadOnly()
+        {
+            return readonly;
         }
 
         @AuraEnabled(cacheable=true)
@@ -939,6 +1191,18 @@ public with sharing abstract class ListViewAbstract {
         public String getValue()
         {
             return value;
+        }
+
+        /*
+         * For those values that need to be returned as a list for display purposes.
+         */
+        @AuraEnabled(cacheable=true)
+        public List<String> getListValues()
+        {
+            if (value != null)
+                return value.split(',');
+            else
+                return new List<String>();
         }
 
         @AuraEnabled(cacheable=true)
@@ -968,14 +1232,18 @@ public with sharing abstract class ListViewAbstract {
                 description = 'The HTML color that the footer row should be displayed in. i.e. #6C95BD.';
             else if (name == 'AllRows')
                 description = 'Indicates whether deleted and archived records should be included in list view results. Deleted records are displayed in red in the list';
+            else if (name == 'AllowAutomaticDataRefresh')
+                description = 'Indicates whether the automatic data refresh button should be available for all list views';
+                else if (name == 'AllowInlineEditing')
+                description = 'Indicates whether inline editing should be available to the user';
             return description;
         }
 
-        @AuraEnabled(cacheable=true)
         /*
          * Method which indicates whether an update should occur on this parameter immediately after its been changed vs.
          * after the user leaves the input field.
          */
+        @AuraEnabled(cacheable=true)
         public Boolean getUpdateImmediate()
         {
             if (getType().toLowerCase() == 'color' 
@@ -989,6 +1257,15 @@ public with sharing abstract class ListViewAbstract {
         public Boolean getIsBoolean()
         {
             if (getType().toLowerCase() == 'boolean') 
+                return true;
+            else 
+                return false;            
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsListString()
+        {
+            if (getType().toLowerCase() == 'list(string)') 
                 return true;
             else 
                 return false;            

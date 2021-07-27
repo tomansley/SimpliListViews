@@ -4,10 +4,11 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 06-29-2021
+ * @Last Modified On   : 07-27-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
+ * 1.0    7/27/2020   tom.h.ansley@medtronic.com     Added getAllObjectNames(), beefed up getValueForField() to correctly handle null values, added isEditable field to the field wrapper.
 **/
 public with sharing class HelperSchema {
 
@@ -109,6 +110,23 @@ public with sharing class HelperSchema {
 		return result;
 	}
 
+    /**
+    * @description Method to get a map of all object names and API names
+    * @author tom.h.ansley@medtronic.com | 07-07-2021 
+    **/
+    public static Map<String, String> getAllObjectNames() 
+    {
+        Map<String, String> objMap = new Map<String, String>();
+        for (Schema.SObjectType o : Schema.getGlobalDescribe().values() )
+        {
+            Schema.DescribeSObjectResult objResult = o.getDescribe();
+            if (!objResult.getLabel().contains('__MISSING LABEL__')) //REALLY?
+                objMap.put(objResult.getName(), objResult.getLabel());   
+        }
+
+        return objMap;
+    }
+
 	/*
 	 * Method that returns the describe result of an SObject.
      * System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getObjectSchema('simpli_lv__List_View_Org_Wide_Setting__mdt'));
@@ -202,20 +220,45 @@ public with sharing class HelperSchema {
 	 * Method which, given an object type and field will convert the provided value into the 
 	 * correct object based on the provided fields type.
 	 */
-	public static Object getValueForField(String obj, String key, String keyType, String value)
+	public static Object getValueForField(String obj, String field, String value)
 	{
+        System.debug(LoggingLevel.FINE, 'Starting getValueForField - ' + obj + '/' + field + '/' + value);
 		Object objValue = null;
-		Schema.DisplayType displayType = getFieldType(obj, key);
+		Schema.DisplayType displayType = getFieldType(obj, field);
+
 		if (displayType != null)
 		{
 			if (displayType == Schema.DisplayType.Boolean) return Boolean.valueOf(value);
-			else if (displayType == Schema.DisplayType.Double) return Double.valueOf(value);
+			else if (displayType == Schema.DisplayType.Double) { 
+                                                                if (String.isEmpty(value)) return null;
+                                                                return Double.valueOf(value);
+                                                                }
 			else if (displayType == Schema.DisplayType.Base64) return Blob.valueOf(value);
-			else if (displayType == Schema.DisplayType.Currency) return Double.valueOf(value);
-			else if (displayType == Schema.DisplayType.Date) return Date.valueOf(value);
-			else if (displayType == Schema.DisplayType.DateTime) return DateTime.valueOf(value);
-			else if (displayType == Schema.DisplayType.Integer) return Integer.valueOf(value);
-			else if (displayType == Schema.DisplayType.Percent) return Double.valueOf(value);
+			else if (displayType == Schema.DisplayType.Currency) {
+                                                                    if (String.isEmpty(value)) return null;
+                                                                    return Double.valueOf(value);
+                                                                 } 
+			else if (displayType == Schema.DisplayType.Date) { 
+                                                                 if (String.isEmpty(value)) return null;
+                                                                 return Date.valueOf(value);
+                                                             }
+			else if (displayType == Schema.DisplayType.Integer) {
+                                                                    if (String.isEmpty(value)) return null;
+                                                                    return Integer.valueOf(value);
+                                                                }
+			else if (displayType == Schema.DisplayType.Percent) { 
+                                                                    if (String.isEmpty(value)) return null;
+                                                                    return Double.valueOf(value);
+                                                                }
+			else if (displayType == Schema.DisplayType.DateTime) { 
+                                                                    if (String.isEmpty(value)) return null;
+                                                                    return DateTime.valueOf(value.replace('T', ' ').remove('.000Z')); //2021-07-21 20:45:00
+                                                                 }
+			else if (displayType == Schema.DisplayType.Time) { 
+                                                                    if (String.isEmpty(value)) return null;
+                                                                    return Time.newInstance(18, 30, 2, 20); //20:45:00
+                                                                 }
+
 			else return value;		 
 		}
 
@@ -389,6 +432,7 @@ public with sharing class HelperSchema {
     {
         System.debug(LoggingLevel.DEBUG, 'Starting getFieldData(' + fieldName + ', ' + obj + ')');
 		FieldData data = null;
+        String valueId = null;
 		String label = '';
 
 		try {
@@ -437,12 +481,13 @@ public with sharing class HelperSchema {
 
                         data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
 						data.fieldObjType = getObjectType(currentObj);
+                        data.valueId = valueId;
+                        data.isEditable = fieldDesc.isUpdateable();
 					}
 					
 				//if we are not at the last field then get the fields object
 				} else {
                     
-
                     Boolean isSet = false;
 
                     //get all field metadata
@@ -453,6 +498,13 @@ public with sharing class HelperSchema {
                     {
                         isSet = true;
                         objType = getObjectType(currentObj);
+
+                        //only provide the Id value if there are only two fields in the hierarchy. i.e. CreatedBy.Name
+                        if (valueId == null && fieldHierarchy.size() == 2)
+                        {
+                            valueId = String.valueOf(currentObj.get('Id'));
+                        }
+
                     } else {
                         data = new FieldData(field, label, Schema.DisplayType.STRING, '', null);
                         data.isChildRel = true;
@@ -468,8 +520,11 @@ public with sharing class HelperSchema {
                 ListViewErrorHelper.createUsageError(message); 
 			data = null;
         }
-
-        return data;
+        
+        if (data != null)
+            System.debug(LoggingLevel.FINE, data.getDebugString());
+        
+            return data;
     }
 
     public static void checkObjectPermissions(String objAPIName, String action)
@@ -705,28 +760,6 @@ public with sharing class HelperSchema {
 
     }
     
-    public class FieldData 
-    {
-
-        public SObject fieldObj        {get; set;}
-        public String fieldObjType     {get; set;}
-        public String name             {get; set;}
-        public String label            {get; set;}
-        public Schema.DisplayType type {get; set;}
-        public Object value            {get; set;}
-        public Boolean isChildRel      {get; set;}
-
-        public FieldData(String name, String label, Schema.DisplayType type, Object value, SObject fieldObj)
-        {
-			this.fieldObj   = fieldObj;
-            this.name       = name;
-            this.label      = label;
-            this.type       = type;
-            this.value      = value;
-            this.isChildRel = false;
-        }
-	}
-	
 	//------------------------------------------------
 	// PRIVATE METHODS BELOW
 	//------------------------------------------------
@@ -1051,5 +1084,51 @@ public with sharing class HelperSchema {
 	{
 		checkObjectDeletable(objName, true);
 	}
+
+	//------------------------------------------------
+	// INNER CLASSES
+	//------------------------------------------------
+
+    public class FieldData 
+    {
+
+        public SObject fieldObj        {get; set;}
+        public String fieldObjType     {get; set;}
+        public String name             {get; set;}
+        public String label            {get; set;}
+        public Schema.DisplayType type {get; set;}
+        public Object value            {get; set;} //holds the string value. i.e. CreatedBy.Name = "Tom Ansley" 
+        public String valueId          {get; set;} //holds the id value if its a lookup. i.e. CreatedBy.Name = 0053h000000xrj3AAA
+        public Boolean isChildRel      {get; set;}
+        public Boolean isEditable      {get; set;}
+
+        public FieldData(String name, String label, Schema.DisplayType type, Object value, SObject fieldObj)
+        {
+			this.fieldObj   = fieldObj;
+            this.name       = name;
+            this.label      = label;
+            this.type       = type;
+            this.value      = value;
+            this.isChildRel = false;
+            this.isEditable = false;
+        }
+
+        public String getDebugString()
+        {
+            String debug = '\n\n----------------\n';
+            debug += 'fieldObjType - ' + fieldObjType + '\n';
+            debug += 'name         - ' + name + '\n';
+            debug += 'label        - ' + label + '\n';
+            debug += 'type         - ' + type + '\n';
+            debug += 'value        - ' + value + '\n';
+            debug += 'valueId      - ' + valueId + '\n';
+            debug += 'isChildRel   - ' + isChildRel + '\n';
+            debug += 'isEditable   - ' + isEditable + '\n';
+            debug += '----------------\n';
+
+            return debug;
+        }
+	}
+	
 
 }

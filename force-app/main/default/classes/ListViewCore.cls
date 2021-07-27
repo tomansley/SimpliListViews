@@ -1,12 +1,13 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-30-2021
+ * @last modified on  : 07-27-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
+ * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Minor changes to allow fields/rows to handle inline-editing
 **/
 public with sharing class ListViewCore extends ListViewAbstract {
 
@@ -195,11 +196,13 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 HelperSchema.FieldData fieldData = HelperSchema.getFieldData(dataRows[0], fieldName);
                 String label = fieldData.label;
+                String fieldObjType = fieldData.fieldObjType.toLowerCase();
 
                 FieldWrapper field = new FieldWrapper(label, 
                                                       fieldData.type.name().toLowerCase(),
                                                       fieldName,
                                                       columnIndex);
+                field.fieldObjName = fieldObjType;
 
                 if (sortDataByFieldName.containsKey(fieldName))
                 {
@@ -256,19 +259,21 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 String fieldDataValue = String.valueOf(fieldData.value);
                 String fieldDataType = fieldData.type.name().toLowerCase();
+                String fieldObjType = fieldData.fieldObjType.toLowerCase();
 
-                System.debug(LoggingLevel.DEBUG, 'Field Data Type - ' + fieldDataType + ', Value - ' + fieldDataValue);
-
-                if (fieldDataType == 'date' && fieldDataValue != null)
-                    fieldDataValue = fieldDataValue.removeEnd(' 00:00:00');
+                System.debug(LoggingLevel.DEBUG, 'Field Obj Type - ' + fieldObjType + ', Field Data Type - ' + fieldDataType + ', Value - ' + fieldDataValue);
 
                 FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                     fieldDataValue, 
-                                                    fieldData.type.name().toLowerCase(),
+                                                    fieldDataType,
                                                     fieldName,
                                                     columnIndex);
+                field.setFieldObjName(fieldObjType);
+                field.setIdValue(fieldData.valueId);
+                field.setIsEditable(fieldData.isEditable);
 
                 System.debug(LoggingLevel.DEBUG, 'Field - ' + field);
+                System.debug(LoggingLevel.DEBUG, 'Field UI Value - ' + field.getUIValue());
 
                 if (ListViewAbstract.validNameColumnNames.contains(fieldData.name.toLowerCase())             //if we have the name of the object
                     && fieldData.fieldObj != null        //if we have field data.
