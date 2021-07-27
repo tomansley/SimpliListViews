@@ -4,16 +4,18 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 06-28-2021
+ * @Last Modified On   : 07-27-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
+ * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic for new admin page.
 **/
 public with sharing class ListViewConfigHelper {
 
     private static Map<String,Object> orgWideConfigParams           = null;
     private static List_View_Config__c orgWideConfig                = null;
+    private static final String ALL = 'All';
 
     public static final String OPER_EQUAL = 'Equals';
     public static final String OPER_NOT_EQUAL = 'Not Equal';
@@ -21,17 +23,59 @@ public with sharing class ListViewConfigHelper {
     public static final String OPER_LESS = 'Less Than';
     public static final String OPER_CONTAINS = 'Contains';
 
-    public static final String TYPE_STRING = 'string';
-    public static final String TYPE_DECIMAL = 'decimal';
-    public static final String TYPE_CURRENCY = 'currency';
-    public static final String TYPE_DATE = 'date';
-    public static final String TYPE_DATETIME = 'datetime';
+    public static final String TYPE_BOOLEAN     =  'boolean';
+    public static final String TYPE_STRING      = 'string';
+    public static final String TYPE_DECIMAL     = 'decimal';
+    public static final String TYPE_CURRENCY    = 'currency';
+    public static final String TYPE_DATE        = 'date';
+    public static final String TYPE_DATETIME    = 'datetime';
+    public static final String TYPE_NUMBER      = 'number';
+    public static final String TYPE_LIST_STRING = 'list(string)';
+
+    //=======================================================================
+    // ORG WIDE PARAM METHODS
+    //=======================================================================
+
+    /*
+     * Method to populate the cache.
+     */
+    private static void populateOrgWideConfig() 
+    {
+        if (orgWideConfig == null)
+        {
+
+            orgWideConfigParams = new Map<String,Object>();
+
+            List<List_View_Config__c> configs = getListViewConfig(ALL, ALL);
+            if (configs.size() == 0)
+            {
+                String message = 'Org wide list view config could not be retrieved';
+                ListViewErrorHelper.createUsageError(message);
+                throw new ListViewException(message);
+            }
+
+            orgWideConfig = configs[0];
+
+            for (List_View_Config_Parameter__c param: configs[0].List_View_Config_Parameters__r)
+                orgWideConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
+        }
+
+    }
+
+    /**
+    * @description Method to get the parameter details for the org wide configuration.
+    * @author tom.h.ansley@medtronic.com | 07-07-2021 
+    **/
+    public static Map<String, List_View_Config_Parameter__c> getOrgWideParamDetails()
+    {
+        return getListViewParamDetails(ALL, ALL);
+    }
 
     public static void setOrgWideConfigParam(String settingName, String value)
     {
         populateOrgWideConfig();
 
-        List<List_View_Config__c> configs = getListViewConfig('All', 'All');
+        List<List_View_Config__c> configs = getListViewConfig(ALL, ALL);
         if (configs.size() == 0)
         {
             String message = 'Org wide list view config could not be retrieved';
@@ -61,30 +105,16 @@ public with sharing class ListViewConfigHelper {
 
     }
 
-    /*
-     * Method to populate the cache.
-     */
-    public static void populateOrgWideConfig() 
+    /**
+    * @description Method to get all the org wide config params
+    * @author tom.h.ansley@medtronic.com | 07-07-2021 
+    * @return Map<String, Object> 
+    **/
+    public static Map<String,Object> getOrgWideConfigParams()
     {
-        if (orgWideConfig == null)
-        {
+        populateOrgWideConfig();
 
-            orgWideConfigParams = new Map<String,Object>();
-
-            List<List_View_Config__c> configs = getListViewConfig('All', 'All');
-            if (configs.size() == 0)
-            {
-                String message = 'Org wide list view config could not be retrieved';
-                ListViewErrorHelper.createUsageError(message);
-                throw new ListViewException(message);
-            }
-
-            orgWideConfig = configs[0];
-
-            for (List_View_Config_Parameter__c param: configs[0].List_View_Config_Parameters__r)
-                orgWideConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
-        }
-
+        return orgWideConfigParams;
     }
 
     /*
@@ -95,6 +125,72 @@ public with sharing class ListViewConfigHelper {
         populateOrgWideConfig();
 
         return (String) orgWideConfigParams.get(settingName);
+    }
+
+    public static String updateOrgWideParams(Map<String, Object> newParams)
+    {
+
+        Map<String, List_View_Config_Parameter__c> paramDetails = getOrgWideParamDetails();
+
+        for (String paramName: newParams.keySet())
+        {
+
+            List_View_Config_Parameter__c paramDetail = paramDetails.get(paramName);
+
+            Object newValue = newParams.get(paramName);
+
+            System.debug(LoggingLevel.DEBUG, 'NEW VALUE - ' + paramName + ' - '  + newValue);
+
+            if (paramDetail.Parameter_Type__c.toLowerCase() == TYPE_BOOLEAN)
+            {
+                paramDetail.Parameter_Value__c = String.valueOf(newValue);
+            } else if (paramDetail.Parameter_Type__c.toLowerCase() == TYPE_NUMBER)
+            {
+                paramDetail.Parameter_Value__c = String.valueOf(newValue);
+            } else if (paramDetail.Parameter_Type__c.toLowerCase() == TYPE_LIST_STRING)
+            {
+                paramDetail.Parameter_Value__c = '';
+                List<Object> values = (List<Object>) newValue;
+                for (Object value: values)
+                    paramDetail.Parameter_Value__c += (String) value + ',';
+                    paramDetail.Parameter_Value__c = paramDetail.Parameter_Value__c.removeEnd(',');
+            } else {
+                paramDetail.Parameter_Value__c = String.valueOf(newValue);
+            }
+        }
+
+        update paramDetails.values();
+
+        orgWideConfig = null;
+        populateOrgWideConfig();
+
+        return '';
+    }
+
+
+    //=======================================================================
+    // LIST VIEW PARAM METHODS
+    //=======================================================================
+
+    /**
+    * @description Method to get the parameter details for a provided list view.
+    * @author tom.h.ansley@medtronic.com | 07-07-2021 
+    **/
+    public static Map<String, List_View_Config_Parameter__c> getListViewParamDetails(String objectName, String listViewName)
+    {
+        List<List_View_Config_Parameter__c> params = [SELECT Parameter_Name__c,
+                                                              Parameter_Type__c,
+                                                              Parameter_Label__c,
+                                                              Parameter_Value__c
+                                                       FROM List_View_Config_Parameter__c
+                                                       WHERE List_View_Config__r.Name = :listViewName
+                                                                AND List_View_Config__r.List_View_Object__c = :objectName];
+                                                                
+        Map<String, List_View_Config_Parameter__c> paramMap = new Map<String, List_View_Config_Parameter__c>();
+        for (List_View_Config_Parameter__c param: params)
+            paramMap.put(param.Parameter_Name__c, param);
+
+        return paramMap;
     }
 
     public static String updateListViewParam(String objectName, String listViewName, String paramName, String paramValue, String paramLabel, String paramType)
@@ -259,19 +355,6 @@ public with sharing class ListViewConfigHelper {
 
         return mappedConfigs;
 
-    }
-
-    public static String getParameterDescription(String name)
-    {
-        String descr = '';
-
-        if (name == 'AdditionalFields') descr = 'String holding the additional API field names that should be returned in the list view data (comma delimited).';
-        else if (name == 'RefreshRate') descr = 'The number of seconds between refreshes if the list view can be auto refreshed.';
-        else if (name == 'ReturnSize') descr = 'The maximum number of rows of data that can be returned. Note that org and list view configuration takes precedence.';
-        else if (name == 'TotalColumns') descr = 'String holding the API field names of the columns within the list view that should have a total in the footer.';
-        else if (name == 'TotalColumnsColor') descr = 'The HTML color that the footer row should be displayed in. i.e. #6C95BD.';
-        else if (name == 'AllRows') descr = 'Indicates whether deleted and archived records should be included in list view results.';
-        return descr;
     }
 
     /**

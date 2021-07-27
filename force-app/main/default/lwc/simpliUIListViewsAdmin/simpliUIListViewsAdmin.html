@@ -1,0 +1,137 @@
+<!-- sldsValidatorIgnore -->
+<!--
+  @description       : 
+  @author            : tom.h.ansley@medtronic.com
+  @group             : 
+  @last modified on  : 07-18-2021
+  @last modified by  : tom.h.ansley@medtronic.com
+  Modifications Log 
+  Ver   Date         Author                       Modification
+  1.0   08-12-2020   tom.h.ansley@medtronic.com   Initial Version
+-->
+<template>
+    <template if:true={spinner}>
+        <lightning-spinner alternative-text="Loading" class="pageSpinnerHolder"></lightning-spinner>
+    </template>
+
+    <!-- ------------------------------------------------------------------------ -->
+    <!-- Section which handles the initialization of the list views if its needed -->
+    <!-- ------------------------------------------------------------------------ -->
+    <lightning-card>
+        <template if:false={showProgress}>  
+            <div style="padding-left: 10px;">
+                <template if:false={isInitialized}>
+                    <lightning-icon icon-name="standard:first_non_empty" 
+                                    alternative-text="List Views Not Initialized" 
+                                    title="List Views Not Initialized">
+                    </lightning-icon>&nbsp;&nbsp;
+                    List views need to be initialized or updated. Click  
+                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
+                        size="small" 
+                        icon-name="action:new_task" 
+                        onclick={handleProcessListViewsButtonClick}>
+                    </lightning-button-icon>
+                    to process the list views.
+                </template>
+                <template if:true={isInitialized}>    
+                    <lightning-icon icon-name="standard:task2" 
+                                    alternative-text="List Views Initialized" 
+                                    title="List Views Initialized">
+                    </lightning-icon>&nbsp;&nbsp;
+                    List views are initialized. Click  
+                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
+                        size="small" 
+                        icon-name="action:new_task" 
+                        onclick={handleProcessListViewsButtonClick}>
+                    </lightning-button-icon>
+                    to process them again.
+                </template>
+            </div>
+        </template>
+        <template if:true={showProgress}>
+            <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
+                                                        working-text="List Views Processing Status"
+                                                        complete-text="List views have been successfully initialized.">
+            </c-simpli-u-i-list-views-init-progress-bar>
+        </template>
+    </lightning-card>
+
+    <br/>
+
+    <!-- ------------------------------------------------------------------------------- -->
+    <!-- Section which handles the displaying of all the org wide configuration settings -->
+    <!-- ------------------------------------------------------------------------------- -->
+    <template if:true={config}>
+        <table class="slds-table slds-table_bordered">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        <div class="slds-truncate" title="Field Name">Parameter Name</div>
+                    </th>
+                    <th scope="col">
+                        <div class="slds-truncate" title="Value">Value</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={config.parameters} for:item="param">
+                    <tr key={param.name} class="slds-hint-parent">
+
+                        <td key={param.name} class="">
+                            <div key={param.name} class="slds-truncate" title={param.name}>
+                                {param.label}
+                                &nbsp;
+                                <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text="close"></lightning-icon> 
+                            </div>
+                        </td>
+                        <td key={param.name} data-label={param.name}>
+                            <div class="slds-form-element__control" title={param.value}>
+                                <template if:true={param.isBoolean}>
+                                    <lightning-combobox placeholder="Select a Value..."
+                                                        onblur={handleParamUpdate}
+                                                        options={booleanList}
+                                                        variant=label-hidden
+                                                        value={param.value}
+                                                        name={param.name}
+                                                        label={param.label}
+                                                        disabled={param.readOnly}>
+                                    </lightning-combobox>                        
+                                </template>
+                                <template if:false={param.isBoolean}>
+                                    <template if:true={param.isListString}>
+                                        <lightning-dual-listbox name={param.name}
+                                                                label={param.label}
+                                                                source-label="Available"
+                                                                selected-label="Selected"
+                                                                options={objNamesList}
+                                                                onchange={handleParamUpdate}
+                                                                variant=label-hidden
+                                                                value={param.listValues}
+                                                                size=7
+                                                                disabled={param.readOnly}>
+                                        </lightning-dual-listbox>
+                                    </template>
+                                    <template if:false={param.isListString}>
+                                        <lightning-input type={param.type} 
+                                                            variant="label-hidden"
+                                                            name={param.name} 
+                                                            onchange={handleParamUpdate}
+                                                            placeholder={param.placeHolder}
+                                                            value={param.value}
+                                                            label={param.label}
+                                                            disabled={param.readOnly}>
+                                        </lightning-input>
+                                    </template>
+                                </template>
+                            </div>
+                        </td>
+                    </tr>
+                </template>            
+            </tbody>
+        </table>      
+    </template>   
+
+    <footer class="slds-modal__footer" style="min-width: 1100px;">
+        <button class="slds-button slds-button_brand" onclick={handleSaveClick}>Save</button>
+    </footer>
+</template>
