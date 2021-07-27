@@ -2,12 +2,13 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-06-2021
+ * @last modified on  : 07-27-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-04-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
+ * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added logic when list views are not initialized
 **/
 public without sharing class ListViewController
 {
@@ -77,7 +78,7 @@ public without sharing class ListViewController
         Set<String> excObjs = HelperString.getSetFromString(excludedObjects, ',');
         Set<String> incObjs = HelperString.getSetFromString(includedObjects, ',');
 
-        Map<String, String> listviewObjects = ListViewHelper.getListViewObjects(incObjs, excObjs, false);
+        Map<String, String> listviewObjects = ListViewHelper.getListViewObjects(incObjs, excObjs);
 
         for (String apiName: listviewObjects.keySet())
             configListOptions.add(new SelectOption(apiName, listviewObjects.get(apiName)));         
@@ -85,6 +86,16 @@ public without sharing class ListViewController
         configListOptions.sort();
 
         return configListOptions;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static Boolean getIsInitialized()
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getIsInitialized()');
+
+        Boolean isInitialized = Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam('IsInitialized'));
+
+        return isInitialized;
     }
 
     @AuraEnabled(cacheable=true)
@@ -709,6 +720,34 @@ public without sharing class ListViewController
         labelOptions.sort();
 
         return labelOptions;
+    }
+
+    /**
+    * @description Method which accepts a record Id and a JSON string containing field data to be updated on the record.
+    * @author tom.h.ansley@medtronic.com | 07-22-2021 
+    **/
+    @AuraEnabled
+    public static String updateRecord(String rowId, String rowData)
+    {
+        //get just the Id as we return Id:position
+        String id = rowId.split(':')[0];
+
+        //add all field data - remember that Map objects cannot be stringified in Javascript so we need to turn
+        //everything into an array before sending so here we turn it back again.
+        Map<String, String> fieldMap = new Map<String, String>();
+        List<Object> fieldData = (List<Object>) JSON.deserializeUntyped(rowData);
+        for (Object values: fieldData)
+        {
+            List<Object> fieldDataVals = (List<Object>) values;
+            String fieldName = (String) fieldDataVals[0];
+            String value     = (String) fieldDataVals[1];
+            
+            fieldMap.put(fieldName, value);
+        }
+
+        String result = ListViewHelper.updateRecord(id, fieldMap);
+
+        return result;
     }
 
     //=============================

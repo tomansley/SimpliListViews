@@ -2,11 +2,12 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-08-2020
+ * @last modified on  : 07-27-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   09-08-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   09-08-2020   tom.h.ansley@medtronic.com   Fixed bug where record ids were being passed in with row nums. Row nums are now stripped.
 **/
 public with sharing class ListViewActionUpdate  extends ListViewAction {
 
@@ -28,7 +29,7 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
             System.debug(LoggingLevel.DEBUG, 'Field Values      - ' + fieldValues);
 
             //get the type of object from the provided Ids
-            String objType = HelperSchema.getObjectTypeFromId((String) recordIds[0]);
+            String objType = HelperSchema.getObjectTypeFromId(((String) recordIds[0]).substringBefore(':'));
 
             //get an apex Type of the object type
             Type t = Type.forName(objType);

@@ -2,11 +2,12 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 06-30-2021
+ * @last modified on  : 07-27-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   07-12-2021   tom.h.ansley@medtronic.com   Added setting of org wide config to identify that the list views have been initialized.
 **/
 global with sharing class ListViewProcessBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
     
@@ -152,6 +153,8 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
         //delete all list views that are EXCLUDED from being displayed
         //but may have been created at another time
         Database.executeBatch(new ListViewDeleteBatch());
+
+        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', 'true');
 	}
 	
 	global class ListViewProcessBatchException extends Exception { }
