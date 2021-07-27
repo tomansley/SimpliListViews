@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 06-29-2021
+ * @last modified on  : 07-22-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -42,7 +42,7 @@ public with sharing class HelperSchemaTest {
 
         Schema.DescribeSObjectResult objSchema = HelperSchema.getObjectSchema('Account');
 
-        Object value = HelperSchema.getValueForField('Account', 'Name', HelperSchema.NAME, 'Test Account Name');
+        Object value = HelperSchema.getValueForField('Account', 'Name', 'Test Account Name');
 
         System.assert(value instanceof String);
 

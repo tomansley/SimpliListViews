@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 06-30-2021
+ * @last modified on  : 07-26-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -20,6 +20,27 @@ global class ListViewControllerTest {
     }
 
     @IsTest
+    static void getListViewInitProgressTest()
+    {
+
+        Test.startTest();
+
+            String result = ListViewController.getListViewInitProgress(null);
+
+            Boolean isInit = ListViewController.getIsInitialized();
+
+            ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', 'true');
+
+            Boolean isInit2 = ListViewController.getIsInitialized();
+
+        Test.stopTest();
+
+        System.assertEquals('0:', result);
+        System.assertEquals(false, isInit);
+        System.assertEquals(true, isInit2);
+    }
+
+    @IsTest
     static void getUserConfigTest()
     {
     
@@ -30,8 +51,8 @@ global class ListViewControllerTest {
 
         Map<String, String> configs = ListViewController.getUserConfigs('CompName 1');
 
-        System.assertEquals(configs.size(), 13);
-        System.assertEquals(configs.get('pinnedListView'), 'Account:AllAccounts');
+        System.assertEquals(15, configs.size());
+        System.assertEquals('Account:AllAccounts', configs.get('pinnedListView'));
 
         //update user config
         ListViewController.updateUserConfig('CompName 1', 'pinnedListView', 'Contact:AllContacts');
@@ -39,8 +60,8 @@ global class ListViewControllerTest {
 
         configs = ListViewController.getUserConfigs('CompName 1');
 
-        System.assertEquals(configs.size(), 13);
-        System.assertEquals(configs.get('pinnedListView'), 'Contact:AllContacts');
+        System.assertEquals(15, configs.size());
+        System.assertEquals('Contact:AllContacts', configs.get('pinnedListView'));
 
 
 
@@ -250,6 +271,22 @@ global class ListViewControllerTest {
         String validResult =  ListViewController.isValidListViewDataRequest('Account', 'OwnerId', '');
 
     }
+
+    @IsTest
+    static void updateRecordTest()
+    {
+
+        Account acct = HelperTest.insertAccount('Update Record Test Account');
+        
+        Test.startTest();
+
+            String result = ListViewController.updateRecord(acct.Id + ':4', '[["Site","Site Test"],["BillingState","AZ"],["Type","Customer - Channel"],["AnnualRevenue","23000000"]]');
+
+        Test.stopTest();
+
+        System.assertEquals('', result);
+    }
+
 
     static testMethod void stupidMetadataAPITest()
     {

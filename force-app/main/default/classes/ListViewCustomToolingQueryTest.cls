@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-02-2021
+ * @last modified on  : 07-26-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -21,6 +21,17 @@ global with sharing class ListViewCustomToolingQueryTest {
     @isTest
     static void ListViewCustomToolingTest() {
         
+		List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'ApexLog:ApexLogs'];
+
+		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = 'TotalColumns';
+		param.Parameter_Type__c = 'String';
+		param.Parameter_Value__c = 'DurationMilliseconds';
+		param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = 'Duration';
+
+        insert param;
+
         Test.startTest();
 
             Test.setMock(HttpCalloutMock.class, new ListViewCustomToolingQueryTest.ListViewCustomToolingQueryTest_CalloutMock());
