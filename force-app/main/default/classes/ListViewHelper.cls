@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-27-2021
+ * @last modified on  : 07-28-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -756,9 +756,7 @@ global with sharing class ListViewHelper {
         try {
             objectRows = Database.query(query);
         } catch (Exception e) {
-            String message = 'Exception during ListViewHelper.getListViewData(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
-                ListViewErrorHelper.createUsageError(message);
+            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getListViewData(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString());
             throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         
@@ -814,9 +812,7 @@ global with sharing class ListViewHelper {
         try {
             objectRows = Database.query(soql);
         } catch (Exception e) {
-            String message = 'Exception during ListViewHelper.getListViewData(' + soql + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
-                ListViewErrorHelper.createUsageError(message);
+            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getListViewData(' + soql + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString());
             throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         

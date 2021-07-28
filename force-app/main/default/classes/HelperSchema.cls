@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 07-27-2021
+ * @Last Modified On   : 07-28-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -383,10 +383,7 @@ public with sharing class HelperSchema {
 			}
 
         } catch (Exception e) {
-            String message = 'Exception during HelperSchema.isValidSFDCFieldName(' + objName + ',' + sfdcFieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            System.debug(LoggingLevel.ERROR, 'ERROR - ' + message);
-            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
-                ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.isValidSFDCFieldName(' + objName + ',' + sfdcFieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
             isValid = false;
         }
 
@@ -406,10 +403,7 @@ public with sharing class HelperSchema {
 			objName.add(sfdcObjectName);
 			Schema.describeSObjects(objName);
         } catch (Exception e) {
-            String message = 'Exception during HelperSchema.isValidSFDCObjectName(' + sfdcObjectName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            System.debug(LoggingLevel.ERROR, 'ERROR - ' + message);
-            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
-                ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.isValidSFDCObjectName(' + sfdcObjectName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
             isValid = false;
         }
 		
@@ -520,10 +514,7 @@ public with sharing class HelperSchema {
 				}
 			}
         } catch (Exception e) {
-            String message = 'Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            System.debug(LoggingLevel.ERROR, 'ERROR - ' + message);
-            if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
-                ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
 			data = null;
         }
         

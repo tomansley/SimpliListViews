@@ -4,12 +4,19 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 09-08-2020
+ * @Last Modified On   : 07-28-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
 **/
 public with sharing class ListViewErrorHelper {
+
+    public static void createFutureUsageError(String message)
+    {
+        System.debug(LoggingLevel.ERROR, 'Error - ' + message);
+        if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
+            ListViewErrorHelper.createUsageError(message); 
+    }
 
     /*
      * Method to create a usage error record which can be used for debugging purposes.

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-08-2020
+ * @last modified on  : 07-28-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -24,6 +24,8 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
 
             System.debug(LoggingLevel.DEBUG, 'Record Ids Size   - ' + recordIds.size());
             System.debug(LoggingLevel.DEBUG, 'Record Ids        - ' + recordIds);
+            System.debug(LoggingLevel.DEBUG, 'Field Values Size - ' + fieldValues.size());
+            System.debug(LoggingLevel.DEBUG, 'Field Values      - ' + fieldValues);
 
             Map<String, Opportunity> closedOpps = new Map<String, Opportunity>();
 
@@ -34,7 +36,7 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
                 Opportunity opp = new Opportunity();
 
                 //set the Id
-                opp.Id = recordId;
+                opp.Id = ((String) recordId).substringBefore(':');
                 opp.CloseDate = System.today();
                 opp.StageName = 'Closed Lost';
 
