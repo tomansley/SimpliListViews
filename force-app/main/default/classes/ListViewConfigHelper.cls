@@ -30,7 +30,6 @@ public with sharing class ListViewConfigHelper {
     public static final String TYPE_DATE        = 'date';
     public static final String TYPE_DATETIME    = 'datetime';
     public static final String TYPE_NUMBER      = 'number';
-    public static final String TYPE_LIST_STRING = 'list(string)';
 
     //=======================================================================
     // ORG WIDE PARAM METHODS
@@ -147,7 +146,8 @@ public with sharing class ListViewConfigHelper {
             } else if (paramDetail.Parameter_Type__c.toLowerCase() == TYPE_NUMBER)
             {
                 paramDetail.Parameter_Value__c = String.valueOf(newValue);
-            } else if (paramDetail.Parameter_Type__c.toLowerCase() == TYPE_LIST_STRING)
+            } else if (paramDetail.Parameter_Name__c == 'ExcludedObjectTypes' //total hack as we cannot add new picklist values
+                    || paramDetail.Parameter_Name__c == 'IncludedObjectTypes')
             {
                 paramDetail.Parameter_Value__c = '';
                 List<Object> values = (List<Object>) newValue;

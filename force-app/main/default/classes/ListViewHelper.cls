@@ -1166,7 +1166,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'IncludedObjectTypes';
-        param2.Parameter_Type__c   = 'List(String)';
+        param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = '';
         param2.Parameter_Label__c  = 'Included Object Types';
         params2.add(param2);
@@ -1174,7 +1174,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'ExcludedObjectTypes';
-        param2.Parameter_Type__c   = 'List(String)';
+        param2.Parameter_Type__c   = 'String';
         param2.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
         param2.Parameter_Label__c  = 'Excluded Object Types';
         params2.add(param2);

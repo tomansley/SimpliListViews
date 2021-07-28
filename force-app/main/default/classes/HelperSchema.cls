@@ -120,7 +120,10 @@ public with sharing class HelperSchema {
         for (Schema.SObjectType o : Schema.getGlobalDescribe().values() )
         {
             Schema.DescribeSObjectResult objResult = o.getDescribe();
-            if (!objResult.getLabel().contains('__MISSING LABEL__')) //REALLY?
+            if (!objResult.getLabel().contains('__MISSING LABEL__') //REALLY?
+                && !objResult.getLabel().contains('__History')
+                && !objResult.getLabel().contains('__ChangeEvent')
+                && !objResult.getLabel().contains('__Share')) 
                 objMap.put(objResult.getName(), objResult.getLabel());   
         }
 
@@ -129,8 +132,11 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method that returns the describe result of an SObject.
-     * System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getObjectSchema('simpli_lv__List_View_Org_Wide_Setting__mdt'));
-	 */
+    
+       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getObjectSchema('simpli_lv__List_View_Org_Wide_Setting__mdt'));
+       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getObjectSchema('Bogus'));
+	 
+     */
 	public static Schema.DescribeSObjectResult getObjectSchema(String name)
 	{
 		initSObjectSchema(name);

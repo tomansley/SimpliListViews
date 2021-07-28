@@ -467,10 +467,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     handleListViewObjects(data)
     {
-        console.log('List view objects retrieval successful'); 
+        console.log('List view objects retrieval successful - ' + data); 
         console.log('Included objects - ' + this.includedObjects); 
         console.log('Excluded objects - ' + this.excludedObjects); 
-        console.log('List view objects retrieval successful'); 
         this.objectList = data; 
         this.error = undefined;
 

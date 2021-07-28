@@ -95,15 +95,22 @@ global with sharing class ScriptInstall implements InstallHandler {
                 {
                     orgParams.get('Excluded Object Types').Parameter_Name__c = 'ExcludedObjectTypes';
                     orgParams.get('Excluded Object Types').Parameter_Label__c = 'Excluded Object Types';
-                    orgParams.get('Excluded Object Types').Parameter_Type__c = 'List(String)';
+                    orgParams.get('Excluded Object Types').Parameter_Type__c = 'String';
+                } else if (orgParams.get('ExcludedObjectTypes') != null) 
+                {
+                    orgParams.get('ExcludedObjectTypes').Parameter_Type__c = 'String';
                 }
 
                 if (orgParams.get('Included Object Types') != null) 
                 {
                     orgParams.get('Included Object Types').Parameter_Name__c = 'IncludedObjectTypes';
                     orgParams.get('Included Object Types').Parameter_Label__c = 'Included Object Types';
-                    orgParams.get('Included Object Types').Parameter_Type__c = 'List(String)';
+                    orgParams.get('Included Object Types').Parameter_Type__c = 'String';
+                } else if (orgParams.get('IncludedObjectTypes') != null) 
+                {
+                    orgParams.get('IncludedObjectTypes').Parameter_Type__c = 'String';
                 }
+
 
                 if (orgParams.get('IsInitialized') == null)
                 {

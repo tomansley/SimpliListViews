@@ -1292,7 +1292,8 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public Boolean getIsListString()
         {
-            if (getType().toLowerCase() == 'list(string)') 
+            if (getName() == 'ExcludedObjectTypes'  //total hack as we cannot add new picklist values!
+                || getName() == 'IncludedObjectTypes') 
                 return true;
             else 
                 return false;            
