@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-26-2021
+ * @last modified on  : 08-02-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -51,7 +51,7 @@ global class ListViewControllerTest {
 
         Map<String, String> configs = ListViewController.getUserConfigs('CompName 1');
 
-        System.assertEquals(15, configs.size());
+        System.assertEquals(16, configs.size());
         System.assertEquals('Account:AllAccounts', configs.get('pinnedListView'));
 
         //update user config
@@ -60,7 +60,7 @@ global class ListViewControllerTest {
 
         configs = ListViewController.getUserConfigs('CompName 1');
 
-        System.assertEquals(15, configs.size());
+        System.assertEquals(16, configs.size());
         System.assertEquals('Contact:AllContacts', configs.get('pinnedListView'));
 
 
@@ -281,6 +281,23 @@ global class ListViewControllerTest {
         Test.startTest();
 
             String result = ListViewController.updateRecord(acct.Id + ':4', '[["Site","Site Test"],["BillingState","AZ"],["Type","Customer - Channel"],["AnnualRevenue","23000000"]]');
+
+        Test.stopTest();
+
+        System.assertEquals('', result);
+    }
+
+    @IsTest
+    static void updateRecordsTest()
+    {
+
+        Account acct = HelperTest.insertAccount('Update Record Test Account');
+        Account acct2 = HelperTest.insertAccount('Test Acct 2');
+        Account acct3 = HelperTest.insertAccount('Accounts 3');
+        
+        Test.startTest();
+
+            String result = ListViewController.updateRecords('{"' + acct.Id + ':4":[["BillingState","CA"],["Type","Prospect"]],"' + acct2.Id + ':9":[["BillingState","IN"],["Type","Customer - Direct"]],"' + acct3.Id + ':11":[["BillingState","AZ"],["Type","Channel Partner / Reseller"]]}');
 
         Test.stopTest();
 
