@@ -2,13 +2,14 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-27-2021
+ * @last modified on  : 08-02-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-04-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
  * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added logic when list views are not initialized
+ * 4.0   07-30-2021   tom.h.ansley@medtronic.com   Added updateRecords() method
 **/
 public without sharing class ListViewController
 {
@@ -746,6 +747,47 @@ public without sharing class ListViewController
         }
 
         String result = ListViewHelper.updateRecord(id, fieldMap);
+
+        return result;
+    }
+
+    /**
+    * @description Method which accepts a record Id and a JSON string containing field data to be updated on the record.
+    * @author tom.h.ansley@medtronic.com | 07-30-2021 
+    **/
+    @AuraEnabled
+    public static String updateRecords(String rowData)
+    {
+        System.debug(LoggingLevel.FINE, 'Starting updateRecords - ' + rowData);
+
+        //add all field data - remember that Map objects cannot be stringified in Javascript so we need to turn
+        //everything into an array before sending so here we turn it back again. AND, this is a map of maps so its trickier
+        Map<String, Object> rowMap = (Map<String, Object>) JSON.deserializeUntyped(rowData);
+        Map<String, Map<String, String>> dataMap = new Map<String, Map<String, String>>();
+        System.debug(LoggingLevel.FINE, 'rowMap - ' + rowMap);
+        for (String rowId: rowMap.keySet())
+        {
+            System.debug(LoggingLevel.FINE, 'Row Id - ' + rowId);
+            Map<String, String> fieldMap = new Map<String, String>();
+
+            //get just the Id as we return Id:position
+            String id = rowId.split(':')[0];
+
+            List<Object> fieldDataVals = (List<Object>) rowMap.get(rowId);
+            System.debug(LoggingLevel.FINE, 'fieldDataVals - ' + fieldDataVals);
+            for (Object valuePairs: fieldDataVals)
+            {
+                List<Object> values = (List<Object>) valuePairs;
+                String fieldName    = (String) values[0];
+                String value        = (String) values[1];
+            
+                fieldMap.put(fieldName, value);
+            }
+            dataMap.put(id, fieldMap);
+
+        }
+        System.debug(LoggingLevel.FINE, 'dataMap - ' + dataMap);
+        String result = ListViewHelper.updateRecords(dataMap);
 
         return result;
     }
