@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 07-27-2021
+ * @Last Modified On   : 08-01-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -22,14 +22,6 @@ public with sharing class ListViewConfigHelper {
     public static final String OPER_GREATER = 'Greater Than';
     public static final String OPER_LESS = 'Less Than';
     public static final String OPER_CONTAINS = 'Contains';
-
-    public static final String TYPE_BOOLEAN     =  'boolean';
-    public static final String TYPE_STRING      = 'string';
-    public static final String TYPE_DECIMAL     = 'decimal';
-    public static final String TYPE_CURRENCY    = 'currency';
-    public static final String TYPE_DATE        = 'date';
-    public static final String TYPE_DATETIME    = 'datetime';
-    public static final String TYPE_NUMBER      = 'number';
 
     //=======================================================================
     // ORG WIDE PARAM METHODS
@@ -140,10 +132,10 @@ public with sharing class ListViewConfigHelper {
 
             System.debug(LoggingLevel.DEBUG, 'NEW VALUE - ' + paramName + ' - '  + newValue);
 
-            if (paramDetail.Parameter_Type__c.toLowerCase() == TYPE_BOOLEAN)
+            if (paramDetail.Parameter_Type__c.toLowerCase() == ListViewHelper.TYPE_BOOLEAN)
             {
                 paramDetail.Parameter_Value__c = String.valueOf(newValue);
-            } else if (paramDetail.Parameter_Type__c.toLowerCase() == TYPE_NUMBER)
+            } else if (paramDetail.Parameter_Type__c.toLowerCase() == ListViewHelper.TYPE_NUMBER)
             {
                 paramDetail.Parameter_Value__c = String.valueOf(newValue);
             } else if (paramDetail.Parameter_Name__c == 'ExcludedObjectTypes' //total hack as we cannot add new picklist values
@@ -292,6 +284,7 @@ public with sharing class ListViewConfigHelper {
 
         configs = [SELECT Name,
                             List_View_Object__c,
+                            List_View_Label__c,
                             LastModifiedDate,
                             LastModifiedBy.Name,
                             Primary_Key__c,
@@ -328,6 +321,7 @@ public with sharing class ListViewConfigHelper {
     {
         List<List_View_Config__c> configs = [SELECT Name,
                                                 List_View_Object__c,
+                                                List_View_Label__c,
                                                 LastModifiedDate,
                                                 LastModifiedBy.Name,
                                                 Primary_Key__c,
@@ -478,13 +472,13 @@ public with sharing class ListViewConfigHelper {
             } else if (condition.Operator__c == OPER_NOT_EQUAL) {
                 if (value != condition.Value__c) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_GREATER) {
-                if (type == TYPE_STRING && String.valueOf(value) > condition.Value__c) return condition.Highlight_Color__c;
-                else if (type == TYPE_DECIMAL && Decimal.valueOf(String.valueOf(value)) > Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == TYPE_DATE && Date.valueOf(value) > Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                if (type == ListViewHelper.TYPE_STRING && String.valueOf(value) > condition.Value__c) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DECIMAL && Decimal.valueOf(String.valueOf(value)) > Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DATE && Date.valueOf(value) > Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_LESS) {
-                if (type == TYPE_STRING && String.valueOf(value) < condition.Value__c) return condition.Highlight_Color__c;
-                else if (type == TYPE_DECIMAL && Decimal.valueOf(String.valueOf(value)) < Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == TYPE_DATE && Date.valueOf(value) < Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                if (type == ListViewHelper.TYPE_STRING && String.valueOf(value) < condition.Value__c) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DECIMAL && Decimal.valueOf(String.valueOf(value)) < Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DATE && Date.valueOf(value) < Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
             } else if (condition.Operator__c == OPER_CONTAINS) {
                 if (((String) value).contains((String) condition.Value__c)) return condition.Highlight_Color__c;
             }
