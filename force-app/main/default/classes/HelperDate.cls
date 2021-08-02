@@ -1,3 +1,13 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @last modified on  : 08-02-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
+ * Modifications Log 
+ * Ver   Date         Author                       Modification
+ * 1.0   07-29-2021   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   08-02-2021   tom.h.ansley@medtronic.com   Added convertDateToDateTime() method
+**/
 public with sharing class HelperDate {
 
     public static final String DAY = 'Day';
@@ -5,6 +15,11 @@ public with sharing class HelperDate {
     public static final String YEAR = 'Year';
     public static final String HOUR = 'Hour';
     public static final String MINUTE = 'Minute';
+
+    public static DateTime convertDateToDateTime(Date theDate)
+    {
+        return DateTime.newInstance(theDate.year(), theDate.month(), theDate.day());
+    }
 
     /*
      * HelperDate.getBatchJobScheduleString(HelperDate.MINUTE, 10);
