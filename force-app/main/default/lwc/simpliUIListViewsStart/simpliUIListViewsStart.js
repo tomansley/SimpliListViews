@@ -1,6 +1,18 @@
 import { LightningElement, wire, track, api  } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
+//------------------------ LABELS ------------------------
+import List_Views_Initialized from '@salesforce/label/c.List_Views_Initialized';
+import List_Views_Need_Initialized from '@salesforce/label/c.List_Views_Need_Initialized';
+import Refresh from '@salesforce/label/c.Refresh';
+import Refresh_List_Views from '@salesforce/label/c.Refresh_List_Views';
+import Feature_Overview from '@salesforce/label/c.Feature_Overview';
+import Quick_Start from '@salesforce/label/c.Quick_Start';
+import Issues_And_Questions from '@salesforce/label/c.Issues_And_Questions';
+import Configuration from '@salesforce/label/c.Configuration';
+import Processing_Status from '@salesforce/label/c.Processing_Status';
+import List_View_Processing_Complete from '@salesforce/label/c.List_View_Processing_Complete';
+
 import updateAllListViews from '@salesforce/apex/ListViewController.updateAllListViews';
 import getIsInitialized from '@salesforce/apex/ListViewController.getIsInitialized';
 
@@ -13,6 +25,9 @@ export default class SimpliUIListViewsStart extends LightningElement {
     @track showProgress = false;        //indicates whether the progress bar should be displayed
     @track batchId = '';                //indicates the batch Id of the list view batch process.
     
+    label = { List_Views_Initialized, List_Views_Need_Initialized, Refresh, Refresh_List_Views, Feature_Overview, Quick_Start,
+              Issues_And_Questions, Configuration, Processing_Status, List_View_Processing_Complete }
+
     @wire (getIsInitialized, { })
     wiredIsInitialized({ error, data }) {
         if (data) { 

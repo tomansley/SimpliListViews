@@ -2,9 +2,10 @@
 /* eslint-disable @lwc/lwc/no-async-operation */
 
 import search from '@salesforce/apex/ListViewLookupController.search';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import { api, LightningElement, track, wire } from 'lwc';
+
+//------------------------ LABELS ------------------------
+import Search_Dot from '@salesforce/label/c.Search_Dot';
 
 export default class SimpliUIListViewsLookup extends LightningElement {
 
@@ -29,6 +30,8 @@ export default class SimpliUIListViewsLookup extends LightningElement {
     //css
     @track boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
     @track inputClass = '';
+
+    label = { Search_Dot }
 
     renderedCallback() {
         if (this.isInitialized === false)

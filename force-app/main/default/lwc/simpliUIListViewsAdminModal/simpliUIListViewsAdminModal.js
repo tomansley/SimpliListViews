@@ -1,7 +1,25 @@
 import { LightningElement, wire, track, api  } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { refreshApex } from '@salesforce/apex';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
+
+//------------------------ LABELS ------------------------
+import Close from '@salesforce/label/c.Close';
+import List_View_Config from '@salesforce/label/c.List_View_Config';
+import Settings from '@salesforce/label/c.Settings';
+import Parameter_Name from '@salesforce/label/c.Parameter_Name';
+import Value from '@salesforce/label/c.Value';
+import Select_A_Value from '@salesforce/label/c.Select_A_Value';
+import Highlighting from '@salesforce/label/c.Highlighting';
+import Add_Remove from '@salesforce/label/c.Add_Remove';
+import Field from '@salesforce/label/c.Field';
+import Operator from '@salesforce/label/c.Operator';
+import Precedence from '@salesforce/label/c.Precedence';
+import Color from '@salesforce/label/c.Color';
+import Field_Name from '@salesforce/label/c.Field_Name';
+import Remove_Condition from '@salesforce/label/c.Remove_Condition';
+import Select_A_Column from '@salesforce/label/c.Select_A_Column';
+import Enter_A_Value from '@salesforce/label/c.Enter_A_Value';
+import Add_Condition from '@salesforce/label/c.Add_Condition';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
 import getCachedListViewConfig from '@salesforce/apex/ListViewController.getCachedListViewConfig';
@@ -55,6 +73,9 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             { label: '5', value: '5' },
         ];
     }
+
+    label = { Close, List_View_Config, Settings, Parameter_Name, Value, Select_A_Value, Highlighting, Add_Remove, Field,
+              Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition }
 
     constructor() {
         super();
@@ -171,6 +192,11 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
         console.log('Param loaded - ' + this.paramNameLoad + ' - ' + this.paramValueLoad);
 
+        this.handleParamIsUpdated(event);
+    }
+
+    handleParamIsUpdated(event) {
+        this.configChanged = true;
     }
 
     //called when a value is changed.
@@ -349,11 +375,17 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     }
 
     handleClose() {
+        setTimeout(function(){
+            console.log('after');
+        },500); //give the parameter time to be saved before sending message to parent
         this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
         this.configChanged = false;
     }
 
     handleCloseClick(event) {
+        setTimeout(function(){
+            console.log('after');
+        },500); //give the parameter time to be saved before sending message to parent
         this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
         this.configChanged = false;
     }

@@ -5,7 +5,8 @@ import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import { CurrentPageReference } from 'lightning/navigation';
 import { getRecord } from 'lightning/uiRecordApi';
 
-//import { fireEvent } from 'c/pubsub';
+//------------------------ LABELS ------------------------
+import None_Dash from '@salesforce/label/c.None_Dash';
 
 export default class SimpliUIListViewsPicklist extends LightningElement {
     
@@ -21,11 +22,14 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     @api selectedLabel = 'Selected';  //label displayed above the SELECTED options.
     @api size = 5;                    //the number of options to display if we are displaying the multi-picklist
 
+    @track compName;
     @track value;
     recordTypeIdValue;
 
     isPicklist = false;              //set internally. Identifies that the component being displayed is a PICKLIST
     isMultiPicklist = false;         //set internally. Identifies that the component being displayed is a MULTI-PICKLIST
+
+    label = { None_Dash }
 
     @track options = [
         { label: 'Default 1', value: 'Default1' },
@@ -58,6 +62,8 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         } else if (this.type === 'multipicklist') {
             this.isMultiPicklist = true;
         }
+
+        this.compName = this.rowId + ':' + this.pickListFieldApiName;
 
     }
 

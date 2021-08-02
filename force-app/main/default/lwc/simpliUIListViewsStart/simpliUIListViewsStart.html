@@ -3,12 +3,13 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 07-22-2021
+  @last modified on  : 07-31-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-18-2020   tom.h.ansley@medtronic.com   Initial Version
   2.0   06-23-2021   tom.h.ansley@medtronic.com   Changes to Feature Overview verbage
+  3.0   07-28-2021   tom.h.ansley@medtronic.com   Changed all strings to labels.
 -->
 <template>
 
@@ -16,47 +17,46 @@
         <lightning-spinner alternative-text="Processing"></lightning-spinner>
     </template>
 
+    <!-- ------------------------------------------------------------------------ -->
+    <!-- Section which handles the initialization of the list views if its needed -->
+    <!-- ------------------------------------------------------------------------ -->
     <lightning-card>
-        <template if:false={showProgress}>  
-            <div style="padding-left: 10px;">
-                <template if:false={isInitialized}>
-                    <lightning-icon icon-name="standard:first_non_empty" 
-                                    alternative-text="List Views Not Initialized" 
-                                    title="List Views Not Initialized">
-                    </lightning-icon>&nbsp;&nbsp;
-                    List views need to be initialized or updated. Click  
-                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
-                        size="small" 
-                        icon-name="action:new_task" 
-                        onclick={handleProcessListViewsButtonClick}>
-                    </lightning-button-icon>
-                    to process the list views.
-                </template>
-                <template if:true={isInitialized}>    
-                    <lightning-icon icon-name="standard:task2" 
-                                    alternative-text="List Views Initialized" 
-                                    title="List Views Initialized">
-                    </lightning-icon>&nbsp;&nbsp;
-                    List views are initialized. But, if they need to be reprocessed click  
-                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
-                        size="small" 
-                        icon-name="action:new_task" 
-                        onclick={handleProcessListViewsButtonClick}>
-                    </lightning-button-icon>
-                    to process them again.
-                </template>
-            </div>
+        <template if:false={showProgress}>
+            <lightning-layout>
+                <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small">
+                    <div style="padding-left: 10px;">
+                        <template if:false={isInitialized}>
+                            <lightning-icon icon-name="standard:first_non_empty" 
+                                            alternative-text={label.Not_Initialized} 
+                                            title={label.Not_Initialized}>
+                            </lightning-icon>&nbsp;&nbsp;
+                            {label.List_Views_Need_Initialized}  
+                        </template>
+                        <template if:true={isInitialized}>    
+                            <lightning-icon icon-name="standard:task2" 
+                                            alternative-text={label.List_Views_Initialized} 
+                                            title={label.List_Views_Initialized} >
+                            </lightning-icon>&nbsp;&nbsp;
+                            {label.List_Views_Initialized}  
+                        </template>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item padding="horizontal-small" >
+                        <lightning-button variant="brand" label={label.Refresh} title={label.Refresh_List_Views} icon-name="action:new_task" class="slds-m-left_x-small" onclick={handleProcessListViewsButtonClick}></lightning-button>
+                    </lightning-layout-item>
+            </lightning-layout>
         </template>
         <template if:true={showProgress}>
             <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
-                                                        working-text="List Views Processing Status"
-                                                        complete-text="List views have been initialized. A full refresh of the current page is required to see results.">
+                                                        working-text={label.Processing_Status}
+                                                        complete-text={label.List_View_Processing_Complete}>
             </c-simpli-u-i-list-views-init-progress-bar>
         </template>
-
     </lightning-card>
+    
     <br/>
-    <lightning-card title="Feature Overview" icon-name="standard:announcement">
+
+    <lightning-card title={label.Feature_Overview} icon-name="standard:announcement">
         <div class="slds-var-m-around_medium">
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
@@ -79,23 +79,19 @@
         </div>
     </lightning-card>
     <br/>
-    <lightning-card title="Quick Start" icon-name="standard:custom_notification">
+    <lightning-card title={label.Quick_Start} icon-name="standard:custom_notification">
         <div class="slds-var-m-around_medium">
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:decimal; list-style-position: inside;">
-                    <li style="padding-bottom: 5px;"><b>Initialize List Views - </b>Click the <lightning-button-icon style="padding: 5px;" 
-                                                                                                size="x-small" 
-                                                                                                icon-name="action:new_task">
-                                                                        </lightning-button-icon>
-                            button above to process the list views if they have not been initialized.</li>
+                    <li style="padding-bottom: 5px;"><b>Initialize List Views - </b>Click the refresh button above to process the list views if they have not been initialized.</li>
                     <li style="padding-bottom: 5px;"><b>Refresh Page - </b>After initializing, refresh the page to cache the new data.</li>
-                    <li style="padding-bottom: 5px;"><b>Go To Example Tab - </b>Click on the "Everything Example" tab. The objects and list views will be displayed.</li>
+                    <li style="padding-bottom: 5px;"><b>Go To Simpli List Views Example Tab - </b>Click on the "Everything Example" tab. The objects and list views will be displayed.</li>
                 </ol>
             </div>
         </div>
     </lightning-card>
     <br/>
-    <lightning-card title="Issues, Questions, Ideas and Resources" icon-name="standard:custom_notification">
+    <lightning-card title={label.Issues_And_Questions} icon-name="standard:custom_notification">
         <div class="slds-var-m-around_medium">
             <p>If you have any issues, questions or ideas please go to the <a target="_blank" href="https://github.com/tomansley/SimpliListViews">github repository</a> to log them - </p>
             <br/>
@@ -115,7 +111,7 @@
         </div>
     </lightning-card>
     <br/>
-    <lightning-card title="Configuration" icon-name="standard:settings">
+    <lightning-card title={label.Configuration} icon-name="standard:settings">
         <div class="slds-var-m-around_medium">
 
             <p>There are 3 different levels of configuration that are available.</p>

@@ -3,11 +3,13 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 07-27-2021
+  @last modified on  : 07-31-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom.h.ansley@medtronic.com   Initial Version
+  2.0   07-28-2021   tom.h.ansley@medtronic.com   Changed all strings to labels.
+
 -->
 <template>
     <template if:true={spinner}>
@@ -18,44 +20,38 @@
     <!-- Section which handles the initialization of the list views if its needed -->
     <!-- ------------------------------------------------------------------------ -->
     <lightning-card>
-        <template if:false={showProgress}>  
-            <div style="padding-left: 10px;">
-                <template if:false={isInitialized}>
-                    <lightning-icon icon-name="standard:first_non_empty" 
-                                    alternative-text="List Views Not Initialized" 
-                                    title="List Views Not Initialized">
-                    </lightning-icon>&nbsp;&nbsp;
-                    List views need to be initialized or updated. Click  
-                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
-                        size="small" 
-                        icon-name="action:new_task" 
-                        onclick={handleProcessListViewsButtonClick}>
-                    </lightning-button-icon>
-                    to process the list views.
-                </template>
-                <template if:true={isInitialized}>    
-                    <lightning-icon icon-name="standard:task2" 
-                                    alternative-text="List Views Initialized" 
-                                    title="List Views Initialized">
-                    </lightning-icon>&nbsp;&nbsp;
-                    List views are initialized. Click  
-                    <lightning-button-icon style="padding: 10px;" title="Process List Views" 
-                        size="small" 
-                        icon-name="action:new_task" 
-                        onclick={handleProcessListViewsButtonClick}>
-                    </lightning-button-icon>
-                    to process them again.
-                </template>
-            </div>
+        <template if:false={showProgress}>
+            <lightning-layout>
+                <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small">
+                    <div style="padding-left: 10px;">
+                        <template if:false={isInitialized}>
+                            <lightning-icon icon-name="standard:first_non_empty" 
+                                            alternative-text={label.Not_Initialized} 
+                                            title={label.Not_Initialized}>
+                            </lightning-icon>&nbsp;&nbsp;
+                            {label.List_Views_Need_Initialized}  
+                        </template>
+                        <template if:true={isInitialized}>    
+                            <lightning-icon icon-name="standard:task2" 
+                                            alternative-text={label.List_Views_Initialized} 
+                                            title={label.List_Views_Initialized} >
+                            </lightning-icon>&nbsp;&nbsp;
+                            {label.List_Views_Initialized}  
+                        </template>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item padding="horizontal-small" >
+                        <lightning-button variant="brand" label={label.Refresh} title={label.Refresh_List_Views} icon-name="action:new_task" class="slds-m-left_x-small" onclick={handleProcessListViewsButtonClick}></lightning-button>
+                    </lightning-layout-item>
+            </lightning-layout>
         </template>
         <template if:true={showProgress}>
             <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
-                                                        working-text="List Views Processing Status"
-                                                        complete-text="List views have been successfully initialized.">
+                                                        working-text={label.Processing_Status}
+                                                        complete-text={label.List_View_Processing_Complete}>
             </c-simpli-u-i-list-views-init-progress-bar>
         </template>
     </lightning-card>
-
     <br/>
 
     <!-- ------------------------------------------------------------------------------- -->
@@ -66,10 +62,10 @@
             <thead>
                 <tr>
                     <th scope="col">
-                        <div class="slds-truncate" title="Field Name">Parameter Name</div>
+                        <div class="slds-truncate" title={label.Parameter_Name}>{label.Parameter_Name}</div>
                     </th>
                     <th scope="col">
-                        <div class="slds-truncate" title="Value">Value</div>
+                        <div class="slds-truncate" title={label.Value}>{label.Value}</div>
                     </th>
                 </tr>
             </thead>
@@ -89,7 +85,7 @@
                         <td key={param.name} data-label={param.name} style="width: 70%;">
                             <div class="slds-form-element__control" title={param.value}>
                                 <template if:true={param.isBoolean}>
-                                    <lightning-combobox placeholder="Select a Value..."
+                                    <lightning-combobox placeholder={label.Select_A_Value}
                                                         onblur={handleParamUpdate}
                                                         options={booleanList}
                                                         variant=label-hidden
@@ -103,8 +99,8 @@
                                     <template if:true={param.isListString}>
                                         <lightning-dual-listbox name={param.name}
                                                                 label={param.label}
-                                                                source-label="Available"
-                                                                selected-label="Selected"
+                                                                source-label={label.Available}
+                                                                selected-label={label.Selected}
                                                                 options={objNamesList}
                                                                 onchange={handleParamUpdate}
                                                                 variant=label-hidden
@@ -134,6 +130,6 @@
     </template>   
 
     <footer class="slds-modal__footer" style="min-width: 1100px;">
-        <button class="slds-button slds-button_brand" onclick={handleSaveClick}>Save</button>
+        <button class="slds-button slds-button_brand" onclick={handleSaveClick}>{label.Save}</button>
     </footer>
 </template>

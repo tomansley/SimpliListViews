@@ -1,6 +1,19 @@
-import { LightningElement, wire, track, api  } from 'lwc';
+import { LightningElement, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+
+//------------------------ LABELS ------------------------
+import List_Views_Initialized from '@salesforce/label/c.List_Views_Initialized';
+import List_Views_Need_Initialized from '@salesforce/label/c.List_Views_Need_Initialized';
+import Refresh from '@salesforce/label/c.Refresh';
+import Refresh_List_Views from '@salesforce/label/c.Refresh_List_Views';
+import Parameter_Name from '@salesforce/label/c.Parameter_Name';
+import Value from '@salesforce/label/c.Value';
+import Select_A_Value from '@salesforce/label/c.Select_A_Value';
+import Available from '@salesforce/label/c.Available';
+import Selected from '@salesforce/label/c.Selected';
+import Save from '@salesforce/label/c.Save';
+
 import getOrgWideConfig from '@salesforce/apex/ListViewAdminController.getOrgWideConfig';
 import saveOrgWideConfig from '@salesforce/apex/ListViewAdminController.saveOrgWideConfig';
 import getObjectNames from '@salesforce/apex/ListViewAdminController.getObjectNames';
@@ -23,6 +36,9 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
             { label: 'No', value: 'false'},
         ];
     }
+
+    label = { List_Views_Initialized, List_Views_Need_Initialized, Refresh, Refresh_List_Views, Parameter_Name, Value, Select_A_Value,
+              Available, Selected, Save }
 
     renderedCallback() {
         console.log('SimpliUIListViewsAdmin.renderedCallback started');

@@ -1,6 +1,16 @@
 import { LightningElement, wire, track, api  } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
+//------------------------ LABELS ------------------------
+import Close from '@salesforce/label/c.Close';
+import Value from '@salesforce/label/c.Value';
+import Field_Name from '@salesforce/label/c.Field_Name';
+import Process from '@salesforce/label/c.Process';
+import Cancel from '@salesforce/label/c.Cancel';
+import Continue_Processing from '@salesforce/label/c.Continue_Processing';
+import Selected_Records_With from '@salesforce/label/c.Selected_Records_With';
+import Action from '@salesforce/label/c.Action';
+
 import processAction from '@salesforce/apex/ListViewController.processAction';
 import getListViewAction from '@salesforce/apex/ListViewController.getListViewAction';
 
@@ -14,6 +24,8 @@ export default class simpliUIListViewsActionModal extends LightningElement {
     @track requestDataMap = new Map();  //holds the map of field/value request data
     @track spinner = false;             //identifies if the spinner should be displayed or not.
     @api recordCount;                   //the number of record Ids passed in.
+
+    label = { Close, Value, Field_Name, Process, Cancel, Continue_Processing, Selected_Records_With, Action };
 
     constructor() {
         super();

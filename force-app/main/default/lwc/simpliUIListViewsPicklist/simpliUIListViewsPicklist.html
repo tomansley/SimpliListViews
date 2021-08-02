@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom.h.ansley@medtronic.com
-  @last modified on  : 07-26-2021
+  @last modified on  : 07-31-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -10,17 +10,17 @@
 <template>
     <template if:true={isPicklist}>
         <lightning-combobox id="dependentPickList"
-                            name="Hello"
+                            name={compName}
                             label={label}
                             value={value}
-                            placeholder="--None--"
+                            placeholder={label.None_Dash}
                             variant={variant}
                             options={options}
                             onchange={handleChange}>
         </lightning-combobox>
     </template>
     <template if:true={isMultiPicklist}>
-        <lightning-dual-listbox name="OtherHello"
+        <lightning-dual-listbox name={compName}
                                 source-label={sourceLabel}
                                 selected-label={selectedLabel}
                                 options={options}

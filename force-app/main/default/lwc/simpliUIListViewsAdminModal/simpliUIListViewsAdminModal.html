@@ -1,12 +1,14 @@
+<!-- sldsValidatorIgnore -->
 <!--
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 07-06-2021
+  @last modified on  : 07-31-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom.h.ansley@medtronic.com   Initial Version
+  2.0   07-28-2021   tom.h.ansley@medtronic.com   Changed all strings to labels.
 -->
 <template>
     <template if:true={showModal}>
@@ -16,25 +18,25 @@
                     
                     <header class="slds-modal__header" style="min-width: 1100px;">
                         <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
-                            title="Close" onclick={handleClose}>
-                            <lightning-icon icon-name="utility:close" alternative-text="close" variant="warning"></lightning-icon>
-                            <span class="slds-assistive-text">Close</span>
+                            title={label.Close} onclick={handleClose}>
+                            <lightning-icon icon-name="utility:close" alternative-text={label.Close} variant="warning"></lightning-icon>
+                            <span class="slds-assistive-text">{label.Close}</span>
                         </button>
-                        <h2 id="modal-heading-01" class="slds-text-heading_small slds-hyphenate">{listViewConfig.name} List View Config</h2>
+                        <h2 id="modal-heading-01" class="slds-text-heading_small slds-hyphenate">{listViewConfig.label} {label.List_View_Config}</h2>
                     </header>
 
                     <lightning-tabset style="min-height: 400px;background-color: white;">
-                        <lightning-tab label="Settings">
+                        <lightning-tab label={label.Settings}>
                             <div class="slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1100px;">
                                 <lightning-card>
                                     <table class="slds-table slds-table_bordered">
                                         <thead>
                                             <tr>
                                                 <th scope="col">
-                                                    <div class="slds-truncate" title="Field Name">Parameter Name</div>
+                                                    <div class="slds-truncate" title={label.Parameter_Name}>{label.Parameter_Name}</div>
                                                 </th>
                                                 <th scope="col">
-                                                    <div class="slds-truncate" title="Value">Value</div>
+                                                    <div class="slds-truncate" title={label.Value}>{label.Value}</div>
                                                 </th>
                                             </tr>
                                         </thead>
@@ -46,15 +48,16 @@
                                                         <div key={param.name} class="slds-truncate" title={param.name}>
                                                             {param.label}
                                                             &nbsp;
-                                                            <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text="close"></lightning-icon> 
+                                                            <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text={label.Close}></lightning-icon> 
                                                         </div>
                                                     </td>
                                                     <td key={param.name} data-label={param.name}>
                                                         <div class="slds-form-element__control" title={param.value}>
                                                             <template if:true={param.updateImmediate}>
                                                                 <template if:true={param.isBoolean}>
-                                                                    <lightning-combobox placeholder="Select a Value..."
+                                                                    <lightning-combobox placeholder={label.Select_A_Value}
                                                                                         onblur={handleParamUpdate}
+                                                                                        onfocus={handleParamIsUpdated}
                                                                                         options={booleanList}
                                                                                         variant=label-hidden
                                                                                         value={param.value}
@@ -67,6 +70,7 @@
                                                                                         variant="label-hidden" 
                                                                                         name={param.name} 
                                                                                         onchange={handleParamUpdate}
+                                                                                        onfocus={handleParamIsUpdated}
                                                                                         placeholder={param.placeHolder}
                                                                                         value={param.value}
                                                                                         label={param.label}>
@@ -94,29 +98,29 @@
                             </div>        
                         </lightning-tab>
 
-                        <lightning-tab label="Highlighting">
+                        <lightning-tab label={label.Highlighting}>
                             <div class="slds-modal__content slds-p-around_xx-small" id="modal-condition-content" style="min-width: 1100px; overflow: initial;">
                                 <lightning-card>
                                     <table class="slds-table slds-table_bordered">
                                         <thead>
                                             <tr class="slds-line-height_reset">
                                                 <th class="" scope="col">
-                                                    <div class="slds-truncate" style="padding-left:5px;" title="Field Name">Field</div>
+                                                    <div class="slds-truncate" style="padding-left:5px;" title={label.Field_Name}>{label.Field}</div>
                                                 </th>
                                                 <th class="" scope="col">
-                                                    <div class="slds-truncate" style="padding-left:5px;" title="Operator">Operator</div>
+                                                    <div class="slds-truncate" style="padding-left:5px;" title={label.Operator}>{label.Operator}</div>
                                                 </th>
                                                 <th class="" scope="col">
-                                                    <div class="slds-truncate" style="padding-left:5px;" title="Value">Value</div>
+                                                    <div class="slds-truncate" style="padding-left:5px;" title={label.Value}>{label.Value}</div>
                                                 </th>
                                                 <th class="" scope="col">
-                                                    <div class="slds-truncate" style="padding-left:5px;" title="Order">Precedence</div>
+                                                    <div class="slds-truncate" style="padding-left:5px;" title={label.Order}>{label.Precedence}</div>
                                                 </th>
                                                 <th class="" scope="col">
-                                                    <div class="slds-truncate" style="padding-left:5px;" title="Color">Color</div>
+                                                    <div class="slds-truncate" style="padding-left:5px;" title={label.Color}>{label.Color}</div>
                                                 </th>
                                                 <th class="" scope="col" style="width:1.25rem">
-                                                    <div class="slds-truncate" style="padding-left:5px;" title="Add/Remove"></div>
+                                                    <div class="slds-truncate" style="padding-left:5px;" title={label.Add_Remove}></div>
                                                 </th>
                                             </tr>
                                         </thead>
@@ -124,7 +128,7 @@
                                             <template for:each={listViewConfig.conditions} for:item="condition">
                                                 <tr key={condition.id} class="slds-hint-parent">
                                                     <td key={condition.id} data-label={condition.fieldName}>
-                                                        <div class="slds-truncate" title="Field Name">
+                                                        <div class="slds-truncate" title={label.Field_Name}>
                                                             <lightning-combobox read-only="true"
                                                                                 value={condition.fieldName}
                                                                                 options={listViewColumnLabels}
@@ -133,22 +137,22 @@
                                                         </div>
                                                     </td>
                                                     <td key={condition.id} data-label={condition.operator}>
-                                                        <div title="Operator">
+                                                        <div title={label.Operator}>
                                                             <lightning-formatted-text style="padding-left:5px;" value={condition.operator}></lightning-formatted-text>                        
                                                         </div>
                                                     </td>
                                                     <td key={condition.id} data-label={condition.value}>
-                                                        <div class="slds-truncate" title="Value">
+                                                        <div class="slds-truncate" title={label.Value}>
                                                             <lightning-formatted-text style="padding-left:5px;" value={condition.value}></lightning-formatted-text>
                                                         </div>
                                                     </td>
                                                     <td key={condition.id} data-label={condition.order}>
-                                                        <div title="Order">
+                                                        <div title={label.Precedence}>
                                                             <lightning-formatted-text style="padding-left:5px;" value={condition.order}></lightning-formatted-text>                        
                                                         </div>
                                                     </td>
                                                     <td key={condition.id} data-label={condition.color}>
-                                                        <div class="slds-truncate" title="Color">
+                                                        <div class="slds-truncate" title={label.Color}>
                                                             <lightning-input type="color" 
                                                                                 variant="label-hidden" 
                                                                                 onchange={handleConditionColorChange}
@@ -160,8 +164,8 @@
                                                     <td key={condition.id} data-label={condition.fieldName} style="width:1.25rem">
                                                         <div class="slds-truncate">
                                                             <lightning-button-icon icon-name="utility:dash"  
-                                                                                alternative-text="Remove Condition" 
-                                                                                title="Remove Condition"
+                                                                                alternative-text={label.Remove_Condition} 
+                                                                                title={label.Remove_Condition}
                                                                                 name={condition.id}
                                                                                 onclick={handleConditionChange}
                                                                                 value="remove">
@@ -173,7 +177,7 @@
                                             <tr class="slds-hint-parent">
                                                 <td>
                                                     <div title="Field Label">
-                                                        <lightning-combobox placeholder="Select A Column"  
+                                                        <lightning-combobox placeholder={label.Select_A_Column}  
                                                                             onchange={handleConditionFieldChange} 
                                                                             options={listViewColumnLabels}
                                                                             variant=label-hidden>
@@ -182,7 +186,7 @@
                                                 </td>
                                                 <td>
                                                     <div title="Operator">
-                                                        <lightning-combobox placeholder="Select a Value..."
+                                                        <lightning-combobox placeholder={label.Select_A_Value}
                                                                             value="Equals"
                                                                             onblur={handleConditionOperatorChange}
                                                                             options={operatorList}
@@ -191,18 +195,18 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div class="slds-truncate" title="Value">
+                                                    <div class="slds-truncate" title={label.Value}>
                                                         <lightning-input type="string" 
                                                                             variant="label-hidden" 
                                                                             onblur={handleConditionValueChange}
-                                                                            placeholder="Enter a Value..."
+                                                                            placeholder={label.Enter_A_Value}
                                                                             value="">
                                                         </lightning-input>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div title="Order">
-                                                        <lightning-combobox placeholder="Select a Value..."
+                                                        <lightning-combobox placeholder={label.Select_A_Value}
                                                                             value="1" 
                                                                             onblur={handleConditionOrderChange}
                                                                             options={orderList}
@@ -222,8 +226,8 @@
                                                 <td style="width:1.25rem">
                                                     <div>
                                                         <lightning-button-icon icon-name="utility:add"  
-                                                                            alternative-text="Add Condition" 
-                                                                            title="Add Condition"
+                                                                            alternative-text={label.Add_Condition} 
+                                                                            title={label.Add_Condition}
                                                                             onclick={handleConditionChange}
                                                                             value="add">
                                                         </lightning-button-icon>
@@ -239,7 +243,7 @@
                     </lightning-tabset>
 
                     <footer class="slds-modal__footer" style="min-width: 1100px;">
-                        <button class="slds-button slds-button_brand" onclick={handleCloseClick}>Close</button>
+                        <button class="slds-button slds-button_brand" onclick={handleCloseClick}>{label.Close}</button>
                     </footer>
                     
                 </div>
