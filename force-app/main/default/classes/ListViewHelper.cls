@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-28-2021
+ * @last modified on  : 08-02-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -8,6 +8,11 @@
  * 2.0   02-17-2021   tom.h.ansley@medtronic.com   Added New action config
  * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
  * 4.0   06-18-2021   tom.h.ansley@medtronic.com   Added updateRecord() method to update records based on inline editing, added Edit All action for inline-editing of all list view rows, added org wide config params for identifying if inline-editing is allowed and whether the list views have been initialized.
+ * 5.0   08-02-2021   tom.h.ansley@medtronic.com   Added List_View_Label__c,
+ *                                                 Added getObjectForValue() for getting proper object for string value, 
+ *                                                 Added updateRecords() method to update multiple records based on inline editing, 
+ *                                                 Moved in static strings for types from ListViewConfigHelper,  
+ *                                                 Added DisplayTextSearch org wide config
  **/
 global with sharing class ListViewHelper {
     
@@ -18,6 +23,18 @@ global with sharing class ListViewHelper {
     public static final String TYPE_CORE   = 'Core';
     public static final String TYPE_CUSTOM = 'Custom';
     
+    public static final String TYPE_BOOLEAN     = 'boolean';
+    public static final String TYPE_DOUBLE      = 'double';
+    public static final String TYPE_STRING      = 'string';
+    public static final String TYPE_DECIMAL     = 'decimal';
+    public static final String TYPE_CURRENCY    = 'currency';
+    public static final String TYPE_DATE        = 'date';
+    public static final String TYPE_DATETIME    = 'datetime';
+    public static final String TYPE_NUMBER      = 'number';
+    public static final String TYPE_BLOB        = 'blob';
+    public static final String TYPE_PERCENT     = 'percent';
+    public static final String TYPE_TIME        = 'time';
+
     public static Integer offset           = -1;                  //used to hold the offset that is set when performing a query.
 
     public static String getPrimaryKey(List_View__c listView)
@@ -25,8 +42,120 @@ global with sharing class ListViewHelper {
         return listView.Object_Name__c.replace(' ', '_') + ':' + listView.API_Name__c;
     }
 
+ 	/*
+	 * Method which, given a field type and field value will convert the provided value into the 
+	 * correct object based on the provided fields type.
+	 */
+	public static Object getObjectForValue(String type, String value)
+	{
+        System.debug(LoggingLevel.FINE, 'Starting getObjectForValue - ' + type + '/' + value);
+		Object objValue = null;
+
+        if (type == ListViewHelper.TYPE_BOOLEAN) return Boolean.valueOf(value);
+        else if (type == ListViewHelper.TYPE_DOUBLE) { 
+                                                            if (String.isEmpty(value)) return null;
+                                                            objValue = Double.valueOf(value);
+                                                            }
+        else if (type == ListViewHelper.TYPE_BLOB) return Blob.valueOf(value);
+        else if (type == ListViewHelper.TYPE_CURRENCY) {
+                                                                if (String.isEmpty(value)) return null;
+                                                                objValue = Double.valueOf(value);
+                                                                } 
+        else if (type == ListViewHelper.TYPE_DATE) { 
+                                                                if (String.isEmpty(value)) return null;
+                                                                objValue = Date.valueOf(value);
+                                                            }
+        else if (type == ListViewHelper.TYPE_NUMBER) {
+                                                                if (String.isEmpty(value)) return null;
+                                                                objValue = Integer.valueOf(value);
+                                                            }
+        else if (type == ListViewHelper.TYPE_PERCENT) { 
+                                                                if (String.isEmpty(value)) return null;
+                                                                objValue = Double.valueOf(value);
+                                                            }
+        else if (type == ListViewHelper.TYPE_DATETIME) { 
+                                                                if (String.isEmpty(value)) return null;
+                                                                objValue = DateTime.valueOfGmt(value.replace('T', ' ').remove('.000Z')); //2021-07-21 20:45:00
+                                                                }
+        else if (type == ListViewHelper.TYPE_TIME) { 
+                                                                if (String.isEmpty(value)) return null;
+                                                                objValue = Time.newInstance(Integer.valueOf(value.substring(0, 2)), 
+                                                                                            Integer.valueOf(value.substring(3, 5)),
+                                                                                            Integer.valueOf(value.substring(6, 8)), 
+                                                                                            Integer.valueOf(value.substring(9))); //03:15:00.000
+                                                                }
+        else objValue = value;		 
+
+        System.debug(LoggingLevel.FINE, 'Finished getObjectForValue - ' + type + '/' + objValue);
+
+		return objValue;
+	}
+
     /**
-    * @description Method to update a record given its record Id and a map of field updates
+    * @description Method to update a SINGLE record given its record Id and a map of field updates
+    * @author tom.h.ansley@medtronic.com | 07-29-2021 
+    * @param fieldValues map of field values with the record Id as key to return map of field values and the API field name being the key of the field values.
+    * @return String blank string = success. Anything else is failure.    **/
+    public static String updateRecords(Map<String, Map<String, String>> rowValues)
+    {
+        String result = '';
+        Map<Id, SObject> updatedObjs = new Map<Id, SObject>(); //use map to ensure no duplicates
+
+        if (rowValues.size() == 0) return result;
+
+        //get object type from id
+        String objType = HelperSchema.getSObjectTypeFromId(new List<String>(rowValues.keySet())[0]); //get the first record Id to determine object type. ALL types must be the same!!
+
+        //instantiate object
+        Type t = Type.forName(objType);
+
+        for (String rowId: rowValues.keySet())
+        {
+            SObject rec = (SObject) t.newInstance();
+
+            //add record Id to object
+            rec.put('Id', rowId);
+
+            Map<String, String> fieldValues = rowValues.get(rowId);
+            for (String fieldName: fieldValues.keySet())
+            {
+                Object fieldValue = null;
+                
+                //if we have a lookup
+                if (fieldName.contains('.'))
+                {
+                    fieldValue = fieldValues.get(fieldName);
+                    String fixedFieldName = fieldName.substringBefore('.');
+
+                    //if we have an OOTB lookup name then we need to add "Id"
+                    if (!fixedFieldName.contains('__'))
+                        fixedFieldName += 'Id';
+
+                    rec.put(fixedFieldName, fieldValue);
+                } else {
+                    fieldValue = HelperSchema.getValueForField(objType, fieldName, fieldValues.get(fieldName));
+                    rec.put(fieldName, fieldValue);
+                }
+
+            }
+
+            updatedObjs.put(rowId, rec);
+            System.debug(LoggingLevel.FINE, 'Saving record - ' + rec);
+        }
+
+        try {
+            HelperDatabase.updateRecords(updatedObjs.values(), objType);
+        } catch (Exception e) {
+            String message = 'Exception during ListViewHelper.updateRecords() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            ListViewErrorHelper.createUsageErrorNonFuture(message);
+            result = 'There was an error saving the records - ' + e.getMessage();
+        }
+
+        return result;
+    }
+
+    /**
+    * @description Method to update a SINGLE record given its record Id and a map of field updates
     * @author tom.h.ansley@medtronic.com | 07-22-2021 
     * @param rowId the record Id of the record to be updated
     * @param fieldValues map of field values with the field name being the key
@@ -36,42 +165,15 @@ global with sharing class ListViewHelper {
     {
         String result = '';
 
-        //get object type from id
-        String objType = HelperSchema.getSObjectTypeFromId(rowId);
+        Map<String, Map<String, String>> fieldsByRowId = new Map<String, Map<String, String>>();
 
-        //instantiate object
-        Type t = Type.forName(objType);
-        SObject rec = (SObject) t.newInstance();
+        fieldsByRowId.put(rowId, fieldValues);
 
-        //add record Id to object
-        rec.put('Id', rowId);
-
-        for (String fieldName: fieldValues.keySet())
-        {
-            Object fieldValue = null;
-            
-            //if we have a lookup
-            if (fieldName.contains('.'))
-            {
-                fieldValue = fieldValues.get(fieldName);
-                String fixedFieldName = fieldName.substringBefore('.');
-
-                //if we have an OOTB lookup name then we need to add "Id"
-                if (!fixedFieldName.contains('__'))
-                    fixedFieldName += 'Id';
-
-                rec.put(fixedFieldName, fieldValue);
-            } else {
-                fieldValue = HelperSchema.getValueForField(objType, fieldName, fieldValues.get(fieldName));
-                rec.put(fieldName, fieldValue);
-            }
-
-        }
-
-        HelperDatabase.updateRecord(rec, objType);
+        result = updateRecords(fieldsByRowId);
 
         return result;
     }
+    
 
     /*
      ListViewHelper.updateListViewObjectsSetting();
@@ -801,7 +903,7 @@ global with sharing class ListViewHelper {
     }
 
     /*
-      ListViewHelper.getListViewData('SELECT Name, List_View_Object__c, LastModifiedDate, LastModifiedBy.Name, Primary_Key__c, (SELECT Parameter_Name__c, Parameter_Type__c, Parameter_Label__c, Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c), (SELECT Field_Name__c, Highlight_Color__c, Operator__c, Order__c, Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c', null, null, null, null, false);
+      ListViewHelper.getListViewData('SELECT Name, List_View_Label__c, List_View_Object__c, LastModifiedDate, LastModifiedBy.Name, Primary_Key__c, (SELECT Parameter_Name__c, Parameter_Type__c, Parameter_Label__c, Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c), (SELECT Field_Name__c, Highlight_Color__c, Operator__c, Order__c, Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c', null, null, null, null, false);
      */
     public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
@@ -898,8 +1000,8 @@ global with sharing class ListViewHelper {
             
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
             {
-                //make sure the field name is valid
-                if (HelperSchema.isValidSFDCFieldName(objectName, columnSortData.fieldName))
+                //make sure the field name is valid if we are not dealing with an API callout
+                if (lvConfig?.getListView().Subtype__c == ListViewActionHelper.SUBTYPE_TOOLING || HelperSchema.isValidSFDCFieldName(objectName, columnSortData.fieldName))
                 {
                     orderByStr += columnSortData.fieldName + ' ';
                     if (columnSortData.sortDirection == true)
@@ -1104,6 +1206,7 @@ global with sharing class ListViewHelper {
 
         List_View_Config__c config = new List_View_Config__c();
         config.Name                = 'PlatinumandGoldSLACustomers';
+        config.List_View_Label__c  = 'Platinum And Gold SLA Customers';
         config.List_View_Object__c = 'Account';
         config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
         configs.add(config);
@@ -1111,12 +1214,14 @@ global with sharing class ListViewHelper {
         List_View_Config__c config2 = new List_View_Config__c();
         config2.Name                = 'All';
         config2.List_View_Object__c = 'All';
+        config.List_View_Label__c   = 'Org Wide Configuration';
         config2.Primary_Key__c      = config2.List_View_Object__c + ':' + config2.Name;
         configs.add(config2);
 
         List_View_Config__c config3 = new List_View_Config__c();
         config3.Name                = 'AllAccounts';
         config3.List_View_Object__c = 'Account';
+        config.List_View_Label__c   = 'All Accounts';
         config3.Primary_Key__c      = config3.List_View_Object__c + ':' + config3.Name;
         configs.add(config3);
 
@@ -1263,6 +1368,14 @@ global with sharing class ListViewHelper {
         param2.Parameter_Label__c  = 'Allow Inline Editing';
         params2.add(param2);
 
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'DisplayTextSearch';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Display Text Search';
+        params2.add(param2);
+
         //---------------------------------------
         // 
         //---------------------------------------
@@ -1317,7 +1430,7 @@ global with sharing class ListViewHelper {
         lv.Core_ListView_Query__c   = 'SELECT DurationMilliseconds,Id,LogLength,LogUserId,Operation,Request,StartTime,Status FROM ApexLog ORDER BY StartTime DESC';
         lv.Object_Name__c           = 'ApexLog';
         lv.RecordTypeId             = ListViewHelper.customRTId;
-        lv.Subtype__c               = 'Tooling';
+        lv.Subtype__c               = ListViewActionHelper.SUBTYPE_TOOLING;
 
         listViews.add(lv);
 
@@ -1325,7 +1438,7 @@ global with sharing class ListViewHelper {
         lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
         lv.Label__c                 = 'Custom Non-Core Example';
         lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"simpli_lv__List_View_Object__c","type":"string","label":"Object"},{"fieldNameOrPath":"LastModifiedDate","type":"string","label":"Last Modified"},{"fieldNameOrPath":"LastModifiedBy.Name","type":"string","label":"Last Modified By"},{"fieldNameOrPath":"simpli_lv__Primary_Key__c","type":"string","label":"Primary Key"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Name__c","type":"string","label":"Parameter Name"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Type__c","type":"string","label":"Parameter Type"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Label__c","type":"string","label":"Parameter Label"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Parameters__r.simpli_lv__Parameter_Value__c","type":"string","label":"Parameter Value"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Field_Name__c","type":"string","label":"Field Name"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Highlight_Color__c","type":"string","label":"Highlight Color"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Operator__c","type":"string","label":"Operator"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Order__c","type":"string","label":"Order"},{"fieldNameOrPath":"simpli_lv__List_View_Config_Conditions__r.simpli_lv__Value__c","type":"string","label":"Value"}]';
-        lv.Core_ListView_Query__c   = 'SELECT Name,List_View_Object__c,LastModifiedDate,LastModifiedBy.Name,Primary_Key__c,(SELECT Parameter_Name__c,Parameter_Type__c,Parameter_Label__c,Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c),( SELECT Field_Name__c,Highlight_Color__c,Operator__c,Order__c,Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c';
+        lv.Core_ListView_Query__c   = 'SELECT Name,List_View_Label__c,List_View_Object__c,LastModifiedDate,LastModifiedBy.Name,Primary_Key__c,(SELECT Parameter_Name__c,Parameter_Type__c,Parameter_Label__c,Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c),( SELECT Field_Name__c,Highlight_Color__c,Operator__c,Order__c,Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c';
         lv.Object_Name__c           = 'simpli_lv__List_View_Config__c';
         lv.RecordTypeId             = ListViewHelper.customRTId;
         lv.Subtype__c               = 'Manual';

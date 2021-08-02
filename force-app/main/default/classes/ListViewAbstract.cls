@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-27-2021
+ * @last modified on  : 08-02-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -68,7 +68,7 @@ public with sharing abstract class ListViewAbstract {
         //try to get a true example row
         List<SObject> objectRows = null;
         
-        if (listview.SubType__c != 'Tooling') //cannot get an example row if we are working with the tooling API
+        if (listview.SubType__c != ListViewActionHelper.SUBTYPE_TOOLING) //cannot get an example row if we are working with the tooling API
         {
             if (listview.RecordTypeId == ListViewHelper.coreRTId)
                 objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true, -1);
@@ -158,7 +158,7 @@ public with sharing abstract class ListViewAbstract {
 
             List<List_View_Config_Parameter__c> params = getConfigParams(config);
 
-            lvConfig = new ListViewConfigWrapper(config, params);
+            lvConfig = new ListViewConfigWrapper(listview, config, params);
 
         } else {
             throw new ListViewException('Configuration for list view not found. Please reprocess list view');
@@ -264,6 +264,12 @@ public with sharing abstract class ListViewAbstract {
         public String getCoreListId()
         {
             return coreListId;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getUserTimeZone()
+        {
+            return UserInfo.getTimeZone().getID();
         }
 
         @AuraEnabled
@@ -415,15 +421,17 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isTotals;                 //indicates whether this row is a totals row.
         public Boolean isDeleted;                //indicates whether this row is for a deleted record.
         public Boolean isEdited;                 //indicates whether the row has been edited or not.
+        public Boolean isDisplayed;              //indicates whether the row should be displayed or not. (used with text search)
 
         public RowWrapper(String rowId)
         {
-            this.rowId = rowId;
-            this.highlight = false;
+            this.rowId          = rowId;
+            this.highlight      = false;
             this.highlightColor = '';
-            fields = new Map<String, FieldWrapper>();
-            isTotals = false;
-            isEdited = false;
+            fields              = new Map<String, FieldWrapper>();
+            isTotals            = false;
+            isEdited            = false;
+            isDisplayed         = true;
         }
 
         public void addField(FieldWrapper field)
@@ -446,7 +454,7 @@ public with sharing abstract class ListViewAbstract {
             {
                 if (fieldsByColumn.get(column.columnIndex) == null)
                 {
-                    addField(new FieldWrapper('', '', 'string', String.valueOf(column.columnIndex), column.columnIndex));
+                    addField(new FieldWrapper('', 'string', String.valueOf(column.columnIndex), column.columnIndex));
                 }
             }
             List<FieldWrapper> sortedFields = fields.values();
@@ -496,6 +504,12 @@ public with sharing abstract class ListViewAbstract {
             return isEdited;
         }
 
+        @AuraEnabled
+        public Boolean getIsDisplayed()
+        {
+            return isDisplayed;
+        }
+
         @AuraEnabled(cacheable=true)
         public String getHighlightColor()
         {
@@ -508,9 +522,9 @@ public with sharing abstract class ListViewAbstract {
             String dataStr = '';
 
             //get the field data. We make sure to escape delimiter
-            for (FieldWrapper rowData: getFields())
+            for (FieldWrapper fieldData: getFields())
             {
-                dataStr += '"' + rowData.value.replaceAll('"', '""') + '"' + ',';
+                dataStr += '"' + fieldData.getValue().replaceAll('"', '""') + '"' + ',';
             }
 
             dataStr = dataStr.removeEnd(',') + '\n';
@@ -530,11 +544,14 @@ public with sharing abstract class ListViewAbstract {
             clone.fields = new Map<String, FieldWrapper>();
             for (FieldWrapper field: fields.values())
             {
-                String value = '';
+                Object objValue = null;
                 if (!deleteFieldData)
-                    value = field.value;
-                FieldWrapper cloneField = new FieldWrapper(field.label, value, field.type, field.name, field.columnIndex);
-                cloneField.setURL(field.getURL());
+                {
+                    objValue = field.objValue;
+                }
+                FieldWrapper cloneField = new FieldWrapper(field.label, objValue, field.type, field.name, field.columnIndex, field.parentObjType);
+                cloneField.fieldObj = field.fieldObj;
+                cloneField.createURL();
                 clone.addField(cloneField);
             }
             clone.highlight = this.highlight;
@@ -556,7 +573,7 @@ public with sharing abstract class ListViewAbstract {
             //for each field
             for (FieldWrapper field: fields.values())
             {
-                System.debug(LoggingLevel.DEBUG, 'Looking at field with name = ' + field.name + ' and value = ' + field.value);
+                System.debug(LoggingLevel.DEBUG, 'Looking at field with name = ' + field.name + ' and value = ' + field.getValue());
 
                 //check of there is a condition name which matches a field
                 List<ListViewCondition> conditions = lvConfigConditions.get(field.name.toLowerCase());
@@ -573,7 +590,7 @@ public with sharing abstract class ListViewAbstract {
                     for (ListViewCondition condition: conditions)
                         lvConditions.add(condition.getCondition());
 
-                    String color = ListViewConfigHelper.validateFieldCondition(field.value, field.type, lvConditions);
+                    String color = ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, lvConditions);
 
                     System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + color);
 
@@ -594,11 +611,11 @@ public with sharing abstract class ListViewAbstract {
     {
 
         public String label;
-        public String value;
+        public Object objValue;        //the value as an Object
         public String idValue;
         public String type;
-        public String url;             //the URL that the field should display if one is available.
-        public String urlTarget;      //identifies the target of the URL
+        public String urlStr;          //the URL that the field should display if one is available.
+        public String urlTarget;       //identifies the target of the URL
         public String name;            //the short API name of the field. i.e. quantity
         public String longName;        //the long API name of the field i.e. opportunitylineitems.quantity
         public Boolean sortDir;        //true = asc, false = desc
@@ -607,25 +624,28 @@ public with sharing abstract class ListViewAbstract {
         public String key;
         public Boolean isSortable;     //identifies whether the field is sortable.
         public Boolean isEditable;     //identifies whether the field can be edited inline.
-        public String fieldObjName;    //the API name of the object that this field looks up to
+        public String parentObjType;   //the API name of the object that this field looks up to
+        public SObject fieldObj;       //the SObject associated with the field. Used when retrieving lookup information
 
-        public FieldWrapper(String label, String value, String type, String name, Integer columnIndex)
+        public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
         {
-            this.label       = label;
-            this.name        = name;
-            this.sortDir     = true;
-            this.sortIndex   = '';
-            this.columnIndex = columnIndex;
-            this.isSortable  = true;
-            this.urlTarget   = '_self';
+            this.label         = label;
+            this.name          = name;
+            this.sortDir       = true;
+            this.sortIndex     = '';
+            this.columnIndex   = columnIndex;
+            this.isSortable    = true;
+            this.urlTarget     = '_self';
+            this.objValue      = objValue;
+            this.parentObjType = parentObjType;
 
-            this.setValue(value);
             this.setType(type);
+            this.setValue(objValue);
 
             String debug = '\n\n---------------------------------------------------------------\n';
             debug       += 'Label - ' + this.label + '\n';
             debug       += 'type - ' + this.type + '\n';
-            debug       += 'value - ' + this.value + '\n';
+            debug       += 'object - ' + this.objValue + '\n';
             debug       += 'name - ' + this.name + '\n';
             debug       += 'columnIndex - ' + this.columnIndex + '\n';
             debug       += '---------------------------------------------------------------\n';
@@ -646,7 +666,6 @@ public with sharing abstract class ListViewAbstract {
             String debug = '\n\n---------------------------------------------------------------\n';
             debug       += 'Label - ' + this.label + '\n';
             debug       += 'type - ' + this.type + '\n';
-            debug       += 'value - ' + this.value + '\n';
             debug       += 'name - ' + this.name + '\n';
             debug       += 'columnIndex - ' + this.columnIndex + '\n';
             debug       += '---------------------------------------------------------------\n';
@@ -716,6 +735,11 @@ public with sharing abstract class ListViewAbstract {
             return isEditable;    
         }
 
+        public void setFieldObj(SObject fieldObj)
+        {
+            this.fieldObj = fieldObj;
+        }
+
         public void setIsEditable(Boolean isEditable)
         {
             //cannot edit geolocation fields individually
@@ -738,21 +762,64 @@ public with sharing abstract class ListViewAbstract {
             else 
                 this.type = type;
         }
-        
+
         @AuraEnabled(cacheable=true)
         public String getValue()
         {
-            return value;
+            String strValue = '';
+            
+            //No Value!
+            if (this.objValue == null) {
+                strValue = '';
+
+            } else if (getIsBoolean()) 
+            {
+                if (((Boolean) objValue) == false)
+                    strValue = 'false';        //if boolean value is FALSE then send NOTHING
+                else 
+                    strValue = 'true';
+            
+            } else if (getIsDateTime()) {
+                //in case of tooling API value is datetime but comes in as a string so we need to check
+                if (objValue instanceof DateTime) 
+                    strValue = String.valueOf(((DateTime) objValue).getTime());
+                else
+                    strValue = String.valueOf(objValue);
+
+            } else if (getIsDate()) {
+                //in case of tooling API value is date but comes in as a string so we need to check
+                if (objValue instanceof Date)
+                {
+                    DateTime dt = HelperDate.convertDateToDateTime((Date) objValue);
+                    strValue = String.valueOf(dt.getTime()).removeEnd(' 00:00:00');
+                } else {
+                    strValue = String.valueOf(objValue);
+                }
+
+            } else if (getIsTime()) {
+                //in case of tooling API value is time but comes in as a string so we need to check
+                if (objValue instanceof Time)
+                {
+                    Time tm = ((Time) objValue);
+                    //we don't care about the date...just the time.
+                    DateTime dt = DateTime.newInstance(2000, 1, 1, tm.hour(), tm.minute(), tm.second());
+                    strValue = String.valueOf(dt.getTime());
+                } else {
+                    strValue = String.valueOf(objValue);
+                }
+
+            //String
+            } else {
+                strValue = String.valueOf(objValue);
+            }
+
+            System.debug(LoggingLevel.FINE, 'Finished getValue with type - ' + this.type + ' - ' + strValue);
+            return strValue;
         }
 
-        public void setValue(String value)
+        public void setValue(Object objValue)
         {
-            if (value == null)
-                this.value = '';
-            else if (this.type == 'date')
-                this.value = value.removeEnd(' 00:00:00');
-            else    
-                this.value = value;
+            this.objValue = objValue;
         }
 
         @AuraEnabled(cacheable=true)
@@ -769,19 +836,30 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled
         public Boolean getHasURL()
         {
-            if (this.url == null) return false;
+            if (this.urlStr == null) return false;
             return true;    
         }
         
-        public void setURL(String url)
+        public void createURL()
         {
-            this.url = url;
+            System.debug(LoggingLevel.DEBUG, 'createURL called - ' + parentObjType + ', ' + idValue);
+            String urlStr = '';
+            urlTarget = '_blank';
+
+            if (parentObjType == 'ApexLog')
+                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/setup/ApexDebugLogDetail/page?address=%2Fp%2Fsetup%2Flayout%2FApexDebugLogDetailEdit%2Fd%3Fapex_log_id%3D' + String.valueOf(objValue);
+            else if (parentObjType == 'ApexClassOrTrigger')
+                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + idValue;
+            else if (fieldObj != null)
+                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldObj.get('Id')) + '/view';
+
+            this.urlStr = urlStr;
         }
 
         @AuraEnabled(cacheable=true)
         public String getURL()
         {
-            return url;
+            return urlStr;
         }
         
         @AuraEnabled(cacheable=true)
@@ -793,18 +871,25 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getFieldObjName()
         {
-            return fieldObjName;
+            return parentObjType;
         }
 
-        public void setFieldObjName(String fieldObjName)
+        public void setParentObjType(String parentObjType)
         {
-            this.fieldObjName = fieldObjName;
+            this.parentObjType = parentObjType;
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsString()
         {
             if (this.type == 'string') return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTextArea()
+        {
+            if (this.type == 'textarea') return true;
             return false;    
         }
         
@@ -828,15 +913,27 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getUIValue()
         {
-            String uiStr = value;
-            if (getIsBoolean()) //if boolean value is FALSE then send NOTHING
+            String uiStr = '';
+            if (objValue != null)
             {
-                if (uiStr == 'false')
-                    uiStr = null;
-            } else if (getIsDateTime()) { //replace string value of '2021-03-04 1
-                if (!String.isEmpty(uiStr))
-                    uiStr = uiStr.replace(' ', 'T') + 'Z';
+                if (getIsDateTime()) {
+                        uiStr = String.valueOf(objValue).replace(' ', 'T') + 'Z';
+                
+                } else if (getIsDate()) {
+                    uiStr = String.valueOf(objValue);
+                
+                } else if (getIsTime()) {
+                    uiStr = String.valueOf(objValue);
+                    
+                } else if (getIsBoolean()) 
+                {
+                    if (((Boolean) objValue) == false)
+                        uiStr = null;        //if boolean value is FALSE then send NOTHING
+                    else 
+                        uiStr = 'true';
+                }
             }
+            System.debug(LoggingLevel.FINE, 'getUIValue - ' + this.getType() + ' - ' + uiStr );
             return uiStr;
         }
         
@@ -846,8 +943,8 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public List<String> getUIMultiPicklistValues()
         {
-            if (value != null)
-                return value.split(';');
+            if (objValue != null && objValue instanceof String)
+                return String.valueOf(objValue).split(';');
             else
                 return new List<String>();
         }
@@ -1022,12 +1119,14 @@ public with sharing abstract class ListViewAbstract {
     //-------------------------------------------------------------------
     public class ListViewConfigWrapper
     {
+        public List_View__c listView;
         public List_View_Config__c listViewConfig;
         public DateTime lastModifiedDate;
         public String lastModifiedBy;
         public Map<String, ListViewParam> parameters;
         public Map<String, List<ListViewCondition>> conditions;
         public String name;
+        public String label;
         public String obj;
 
         public ListViewConfigWrapper(String name, String obj)
@@ -1041,13 +1140,15 @@ public with sharing abstract class ListViewAbstract {
         /*
          * Constructor for if the params were not created yet and were created in this transaction.
          */
-        public ListViewConfigWrapper(List_View_Config__c listView, List<List_View_Config_Parameter__c> params)
+        public ListViewConfigWrapper(List_View__c listView, List_View_Config__c listViewConfig, List<List_View_Config_Parameter__c> params)
         {
-            this.listViewConfig = listView;
-            this.name        = listView.Name;
-            this.obj         = listView.List_View_Object__c;
-            lastModifiedDate = listView.LastModifiedDate;
-            lastModifiedBy   = listView.LastModifiedBy.Name;
+            this.listView       = listView;
+            this.listViewConfig = listViewConfig;
+            this.name        = listViewConfig.Name;
+            this.label       = listViewConfig.List_View_Label__c;
+            this.obj         = listViewConfig.List_View_Object__c;
+            lastModifiedDate = listViewConfig.LastModifiedDate;
+            lastModifiedBy   = listViewConfig.LastModifiedBy.Name;
             parameters       = new Map<String,ListViewParam>();
             conditions       = new Map<String, List<ListViewCondition>>();
 
@@ -1068,7 +1169,7 @@ public with sharing abstract class ListViewAbstract {
             System.debug(LoggingLevel.DEBUG, 'All config params - ' + parameters);
 
 
-            for (List_View_Config_Condition__c condition: listView.List_View_Config_Conditions__r)
+            for (List_View_Config_Condition__c condition: listViewConfig.List_View_Config_Conditions__r)
             {
                 List<ListViewCondition> conditionList = conditions.get(condition.Field_Name__c.toLowerCase());
                 if (conditionList == null)
@@ -1081,15 +1182,26 @@ public with sharing abstract class ListViewAbstract {
             
         }
 
-        public ListViewConfigWrapper(List_View_Config__c listView)
+        //public ListViewConfigWrapper(List_View_Config__c listViewConfig)
+        //{
+         //   this(listViewConfig, listViewConfig.List_View_Config_Parameters__r);
+        //}
+
+        public List_View__c getListView()
         {
-            this(listView, listView.List_View_Config_Parameters__r);
+            return listView;
         }
 
         @AuraEnabled(cacheable=true)
         public String getName()
         {
             return name;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getLabel()
+        {
+            return label;
         }
         
         @AuraEnabled(cacheable=true)
@@ -1263,6 +1375,8 @@ public with sharing abstract class ListViewAbstract {
                 description = 'The maximum number of rows that will be displayed to the user. Note that Salesforce starts to timeout above 2500 depending on number of list view fields displayed';
             else if (name == 'QueryPagingSize')
                 description = 'The page size used when list views are returning more than 500 rows';
+            else if (name == 'DisplayTextSearch')
+                description = 'Indicates whether the user can use the text search capability for returned list view results';
             return description;
         }
 

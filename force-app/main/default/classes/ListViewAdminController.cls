@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-18-2021
+ * @last modified on  : 08-01-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -21,7 +21,7 @@ public with sharing class ListViewAdminController {
         for (List_View_Config_Parameter__c param: orgWideConfig.List_View_Config_Parameters__r)
             params.add(param);
 
-        ListViewAbstract.ListViewConfigWrapper config = new ListViewAbstract.ListViewConfigWrapper(orgWideConfig, params);
+        ListViewAbstract.ListViewConfigWrapper config = new ListViewAbstract.ListViewConfigWrapper(null, orgWideConfig, params);
 
         return config;
     }
