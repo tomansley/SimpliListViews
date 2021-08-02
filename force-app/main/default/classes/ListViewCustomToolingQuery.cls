@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-30-2021
+ * @last modified on  : 08-01-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -72,14 +72,14 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
         //------------------------------------------------------
         //Handle JSON String into list of individual records
         //------------------------------------------------------
-        List<Map<String, Object>> logData = new List<Map<String, Object>>();
+        List<Map<String, Object>> apiData = new List<Map<String, Object>>();
 
         Map<String, Object> logs = (Map<String, Object>) JSON.deserializeUntyped(responseStr);
         List<Object> records = (List<Object>) logs.get('records');
 
         for (Object record: records)
         {
-            logData.add((Map<String, Object>) record);
+            apiData.add((Map<String, Object>) record);
         }
 
         //------------------------------------------------------
@@ -122,11 +122,11 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
         }
 
         //for each row of data
-        for (Integer count = 0; count < logData.size(); count++)
+        for (Integer count = 0; count < apiData.size(); count++)
         {
-            Map<String, Object> log = logData.get(count);
+            Map<String, Object> data = apiData.get(count);
 
-            RowWrapper rowWrapper = new RowWrapper((String) log.get('Id'));
+            RowWrapper rowWrapper = new RowWrapper((String) data.get('Id'));
             rowWrapper.isDeleted = false;
             rows.addRow(rowWrapper);
 
@@ -142,18 +142,26 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
                 System.debug(LoggingLevel.DEBUG, 'Field - ' + fieldName + ', Type - ' + fieldType);
 
-                FieldWrapper field = new FieldWrapper(label, 
-                                                    String.valueOf(log.get(fieldName)), 
+                //get the value of the field
+                HelperSchema.FieldData fieldData = HelperSchema.getFieldData(data, fieldName, this.lvConfig.getObject());
+
+                //we need to turn the value into its correct class.
+                Object fieldValue = fieldData.value;
+                System.debug(LoggingLevel.DEBUG, 'FIELD VALUE --- ' + fieldValue);
+                if (fieldValue instanceof String) 
+                    fieldValue = ListViewHelper.getObjectForValue(fieldType, (String) fieldValue);
+                System.debug(LoggingLevel.DEBUG, 'NEW FIELD VALUE --- ' + fieldValue);
+
+                FieldWrapper field = new FieldWrapper(label,
+                                                    fieldValue, 
                                                     fieldType,
                                                     fieldName,
-                                                    columnIndex);
+                                                    columnIndex,
+                                                    fieldData.parentObjType);
+                field.idValue = fieldData.valueId;
 
-                                                    
-
-                if (fieldName == 'Id') {
-                    String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/setup/ApexDebugLogDetail/page?address=%2Fp%2Fsetup%2Flayout%2FApexDebugLogDetailEdit%2Fd%3Fapex_log_id%3D' + String.valueOf(log.get(fieldName));
-                    field.urlTarget = '_blank';
-                    field.setURL(url);
+                if (field.getName() == 'Id' || field.getType() == 'lookup') {
+                    field.createURL();
                 }
 
                 if (sortDataByFieldName.containsKey(fieldName))
@@ -225,7 +233,8 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                                             initValue,
                                             fieldWrapper.getType(),
                                             fieldWrapper.getName(),
-                                            fieldWrapper.columnIndex);
+                                            fieldWrapper.columnIndex,
+                                            '');
 
                         System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
 
@@ -239,19 +248,19 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
                         System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getValue() - ' + fieldWrapper.getValue());
                         System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getType() - ' + fieldWrapper.getType());
-                        System.debug(LoggingLevel.DEBUG, 'totalField.value - ' + totalField.value);
+                        System.debug(LoggingLevel.DEBUG, 'totalField.value - ' + totalField.getValue());
                         System.debug(LoggingLevel.DEBUG, 'totalField.getType() - ' + totalField.getType());
 
                         //if this is a valid column for total calculation and there is a value to calculate
                         if (ListViewAbstract.validTotalColumns.contains(totalField.getType()) && !String.isEmpty(fieldWrapper.getValue()))
                         {
                             System.debug(LoggingLevel.DEBUG, 'We have a valid column value to add to total');
-                            System.debug(LoggingLevel.DEBUG, 'Old value - ' + totalField.value);
+                            System.debug(LoggingLevel.DEBUG, 'Old value - ' + totalField.getValue());
                             if (totalField.getType() == 'currency')
-                                totalField.value = String.valueOf(Decimal.valueOf(String.valueOf(fieldWrapper.getValue())) + Decimal.valueOf(totalField.value));
+                                totalField.setValue(Decimal.valueOf(String.valueOf(fieldWrapper.getValue())) + Decimal.valueOf(totalField.getValue()));
                             else
-                                totalField.value = String.valueOf(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.value));
-                            System.debug(LoggingLevel.DEBUG, 'New value - ' + totalField.value);
+                                totalField.setValue(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.getValue()));
+                            System.debug(LoggingLevel.DEBUG, 'New value - ' + totalField.getValue());
 
                             
                         }

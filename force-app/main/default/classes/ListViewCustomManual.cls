@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-30-2021
+ * @last modified on  : 08-01-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -180,24 +180,23 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 {
                     HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnMetaData.name);
 
-                    String fieldDataValue = String.valueOf(fieldData.value);
                     String fieldDataType = fieldData.type.name().toLowerCase();
-    
-                    if (fieldDataType == 'date' && fieldDataValue != null)
-                        fieldDataValue = fieldDataValue.removeEnd(' 00:00:00');
+                    String parentObjType = fieldData.parentObjType.toLowerCase();
     
                     FieldWrapper field = new FieldWrapper(fieldData.label, 
-                                                          fieldDataValue, 
+                                                          fieldData.value, 
                                                           fieldData.type.name().toLowerCase(),
                                                           columnMetaData.name,
-                                                          columnMetaData.columnIndex);
+                                                          columnMetaData.columnIndex,
+                                                          parentObjType);
 
                     if (ListViewAbstract.validNameColumnNames.contains(fieldData.name.toLowerCase()))     
-                    {        //if we have the name of the object
+                    {        
+                        //if we have the name of the object
                         if (fieldData.fieldObj != null)
                         {
-                            String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';
-                            field.setURL(url);
+                            field.setFieldObj(fieldData.fieldObj);
+                            field.createURL();
                         }
                     }
 
@@ -239,25 +238,23 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                             String fieldName = columnMetaData.name.removeStart(childFieldKey + '.');
                             HelperSchema.FieldData fieldData = HelperSchema.getFieldData(child, fieldName);
 
-                            String fieldDataValue = String.valueOf(fieldData.value);
                             String fieldDataType = fieldData.type.name().toLowerCase();
-
-                            if (fieldDataType == 'date' && fieldDataValue != null)
-                                fieldDataValue = fieldDataValue.removeEnd(' 00:00:00');
+                            String parentObjType = fieldData.parentObjType.toLowerCase();
 
                             FieldWrapper field = new FieldWrapper(fieldData.label, 
-                                                                  fieldDataValue, 
+                                                                  fieldData.value, 
                                                                   fieldData.type.name().toLowerCase(),
                                                                   fieldName,
-                                                                  columnMetaData.columnIndex);
+                                                                  columnMetaData.columnIndex,
+                                                                  parentObjType);
                             field.longName = columnMetaData.name;
 
                             if (ListViewAbstract.validNameColumnNames.contains(fieldData.name.toLowerCase()))     
                             {
                                 if (fieldData.fieldObj != null)
                                 {
-                                    String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';
-                                    field.setURL(url);
+                                    field.setFieldObj(fieldData.fieldObj);
+                                    field.createURL();
                                 }
                             }
 

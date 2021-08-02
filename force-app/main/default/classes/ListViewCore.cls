@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-27-2021
+ * @last modified on  : 08-01-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -196,13 +196,13 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 HelperSchema.FieldData fieldData = HelperSchema.getFieldData(dataRows[0], fieldName);
                 String label = fieldData.label;
-                String fieldObjType = fieldData.fieldObjType.toLowerCase();
+                String parentObjType = fieldData.parentObjType.toLowerCase();
 
                 FieldWrapper field = new FieldWrapper(label, 
                                                       fieldData.type.name().toLowerCase(),
                                                       fieldName,
                                                       columnIndex);
-                field.fieldObjName = fieldObjType;
+                field.setParentObjType(parentObjType);
 
                 if (sortDataByFieldName.containsKey(fieldName))
                 {
@@ -257,30 +257,28 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 System.debug(LoggingLevel.DEBUG, 'Field Data - ' + fieldData);
 
-                String fieldDataValue = String.valueOf(fieldData.value);
                 String fieldDataType = fieldData.type.name().toLowerCase();
-                String fieldObjType = fieldData.fieldObjType.toLowerCase();
+                String parentObjType = fieldData.parentObjType.toLowerCase();
 
-                System.debug(LoggingLevel.DEBUG, 'Field Obj Type - ' + fieldObjType + ', Field Data Type - ' + fieldDataType + ', Value - ' + fieldDataValue);
+                System.debug(LoggingLevel.DEBUG, 'Parent Obj Type - ' + parentObjType + ', Field Data Type - ' + fieldDataType + ', Value - ' + fieldData.value);
 
                 FieldWrapper field = new FieldWrapper(fieldData.label, 
-                                                    fieldDataValue, 
+                                                    fieldData.value,
                                                     fieldDataType,
                                                     fieldName,
-                                                    columnIndex);
-                field.setFieldObjName(fieldObjType);
+                                                    columnIndex,
+                                                    parentObjType);
                 field.setIdValue(fieldData.valueId);
                 field.setIsEditable(fieldData.isEditable);
 
                 System.debug(LoggingLevel.DEBUG, 'Field - ' + field);
-                System.debug(LoggingLevel.DEBUG, 'Field UI Value - ' + field.getUIValue());
 
                 if (ListViewAbstract.validNameColumnNames.contains(fieldData.name.toLowerCase())             //if we have the name of the object
                     && fieldData.fieldObj != null        //if we have field data.
                     && fieldData.value != null)  //if we have a display value
                 {
-                    String url = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldData.fieldObj.get('Id')) + '/view';
-                    field.setURL(url);
+                    field.setFieldObj(fieldData.fieldObj);
+                    field.createURL();
                 }
 
                 if (sortDataByFieldName.containsKey(fieldName))
@@ -357,7 +355,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
                                             initValue,
                                             fieldWrapper.getType(),
                                             fieldWrapper.getName(),
-                                            fieldWrapper.columnIndex);
+                                            fieldWrapper.columnIndex,
+                                            '');
 
                         System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
 
@@ -372,7 +371,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                         System.debug(LoggingLevel.DEBUG, 'fieldWrapper            - ' + fieldWrapper);
                         System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getValue() - ' + fieldWrapper.getValue());
                         System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getType()  - ' + fieldWrapper.getType());
-                        System.debug(LoggingLevel.DEBUG, 'totalField.value        - ' + totalField.value);
+                        System.debug(LoggingLevel.DEBUG, 'totalField.value        - ' + totalField.getValue());
                         System.debug(LoggingLevel.DEBUG, 'totalField.getType()    - ' + totalField.getType());
 
                         //if this is a valid column for total calculation and there is a value to calculate
@@ -382,11 +381,11 @@ public with sharing class ListViewCore extends ListViewAbstract {
                             {
                                 if (!String.isEmpty(fieldWrapper.getValue()))
                                 {
-                                    Decimal total = Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.value);
-                                    totalField.value = String.valueOf(total);
+                                    Decimal total = Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.getValue());
+                                    totalField.setValue(total);
                                 }
                             } else {
-                                totalField.value = String.valueOf(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.value));
+                                totalField.setValue(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.getValue()));
                             }
 
                             
