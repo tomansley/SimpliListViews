@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 03-26-2021
+ * @last modified on  : 07-31-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -120,6 +120,7 @@ public with sharing class ListViewBL {
 
                 List_View_Config__c newConfig = new List_View_Config__c();
                 newConfig.Name                = listview.API_Name__c;
+                newConfig.List_View_Label__c  = listview.Label__c;
                 newConfig.List_View_Object__c = listview.Object_Name__c;
                 newConfig.Primary_Key__c      = ListViewConfigHelper.getPrimaryKey(listView.Object_Name__c, listView.API_Name__c);
 
