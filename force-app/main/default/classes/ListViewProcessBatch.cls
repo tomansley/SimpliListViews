@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-27-2021
+ * @last modified on  : 07-31-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -128,6 +128,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
                     List_View_Config__c config = new List_View_Config__c();
                     config.Name                = simpliListView.API_Name__c;
+                    config.List_View_Label__c  = simpliListView.Label__c;
                     config.List_View_Object__c = simpliListView.Object_Name__c;
                     config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
 
@@ -153,8 +154,6 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
         //delete all list views that are EXCLUDED from being displayed
         //but may have been created at another time
         Database.executeBatch(new ListViewDeleteBatch());
-
-        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', 'true');
 	}
 	
 	global class ListViewProcessBatchException extends Exception { }

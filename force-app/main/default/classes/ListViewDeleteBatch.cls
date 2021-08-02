@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 11-05-2020
+ * @Last Modified On   : 07-31-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -92,6 +92,10 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
             String message = 'Exception during ListViewDeleteBatch.finish() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
             ListViewErrorHelper.createUsageErrorNonFuture(message); 
         }
+
+        //finally set isInitialized to true.
+        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', 'true');
+
     }
     
 }
