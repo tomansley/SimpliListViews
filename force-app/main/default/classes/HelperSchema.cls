@@ -4,12 +4,13 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 07-28-2021
+ * @Last Modified On   : 08-02-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
- * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
- * 1.0    7/27/2020   tom.h.ansley@medtronic.com     Added getAllObjectNames(), beefed up getValueForField() to correctly handle null values, added isEditable field to the field wrapper.
-**/
+ * 1.0    06/11/2020   tom.h.ansley@medtronic.com     Initial Version
+ * 2.0    07/27/2020   tom.h.ansley@medtronic.com     Added getAllObjectNames(), beefed up getValueForField() to correctly handle null values, added isEditable field to the field wrapper.
+ * 3.0    08-02-2021   tom.h.ansley@medtronic.com     Added getFieldData(Map<String, Object>, String, String) method for Tooling API
+ **/
 public with sharing class HelperSchema {
 
 	public static Map<String, Schema.SObjectType> objectDescribeByName = new Map<String, Schema.SObjectType>();
@@ -237,36 +238,39 @@ public with sharing class HelperSchema {
 			if (displayType == Schema.DisplayType.Boolean) return Boolean.valueOf(value);
 			else if (displayType == Schema.DisplayType.Double) { 
                                                                 if (String.isEmpty(value)) return null;
-                                                                return Double.valueOf(value);
+                                                                objValue = Double.valueOf(value);
                                                                 }
 			else if (displayType == Schema.DisplayType.Base64) return Blob.valueOf(value);
 			else if (displayType == Schema.DisplayType.Currency) {
                                                                     if (String.isEmpty(value)) return null;
-                                                                    return Double.valueOf(value);
+                                                                    objValue = Double.valueOf(value);
                                                                  } 
 			else if (displayType == Schema.DisplayType.Date) { 
                                                                  if (String.isEmpty(value)) return null;
-                                                                 return Date.valueOf(value);
+                                                                 objValue = Date.valueOf(value);
                                                              }
 			else if (displayType == Schema.DisplayType.Integer) {
                                                                     if (String.isEmpty(value)) return null;
-                                                                    return Integer.valueOf(value);
+                                                                    objValue = Integer.valueOf(value);
                                                                 }
 			else if (displayType == Schema.DisplayType.Percent) { 
                                                                     if (String.isEmpty(value)) return null;
-                                                                    return Double.valueOf(value);
+                                                                    objValue = Double.valueOf(value);
                                                                 }
 			else if (displayType == Schema.DisplayType.DateTime) { 
                                                                     if (String.isEmpty(value)) return null;
-                                                                    return DateTime.valueOf(value.replace('T', ' ').remove('.000Z')); //2021-07-21 20:45:00
+                                                                    objValue = DateTime.valueOfGmt(value.replace('T', ' ').remove('.000Z')); //2021-07-21 20:45:00
                                                                  }
 			else if (displayType == Schema.DisplayType.Time) { 
                                                                     if (String.isEmpty(value)) return null;
-                                                                    return Time.newInstance(18, 30, 2, 20); //20:45:00
+                                                                    objValue = Time.newInstance(Integer.valueOf(value.substring(0, 2)), 
+                                                                                                Integer.valueOf(value.substring(3, 5)),
+                                                                                                Integer.valueOf(value.substring(6, 8)), 
+                                                                                                Integer.valueOf(value.substring(9))); //03:15:00.000
                                                                  }
-
-			else return value;		 
+            else objValue = value;		 
 		}
+        System.debug(LoggingLevel.FINE, 'Finished getValueForField - ' + obj + '/' + field + '/' + objValue);
 
 		return objValue;
 	}
@@ -337,7 +341,7 @@ public with sharing class HelperSchema {
             //initialize if necessary
             initSObjectSchema(objName);
 
-        //scrub the field of weird stuff like spaces and toLabel() etc.
+            //scrub the field of weird stuff like spaces and toLabel() etc.
 			sfdcFieldName = scrubFieldName(sfdcFieldName);
 
             //split field into parts.
@@ -480,20 +484,19 @@ public with sharing class HelperSchema {
 						    label = objType + ' ' + fieldDesc.getLabel();
 
                         data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
-						data.fieldObjType = getObjectType(currentObj);
+						data.parentObjType = getObjectType(currentObj);
                         data.valueId = valueId;
                         data.isEditable = fieldDesc.isUpdateable();
 					}
 					
 				//if we are not at the last field then get the fields object
 				} else {
-                    
+                    System.debug(LoggingLevel.DEBUG, 'Not at last field. Current field - ' + field);
                     Boolean isSet = false;
 
-                    //get all field metadata
-                    Schema.DescribeFieldResult fieldDesc = HelperSchema.getFieldDescribeResult(objType,field);
-                    
+                    System.debug(LoggingLevel.DEBUG, 'old currentObj - ' + currentObj);
                     currentObj = currentObj.getSObject(field);
+                    System.debug(LoggingLevel.DEBUG, 'new currentObj - ' + currentObj);
                     if (currentObj != null)
                     {
                         isSet = true;
@@ -515,6 +518,80 @@ public with sharing class HelperSchema {
 			}
         } catch (Exception e) {
             ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
+			data = null;
+        }
+        
+        if (data != null)
+            System.debug(LoggingLevel.DEBUG, data.getDebugString());
+        
+            return data;
+    }
+
+    /**
+    * @description Method which, given a field name and an object returns the field data.
+    *              This method is used for JSON structures returned via API's. For regular
+    *              SObjects the getFieldData(SObject, String) method should be used.
+    * @author tom.h.ansley@medtronic.com | 08-01-2021 
+    * @param structure the structure holding the data necessary to find the field value
+    * @param fieldName the field name
+    * @return FieldData 
+    **/
+    public static FieldData getFieldData(Map<String, Object> structure, String fieldName, String objType)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting getFieldData(' + fieldName + ', ' + objType + ', ' + structure + ')');
+
+        FieldData data = null;
+        String valueId = null;
+		String label = '';
+
+		try {
+
+			fieldName = scrubFieldName(fieldName);
+			
+			if (structure == null || fieldName == null || fieldName == '')
+				throw new ListViewException('HelperSchema.getFieldData() called with empty values. obj = ' + structure + ', fieldName = ' + fieldName);
+
+			List<String> fieldHierarchy = fieldName.split('\\.');
+
+            System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
+
+            Map<String, Object> currentStructure = structure;
+            String currentParentObjType = objType;
+            
+			for (String field: fieldHierarchy)
+			{
+                
+				//if we are at the last field then get the value and return
+				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
+				{
+
+                    System.debug(LoggingLevel.DEBUG, 'Field - ' + field);
+                    System.debug(LoggingLevel.DEBUG, 'Value - ' + currentStructure.get(field));
+                    System.debug(LoggingLevel.DEBUG, 'Parent Obj - ' + currentParentObjType);
+
+                    data = new FieldData(field, currentStructure.get(field));
+                    data.parentObjType = currentParentObjType;
+
+                    //get the Id if this is a lookup to another object
+                    if (currentStructure.get('attributes') != null)
+                    {
+                        System.debug(LoggingLevel.DEBUG, 'We have attribs!');
+                        Map<String, Object> attribs = (Map<String, Object>) currentStructure.get('attributes');
+                        String url = (String) attribs.get('url');
+                        data.valueId = url.substringAfterLast('/');
+                        System.debug(LoggingLevel.DEBUG, 'Id - ' + data.valueId);
+                    }
+
+				//if we are not at the last field then get the fields object
+				} else {
+                    System.debug(LoggingLevel.DEBUG, 'Old structure - ' + currentStructure);
+                    currentStructure = (Map<String, Object>) currentStructure.get(field);
+                    currentParentObjType = field;
+                    System.debug(LoggingLevel.DEBUG, 'New structure - ' + currentStructure);
+				}
+			}
+        } catch (Exception e) {
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + structure + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
 			data = null;
         }
         
@@ -981,13 +1058,19 @@ public with sharing class HelperSchema {
 	{
 		System.debug(LoggingLevel.DEBUG, 'checkObjectAccessible called with objName - ' + objName);
 
-		if (getObjectSchema(objName).isAccessible()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new ListViewException('Records of type ' + objName + ' are not accessible or do not exist. Please check user permissions');
-			return false;
+        //if we are using Tooling API the object might not be in the schema.
+		if (getObjectSchema(objName) != null)
+        {
+            if (getObjectSchema(objName).isAccessible()) {
+			    return true;
+            }  else {
+                if (throwExc)
+                    throw new ListViewException('Records of type ' + objName + ' are not accessible. Please check user permissions');
+                return false;
+            }
 		}
+
+        return true;
 	}
 
 	/*
@@ -1090,7 +1173,7 @@ public with sharing class HelperSchema {
     {
 
         public SObject fieldObj        {get; set;}
-        public String fieldObjType     {get; set;}
+        public String parentObjType    {get; set;}
         public String name             {get; set;}
         public String label            {get; set;}
         public Schema.DisplayType type {get; set;}
@@ -1101,26 +1184,37 @@ public with sharing class HelperSchema {
 
         public FieldData(String name, String label, Schema.DisplayType type, Object value, SObject fieldObj)
         {
-			this.fieldObj   = fieldObj;
-            this.name       = name;
-            this.label      = label;
-            this.type       = type;
-            this.value      = value;
-            this.isChildRel = false;
-            this.isEditable = false;
+			this.fieldObj      = fieldObj;
+            this.name          = name;
+            this.label         = label;
+            this.type          = type;
+            this.value         = value;
+            this.isChildRel    = false;
+            this.isEditable    = false;
+            this.parentObjType = '';
+        }
+
+        public FieldData(String name, Object value)
+        {
+            this.name          = name;
+            this.value         = value;
+            this.isChildRel    = false;
+            this.isEditable    = false;
+            this.parentObjType = '';
         }
 
         public String getDebugString()
         {
             String debug = '\n\n----------------\n';
-            debug += 'fieldObjType - ' + fieldObjType + '\n';
-            debug += 'name         - ' + name + '\n';
-            debug += 'label        - ' + label + '\n';
-            debug += 'type         - ' + type + '\n';
-            debug += 'value        - ' + value + '\n';
-            debug += 'valueId      - ' + valueId + '\n';
-            debug += 'isChildRel   - ' + isChildRel + '\n';
-            debug += 'isEditable   - ' + isEditable + '\n';
+            debug += 'fieldObj      - ' + fieldObj + '\n';
+            debug += 'parentObjType - ' + parentObjType + '\n';
+            debug += 'name          - ' + name + '\n';
+            debug += 'label         - ' + label + '\n';
+            debug += 'type          - ' + type + '\n';
+            debug += 'value         - ' + value + '\n';
+            debug += 'valueId       - ' + valueId + '\n';
+            debug += 'isChildRel    - ' + isChildRel + '\n';
+            debug += 'isEditable    - ' + isEditable + '\n';
             debug += '----------------\n';
 
             return debug;
