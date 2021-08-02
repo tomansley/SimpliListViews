@@ -1,12 +1,13 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-27-2021
+ * @last modified on  : 08-02-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-10-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   07-22-2021   tom.h.ansley@medtronic.com   Added inline-editing and is initialized org wide config updates, Added Edit All action update
+ * 3.0   08-02-2021   tom.h.ansley@medtronic.com   Added display text search org wide config updates
 **/
 global with sharing class ScriptInstall implements InstallHandler {
 
@@ -235,6 +236,16 @@ global with sharing class ScriptInstall implements InstallHandler {
                     orgParams.put(param.Parameter_Name__c, param);
                 }
         
+                if (orgParams.get('DisplayTextSearch') == null)
+                {
+                    List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                    param.List_View_Config__c = orgWideConfig.Id;
+                    param.Parameter_Name__c   = 'DisplayTextSearch';
+                    param.Parameter_Type__c   = 'Boolean';
+                    param.Parameter_Value__c  = 'true';
+                    param.Parameter_Label__c  = 'Display Text Search';
+                    orgParams.put(param.Parameter_Name__c, param);
+                }
                 HelperDatabase.upsertRecords(orgParams.values(), 'simpli_lv__List_View_Config_Parameter__c');
             }
 
