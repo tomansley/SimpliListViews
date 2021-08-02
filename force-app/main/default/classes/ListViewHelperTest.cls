@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-30-2021
+ * @last modified on  : 07-31-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -25,6 +25,7 @@ private class ListViewHelperTest {
     {
         String soql = 'SELECT Name, ' + 
                              'List_View_Object__c, ' + 
+                             'List_View_Label__c, ' +
                              'LastModifiedDate, ' + 
                              'LastModifiedBy.Name, ' + 
                              'Primary_Key__c ' + 
@@ -58,6 +59,7 @@ private class ListViewHelperTest {
     {
         String soql = 'SELECT Name, ' + 
                              'List_View_Object__c, ' + 
+                             'List_View_Label__c, ' +
                              'LastModifiedDate, ' + 
                              'LastModifiedBy.Name, ' + 
                              'Primary_Key__c ' + 
@@ -90,6 +92,7 @@ private class ListViewHelperTest {
     {
         String soql = 'SELECT Name, ' + 
                              'List_View_Object__c, ' + 
+                             'List_View_Label__c, ' +
                              'LastModifiedDate, ' + 
                              'LastModifiedBy.Name, ' + 
                              'Primary_Key__c ' + 
@@ -122,6 +125,7 @@ private class ListViewHelperTest {
     {
         String soql = 'SELECT Name, ' + 
                              'List_View_Object__c, ' + 
+                             'List_View_Label__c, ' +
                              'LastModifiedDate, ' + 
                              'LastModifiedBy.Name, ' + 
                              'Primary_Key__c ' + 
@@ -155,6 +159,7 @@ private class ListViewHelperTest {
     {
         String soql = 'SELECT Name, ' + 
                              'List_View_Object__c, ' + 
+                             'List_View_Label__c, ' +
                              'LastModifiedDate, ' + 
                              'LastModifiedBy.Name, ' + 
                              'Primary_Key__c, ' + 
