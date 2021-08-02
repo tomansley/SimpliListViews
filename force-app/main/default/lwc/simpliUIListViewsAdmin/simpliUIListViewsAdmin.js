@@ -13,6 +13,8 @@ import Select_A_Value from '@salesforce/label/c.Select_A_Value';
 import Available from '@salesforce/label/c.Available';
 import Selected from '@salesforce/label/c.Selected';
 import Save from '@salesforce/label/c.Save';
+import Processing_Status from '@salesforce/label/c.Processing_Status';
+import List_View_Processing_Complete from '@salesforce/label/c.List_View_Processing_Complete';
 
 import getOrgWideConfig from '@salesforce/apex/ListViewAdminController.getOrgWideConfig';
 import saveOrgWideConfig from '@salesforce/apex/ListViewAdminController.saveOrgWideConfig';
@@ -38,7 +40,7 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
     }
 
     label = { List_Views_Initialized, List_Views_Need_Initialized, Refresh, Refresh_List_Views, Parameter_Name, Value, Select_A_Value,
-              Available, Selected, Save }
+              Available, Selected, Save, Processing_Status, List_View_Processing_Complete }
 
     renderedCallback() {
         console.log('SimpliUIListViewsAdmin.renderedCallback started');

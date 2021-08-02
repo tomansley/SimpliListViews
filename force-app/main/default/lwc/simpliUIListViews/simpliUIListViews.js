@@ -35,6 +35,7 @@ import List_Views_Need_Initialized from '@salesforce/label/c.List_Views_Need_Ini
 import Refresh from '@salesforce/label/c.Refresh';
 import Refresh_List_Views from '@salesforce/label/c.Refresh_List_Views';
 import Search_List_Dot from '@salesforce/label/c.Search_List_Dot';
+import Processing_Status from '@salesforce/label/c.Processing_Status';
 
 import getIsInitialized from '@salesforce/apex/ListViewController.getIsInitialized';
 import getListViewObjects from '@salesforce/apex/ListViewController.getListViewObjects';
@@ -143,7 +144,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     label = { Rows, Selected, Select_Action, Export_All, Export_Selected, Loading, Not_Initialized, Process_List_Views, List_View_Processing_Complete,
               Select_Object, Object, Select_List_View, List_View, Go_To_Original, Unpin_List_View, Pin_List_View, Stop_Auto_Refresh, Start_Auto_Refresh,
-              List_View_Admin, Sort_By, Save_All_Data, Reset_All_Data, Save_Row_Data, List_Views_Need_Initialized, Refresh_List_Views, Refresh, Search_List_Dot  };
+              List_View_Admin, Sort_By, Save_All_Data, Reset_All_Data, Save_Row_Data, List_Views_Need_Initialized, Refresh_List_Views, Refresh, Search_List_Dot,
+              Processing_Status  };
 
     /*
      * Method which gets called when the class is being instantiated
