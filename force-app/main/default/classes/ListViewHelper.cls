@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-02-2021
+ * @last modified on  : 08-03-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -13,6 +13,7 @@
  *                                                 Added updateRecords() method to update multiple records based on inline editing, 
  *                                                 Moved in static strings for types from ListViewConfigHelper,  
  *                                                 Added DisplayTextSearch org wide config
+ * 6.0   08-03-2021   tom.h.ansley@medtronic.com   Performance enhancement when retrieving listview objects
  **/
 global with sharing class ListViewHelper {
     
@@ -387,27 +388,11 @@ global with sharing class ListViewHelper {
         //------------------------------------
         //CORE LIST VIEWS
         //------------------------------------
-        AggregateResult[] aggListViewObjects = [SELECT Object_Name__c 
-                                                FROM List_View__c 
-                                                WHERE Object_Name__c NOT IN :orgWideExcObjs 
-                                                AND Object_Name__c NOT IN :pageWideExcObjs
-                                                GROUP BY Object_Name__c 
-                                                LIMIT 2000]; //limit for security review. No other reason
+        String lvObjsStr = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
+        Map<String, String> lvObjs = (Map<String, String>) JSON.deserialize(lvObjsStr, Map<String, String>.class);
 
-
-        for (AggregateResult result: aggListViewObjects)
-        {
-            String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
-
-            System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
-
-            Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objAPIName);
-            if (objDesc != null)
-            {
-                String objLabel = objDesc.getLabel();
-                listViewObjects.put(objAPIName, objLabel);
-            }
-        }
+        for (String objName: lvObjs.keySet())
+            listViewObjects.put(objName, lvObjs.get(objName));
 
         //------------------------------------
         //OTHER LIST VIEWS
