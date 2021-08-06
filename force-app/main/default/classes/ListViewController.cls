@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-02-2021
+ * @last modified on  : 08-05-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -204,23 +204,7 @@ public without sharing class ListViewController
     public static Map<String, String> getUserConfigs(String compName)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getUserConfigs(' + compName + ')');
-        Map<String, String> userConfigs = new Map<String, String>();
-
-        //get the users component config
-        Map<String, List_View_User_Config__c> configs = ListViewUserConfigHelper.getCurrentUserCompConfig(compName);
-        for (List_View_User_Config__c config: configs.values())
-            userConfigs.put(config.Name__c, config.Value__c);
-
-        //get the org wide config
-        List<List_View_Config__c> orgWideConfigs = ListViewConfigHelper.getListViewConfig('All', 'All');
-        if (orgWideConfigs.size() == 1)
-        {
-            for (List_View_Config_Parameter__c param: orgWideConfigs[0].List_View_Config_Parameters__r)
-                userConfigs.put(param.Parameter_Name__c, param.Parameter_Value__c);
-        }
-
-        for (String config: userConfigs.keySet())
-            System.debug(LoggingLevel.DEBUG, config + ' - ' + userConfigs.get(config));
+        Map<String, String> userConfigs = ListViewUserConfigHelper.getUserConfigs(compName);
         
         return userConfigs;
     }

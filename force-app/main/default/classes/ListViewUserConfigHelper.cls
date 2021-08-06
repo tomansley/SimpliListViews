@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-29-2020
+ * @last modified on  : 08-05-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -147,4 +147,56 @@ public with sharing class ListViewUserConfigHelper {
                 HelperDatabase.deleteRecord(config, 'simpli_lv__List_View_User_Config__c');
         }
     }
+
+    /**
+    * @description Method which returns the configuration for a given component. The method gets the components
+    *              user config and then layers the org wide config on top ensuring the org wide config takes precedence
+    *              as appropriate.
+    * @author tom.h.ansley@medtronic.com | 08-05-2021 
+    **/
+    public static Map<String, String> getUserConfigs(String compName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewConfigHelper.getUserConfigs(' + compName + ')');
+        Map<String, String> userConfigs = new Map<String, String>();
+
+        //get the users component config
+        Map<String, List_View_User_Config__c> configs = ListViewUserConfigHelper.getCurrentUserCompConfig(compName);
+        for (List_View_User_Config__c config: configs.values())
+            userConfigs.put(config.Name__c, config.Value__c);
+
+        //get the org wide config
+        List<List_View_Config__c> orgWideConfigs = ListViewConfigHelper.getListViewConfig('All', 'All');
+        if (orgWideConfigs.size() == 1)
+        {
+            for (List_View_Config_Parameter__c param: orgWideConfigs[0].List_View_Config_Parameters__r)
+            {
+                String paramName = param.Parameter_Name__c;
+                String paramValue = param.Parameter_Value__c;
+                //if we have a user preference then we need to compare
+                if (userConfigs.get(paramName) != null)
+                {
+
+                    //only set if we are not to display, otherwise user wins.
+                    //if ((paramName == 'DisplayTextSearch' && paramValue == 'false')
+                    //    || (paramName == 'DisplayActionsButton' && paramValue == 'false')
+                    //    || (paramName == 'DisplayListViewReprocessingButton' && paramValue == 'false')
+                    //    || (paramName == 'DisplayOriginalListViewButton' && paramValue == 'false')
+                    //    || (paramName == 'DisplayRowCount' && paramValue == 'false')
+                    //    || (paramName == 'DisplaySelectedCount' && paramValue == 'false'))
+                    //{
+                        userConfigs.put(paramName, paramValue);  
+                    //}  
+
+                } else {
+                    userConfigs.put(paramName, paramValue);
+                }
+            }
+        }
+
+        for (String config: userConfigs.keySet())
+            System.debug(LoggingLevel.DEBUG, config + ' - ' + userConfigs.get(config));
+        
+        return userConfigs;
+    }
+
 }

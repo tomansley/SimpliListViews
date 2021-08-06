@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-03-2021
+ * @last modified on  : 08-04-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -35,6 +35,10 @@ global with sharing class ListViewHelper {
     public static final String TYPE_BLOB        = 'blob';
     public static final String TYPE_PERCENT     = 'percent';
     public static final String TYPE_TIME        = 'time';
+
+    public static final String SUBTYPE_MANUAL = 'Manual';
+    public static final String SUBTYPE_TOOLING = 'Tooling';
+    public static final String SUBTYPE_METADATA = 'Metadata';
 
     public static Integer offset           = -1;                  //used to hold the offset that is set when performing a query.
 
@@ -182,7 +186,7 @@ global with sharing class ListViewHelper {
     public static void updateListViewObjectsSetting()
     {
         //get API Name/Label of all list view objects
-        Map<String, String> listViewObjects = getListViewObjects();
+        Map<String, String> listViewObjects = getInitListViewObjects();
 
         //turn to JSON
         String jsonStr = JSON.serialize(listViewObjects);
@@ -352,11 +356,16 @@ global with sharing class ListViewHelper {
     * Method to get all objects that have had their list views processed.
     * The map is returned as follows - (API Name, Label)
     */
-    public static Map<String, String> getListViewObjects()
+    public static Map<String, String> getInitListViewObjects()
     {
-        return getListViewObjects(new Set<String>(), new Set<String>());
+        return getListViewObjects(new Set<String>(), new Set<String>(), true);
     }
     
+    public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs)
+    {
+        return getListViewObjects(pageWideIncObjs, pageWideExcObjs, false);
+    }
+
     /*
     * Method to get all objects that have had their list views processed.
     * if includedObjects is passed in those objects will be returned. If
@@ -369,9 +378,9 @@ global with sharing class ListViewHelper {
             System.debug(key + ' - ' + objs.get(key));
         }
     */
-    public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs)
+    public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs, Boolean isInit)
     {
-        System.debug(LoggingLevel.DEBUG, 'ListViewHelper.getListViewObjects(' + pageWideIncObjs + ', ' + pageWideExcObjs + ')');
+        System.debug(LoggingLevel.DEBUG, 'ListViewHelper.getListViewObjects(' + pageWideIncObjs + ', ' + pageWideExcObjs + ', ' + isInit + ')');
 
         Map<String, String> mappedListviewObjects = new Map<String, String>();
         Map<String, String> listViewObjects =  null;
@@ -385,31 +394,68 @@ global with sharing class ListViewHelper {
 
         HelperSchema.checkListViewAccessible();
 
-        //------------------------------------
-        //CORE LIST VIEWS
-        //------------------------------------
-        String lvObjsStr = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
-        Map<String, String> lvObjs = (Map<String, String>) JSON.deserialize(lvObjsStr, Map<String, String>.class);
-
-        for (String objName: lvObjs.keySet())
-            listViewObjects.put(objName, lvObjs.get(objName));
-
-        //------------------------------------
-        //OTHER LIST VIEWS
-        //------------------------------------
-        Map<Id, List_View__c> listViews = getListViewsByType(TYPE_CUSTOM);
-
-        for (List_View__c listView: listViews.values())
+        if (isInit)
         {
-            Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(listView.Object_Name__c);
-            if (objDesc != null && !orgWideExcObjs.contains(objDesc.getName()) && !pageWideExcObjs.contains(objDesc.getName()))
+            //------------------------------------
+            //CORE LIST VIEWS (FRESH)
+            //------------------------------------
+            AggregateResult[] aggListViewObjects = [SELECT Object_Name__c 
+                                                    FROM List_View__c 
+                                                    WHERE Object_Name__c NOT IN :orgWideExcObjs 
+                                                    AND Object_Name__c NOT IN :pageWideExcObjs
+                                                    AND SubType__c != :SUBTYPE_TOOLING
+                                                    GROUP BY Object_Name__c 
+                                                    LIMIT 2000]; //limit for security review. No other reason
+
+
+            for (AggregateResult result: aggListViewObjects)
             {
-                String objLabel = objDesc.getLabel();
-                listViewObjects.put(listView.Object_Name__c, objLabel);
-            } else if (!orgWideExcObjs.contains(listView.Object_Name__c) && !pageWideExcObjs.contains(listView.Object_Name__c)) {
-                listViewObjects.put(listView.Object_Name__c, listView.Object_Name__c);
+                String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
+
+                System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
+
+                Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objAPIName);
+                if (objDesc != null)
+                {
+                    String objLabel = objDesc.getLabel();
+                    listViewObjects.put(objAPIName, objLabel);
+                }
             }
+
+        } else {
+
+            //------------------------------------
+            //CORE LIST VIEWS (CACHED)
+            //------------------------------------
+            String lvObjsStr = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
+            Map<String, String> lvObjs = (Map<String, String>) JSON.deserialize(lvObjsStr, Map<String, String>.class);
+    
+            for (String objName: lvObjs.keySet())
+                listViewObjects.put(objName, lvObjs.get(objName));
+
+            //------------------------------------
+            //OTHER LIST VIEWS
+            //------------------------------------
+            Map<Id, List_View__c> listViews = getListViewsByType(TYPE_CUSTOM);
+
+            for (List_View__c listView: listViews.values())
+            {
+                //only admin can view tooling API list views
+                if (listView.SubType__c != SUBTYPE_TOOLING || UserInfo.getProfileId() == HelperProfile.getProfile('System Administrator').Id)
+                {
+                    Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(listView.Object_Name__c);
+                    if (objDesc != null && !orgWideExcObjs.contains(objDesc.getName()) && !pageWideExcObjs.contains(objDesc.getName()))
+                    {
+                        String objLabel = objDesc.getLabel();
+                        listViewObjects.put(listView.Object_Name__c, objLabel);
+                    } else if (!orgWideExcObjs.contains(listView.Object_Name__c) && !pageWideExcObjs.contains(listView.Object_Name__c)) {
+                        listViewObjects.put(listView.Object_Name__c, listView.Object_Name__c);
+                    }
+                }
+            }
+
         }
+
 
         String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
         Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
@@ -810,9 +856,9 @@ global with sharing class ListViewHelper {
                     ListViewHelper.offset = offset; //set the offset as static to be used up the stack.
                 }
 
-            //otherwise use 200
+            //otherwise use 100
             } else {
-                limitStr = ' LIMIT 200';
+                limitStr = ' LIMIT 100';
             }
         }
 
@@ -986,7 +1032,7 @@ global with sharing class ListViewHelper {
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
             {
                 //make sure the field name is valid if we are not dealing with an API callout
-                if (lvConfig?.getListView().Subtype__c == ListViewActionHelper.SUBTYPE_TOOLING || HelperSchema.isValidSFDCFieldName(objectName, columnSortData.fieldName))
+                if (lvConfig?.getListView().Subtype__c == ListViewHelper.SUBTYPE_TOOLING || HelperSchema.isValidSFDCFieldName(objectName, columnSortData.fieldName))
                 {
                     orderByStr += columnSortData.fieldName + ' ';
                     if (columnSortData.sortDirection == true)
@@ -1057,9 +1103,9 @@ global with sharing class ListViewHelper {
                     ListViewHelper.offset = offset; //set the offset as static to be used up the stack.
                 }
 
-            //otherwise use 200
+            //otherwise use 100
             } else {
-                limitStr = ' LIMIT 200';
+                limitStr = ' LIMIT 100';
             }
         }
         System.debug(LoggingLevel.DEBUG, 'LIMIT STR 2 - ' + limitStr);
@@ -1415,7 +1461,7 @@ global with sharing class ListViewHelper {
         lv.Core_ListView_Query__c   = 'SELECT DurationMilliseconds,Id,LogLength,LogUserId,Operation,Request,StartTime,Status FROM ApexLog ORDER BY StartTime DESC';
         lv.Object_Name__c           = 'ApexLog';
         lv.RecordTypeId             = ListViewHelper.customRTId;
-        lv.Subtype__c               = ListViewActionHelper.SUBTYPE_TOOLING;
+        lv.Subtype__c               = ListViewHelper.SUBTYPE_TOOLING;
 
         listViews.add(lv);
 
