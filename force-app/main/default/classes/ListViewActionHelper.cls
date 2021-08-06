@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 11-02-2020
+ * @last modified on  : 08-04-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -12,10 +12,6 @@ public with sharing class ListViewActionHelper {
 
     public static final Id coreRTId = Schema.SObjectType.List_View_Action__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View_Action__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
-   
-    public static final String SUBTYPE_MANUAL = 'Manual';
-    public static final String SUBTYPE_TOOLING = 'Tooling';
-    public static final String SUBTYPE_METADATA = 'Metadata';
 
     public static String getPrimaryKey(List_View_Action__c action)
     {

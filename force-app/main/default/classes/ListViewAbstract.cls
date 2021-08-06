@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-02-2021
+ * @last modified on  : 08-04-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -68,7 +68,7 @@ public with sharing abstract class ListViewAbstract {
         //try to get a true example row
         List<SObject> objectRows = null;
         
-        if (listview.SubType__c != ListViewActionHelper.SUBTYPE_TOOLING) //cannot get an example row if we are working with the tooling API
+        if (listview.SubType__c != ListViewHelper.SUBTYPE_TOOLING) //cannot get an example row if we are working with the tooling API
         {
             if (listview.RecordTypeId == ListViewHelper.coreRTId)
                 objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true, -1);
