@@ -1,13 +1,21 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-04-2021
+ * @last modified on  : 08-06-2021
  * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperProfile {
 
     private static Map<String, Profile> profilesByName = null;
     private static Map<String, Profile> profilesById = null;
+
+    public static Boolean isSysAdmin()
+    {
+        System.debug('Is Sys Admin - ' + (UserInfo.getProfileId() == getProfile('System Administrator').Id));
+        if (UserInfo.getProfileId() == getProfile('System Administrator').Id)
+            return true;
+        return false;
+    }
 
     public static Profile getProfile(String name)
     {

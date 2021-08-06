@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-05-2021
+ * @last modified on  : 08-06-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -154,9 +154,9 @@ public with sharing class ListViewUserConfigHelper {
     *              as appropriate.
     * @author tom.h.ansley@medtronic.com | 08-05-2021 
     **/
-    public static Map<String, String> getUserConfigs(String compName)
+    public static Map<String, String> getComponentConfig(String compName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewConfigHelper.getUserConfigs(' + compName + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewConfigHelper.getComponentConfig(' + compName + ')');
         Map<String, String> userConfigs = new Map<String, String>();
 
         //get the users component config
@@ -165,31 +165,30 @@ public with sharing class ListViewUserConfigHelper {
             userConfigs.put(config.Name__c, config.Value__c);
 
         //get the org wide config
-        List<List_View_Config__c> orgWideConfigs = ListViewConfigHelper.getListViewConfig('All', 'All');
-        if (orgWideConfigs.size() == 1)
+        Map<String,Object> orgWideParams = ListViewConfigHelper.getOrgWideConfigParams();
+        if (orgWideParams.size() > 0)
         {
-            for (List_View_Config_Parameter__c param: orgWideConfigs[0].List_View_Config_Parameters__r)
+            for (String paramName: orgWideParams.keySet())
             {
-                String paramName = param.Parameter_Name__c;
-                String paramValue = param.Parameter_Value__c;
-                //if we have a user preference then we need to compare
-                if (userConfigs.get(paramName) != null)
-                {
+                String paramValue = (String) orgWideParams.get(paramName);
+
+                //if (userConfigs.get(paramName) != null)
+                //{
 
                     //only set if we are not to display, otherwise user wins.
-                    //if ((paramName == 'DisplayTextSearch' && paramValue == 'false')
                     //    || (paramName == 'DisplayActionsButton' && paramValue == 'false')
                     //    || (paramName == 'DisplayListViewReprocessingButton' && paramValue == 'false')
                     //    || (paramName == 'DisplayOriginalListViewButton' && paramValue == 'false')
                     //    || (paramName == 'DisplayRowCount' && paramValue == 'false')
-                    //    || (paramName == 'DisplaySelectedCount' && paramValue == 'false'))
+                    //    || (paramName == 'DisplaySelectedCount' && paramValue == 'false')
+                    //    || (paramName == 'DisplayTextSearch' && paramValue == 'false'))
                     //{
-                        userConfigs.put(paramName, paramValue);  
+                    //    userConfigs.put(paramName, paramValue);  
                     //}  
 
-                } else {
+                //} else {
                     userConfigs.put(paramName, paramValue);
-                }
+               // }
             }
         }
 

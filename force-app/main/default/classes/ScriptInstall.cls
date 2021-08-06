@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-04-2021
+ * @last modified on  : 08-06-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -136,6 +136,17 @@ global with sharing class ScriptInstall implements InstallHandler {
                     param.Parameter_Type__c   = 'Boolean';
                     param.Parameter_Value__c  = 'true';
                     param.Parameter_Label__c  = 'Display Actions Button';
+                    orgParams.put(param.Parameter_Name__c, param);
+                }
+                
+                if (orgParams.get('AllowAdmin') == null)
+                {
+                    List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                    param.List_View_Config__c = orgWideConfig.Id;
+                    param.Parameter_Name__c   = 'AllowAdmin';
+                    param.Parameter_Type__c   = 'Boolean';
+                    param.Parameter_Value__c  = 'true';
+                    param.Parameter_Label__c  = 'Display Admin Button';
                     orgParams.put(param.Parameter_Name__c, param);
                 }
                 

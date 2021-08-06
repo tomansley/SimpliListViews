@@ -16,6 +16,7 @@
             <property name="hasMainTitle" type="Boolean" default="true" label="Show Title" description="Indicates whether the name should be displayed or not."/>
             <property name="mainTitle" type="String" default="My List View Title" label="Title" description="String used if the title is displayed. Names should be distinct within a lightning page."/>
             <property name="displayActions" type="Boolean" default="true" label="Display Actions" description="Indicates whether the actions dropdown should be displayed."/>
+            <property name="allowAdmin" type="Boolean" default="true" label="Display Admin Button" description="Indicates whether the admin button should be displayed."/>
             <property name="displayTextSearch" type="Boolean" default="true" label="Display Text Search" description="Indicates whether text search of the returned data should be available."/>
             <property name="displayReprocess" type="Boolean" default="true" label="Display List View Reprocessing Button" description="Indicates whether the list view reprocessing button should be displayed."/>
             <property name="displayURL" type="Boolean" default="true" label="Display Original List View Button" description="Indicates whether to display the button which links to the original related Salesforce list view."/>

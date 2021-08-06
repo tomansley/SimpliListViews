@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-04-2021
+ * @last modified on  : 08-06-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -441,7 +441,7 @@ global with sharing class ListViewHelper {
             for (List_View__c listView: listViews.values())
             {
                 //only admin can view tooling API list views
-                if (listView.SubType__c != SUBTYPE_TOOLING || UserInfo.getProfileId() == HelperProfile.getProfile('System Administrator').Id)
+                if (listView.SubType__c != SUBTYPE_TOOLING || HelperProfile.isSysAdmin())
                 {
                     Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(listView.Object_Name__c);
                     if (objDesc != null && !orgWideExcObjs.contains(objDesc.getName()) && !pageWideExcObjs.contains(objDesc.getName()))
@@ -1321,6 +1321,14 @@ global with sharing class ListViewHelper {
 
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'AllowAdmin';
+        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Display Admin Button';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
         param2.Parameter_Type__c   = 'Boolean';
         param2.Parameter_Value__c  = 'true';
@@ -1525,7 +1533,7 @@ global with sharing class ListViewHelper {
 
         if (lv.OwnerId == UserInfo.getUserId()) return true;
 
-        if (usr.Profile.Name == 'System Administrator') return true;
+        if (HelperProfile.isSysAdmin()) return true;
 
         if (lv.All_Internal_Users__c != null && lv.All_Internal_Users__c) return true;
 

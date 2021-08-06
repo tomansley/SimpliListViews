@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-04-2021
+ * @last modified on  : 08-06-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -1355,6 +1355,8 @@ public with sharing abstract class ListViewAbstract {
                 description = 'Should the user be allowed to export data from the list view';
             else if (name == 'DisplayActionsButton')
                 description = 'Are list view actions allowed. If not the actions drop down picklist is not displayed';
+            else if (name == 'AllowAdmin')
+                description = 'Display the button to allow some admin changes to the list view component. Note - system administrators will always be able to see this button.';
             else if (name == 'DisplayListViewReprocessingButton')
                 description = 'Can the user reprocess a list view if the config is stale';
             else if (name == 'DisplayOriginalListViewButton')

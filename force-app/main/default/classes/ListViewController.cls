@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-05-2021
+ * @last modified on  : 08-06-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -13,6 +13,12 @@
 **/
 public without sharing class ListViewController
 {
+
+    @AuraEnabled(cacheable=true)
+    public static Boolean isSysAdmin()
+    {
+        return HelperProfile.isSysAdmin();
+    }
 
     /*
      * Method to retrieve the progress of the initialization batch process
@@ -195,16 +201,16 @@ public without sharing class ListViewController
 
     /**
     * @description Method which gets the users configuration for the provided COMPONENT.
-    *              Note that this method also gets the org wide defaults
+    *              Note that this method also gets the org wide defaults as it needs to layer those defaults on top of the user config
     * @author tom.h.ansley@medtronic.com | 10-10-2020 
     * @param compName the component name which is the name of the Lightning component that calls this method.
     * @return Map<String, String> 
     **/
     @AuraEnabled
-    public static Map<String, String> getUserConfigs(String compName)
+    public static Map<String, String> getComponentConfig(String compName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getUserConfigs(' + compName + ')');
-        Map<String, String> userConfigs = ListViewUserConfigHelper.getUserConfigs(compName);
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getComponentConfig(' + compName + ')');
+        Map<String, String> userConfigs = ListViewUserConfigHelper.getComponentConfig(compName);
         
         return userConfigs;
     }

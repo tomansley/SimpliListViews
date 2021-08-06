@@ -37,6 +37,7 @@ import Refresh_List_Views from '@salesforce/label/c.Refresh_List_Views';
 import Search_List_Dot from '@salesforce/label/c.Search_List_Dot';
 import Processing_Status from '@salesforce/label/c.Processing_Status';
 
+import isSysAdmin from '@salesforce/apex/ListViewController.isSysAdmin';
 import getIsInitialized from '@salesforce/apex/ListViewController.getIsInitialized';
 import getListViewObjects from '@salesforce/apex/ListViewController.getListViewObjects';
 import getObjectListViews from '@salesforce/apex/ListViewController.getObjectListViews';
@@ -46,7 +47,7 @@ import updateChangedListViews from '@salesforce/apex/ListViewController.updateCh
 import updateAllListViews from '@salesforce/apex/ListViewController.updateAllListViews';
 import updateSingleListView from '@salesforce/apex/ListViewController.updateSingleListView';
 import updateObjectListViews from '@salesforce/apex/ListViewController.updateObjectListViews';
-import getUserConfigs from '@salesforce/apex/ListViewController.getUserConfigs';
+import getComponentConfig from '@salesforce/apex/ListViewController.getComponentConfig';
 import getUserSortConfigs from '@salesforce/apex/ListViewController.getUserSortConfigs';
 import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConfig';
 import isValidListViewDataRequest from '@salesforce/apex/ListViewController.isValidListViewDataRequest';
@@ -68,6 +69,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api useMessageChannel    = false;
     @api allowRefresh         = false; //config indicating whether the auto refresh checkbox is made available.
     @api allowInlineEditing   = false; //config indicating whether inline editing is available
+    @api allowAdmin           = false; //indicates whether the admin button should display to the user
     @api displayActions       = false;
     @api displayReprocess     = false;
     @api displayURL           = false;
@@ -78,11 +80,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api displayExportButton  = false;
     @api displayTextSearch    = false; //identifies whether the text search field should be displayed.
 
+    @track isSysAdmin         = false;  //indicates whether the current user is a sys admin.
     @track textSearchText = '';         //holds the current value for text searching.
     @track joinData           = '';     //holds the join data coming in from an external list view.....if it exists.
     @track modifiedText;                //holds the last modified text that should be displayed based on the component config
     @track userSortConfigs;             //holds all user sort configuration for this named component.
-    @track userConfigs;                 //holds all user and org wide configuration for this named component.
+    @track componentConfig;                 //holds all user and org wide configuration for this named component.
     @track selectedListView;            //holds the selected list view name
     @track selectedListViewExportName;  //holds the selected list view name + .csv
     @track selectedObject;              //holds the selected object name
@@ -108,7 +111,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isRefreshed = false;         //identifies whether this list views data is being refreshed at intervals.
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
     @track dataSpinner = false;         //identifies if the DATA spinner should be displayed or not.
-    @track allowAdmin = true;           //indicates whether the admin button should display to the user
     @track firstListViewGet = true;     //indicates whether this is the first time the list views are being retrieved.
     @track canDisplayActions = false;    //indicates whether the page is in a position where the actions list is active
     @track offset = -1;
@@ -181,7 +183,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         console.log('Starting simpliUIListViews.renderedCallback');
         //this ensures we only call this once for each page load
-        if (this.userConfigs === undefined) {
+        if (this.componentConfig === undefined) {
 
             console.log('User config is undefined');
 
@@ -196,24 +198,31 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('URL list view - ' + this.urlListView);
             console.log('Ltn page name - ' + this.pageName);
 
-            getUserConfigs({compName: this.pageName })
+            getComponentConfig({compName: this.pageName })
             .then(result => {
-                console.log('User configs retrieved successfully - ' + result);
-                this.userConfigs = result;
-                console.log('User config size - ' + this.userConfigs.length); 
+                console.log('Component configs retrieved successfully - ' + result);
+                this.componentConfig = result;
+                console.log('Component config size - ' + this.componentConfig.length); 
 
-                let pinnedListView = this.userConfigs.pinnedListView;
+                let pinnedListView = this.componentConfig.pinnedListView;
                 console.log('Pinned list view string - ' + pinnedListView);
 
-                if (this.userConfigs.DisplayActionsButton === 'false') { this.displayActions = false; }
-                if (this.userConfigs.DisplayListViewReprocessingButton === 'false') { this.displayReprocess = false; }
-                if (this.userConfigs.DisplayOriginalListViewButton === 'false') { this.displayURL = false; }
-                if (this.userConfigs.DisplayRowCount === 'false') { this.displayRowCount = false; }
-                if (this.userConfigs.DisplaySelectedCount === 'false') { this.displaySelectedCount = false; }
-                if (this.userConfigs.DisplayTextSearch === 'false') { this.displayTextSearch = false; }
-                if (this.userConfigs.AllowDataExport === 'false') { this.displayExportButton = false; }
-                if (this.userConfigs.AllowAutomaticDataRefresh === 'false') { this.allowRefresh = false; }
-                if (this.userConfigs.AllowInlineEditing === 'false') { this.allowInlineEditing = false; }
+                if (this.componentConfig.AllowAdmin === 'false') { 
+                    if (this.isSysAdmin === true)
+                        this.allowAdmin = true;
+                    else
+                        this.allowAdmin = false;
+                 }
+                else if (this.componentConfig.AllowAdmin === 'true') { this.allowAdmin = true; }
+                if (this.componentConfig.DisplayActionsButton === 'false') { this.displayActions = false; }
+                if (this.componentConfig.DisplayListViewReprocessingButton === 'false') { this.displayReprocess = false; }
+                if (this.componentConfig.DisplayOriginalListViewButton === 'false') { this.displayURL = false; }
+                if (this.componentConfig.DisplayRowCount === 'false') { this.displayRowCount = false; }
+                if (this.componentConfig.DisplaySelectedCount === 'false') { this.displaySelectedCount = false; }
+                if (this.componentConfig.DisplayTextSearch === 'false') { this.displayTextSearch = false; }
+                if (this.componentConfig.AllowDataExport === 'false') { this.displayExportButton = false; }
+                if (this.componentConfig.AllowAutomaticDataRefresh === 'false') { this.allowRefresh = false; }
+                if (this.componentConfig.AllowInlineEditing === 'false') { this.allowInlineEditing = false; }
 
                 //if we have a URL object then use it
                 if (this.urlObject != undefined) {
@@ -341,6 +350,18 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @wire(MessageContext)
     messageContext;
     
+    
+    @wire (isSysAdmin, { })
+    wiredIsSysAdmin({ error, data }) {
+        if (data) { 
+            console.log('Is sys admin called successfully - ' + data); 
+            this.isSysAdmin = data; 
+        } else if (error) { 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+        }
+    }
+
+
 
     @wire (getIsInitialized, { })
     wiredIsInitialized({ error, data }) {
@@ -921,7 +942,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
 
         //if we are not in the construction of the page and we change the list view and its the pinned list view
-        if (this.userConfigs != undefined && this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
+        if (this.componentConfig != undefined && this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
             this.isPinned = true;
         } else {
             this.isPinned = false;
