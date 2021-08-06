@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-02-2021
+ * @Last Modified On   : 08-04-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    06/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -140,12 +140,13 @@ public with sharing class HelperSchema {
      */
 	public static Schema.DescribeSObjectResult getObjectSchema(String name)
 	{
+        Schema.DescribeSObjectResult result = null;
 		initSObjectSchema(name);
         Schema.SObjectType objType = objectDescribeByName.get(name);
         if (objType != null)
-            return objType.getDescribe();
+            result = objType.getDescribe();
         
-        return null;
+        return result;
     }
     
     /*
@@ -727,7 +728,7 @@ public with sharing class HelperSchema {
         HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action__c', 'Simpli_lv__Label__c');
         HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action__c', 'Simpli_lv__Object_Type__c');
 
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action_Parameter__c');
+        HelperSchema.checkObjectAccessible('Simpli_lv__List_View_Action_Parameter__c');
         HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Field_API_Name__c');
         HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Label__c');
         HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__List_View_Action__c');
@@ -1036,7 +1037,7 @@ public with sharing class HelperSchema {
 			return true;
 		} else {
 			if (throwExc)
-				throw new ListViewException('Records of type ' + objName + ' are not creatable or do not exist. Please check user permissions');
+				throw new ListViewException('Records of type ' + objName + ' are not creatable by this user or does not exist in this org. Please check user permissions');
 			return false;
 		}
 	}
