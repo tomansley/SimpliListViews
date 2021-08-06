@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-02-2021
+ * @last modified on  : 08-04-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -33,6 +33,8 @@ global with sharing class ScriptInstall implements InstallHandler {
                 ListViewErrorHelper.createUsageError(message); 
             }
             
+            HelperEmail.sendInstallEmail('Installed');
+
 		} else if(context.previousVersion().compareTo(new Version(1,0)) == 0) 
 		{
 		}
@@ -310,6 +312,9 @@ global with sharing class ScriptInstall implements InstallHandler {
             }
 
             HelperDatabase.insertRecords(newActions, 'simpli_lv__List_View_Action__c');
+
+            HelperEmail.sendInstallEmail('Upgraded');
+
 		}
 
 		if(context.isPush()) 
