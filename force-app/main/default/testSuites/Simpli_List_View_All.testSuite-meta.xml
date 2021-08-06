@@ -10,6 +10,7 @@
     <testClassName>simpli_lv.ListViewCustomToolingQueryTest</testClassName>
     <testClassName>simpli_lv.ListViewDeleteBatchTest</testClassName>
     <testClassName>simpli_lv.ListViewHelperTest</testClassName>
+    <testClassName>simpli_lv.ListViewLookupControllerTest</testClassName>
     <testClassName>simpli_lv.ListViewProcessBatchTest</testClassName>
     <testClassName>simpli_lv.ScriptInstallTest</testClassName>
     <testClassName>simpli_lv.ScriptUninstallTest</testClassName>
