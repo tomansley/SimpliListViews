@@ -74,9 +74,8 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     getRecord({ error, data }) {
         if (data) {
             this.recordTypeId = this.data.data.recordTypeId;
-            this.error = undefined;
         } else if (error) {
-            console.log("this.error",this.error);
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
         }
     }
 
@@ -87,15 +86,13 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     getRecordTypeId({ error, data }) {
         if (data) {
             this.record = data;
-            this.error = undefined;
             if(this.recordTypeId === undefined){
                 this.recordTypeId = this.record.defaultRecordTypeId;
             }
             console.log("Default Record Type Id", JSON.stringify(this.record.defaultRecordTypeId));
         } else if (error) {
-            this.error = error;
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.record = undefined;
-            console.log("this.error",this.error);
         }
     }
                      
@@ -106,7 +103,6 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     wiredOptions({ error, data }) {
         if (data) {
             this.record = data;
-            this.error = undefined;
 
             //if we have a valid picklist field then get the options.
             if(this.record.picklistFieldValues[this.pickListFieldApiName] !== undefined) {
@@ -138,9 +134,8 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
                 }
             }
         } else if (error) {
-            this.error = error;
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.record = undefined;
-            console.log("this.error",this.error);
         }
     }
 

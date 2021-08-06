@@ -67,12 +67,10 @@ export default class SimpliUIListViewsLookup extends LightningElement {
     @wire(search, {searchTerm : '$searchTerm', obj : '$fieldObjName'})
     wiredRecords({ error, data }) {
         if (data) {
-            this.error = undefined;
             this.options = data;
             console.log("common this.options", JSON.stringify(this.options));
         } else if (error) {
-            this.error = error;
-            console.log("wire.error",this.error);
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
         }
     }
 

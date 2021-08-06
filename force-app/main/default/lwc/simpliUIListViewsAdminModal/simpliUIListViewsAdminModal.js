@@ -118,12 +118,10 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         getListViewConfig({objectName: this.listViewObject, listViewName: this.listViewName})
         .then(result => {
             console.log('List view config retrieval successful'); 
-            this.listViewConfig = result; 
-            this.error = undefined;             
+            this.listViewConfig = result;    
         })
         .catch(error => {
-            this.error = error; 
-            console.log('Error Detected ' + error.body.message); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.listViewConfig = undefined;
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Config',
@@ -148,10 +146,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         if (data) { 
             console.log('Cached list view config retrieval successful'); 
             this.listViewConfig = data; 
-            this.error = undefined; 
         } else if (error) { 
-            this.error = error; 
-            console.log('Error Detected ' + error.body.message); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.listViewConfig = undefined;
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Config',
@@ -170,14 +166,12 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         if (data) { 
             console.log('List view column label retrieval successful'); 
             this.listViewColumnLabels = data; 
-            this.error = undefined;
         } else if (error) { 
-            this.error = error; 
-            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.listViewColumnLabels = undefined; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Column Labels',
-                message: 'There was an error retrieving the list view column labels. Please see an administrator\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
+                message: 'There was an error retrieving the list view column labels. Please see an administrator - ' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -225,7 +219,6 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         processParamChange({ objectName: this.listViewObject, listViewName: this.listViewName, paramName: name, paramValue: value, paramLabel: label, paramType: type})
             .then(result => {
                 var resultStr = result;
-                this.error = undefined;
 
                 //get the status
                 let status = resultStr.substring(0, resultStr.indexOf(':'));
@@ -257,17 +250,13 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 }
             })
             .catch(error => {
-                var resultStr = undefined;
-                this.error = error;
-
-                if (error.message != undefined) {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Processing Error',
-                        message: 'There was an error whilst processing - ' + error.message,
-                        variant: 'error',
-                        mode: 'sticky'
-                    }));
-                }
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Processing Error',
+                    message: 'There was an error processing the param changes. Please see an administrator - ' + error.body.message,
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
                 return;
             });
 
@@ -324,7 +313,6 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         processConditionChange({ objectName: this.listViewObject, listViewName: this.listViewName, action: action, conditionData: strParamsMap})
             .then(result => {
                 resultStr = result;
-                this.error = undefined;
 
                 //get the status
                 let status = resultStr.substring(0, resultStr.indexOf(':'));
@@ -359,11 +347,11 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             })
             .catch(error => {
                 resultStr = undefined;
-                this.error = error;
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
 
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error whilst processing\n\n' + error.message + '\n\n' + error.stackTrace,
+                    message: 'There was an error processing the condition changes. Please see an administrator - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));

@@ -23,7 +23,6 @@ export default class SimpliUIListViewsInitProgressBar extends LightningElement {
 
                 this.progress = Number(progressResult[0]);
                 this.batchStatus = progressResult[1] + ' (' + Number(progressResult[0]).toFixed(0) + '%)';
-                this.error = undefined;
 
                 if (this.progress === 100) {
                     this.hasCompleted = true;
@@ -31,7 +30,7 @@ export default class SimpliUIListViewsInitProgressBar extends LightningElement {
                 }
             })
             .catch(error => {
-                this.error = error;
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                 this.progress = 0;
             });
 

@@ -33,14 +33,12 @@ export default class SimpliUIListViewsStart extends LightningElement {
         if (data) { 
             console.log('Is Initialized called successfully - ' + data); 
             this.isInitialized = data; 
-            this.error = undefined; 
         } else if (error) { 
-            this.error = error; 
-            console.log('Error Detected ' + error.message + ' - ' + error.stackTrace); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.objectActionList = undefined; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Checking Initialization',
-                message: 'There was an error checking for Simpli List Views initialization. Please see an administrator\n\n' + error.message,
+                message: 'There was an error checking for Simpli List Views initialization. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -61,7 +59,7 @@ export default class SimpliUIListViewsStart extends LightningElement {
             {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error processing the list views. Please see an administrator',
+                    message: 'There was an error processing the list views. Please see an administrator.' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));
@@ -83,9 +81,10 @@ export default class SimpliUIListViewsStart extends LightningElement {
             }
         })
         .catch(error => {
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Processing Error',
-                message: 'There was an error processing the list views. Please see an administrator',
+                message: 'There was an error processing the list views. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));

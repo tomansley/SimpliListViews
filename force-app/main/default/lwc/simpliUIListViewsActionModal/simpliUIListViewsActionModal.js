@@ -39,15 +39,15 @@ export default class simpliUIListViewsActionModal extends LightningElement {
     wiredListViewAction({ error, data }) {
         if (data) { 
             console.log('SUCCESS DATA GET ' + data); 
-            this.listViewAction = data; this.error = undefined;
+            this.listViewAction = data;
             if (this.listViewAction.parameters.length === 0) {
                 this.hasParameters = false;
             } else {
                 this.hasParameters = true;
             }
         } else if (error) {
-            console.log('error DETECTED ' + error.message); 
-            this.error = error; this.listViewAction = undefined;}
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+            this.listViewAction = undefined;}
     }
 
     handleProcessClick() {
@@ -72,7 +72,6 @@ export default class simpliUIListViewsActionModal extends LightningElement {
         processAction({ actionKey: this.actionApiName, dataIds: this.recordIds, valuesMap: strValuesMap})
             .then(result => {
                 resultStr = result;
-                this.error = undefined;
 
                 //get the status
                 let status = resultStr.substring(0, resultStr.indexOf(':'));
@@ -107,11 +106,11 @@ export default class simpliUIListViewsActionModal extends LightningElement {
             })
             .catch(error => {
                 resultStr = undefined;
-                this.error = error;
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
 
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error whilst processing\n\n' + error.body.message + '\n\n' + error.body.stackTrace,
+                    message: 'There was an error processing the records - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));
