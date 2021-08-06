@@ -78,6 +78,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api displayExportButton  = false;
     @api displayTextSearch    = false; //identifies whether the text search field should be displayed.
 
+    @track textSearchText = '';         //holds the current value for text searching.
     @track joinData           = '';     //holds the join data coming in from an external list view.....if it exists.
     @track modifiedText;                //holds the last modified text that should be displayed based on the component config
     @track userSortConfigs;             //holds all user sort configuration for this named component.
@@ -234,13 +235,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     })
                     .catch(error => {
                         this.dispatchEvent(new ShowToastEvent({
-                            title: 'Error Handling User Config',
-                            message: 'There was an error handling the list view objects. Please see an administrator\n\n' + error.message,
+                            title: 'Error Retrieving List View Objects',
+                            message: 'There was an error retrieving the list view objects. Please see an administrator - ' + error.body.message,
                             variant: 'error',
                             mode: 'sticky'
                         }));
-                        console.log(error.stack)
-        
+                        console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                     });
         
                 } else {
@@ -251,11 +251,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             })
             .catch(error => {
                 this.dispatchEvent(new ShowToastEvent({
-                    title: 'Error Handling User Config',
-                    message: 'There was an error handling the user config. Please see an administrator\n\n' + error.message + '\n\n' + error.stackTrace,
+                    title: 'Error Retrieving User Config',
+                    message: 'There was an error retrieving the user config. Please see an administrator - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             });
 
             getUserSortConfigs({compName: this.pageName })
@@ -321,12 +322,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             .catch(error => {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Handling User Config',
-                    message: 'There was an error handling the user sort config. Please see an administrator\n\n' + error.message,
+                    message: 'There was an error handling the user sort config. Please see an administrator - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));
-                console.log(error.stack)
-
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             });
 
         } else {
@@ -347,14 +347,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         if (data) { 
             console.log('Is Initialized called successfully - ' + data); 
             this.isInitialized = data; 
-            this.error = undefined; 
         } else if (error) { 
-            this.error = error; 
-            console.log('Error Detected ' + error.message + ' - ' + error.stackTrace); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.objectActionList = undefined; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Checking Initialization',
-                message: 'There was an error checking for Simpli List Views initialization. Please see an administrator\n\n' + error.message,
+                message: 'There was an error checking for Simpli List Views initialization. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -375,14 +373,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             } else if (this.displayActions === true) {
                 this.canDisplayActions = true;
             }
-            this.error = undefined; 
         } else if (error) { 
-            this.error = error; 
-            console.log('Error Detected ' + error.message + ' - ' + error.stackTrace); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.objectActionList = undefined; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Actions',
-                message: 'There was an error retrieving the list view actions. Please see an administrator\n\n' + error.message,
+                message: 'There was an error retrieving the list view actions. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -393,6 +389,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.offset = -1;
         this.selectedRecordCount = 0;
         this.isEdited = false;
+        this.textSearchText = '';
         let selectedRows = this.template.querySelectorAll('lightning-input');
         selectedRows.forEach(element => element.checked = false);
 
@@ -480,14 +477,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.displayReprocess = false;
             }
 
-            this.error = undefined;  
             this.isInitializing = false;
             this.spinnerOff();
             
         })
         .catch(error => {
-            this.error = error; 
-            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.listViewData = undefined; 
             this.spinnerOff();
             this.dataSpinnerOff();
@@ -503,11 +498,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     handleListViewObjects(data)
     {
-        console.log('List view objects retrieval successful - ' + data); 
-        console.log('Included objects - ' + this.includedObjects); 
-        console.log('Excluded objects - ' + this.excludedObjects); 
         this.objectList = data; 
-        this.error = undefined;
 
         if (this.objectList !== undefined && this.objectList.length > 0)
         {
@@ -545,13 +536,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         if (data) {
             this.handleListViewObjects(data); 
         } else if (error) { 
-            this.error = error; 
-            console.log('Error Detected ' + error.message + ' - ' + error.stackTrace); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.objectList = undefined; 
             this.spinnerOff();
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Objects',
-                message: 'There was an error retrieving the list view objects. Please see an administrator\n\n' + error.message,
+                message: 'There was an error retrieving the list view objects. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -571,7 +561,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         if (data) { 
             console.log('Object list view retrieval successful'); 
             this.listViewList = data; 
-            this.error = undefined; 
             console.log('Object list view size - ' + this.listViewList.length); 
             console.log('Pinned list view      - ' + this.pinnedListView); 
             console.log('First List View Get   - ' + this.firstListViewGet); 
@@ -615,13 +604,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             this.spinnerOff(); 
         } else if (error) { 
-            this.error = error; 
-            console.log('Error Detected ' + error.body.message + ' - ' + error.body.stackTrace); 
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.listViewList = undefined; 
             this.spinnerOff(); 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Object List Views',
-                message: 'There was an error retrieving ' + this.selectedObject + ' list views data. This usually indicates the user does not have read access to the object. Please see an administrator if you believe this to be an error.',
+                message: 'There was an error retrieving ' + this.selectedObject + ' list views data. This usually indicates the user does not have read access to the object. Please see an administrator if you believe this to be an error - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -685,13 +673,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     
             })
             .catch(error => {
-                console.log('Error - ' + error);
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error processing the list view. Please see an administrator\n\n' + error,
+                    message: 'There was an error processing the list view. Please see an administrator - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
-                }));
+            }));
         });
 
         } else {
@@ -962,9 +950,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }));
         })
         .catch(error => {
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Processing Error',
-                message: 'There was an error during user configuration update. Please see an administrator\n\n' + error.message,
+                message: 'There was an error during user configuration update. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -989,9 +978,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }));
         })
         .catch(error => {
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Processing Error',
-                message: 'There was an error during user configuration update. Please see an administrator\n\n' + error.message,
+                message: 'There was an error during user configuration update. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -1102,7 +1092,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     } else {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'Processing Error',
-                            message: 'There was an error processing the list view. Please see an administrator',
+                            message: 'There was an error processing the list view. Please see an administrator - ' + error.body.message,
                             variant: 'error',
                             mode: 'sticky'
                         }));
@@ -1111,9 +1101,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     }
                 })
                 .catch(error => {
+                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
-                        message: 'There was an error processing the list view. Please see an administrator\n\n' + error.message,
+                        message: 'There was an error processing the list view. Please see an administrator - ' + error.body.message,
                         variant: 'error',
                         mode: 'sticky'
                     }));
@@ -1148,7 +1139,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     } else {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'Processing Error',
-                            message: 'There was an error processing the list views. Please see an administrator',
+                            message: 'There was an error processing the list views. Please see an administrator - ' + result,
                             variant: 'error',
                             mode: 'sticky'
                         }));
@@ -1156,9 +1147,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     }
                 })
                 .catch(error => {
+                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
-                        message: 'There was an error processing the list views. Please see an administrator\n\n' + error.message,
+                        message: 'There was an error processing the list views. Please see an administrator - ' + error.body.message,
                         variant: 'error',
                         mode: 'sticky'
                     }));
@@ -1180,7 +1172,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'Processing Error',
-                            message: 'There was an error processing the list views. Please see an administrator',
+                            message: 'There was an error processing the list views. Please see an administrator.',
                             variant: 'error',
                             mode: 'sticky'
                         }));
@@ -1205,9 +1197,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     }
                 })
                 .catch(error => {
+                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
-                        message: 'There was an error processing the list views. Please see an administrator\n\n' + error.message,
+                        message: 'There was an error processing the list views. Please see an administrator - ' + error.body.message,
                         variant: 'error',
                         mode: 'sticky'
                     }));
@@ -1595,9 +1588,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.refreshAllListViewData();
             })
             .catch(error => {
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error',
-                    message: 'There was an error saving the record. Please try again\n\n' + error.message,
+                    message: 'There was an error saving the record. Please see an administrator - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));
@@ -1652,9 +1646,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             })
             .catch(error => {
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error',
-                    message: 'There was an error saving the record. Please try again\n\n' + error.message,
+                    message: 'There was an error saving the record. Please try again or see an administrator - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));
