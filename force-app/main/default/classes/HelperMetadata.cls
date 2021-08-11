@@ -16,7 +16,7 @@ global with sharing class HelperMetadata implements Metadata.DeployCallback {
     {
         if (metadataTypes.get(name) == null)
         {
-            List<List_View_Metadata_Type_Name__mdt> types = [SELECT MasterLabel, DeveloperName, Metadata_API_Name__c FROM List_View_Metadata_Type_Name__mdt WHERE MasterLabel = :name];
+            List<List_View_Metadata_Type_Name__mdt> types = [SELECT MasterLabel, DeveloperName, Metadata_API_Name__c FROM List_View_Metadata_Type_Name__mdt WHERE MasterLabel = :name LIMIT 2000];
             
             if (types.size() == 0) throw new HelperMetadataException('Cannot find requested metadata with name - ' + name + '. Please add an entry in the custom metadata type called Metadata Type Name (Metadata_Type_Name__mdt)');
                         
@@ -26,8 +26,10 @@ global with sharing class HelperMetadata implements Metadata.DeployCallback {
         //we build the SOQL query to get the data based on the returned API information.        
         Map<String, Schema.SObjectField> objFields = HelperSchema.getFieldsForObject(metadataTypes.get(name).Metadata_API_Name__c, HelperSchema.NAME);
         
-        String soql = 'SELECT ' + String.join(new List<String>(objFields.keySet()), ',') + ' FROM ' + metadataTypes.get(name).Metadata_API_Name__c;
+        String soql = 'SELECT ' + String.escapeSingleQuotes(String.join(new List<String>(objFields.keySet()), ',')) + ' FROM ' + String.escapeSingleQuotes(metadataTypes.get(name).Metadata_API_Name__c);
         
+        HelperSchema.checkSelectAccessible(soql); 
+
         List<SObject> metaData = Database.query(soql);
         
         return metaData;
