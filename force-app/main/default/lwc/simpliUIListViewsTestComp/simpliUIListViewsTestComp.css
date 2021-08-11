@@ -1,0 +1,15 @@
+.codebox {
+    background: ghostwhite; 
+    font-size: 13px; 
+    padding: 7px; 
+    border: 1px solid lightgray; 
+    margin: 10px;
+}
+
+.examplebox {
+    background: white; 
+    font-size: 13px; 
+    padding: 7px; 
+    border: 1px solid lightgray; 
+    margin: 10px;
+}

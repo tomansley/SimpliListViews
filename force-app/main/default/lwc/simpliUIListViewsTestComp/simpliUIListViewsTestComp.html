@@ -1,0 +1,150 @@
+<!--
+  @description       : 
+  @author            : tom.h.ansley@medtronic.com
+  @last modified on  : 08-11-2021
+  @last modified by  : tom.h.ansley@medtronic.com
+  Modifications Log 
+  Ver   Date         Author                       Modification
+  1.0   08-07-2021   tom.h.ansley@medtronic.com   Initial Version
+-->
+<template>
+
+    <lightning-card>
+        <lightning-tabset style="min-height: 400px;background-color: white;">
+
+            <lightning-tab label="Dev Example 1">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <!-- DESCRIPTION OF EXAMPLE -->
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal;">
+                            This example would get used where all list views for all objects should be displayed on one page. 
+                        </div>
+
+                        <!-- EXAMPLE HTML TAG -->
+                        <div class="codebox">
+                            <pre>
+                                &lt;c-simpli-u-i-list-views<br/>
+                                &#9;&#9;mode="App Page"<br/>
+                                &#9;&#9;page-name="testPage"&gt;<br/>
+                                &lt;/c-simpli-u-i-list-views&gt;    
+                            </pre>
+                        </div>
+                    </lightning-card>
+                        
+                    <!-- WORKING EXAMPLE -->
+                    <div class="examplebox">
+                        <c-simpli-u-i-list-views mode="App Page"
+                                                page-name="testPage">
+                        </c-simpli-u-i-list-views>
+                    </div>
+
+                </div>
+            </lightning-tab>
+        
+            <lightning-tab label="Dev Example 2">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <!-- DESCRIPTION OF EXAMPLE -->
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal;">
+                            An example to show the different options available for mode type App Page
+                        </div>
+                        
+                        <!-- EXAMPLE HTML TAG -->
+                        <div class="codebox">
+                            <pre>
+                                &lt;c-simpli-u-i-list-views<br/>
+                                &#9;&#9;mode="Single List View"<br/>
+                                &#9;&#9;page-name="testPage2"<br/>
+                                &#9;&#9;has-main-title=true<br/>
+                                &#9;&#9;main-title="Everything List View!"<br/>
+                                &#9;&#9;use-message-channel=true<br/>
+                                &#9;&#9;display-actions=true<br/>
+                                &#9;&#9;display-reprocess=true<br/>
+                                &#9;&#9;display-u-r-l=true<br/>
+                                &#9;&#9;display-row-count=true<br/>
+                                &#9;&#9;display-selected-count=true<br/>
+                                &#9;&#9;display-modified=true<br/>
+                                &#9;&#9;display-export-button=true<br/>
+                                &#9;&#9;allow-admin=true<br/>
+                                &#9;&#9;allow-refresh=true<br/>
+                                &#9;&#9;included-objects="Account,Contact,Opportunity"<br/>
+                                &#9;&#9;allow-inline-editing=true<br/>
+                                &#9;&#9;display-text-search=true&gt;<br/>
+                                &lt;/c-simpli-u-i-list-views&gt;    
+                            </pre>
+                        </div>
+                    </lightning-card>
+
+                    <!-- WORKING EXAMPLE -->
+                    <div class="examplebox">
+                        <c-simpli-u-i-list-views mode="App Page"
+                                                page-name="testPage2"
+                                                has-main-title=true
+                                                main-title="Everything List View!"
+                                                use-message-channel=true
+                                                display-actions=true
+                                                display-reprocess=true
+                                                display-u-r-l=true
+                                                display-row-count=true
+                                                display-selected-count=true
+                                                display-modified=true
+                                                display-export-button=true
+                                                allow-admin=true
+                                                allow-refresh=true
+                                                included-objects="Account,Contact,Opportunity"
+                                                allow-inline-editing=true
+                                                display-text-search=true>
+                        </c-simpli-u-i-list-views>
+                    </div>
+                </div>
+            </lightning-tab>
+
+            <lightning-tab label="Dev Example 3">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <!-- DESCRIPTION OF EXAMPLE -->
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal;">
+                            This example would get used where a specific list view is to be displayed. In this example a number of features are made available including inline editing, text search, actions and auto-refreshing
+                        </div>
+                                                
+                        <!-- EXAMPLE HTML TAG -->
+                        <div class="codebox">
+                            <pre>
+                                &lt;c-simpli-u-i-list-views<br/>
+                                &#9;&#9;mode="Single List View"<br/>
+                                &#9;&#9;single-list-view-object="Account"<br/>
+                                &#9;&#9;single-list-view-api-name="PlatinumandGoldSLACustomers"<br/>
+                                &#9;&#9;page-name="testPage3"<br/>
+                                &#9;&#9;use-message-channel=true<br/>
+                                &#9;&#9;display-actions=true<br/>
+                                &#9;&#9;allow-refresh=true<br/>
+                                &#9;&#9;allow-inline-editing=true<br/>
+                                &#9;&#9;display-text-search=true&gt;<br/>
+                                &lt;/c-simpli-u-i-list-views&gt;    
+                            </pre>
+                        </div>
+                    </lightning-card>
+
+                    <!-- WORKING EXAMPLE -->
+                    <div class="examplebox">
+                        <c-simpli-u-i-list-views mode="Single List View"
+                                                single-list-view-object="Account"
+                                                single-list-view-api-name="PlatinumandGoldSLACustomers"
+                                                page-name="testPage3"
+                                                use-message-channel=true
+                                                display-actions=true
+                                                allow-refresh=true
+                                                allow-inline-editing=true
+                                                display-text-search=true>
+                        </c-simpli-u-i-list-views>
+                    </div>
+                </div>
+            </lightning-tab>
+
+        </lightning-tabset>
+    </lightning-card>
+
+</template>
