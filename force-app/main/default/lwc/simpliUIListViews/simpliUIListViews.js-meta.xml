@@ -12,7 +12,10 @@
     <!-- Configuring the design attributes -->
     <targetConfigs>
         <targetConfig targets="lightning__UtilityBar,lightning__RecordPage,lightning__HomePage,lightning__AppPage">
-            <property name="pageName" type="String" default="My_Component_Name" required="true" label="Component Name" description="String used to identify the list view component. It is used to identify user configuration for the component. Names should be distinct and should NEVER be changed."/>
+            <property name="pageName" type="String" default="My_Component_Name" required="true" label="Component Name" description="Unique string used to identify the list view component and its corresponding user configuration. Names should NEVER be changed."/>
+            <property name="mode" type="String" datasource="App Page,Single List View" required="true" default="App Page" label="Component Mode" description="Indicates the mode the component should be displayed in. App = Multi List View, Single = Single List View"/>
+            <property name="singleListViewObject" type="String" default="" required="false" label="Single List View Object" description="The list view object to use if displaying the component in SINGLE list view mode."/>
+            <property name="singleListViewApiName" type="String" default="" required="false" label="Single List View API Name" description="The list view API name to use if displaying the component in SINGLE list view mode."/>
             <property name="hasMainTitle" type="Boolean" default="true" label="Show Title" description="Indicates whether the name should be displayed or not."/>
             <property name="mainTitle" type="String" default="My List View Title" label="Title" description="String used if the title is displayed. Names should be distinct within a lightning page."/>
             <property name="displayActions" type="Boolean" default="true" label="Display Actions" description="Indicates whether the actions dropdown should be displayed."/>

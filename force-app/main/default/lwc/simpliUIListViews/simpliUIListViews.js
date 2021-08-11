@@ -60,25 +60,31 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     wiredObjectListViewsResult;
     wiredListViewObjectsResult;
 
-    @api pageName             = '';                 //this is NOT the page name but the COMPONENT name
-    @api hasMainTitle         = false;
-    @api mainTitle            = 'List Views';
-    @api includedObjects      = '';
-    @api excludedObjects      = '';
-    @api joinFieldName        = '';
-    @api useMessageChannel    = false;
-    @api allowRefresh         = false; //config indicating whether the auto refresh checkbox is made available.
-    @api allowInlineEditing   = false; //config indicating whether inline editing is available
-    @api allowAdmin           = false; //indicates whether the admin button should display to the user
-    @api displayActions       = false;
-    @api displayReprocess     = false;
-    @api displayURL           = false;
-    @api displayRowCount      = false;
-    @api displaySelectedCount = false;
+    @api mode                  = 'App Page'; //indicates the mode the page is in for displaying the list view. i.e. app, single etc.
+    @api pageName              = '';                 //this is NOT the page name but the COMPONENT name
+    @api hasMainTitle          = undefined;
+    @api mainTitle             = 'List Views';
+    @api includedObjects       = '';
+    @api excludedObjects       = '';
+    @api joinFieldName         = '';
+    @api useMessageChannel     = false;
+    @api allowRefresh          = false; //config indicating whether the auto refresh checkbox is made available.
+    @api allowInlineEditing    = false; //config indicating whether inline editing is available
+    @api allowAdmin            = false;  //indicates whether the admin button should display to the user
+    @api displayActions        = false;
+    @api displayReprocess      = false;
+    @api displayURL            = false;
+    @api displayRowCount       = false;
+    @api displaySelectedCount  = false;
     @api displayOrigButton;             //this is not used....deprecated.
-    @api displayModified      = false;
-    @api displayExportButton  = false;
-    @api displayTextSearch    = false; //identifies whether the text search field should be displayed.
+    @api displayModified       = false;
+    @api displayExportButton   = false;
+    @api displayTextSearch     = false;  //identifies whether the text search field should be displayed.
+    @api singleListViewObject  = '';     //if in SINGLE mode holds the list view object to use.
+    @api singleListViewApiName = '';     //if in SINGLE mode holds the list view API name to use.
+
+    @track isModeSingle       = false;  //indicates whether the current mode is SINGLE LIST VIEW
+    @track isModeApp          = true;   //indicates whether the current mode is APP PAGE
 
     @track isSysAdmin         = false;  //indicates whether the current user is a sys admin.
     @track textSearchText = '';         //holds the current value for text searching.
@@ -131,7 +137,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     rowDataStr = '';
 
     //for tracking list view init process
-    @track isInitialized = false;               //indicates whether the list views have been initialized for the first time or not.
+    @track isInitialized = true;        //indicates whether the list views have been initialized for the first time or not.
     @track showProgress = false;        //indicates whether the progress bar should be displayed
     @track batchId = '';                //indicates the batch Id of the list view batch process.
     @track isInitializing = true;       //indicates whether we are initializing the page or not.
@@ -191,12 +197,20 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             //always subscribe to the message channel
             this.subscribeMC();
 
+            if (this.mode === 'Single List View') {
+                this.isModeSingle     = true;
+                this.isModeApp        = false;
+                this.selectedObject   = this.singleListViewObject;
+                this.selectedListView = this.singleListViewApiName;
+                this.refreshAllListViewData();
+            }
             this.urlObject = this.currentPageReference.state.ObjectName;
             this.urlListView = this.currentPageReference.state.ListViewName;
             
-            console.log('URL object - ' + this.urlObject);
+            console.log('URL object    - ' + this.urlObject);
             console.log('URL list view - ' + this.urlListView);
             console.log('Ltn page name - ' + this.pageName);
+            console.log('Page Mode     - ' + this.mode);
 
             getComponentConfig({compName: this.pageName })
             .then(result => {
@@ -207,22 +221,22 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 let pinnedListView = this.componentConfig.pinnedListView;
                 console.log('Pinned list view string - ' + pinnedListView);
 
-                if (this.componentConfig.AllowAdmin === 'false') { 
+                if (this.toBool(this.componentConfig.AllowAdmin) === false) { 
                     if (this.isSysAdmin === true)
                         this.allowAdmin = true;
                     else
                         this.allowAdmin = false;
                  }
-                else if (this.componentConfig.AllowAdmin === 'true') { this.allowAdmin = true; }
-                if (this.componentConfig.DisplayActionsButton === 'false') { this.displayActions = false; }
-                if (this.componentConfig.DisplayListViewReprocessingButton === 'false') { this.displayReprocess = false; }
-                if (this.componentConfig.DisplayOriginalListViewButton === 'false') { this.displayURL = false; }
-                if (this.componentConfig.DisplayRowCount === 'false') { this.displayRowCount = false; }
-                if (this.componentConfig.DisplaySelectedCount === 'false') { this.displaySelectedCount = false; }
-                if (this.componentConfig.DisplayTextSearch === 'false') { this.displayTextSearch = false; }
-                if (this.componentConfig.AllowDataExport === 'false') { this.displayExportButton = false; }
-                if (this.componentConfig.AllowAutomaticDataRefresh === 'false') { this.allowRefresh = false; }
-                if (this.componentConfig.AllowInlineEditing === 'false') { this.allowInlineEditing = false; }
+                else if (this.toBool(this.componentConfig.AllowAdmin) === true) { this.allowAdmin = true; }
+                if (this.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
+                if (this.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
+                if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
+                if (this.toBool(this.componentConfig.DisplayRowCount) === false) { this.displayRowCount = false; }
+                if (this.toBool(this.componentConfig.DisplaySelectedCount) === false) { this.displaySelectedCount = false; }
+                if (this.toBool(this.componentConfig.DisplayTextSearch) === false) { this.displayTextSearch = false; }
+                if (this.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
+                if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
+                if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
 
                 //if we have a URL object then use it
                 if (this.urlObject != undefined) {
@@ -289,10 +303,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                             if (sortDirection === undefined || sortDirection === '') {
                                 sortDirection = true;
-                            } else if (sortDirection === 'true') {
-                                sortDirection = true; //turning the STRING 'true' into the BOOLEAN true
-                            } else if (sortDirection === 'false') {
-                                sortDirection = false; //turning the STRING 'false' into the BOOLEAN false
+                            } else {
+                                sortDirection = this.toBool(sortDirection)
                             }
 
                             let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
@@ -313,10 +325,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             
                             if (sortDirection === undefined || sortDirection === '') {
                                 sortDirection = true;
-                            } else if (sortDirection === 'true') {
-                                sortDirection = true; //turning the STRING 'true' into the BOOLEAN true
-                            } else if (sortDirection === 'false') {
-                                sortDirection = false; //turning the STRING 'false' into the BOOLEAN false
+                            } else {
+                                sortDirection = this.toBool(sortDirection)
                             }
 
                             let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
@@ -391,7 +401,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('Object action list size - ' + this.objectActionList.length); 
             if (this.objectActionList.length === 0 || this.displayActions === false) {
                 this.canDisplayActions = false;
-            } else if (this.displayActions === true) {
+            } else if (this.toBool(this.displayActions) === true) {
                 this.canDisplayActions = true;
             }
         } else if (error) { 
@@ -1060,7 +1070,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     dataSpinnerOff() {
         this.dataSpinner = false;
-        if (this.objectActionList !== undefined && this.objectActionList.length > 0 && this.displayActions === true) {
+        if (this.objectActionList !== undefined && this.objectActionList.length > 0 && this.toBool(this.displayActions) === true) {
             this.canDisplayActions = true;
         }
         console.log('Data Spinner OFF');
@@ -1505,10 +1515,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         
         if (sortDirection === undefined || sortDirection === '') {
             sortDirection = true;
-        } else if (sortDirection === 'true') {
-            sortDirection = true; //turning the STRING 'true' into the BOOLEAN true
-        } else if (sortDirection === 'false') {
-            sortDirection = false; //turning the STRING 'false' into the BOOLEAN false
+        }  else {
+            sortDirection = this.toBool(sortDirection)
         }
 
         let columnData = undefined;
@@ -1542,7 +1550,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * Method which sets all rows in the current data set to be editable
      */
     setAllRowsEdited() {
-        if (this.allowInlineEditing === true && this.listViewData.isCoreListView === true)
+        if (this.toBool(this.allowInlineEditing) === true && this.listViewData.isCoreListView === true)
         {
             this.isEdited = true;
             this.listViewData.isEdited = true;
@@ -1562,7 +1570,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('Row set to be edited - ' + event.target.id);
         const rowId = event.target.id.split('-')[0];
 
-        if (this.allowInlineEditing === true && this.listViewData.isCoreListView === true)
+        if (this.toBool(this.allowInlineEditing) === true && this.listViewData.isCoreListView === true)
         {
             this.isEdited = true;
             this.listViewData.isEdited = true;
@@ -1794,4 +1802,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     }
 
+    toBool(value) {
+        var strValue = String(value).toLowerCase();
+        strValue = ((!isNaN(strValue) && strValue !== '0') &&
+            strValue !== '' &&
+            strValue !== 'null' &&
+            strValue !== 'undefined') ? '1' : strValue;
+        return strValue === 'true' || strValue === '1' ? true : false
+    };
 }
