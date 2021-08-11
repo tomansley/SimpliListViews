@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-06-2021
+ * @last modified on  : 08-07-2021
  * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperProfile {
@@ -47,7 +47,7 @@ public with sharing class HelperProfile {
     	profilesByName = new Map<String, Profile>();
         profilesById = new Map<String, Profile>();
     	
-        List<Profile> profiles = new List<Profile>([SELECT Id, Name FROM Profile]);
+        List<Profile> profiles = new List<Profile>([SELECT Id, Name FROM Profile LIMIT 2000]);
                         			
 		for (Profile prof: profiles)
         {
