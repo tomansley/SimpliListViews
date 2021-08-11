@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-06-2021
+ * @last modified on  : 08-11-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -1332,54 +1332,7 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getDescription()
         {
-            //USER CONFIG SETTINGS
-            if (name == 'AdditionalFields')
-                description = 'String holding the additional API field names that should be returned in the list view data (comma delimited).';
-            else if (name == 'ReturnSize')
-                description = 'The maximum number of rows of data that will be returned. Note that org and lightning page configuration take precedence.';
-            else if (name == 'RefreshRate')
-                description = 'The number of seconds between refreshes if the list view can be auto refreshed. Refresh rate must be between 10 and 500';
-            else if (name == 'TotalColumns')
-                description = 'Comma delimited string holding the column API names within the list view that should have a total in the footer.';
-            else if (name == 'TotalColumnsColor')
-                description = 'The HTML color that the footer row should be displayed in. i.e. #6C95BD.';
-            else if (name == 'AllRows')
-                description = 'Indicates whether deleted and archived records should be included in list view results. Deleted records are displayed in red in the list';
-            
-            //ORG WIDE SETTINGS
-            else if (name == 'AllowAutomaticDataRefresh')
-                description = 'Should the automatic data refresh button be available';
-            else if (name == 'AllowInlineEditing')
-                description = 'Should inline editing be available to the user';
-            else if (name == 'AllowDataExport')
-                description = 'Should the user be allowed to export data from the list view';
-            else if (name == 'DisplayActionsButton')
-                description = 'Are list view actions allowed. If not the actions drop down picklist is not displayed';
-            else if (name == 'AllowAdmin')
-                description = 'Display the button to allow some admin changes to the list view component. Note - system administrators will always be able to see this button.';
-            else if (name == 'DisplayListViewReprocessingButton')
-                description = 'Can the user reprocess a list view if the config is stale';
-            else if (name == 'DisplayOriginalListViewButton')
-                description = 'Display the button allowing the user to go directly to the original list view';
-            else if (name == 'DisplayRowCount')
-                description = 'Display the row count to the user. This is required if allowing exporting of data';
-            else if (name == 'DisplaySelectedCount')
-                description = 'Display the selected row count to the user. This is required if allowing exporting of selected data';
-            else if (name == 'ExcludedObjectTypes')
-                description = 'Indicates the objects that should not be allowed in the list view objects drop down';
-            else if (name == 'IncludedObjectTypes')
-                description = 'Indicates the objects that are allowed in the list view objects drop down. Note - if this setting is used no other objects are displayed';
-            else if (name == 'IsInitialized')
-                description = 'A read-only field indicating whether the core list views have been initialized';
-            else if (name == 'ListViewObjects')
-                description = 'A read-only field indicating the list view objects that are available to be displayed';
-            else if (name == 'MaxRowsDisplayed')
-                description = 'The maximum number of rows that will be displayed to the user. Note that Salesforce starts to timeout above 2500 depending on number of list view fields displayed';
-            else if (name == 'QueryPagingSize')
-                description = 'The page size used when list views are returning more than 500 rows';
-            else if (name == 'DisplayTextSearch')
-                description = 'Indicates whether the user can use the text search capability for returned list view results';
-            return description;
+            return ListViewConfigDescriptions.getLongDescription(name);
         }
 
         /*
