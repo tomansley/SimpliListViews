@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-06-2021
+ * @last modified on  : 08-16-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -10,6 +10,7 @@
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
  * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added logic when list views are not initialized
  * 4.0   07-30-2021   tom.h.ansley@medtronic.com   Added updateRecords() method
+ * 5.0   08-16-2021   tom.h.ansley@medtronic.com   Updated getListViewsActions() and added permission check for each action before display
 **/
 public without sharing class ListViewController
 {
@@ -317,13 +318,11 @@ public without sharing class ListViewController
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewsActions(' + objectType + ', ' + listViewName + ')');
         List<SelectOption> actionsOptions = new List<SelectOption>();
 
-        List_View__c listview = ListViewHelper.getListViews(objectType, listViewName).values()[0];
-
-        Map<String, List_View_Action__c> actions = ListViewActionHelper.getListViewActionsByListView(listview);
+        Map<String, String> actions = ListViewActionHelper.getListViewActionsForListView(objectType, listViewName);
 
         for (String actionName: actions.keySet())
-            actionsOptions.add(new SelectOption(actions.get(actionName).Primary_Key__c, actionName));         
-    
+            actionsOptions.add(new SelectOption(actions.get(actionName), actionName));
+
         actionsOptions.sort();
 
         return actionsOptions;

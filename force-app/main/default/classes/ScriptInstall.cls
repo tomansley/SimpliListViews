@@ -1,13 +1,14 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-06-2021
+ * @last modified on  : 08-16-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-10-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   07-22-2021   tom.h.ansley@medtronic.com   Added inline-editing and is initialized org wide config updates, Added Edit All action update
  * 3.0   08-02-2021   tom.h.ansley@medtronic.com   Added display text search org wide config updates
+ * 4.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
 **/
 global with sharing class ScriptInstall implements InstallHandler {
 
@@ -270,16 +271,25 @@ global with sharing class ScriptInstall implements InstallHandler {
             Boolean hasEdit    = false;
             Boolean hasEditAll = false;
             List<List_View_Action__c> newActions = new List<List_View_Action__c>();
-            for (List_View_Action__c action: actions) //use actions from earlier request
+            for (List_View_Action__c action: actions)
             {
                 if (action.Label__c == 'New' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                {
+                    action.Permissions__c = ListViewActionHelper.PERM_CREATE;
                     hasNew = true;
-                if (action.Label__c == 'Clone' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                } else if (action.Label__c == 'Clone' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                {
+                    action.Permissions__c = ListViewActionHelper.PERM_CREATE;
                     hasClone = true;
-                if (action.Label__c == 'Edit' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                } else if (action.Label__c == 'Edit' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                {
+                    action.Permissions__c = ListViewActionHelper.PERM_EDIT;
                     hasEdit = true;
-                if (action.Label__c == 'Edit All' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                } else if (action.Label__c == 'Edit All' && action.Apex_Class_Name__c == 'ListViewActionNull')
+                {
+                    action.Permissions__c = ListViewActionHelper.PERM_EDIT;
                     hasEditAll = true;
+                }
             }
             
             if (!hasNew)
@@ -322,6 +332,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 newActions.add(orgEditAllAction);
             }
 
+            HelperDatabase.updateRecords(actions, 'simpli_lv__List_View_Action__c');
             HelperDatabase.insertRecords(newActions, 'simpli_lv__List_View_Action__c');
 
             HelperEmail.sendInstallEmail('Upgraded');

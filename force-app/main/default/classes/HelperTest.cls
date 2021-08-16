@@ -2,12 +2,13 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-02-2021
+ * @last modified on  : 08-16-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-07-2020   tom.h.ansley@medtronic.com   Initial Version
- * 1.0   07-31-2021   tom.h.ansley@medtronic.com   Added List_View_Label__c field
+ * 2.0   07-31-2021   tom.h.ansley@medtronic.com   Added List_View_Label__c field
+ * 3.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
 **/
 public with sharing class HelperTest {
 
@@ -206,6 +207,7 @@ public with sharing class HelperTest {
         delAction.Object_Type__c      = '';
         delAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		delAction.Apex_Class_Name__c  = 'ListViewActionDelete';
+		delAction.Permissions__c      = ListViewActionHelper.PERM_DELETE;
 
 		listViewActions.add(delAction);
 
@@ -214,6 +216,7 @@ public with sharing class HelperTest {
 		updateAction.Object_Type__c      = 'Account';
         updateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		updateAction.Apex_Class_Name__c  = 'ListViewActionUpdate';
+		updateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
 
 		listViewActions.add(updateAction);
 
@@ -222,6 +225,7 @@ public with sharing class HelperTest {
         oppsCloseUpdateAction.Label__c            = 'Set Close Lost';
         oppsCloseUpdateAction.Object_Type__c      = 'Opportunity';
         oppsCloseUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		oppsCloseUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
 
         listViewActions.add(oppsCloseUpdateAction);
 

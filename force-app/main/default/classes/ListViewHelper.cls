@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-06-2021
+ * @last modified on  : 08-16-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -14,6 +14,7 @@
  *                                                 Moved in static strings for types from ListViewConfigHelper,  
  *                                                 Added DisplayTextSearch org wide config
  * 6.0   08-03-2021   tom.h.ansley@medtronic.com   Performance enhancement when retrieving listview objects
+ * 7.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
  **/
 global with sharing class ListViewHelper {
     
@@ -1146,6 +1147,7 @@ global with sharing class ListViewHelper {
         orgNewAction.Apex_Class_Name__c  = 'ListViewActionNull';
         orgNewAction.Label__c            = 'New';
         orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		orgNewAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
 
         actions.add(orgNewAction);
 
@@ -1153,6 +1155,7 @@ global with sharing class ListViewHelper {
         orgCloneAction.Apex_Class_Name__c  = 'ListViewActionNull';
         orgCloneAction.Label__c            = 'Clone';
         orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		orgCloneAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
 
         actions.add(orgCloneAction);
 
@@ -1160,6 +1163,7 @@ global with sharing class ListViewHelper {
         orgEditAction.Apex_Class_Name__c  = 'ListViewActionNull';
         orgEditAction.Label__c            = 'Edit';
         orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		orgEditAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
 
         actions.add(orgEditAction);
 
@@ -1167,6 +1171,7 @@ global with sharing class ListViewHelper {
         orgEditAllAction.Apex_Class_Name__c  = 'ListViewActionNull';
         orgEditAllAction.Label__c            = 'Edit All';
         orgEditAllAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		orgEditAllAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
 
         actions.add(orgEditAllAction);
 
@@ -1174,6 +1179,7 @@ global with sharing class ListViewHelper {
         orgDeleteAction.Apex_Class_Name__c  = 'ListViewActionDelete';
         orgDeleteAction.Label__c            = 'Delete';
         orgDeleteAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		orgDeleteAction.Permissions__c      = ListViewActionHelper.PERM_DELETE;
 
         actions.add(orgDeleteAction);
 
@@ -1182,6 +1188,7 @@ global with sharing class ListViewHelper {
         acctUpdateAction.Label__c            = 'Update';
         acctUpdateAction.Object_Type__c      = 'Account';
         acctUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		acctUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
 
         actions.add(acctUpdateAction);
 
@@ -1190,6 +1197,7 @@ global with sharing class ListViewHelper {
         oppsCloseUpdateAction.Label__c            = 'Set Close Lost';
         oppsCloseUpdateAction.Object_Type__c      = 'Opportunity';
         oppsCloseUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		oppsCloseUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
 
         actions.add(oppsCloseUpdateAction);
 
