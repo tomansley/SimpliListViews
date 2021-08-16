@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-04-2021
+ * @Last Modified On   : 08-16-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    06/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -655,7 +655,7 @@ public with sharing class HelperSchema {
             else throw new ListViewException('No permission check for simpli_lv__List_View_User_Config__c with action - ' + action);
         
         }else {
-            if (action == CREATABLE) HelperSchema.checkObjectCreatable(objAPIName);
+            if (action == CREATABLE) HelperSchema.checkObjectCreateable(objAPIName);
             else if (action == UPDATEABLE) HelperSchema.checkObjectUpdateable(objAPIName);
             else if (action == DELETABLE) HelperSchema.checkObjectDeletable(objAPIName);
             else if (action == ACCESSIBLE) HelperSchema.checkObjectAccessible(objAPIName);
@@ -666,7 +666,7 @@ public with sharing class HelperSchema {
 
 	private static void checkListViewCreatable()
     {
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View__c');
+        HelperSchema.checkObjectCreateable('Simpli_lv__List_View__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__API_Name__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Object_Name__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Describe__c');
@@ -708,12 +708,12 @@ public with sharing class HelperSchema {
 
     private static void checkListViewActionsCreatable()
     {
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action__c');
+        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_Action__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Apex_Class_Name__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Label__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Object_Type__c');
 
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Action_Parameter__c');
+        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_Action_Parameter__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Field_API_Name__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Label__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__List_View_Action__c');
@@ -738,17 +738,17 @@ public with sharing class HelperSchema {
 
     private static void checkListViewConfigsCreatable()
     {
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Config__c');
+        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_Config__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Name');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Simpli_lv__List_View_Object__c');
 
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_Config_Parameter__c');
+        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_Config_Parameter__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__List_View_Config__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
 
-        HelperSchema.checkObjectCreatable('simpli_lv__List_View_Config_Condition__c');
+        HelperSchema.checkObjectCreateable('simpli_lv__List_View_Config_Condition__c');
         HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Field_Name__c');
         HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
         HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__List_View_Config__c');
@@ -826,7 +826,7 @@ public with sharing class HelperSchema {
     
     private static void checkListViewUserConfigsCreatable()
     {
-        HelperSchema.checkObjectCreatable('Simpli_lv__List_View_User_Config__c');
+        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_User_Config__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Ltn_Component_Name__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Name__c');
         HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Primary_Key__c');
@@ -1046,7 +1046,7 @@ public with sharing class HelperSchema {
 	 * Method to determine if an SObject is createable. This is used
 	 * for security to ensure user is allowed to create records for the given object.
 	 */
-	public static void checkObjectCreatable(String objName)
+	public static void checkObjectCreateable(String objName)
 	{
 		checkObjectCreateable(objName, true);
 	}
