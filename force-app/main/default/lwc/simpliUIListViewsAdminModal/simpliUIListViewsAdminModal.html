@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 07-31-2021
+  @last modified on  : 08-16-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -43,12 +43,13 @@
                                         <tbody>
                                             <template for:each={listViewConfig.parameters} for:item="param">
                                                 <tr key={param.name} class="slds-hint-parent">
-        
-                                                    <td key={param.name} class="">
+                                                    <td key={param.name} style="width: 30%;">
                                                         <div key={param.name} class="slds-truncate" title={param.name}>
                                                             {param.label}
                                                             &nbsp;
-                                                            <lightning-icon title={param.description} size="xx-small" icon-name="utility:info" alternative-text={label.Close}></lightning-icon> 
+                                                            <div key={param.name} class="slds-wrap" style="white-space:normal; font-size:0.75em" title={param.name}>
+                                                                {param.description}
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td key={param.name} data-label={param.name}>
