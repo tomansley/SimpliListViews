@@ -46,7 +46,7 @@ export default class SimpliUIListViewsLookup extends LightningElement {
             this.uniqueKey = this.rowId + ':' + this.fieldName;
             console.log('uniqueKey - ' + this.uniqueKey);
 
-            this.iconName = 'standard:' + this.fieldObjName;
+            this.iconName = 'standard:' + this.fieldObjName.toLowerCase();
 
             //if we have an initial value then set that as the chosen option.
             if (this.initialId !== '' && this.initialName !== '')
