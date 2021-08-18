@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-07-2021
+ * @last modified on  : 08-18-2021
  * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperProfile {
@@ -11,7 +11,6 @@ public with sharing class HelperProfile {
 
     public static Boolean isSysAdmin()
     {
-        System.debug('Is Sys Admin - ' + (UserInfo.getProfileId() == getProfile('System Administrator').Id));
         if (UserInfo.getProfileId() == getProfile('System Administrator').Id)
             return true;
         return false;

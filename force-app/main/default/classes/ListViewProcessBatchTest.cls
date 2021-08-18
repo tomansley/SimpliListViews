@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-02-2021
+ * @last modified on  : 08-18-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -31,7 +31,7 @@ global class ListViewProcessBatchTest {
 
         Test.stopTest();
 
-        System.assertEquals(3, [SELECT Id FROM List_View__c].size());
+        System.assertEquals(4, [SELECT Id FROM List_View__c].size());
 
     }
 

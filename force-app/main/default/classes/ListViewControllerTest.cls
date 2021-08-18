@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-07-2021
+ * @last modified on  : 08-18-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -17,6 +17,20 @@ global class ListViewControllerTest {
         ListViewHelper.insertCoreConfiguration();
 
         HelperTest.insertAccount('Test Account 1');
+    }
+
+    @IsTest
+    static void isSysAdminTest()
+    {
+
+        Test.startTest();
+
+            Boolean isSysAdmin = ListViewController.isSysAdmin();
+
+        Test.stopTest();
+
+        //not checking assertion as installing user might not be sys admin?
+        //System.assertEquals(true, isSysAdmin);
     }
 
     @IsTest
