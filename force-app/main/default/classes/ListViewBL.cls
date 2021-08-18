@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-17-2021
+ * @last modified on  : 08-18-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -37,7 +37,7 @@ public with sharing class ListViewBL {
         for (List_View__c newRecord: newRecords)
         {
             //API NAME
-            if (!String.isEmpty(newRecord.API_Name__c))
+            if (String.isEmpty(newRecord.API_Name__c))
                 newRecord.API_Name__c = newRecord.Label__c.replace(' ', '_').replaceAll('[^a-zA-Z0-9\\s+]', '');
             
             //PRIMARY KEY

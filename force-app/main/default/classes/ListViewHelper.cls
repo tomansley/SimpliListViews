@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-16-2021
+ * @last modified on  : 08-18-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -1489,6 +1489,8 @@ global with sharing class ListViewHelper {
         lv.Object_Name__c           = 'simpli_lv__List_View_Config__c';
         lv.RecordTypeId             = ListViewHelper.customRTId;
         lv.Subtype__c               = 'Manual';
+
+        listViews.add(lv);
 
         lv                          = new List_View__c();
         lv.Custom_Apex_Class__c     = 'ListViewCustomManual';

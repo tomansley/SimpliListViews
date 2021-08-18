@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-11-2021
+ * @last modified on  : 08-18-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -161,7 +161,7 @@ public with sharing abstract class ListViewAbstract {
             lvConfig = new ListViewConfigWrapper(listview, config, params);
 
         } else {
-            throw new ListViewException('Configuration for list view not found. Please reprocess list view');
+            throw new ListViewException('Configuration for list view with name "' + listview.Label__c + '" not found. Please reprocess list view');
         }
 
     }
