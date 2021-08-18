@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-31-2021
+ * @last modified on  : 08-17-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -16,7 +16,14 @@ public with sharing class ListViewBL {
     **/
     public static void validate(List<List_View__c> newRecords)
     {
-
+        for (List_View__c lv: newRecords)
+        {
+            if (lv.RecordTypeId == ListViewHelper.coreRTId)
+            {
+                if (String.isEmpty(lv.Object_Name__c))
+                    throw new ListViewException('Core list views must have an object name');
+            }
+        }
     }
 
     /**
@@ -30,7 +37,7 @@ public with sharing class ListViewBL {
         for (List_View__c newRecord: newRecords)
         {
             //API NAME
-            if (newRecord.API_Name__c == null || newRecord.API_Name__c == '')
+            if (!String.isEmpty(newRecord.API_Name__c))
                 newRecord.API_Name__c = newRecord.Label__c.replace(' ', '_').replaceAll('[^a-zA-Z0-9\\s+]', '');
             
             //PRIMARY KEY

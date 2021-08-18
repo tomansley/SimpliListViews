@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-09-2021
+  @last modified on  : 08-18-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -207,11 +207,12 @@
                             <template if:true={canDisplayActions}>
                                 <template if:true={listViewData}>
                                     <lightning-layout-item padding="horizontal-small">
-                                        <lightning-combobox placeholder={label.Select_Action}
-                                                        value={label.Select_Action}
-                                                        onchange={handleActionSelect} 
-                                                        options={objectActionList}
-                                                        variant=label-hidden>
+                                        <lightning-combobox name="Action List"
+                                                            placeholder={label.Select_Action}
+                                                            value={label.Select_Action}
+                                                            onchange={handleActionSelect} 
+                                                            options={objectActionList}
+                                                            variant=label-hidden>
                                         </lightning-combobox>
                                     </lightning-layout-item>
                                 </template>

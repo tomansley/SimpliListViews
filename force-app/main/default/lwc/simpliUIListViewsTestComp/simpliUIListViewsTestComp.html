@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom.h.ansley@medtronic.com
-  @last modified on  : 08-11-2021
+  @last modified on  : 08-18-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -139,6 +139,62 @@
                                                 allow-refresh=true
                                                 allow-inline-editing=true
                                                 display-text-search=true>
+                        </c-simpli-u-i-list-views>
+                    </div>
+                </div>
+            </lightning-tab>
+
+            <lightning-tab label="Dev Example 4">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <!-- DESCRIPTION OF EXAMPLE -->
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal;">
+                            This example is coded similar to a related list. The user provides an account and all contacts associated with that account are displayed.
+                        </div>
+                                                
+                        <!-- EXAMPLE HTML TAG -->
+                        <div class="codebox">
+                            <b>HTML</b>
+                            <pre>
+                                &lt;c-simpli-u-i-list-views<br/>
+                                &#9;&#9;mode="Single List View"<br/>
+                                &#9;&#9;single-list-view-object="Contact"<br/>
+                                &#9;&#9;single-list-view-api-name="AllContacts"<br/>
+                                &#9;&#9;page-name="testPage4"<br/>
+                                &#9;&#9;join-field-name="AccountId"<br/>
+                                &#9;&#9;join-criteria={<b>selectedAccountId</b>}&gt;<br/>
+                                &lt;/c-simpli-u-i-list-views&gt;    
+                            </pre>
+                            <b>Controller</b>
+                            <pre>
+                                import &#123; LightningElement, track   &#125; from 'lwc';<br/>
+                                <br/>
+                                export default class SimpliUIListViewsTestComp extends LightningElement &#123;<br/>
+                                <br/>
+                                &#9;@track <b>selectedAccountId</b> = '';<br/>
+                                <br/>
+                                &#9;handleExample4DataChange(event) &#123;<br/>
+                                &#9;&#9;this.<b>selectedAccountId</b> = event.detail.selectedValue;<br/>
+                                &#9;&#125;<br/>
+                                &#125;<br/>
+                            </pre>
+                        </div>
+                    </lightning-card>
+
+                    <!-- WORKING EXAMPLE -->
+                    <div class="examplebox">
+                        Search for an Account:&nbsp;&nbsp;
+                        <c-simpli-u-i-list-views-lookup field-obj-name="Account"
+                                                        onlookupchange={handleExample4DataChange}>
+                        </c-simpli-u-i-list-views-lookup>                        
+
+                        <c-simpli-u-i-list-views mode="Related List View"
+                                                single-list-view-object="Contact"
+                                                single-list-view-api-name="AllContacts"
+                                                page-name="testPage4"
+                                                join-field-name="AccountId"
+                                                join-criteria={selectedAccountId}>
                         </c-simpli-u-i-list-views>
                     </div>
                 </div>

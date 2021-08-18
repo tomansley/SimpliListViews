@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-16-2021
+ * @last modified on  : 08-17-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -419,7 +419,7 @@ public without sharing class ListViewController
         //JOIN INFORMATION
         //------------------------------------------------------------------------------------------
         Set<String> joinRecordIds = null;
-        if (joinFieldName != '' && joinData != '')
+        if (!String.isEmpty(joinFieldName) && !String.isEmpty(joinData))
         {
             //check that we can actually act on the join data as it could be for another component.
             if (HelperSchema.isValidSFDCFieldName(objectName, joinFieldName))

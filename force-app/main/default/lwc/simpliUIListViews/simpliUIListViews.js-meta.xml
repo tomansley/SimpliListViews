@@ -13,7 +13,7 @@
     <targetConfigs>
         <targetConfig targets="lightning__UtilityBar,lightning__RecordPage,lightning__HomePage,lightning__AppPage">
             <property name="pageName" type="String" default="My_Component_Name" required="true" label="Component Name" description="Unique string used to identify the list view component and its corresponding user configuration. Names should NEVER be changed."/>
-            <property name="mode" type="String" datasource="App Page,Single List View" required="true" default="App Page" label="Component Mode" description="Indicates the mode the component should be displayed in. App = Multi List View, Single = Single List View"/>
+            <property name="mode" type="String" datasource="App Page,Single List View, Related List View" required="true" default="App Page" label="Component Mode" description="Indicates the mode the component should be displayed in."/>
             <property name="singleListViewObject" type="String" default="" required="false" label="Single List View Object" description="The list view object to use if displaying the component in SINGLE list view mode."/>
             <property name="singleListViewApiName" type="String" default="" required="false" label="Single List View API Name" description="The list view API name to use if displaying the component in SINGLE list view mode."/>
             <property name="hasMainTitle" type="Boolean" default="true" label="Show Title" description="Indicates whether the name should be displayed or not."/>
@@ -33,6 +33,7 @@
             <property name="excludedObjects" type="String" default="" label="Excluded Objects" description="A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded."/>
             <property name="joinFieldName" type="String" default="" label="Joined Field Name" description="The API field name of the field that should be used by this component if it receives ids from another component. If blank, no joining takes place."/>
             <property name="useMessageChannel" type="Boolean" default="true" label="Use Message Channel" description="Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!"/>
+            <property name="joinCriteria" type="String" default="" label="Join Criteria Data" description="Only used for LWC development. Holds the external Id criteria used to filter the list view. (comma delimited)"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
