@@ -181,6 +181,14 @@
                     <li style="padding-bottom: 5px;"><b>Edit All - </b>sets all records currently visible on the component to inline editing. Can only be used for list views of 100 records or less</li>
                     <li style="padding-bottom: 5px;"><b>Clone - </b>clones the currently selected record</li>
                     <li style="padding-bottom: 5px;"><b>Delete - </b>deletes all records that are selected</li>
+                    <li style="padding-bottom: 5px;"><b>Send Email - </b>allows for the sending of emails to the chosen records. The email address is taken from a field on the record. This field is found based on the following precedence -</li>
+                    <div style="padding-left: 40px;">
+                        <ol style="list-style-type:lower-roman; list-style-position: inside;">
+                            <li style="padding-bottom: 5px;">configured on the action</li>
+                            <li style="padding-bottom: 5px;">does the object have a field called Email</li>
+                            <li style="padding-bottom: 5px;">does the object have a field called Email__c</li>
+                        </ol>
+                    </div>
                     <li style="padding-bottom: 5px;"><b>Update - </b>an example action which accepts two user entered fields and updates all selected records based on the input. (Account object only)</li>
                     <li style="padding-bottom: 5px;"><b>Set Close Lost - </b>an example action which marks all selected records as Close - Lost. (Opportunity object only)</li>
                     <li style="padding-bottom: 5px;"><b>Go To A Cool App - </b>an example hyperlink which opens a new browser window/tab and takes the user to the configured URL. (List View object only)</li>
