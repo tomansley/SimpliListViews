@@ -3,12 +3,13 @@
   @description       : 
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 07-31-2021
+  @last modified on  : 08-20-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-18-2020   tom.h.ansley@medtronic.com   Initial Version
   2.0   07-28-2021   tom.h.ansley@medtronic.com   Changed all strings to labels.
+  3.0   08-18-2021   tom.h.ansley@medtronic.com   Added type capability to handle different types for parameters.
 
 -->
 <template>
@@ -30,10 +31,10 @@
                             <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{listViewAction.label}</h2>
                         </header>
                         <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1" style="min-width: 1100px;">
-                            <template if:false={hasParameters}>
+                            <template if:false={listViewAction.hasDisplayParameters}>
                                 {label.Continue_Processing} {recordCount} {label.Selected_Records_With} "{listViewAction.label}" {label.Action}?
                             </template>
-                            <template if:true={hasParameters}>
+                            <template if:true={listViewAction.hasDisplayParameters}>
                                 <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                                     <thead>
                                         <tr class="slds-line-height_reset" style="height: 41px;">
@@ -46,21 +47,88 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <template for:each={listViewAction.parameters} for:item="param">
+                                        <template for:each={listViewAction.displayParameters} for:item="param">
                                             <tr key={param.aPIName} class="slds-hint-parent" style="height: 41px;">
                                                 <th key={param.aPIName} class="" scope="col">
                                                     <div key={param.aPIName} class="slds-truncate" title={param.name}>{param.label}</div>
                                                 </th>
                                                 <td key={param.aPIName} data-label={param.label}>
-                                                    <div class="slds-truncate" title={param.value}>
-                                                        <lightning-input type={param.type} 
-                                                                            variant="label-hidden" 
-                                                                            name={param.aPIName} 
-                                                                            onchange={handleValueUpdate}
-                                                                            placeholder={param.placeHolder}
-                                                                            value={param.value}>
-                                                        </lightning-input>
-                                                    </div>
+                                                    <template if:true={param.isString}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="text" value={param.value} onblur={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isTextArea}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="text" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isDate}>
+                                                        <div id={param.aPIName} title={param.value}>
+                                                            <lightning-input data-type={param.type} date-style="short" data-field={param.aPIName} variant=label-hidden type="date" value={param.uIValue} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isDateTime}>
+                                                        <div id={param.aPIName} title={param.value}>
+                                                            <lightning-input data-type={param.type} date-style="short" data-field={param.aPIName} variant=label-hidden type="datetime" value={param.uIValue} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isTime}>
+                                                        <div id={param.aPIName} title={param.value}>
+                                                            <lightning-input data-type={param.type} date-style="short" data-field={param.aPIName} variant=label-hidden type="time" value={param.uIValue} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isInteger}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="number" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isDecimal}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="number" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isBoolean}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="checkbox" checked={param.uIValue} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isCurrency}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="number" formatter="currency" step="0.01" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isPhone}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="tel" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isEmail}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="email" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isDouble}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="number" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isPercent}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="number" formatter="percent" step="0.01" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isURL}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="url" value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
+                                                        </div>
+                                                    </template>
+                                                    <template if:true={param.isRichText}>
+                                                        <div id={param.aPIName} class="slds-truncate" title={param.value}>
+                                                            <lightning-input-rich-text data-type={param.type} data-field={param.aPIName} variant=label-hidden value={param.value} onchange={handleValueUpdate} placeholder={param.placeHolder}>
+                                                            </lightning-input-rich-text>
+                                                        </div>
+                                                    </template>
                                                 </td>
                                             </tr>
                                         </template>            

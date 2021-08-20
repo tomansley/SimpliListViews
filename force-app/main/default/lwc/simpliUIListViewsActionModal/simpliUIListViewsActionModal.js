@@ -40,11 +40,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
         if (data) { 
             console.log('SUCCESS DATA GET ' + data); 
             this.listViewAction = data;
-            if (this.listViewAction.parameters.length === 0) {
-                this.hasParameters = false;
-            } else {
-                this.hasParameters = true;
-            }
+            this.hasParameters = this.listViewAction.hasDisplayParameters;
         } else if (error) {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.listViewAction = undefined;}
@@ -56,6 +52,11 @@ export default class simpliUIListViewsActionModal extends LightningElement {
         var resultStr;
         var valuesMap = new Map();
         var strValuesMap;
+
+        //get all the non-displayed parameters into the request data map
+        this.listViewAction.nonDisplayParameters.forEach(element => { 
+            this.requestDataMap.set(element.label, element.value);
+        });        
 
         //get all the externally named values into a JSON string
         for (let [k, v] of this.requestDataMap) {
@@ -123,10 +124,10 @@ export default class simpliUIListViewsActionModal extends LightningElement {
   
     //called when a value is changed.
     handleValueUpdate(event) {
-        var name = event.target.name;
+        var name = event.currentTarget.dataset.field;
         var value = event.target.value;
         this.requestDataMap.set(name, value);
-        console.log('Value updated - ' + event.target.name + ' - ' + event.target.value);
+        console.log('Value updated - ' + event.currentTarget.dataset.field + ' - ' + event.target.value);
     }
 
     handleCancelClick() {
