@@ -26,7 +26,7 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
             System.debug(LoggingLevel.DEBUG, 'Record Ids        - ' + recordIds);
 
             //get the type of object from the provided Ids
-            objType = HelperSchema.getObjectTypeFromId(((String) recordIds[0]).substringBefore(':'));
+            objType = HelperSchema.getObjectTypeFromId(recordIds[0]);
 
             //get an apex Type of the object type
             Type t = Type.forName(objType);

@@ -1442,7 +1442,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             selectedRows.forEach(element => { 
                                                 if (element.checked === true && element.value != 'all')
                                                 {
-                                                    selectedRecords.add(element.value);
+                                                    selectedRecords.add(element.value.substring(0, element.value.indexOf(':')));
                                                 }
                                             });
 

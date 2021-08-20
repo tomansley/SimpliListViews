@@ -29,7 +29,7 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
             System.debug(LoggingLevel.DEBUG, 'Field Values      - ' + fieldValues);
 
             //get the type of object from the provided Ids
-            objType = HelperSchema.getObjectTypeFromId(((String) recordIds[0]).substringBefore(':'));
+            objType = HelperSchema.getObjectTypeFromId(recordIds[0]);
 
             //get an apex Type of the object type
             Type t = Type.forName(objType);
