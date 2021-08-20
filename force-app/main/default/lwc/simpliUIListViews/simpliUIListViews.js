@@ -42,7 +42,7 @@ import getIsInitialized from '@salesforce/apex/ListViewController.getIsInitializ
 import getListViewObjects from '@salesforce/apex/ListViewController.getListViewObjects';
 import getObjectListViews from '@salesforce/apex/ListViewController.getObjectListViews';
 import getListViewData from '@salesforce/apex/ListViewController.getListViewData';
-import getListViewsActions from '@salesforce/apex/ListViewController.getListViewsActions';
+import getListViewActions from '@salesforce/apex/ListViewController.getListViewActions';
 import updateChangedListViews from '@salesforce/apex/ListViewController.updateChangedListViews';
 import updateAllListViews from '@salesforce/apex/ListViewController.updateAllListViews';
 import updateSingleListView from '@salesforce/apex/ListViewController.updateSingleListView';
@@ -109,10 +109,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track listViewDataRows;            //holds ALL PAGES of data that are returned.
     @track listViewDataRowsSize;        //holds total for ALL PAGES of data that are returned.
     @track listViewDataColumns;         //holds the data tables column information
-    @track selectedAction;              //holds the selected action API name if one is chosen.
+    @track selectedAction;              //holds the selected action complex object if one is chosen.
+    @track selectedActionKey;           //holds the selected action API name if one is chosen.
     @track selectedActionLabel;         //holds the selected action label if one is chosen.
-    @track objectActionList;            //holds the list of available actions for the selected object
-    //@track listViewConfigParams;        //holds the config parameters for the chosen list view (if one exists)
+    @track objectActionList;            //holds the (Complex Object) list of available actions for the selected object
+    //@track listViewConfigParams;       //holds the config parameters for the chosen list view (if one exists)
     @track showActionModal;             //indicates whether the action modal form should be displayed.
     @track showAdminModal;              //indicates whether the admin modal form should be displayed.
     @track selectedRecordIdsStr;        //holds the set of record ids that have been selected as a string
@@ -428,7 +429,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.isInitialized = data; 
         } else if (error) { 
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
-            this.objectActionList = undefined; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Checking Initialization',
                 message: 'There was an error checking for Simpli List Views initialization. Please see an administrator - ' + error.body.message,
@@ -439,13 +439,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     }
 
     /*
-     * Wiring to get the list of actions available for the provided object type
+     * Wiring to get the (Complex Object) list of actions available for the provided object type
      */
-    @wire (getListViewsActions, { objectType: '$selectedObject', listViewName: '$selectedListView' })
-    wiredListViewsActions({ error, data }) {
+    @wire (getListViewActions, { objectType: '$selectedObject', listViewName: '$selectedListView' })
+    wiredListViewActions({ error, data }) {
         if (data) { 
             console.log('List view actions retrieval successful for ' + this.pageName);
             this.objectActionList = data; 
+            
             console.log('Object action list size - ' + this.objectActionList.length); 
             if (this.objectActionList.length === 0 || this.displayActions === false) {
                 this.canDisplayActions = false;
@@ -556,6 +557,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.displayReprocess = false;
             }
 
+            this.textSearchText = '';
             this.isInitializing = false;
             this.spinnerOff();
             
@@ -1296,14 +1298,33 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         var selectedRecords = new Set();
         var selectedRowId = '';
         
-        this.selectedAction = event.target.value;
+        this.selectedActionKey = event.target.value;
 
-        console.log('Chosen Action - ' + this.selectedAction + ' for ' + this.pageName);
+        console.log('Chosen Action - ' + this.selectedActionKey + ' for ' + this.pageName);
+
+        this.objectActionList.forEach(action => {
+                                                    if (action.value === this.selectedActionKey) {
+                                                        this.selectedAction = action;
+                                                    }
+                                                });
+
+        //------------------------------------------------------
+        //HYPERLINK
+        //------------------------------------------------------
+        if (this.selectedAction.isHyperlink === true)
+        {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__webPage',
+                attributes: {
+                    url: this.selectedAction.hyperlink,
+                },
+            });
+            
 
         //------------------------------------------------------
         //NEW
         //------------------------------------------------------
-        if (this.selectedAction.startsWith('New:'))
+        } else if (this.selectedAction.label === 'New')
         {
             this[NavigationMixin.Navigate]({
                 type: 'standard__objectPage',
@@ -1317,7 +1338,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         //CLONE
         //------------------------------------------------------
-        } else if (this.selectedAction.startsWith('Clone:'))
+        } else if (this.selectedAction.label === 'Clone')
         {
 
             //get the selected record Id
@@ -1354,7 +1375,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         //EDIT
         //------------------------------------------------------
-        } else if (this.selectedAction.startsWith('Edit:'))
+        } else if (this.selectedAction.label === 'Edit')
         {
 
             //get the selected record Id
@@ -1393,7 +1414,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         //EDIT All
         //------------------------------------------------------
-        } else if (this.selectedAction.startsWith('EditAll:'))
+        } else if (this.selectedAction.label === 'EditAll')
         {
 
             console.log('We are editing all records for ' + this.pageName);
@@ -1433,16 +1454,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     mode: 'dismissable'
                 }));
                 this.dispatchEvent(new CustomEvent('processclick'));
-
-                return;
             
             } else {
                 this.selectedRecordIdsStr = JSON.stringify( Array.from(selectedRecords));
 
-                this.selectedActionLabel = 'Label ' + this.selectedAction;               //   <-- This to be fixed.
+                this.selectedActionLabel = 'Label ' + this.selectedAction.label;               //   <-- This to be fixed.
                 
                 console.log('Action Label selected - ' + this.selectedActionLabel + ' for ' + this.pageName);
-                console.log('Action name           - ' + this.selectedAction + ' for ' + this.pageName);
+                console.log('Action name           - ' + this.selectedAction.value + ' for ' + this.pageName);
                 console.log('Action Record Ids     - ' + this.selectedRecordIdsStr + ' for ' + this.pageName);
         
                 this.showActionModal = true;

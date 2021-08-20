@@ -4,12 +4,13 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-16-2021
+ * @Last Modified On   : 08-20-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    06/11/2020   tom.h.ansley@medtronic.com     Initial Version
  * 2.0    07/27/2020   tom.h.ansley@medtronic.com     Added getAllObjectNames(), beefed up getValueForField() to correctly handle null values, added isEditable field to the field wrapper.
  * 3.0    08-02-2021   tom.h.ansley@medtronic.com     Added getFieldData(Map<String, Object>, String, String) method for Tooling API
+ * 4.0    08-19-2021   tom.h.ansley@medtronic.com     Added getObjectPluralName(String) method, added getFieldLabel(String, String)
  **/
 public with sharing class HelperSchema {
 
@@ -149,6 +150,11 @@ public with sharing class HelperSchema {
         return result;
     }
     
+	public static String getObjectPluralName(String objName)
+	{
+		return getObjectSchema(objName).getLabelPlural();
+    }
+    
     /*
        System.debug(LoggingLEvel.DEBUG, 'FAKE RESULT - ' + HelperSchema.isObject('Fake Object'));
        System.debug(LoggingLEvel.DEBUG, 'FAKE RESULT - ' + HelperSchema.isObject('ApexLog'));
@@ -210,6 +216,18 @@ public with sharing class HelperSchema {
         return getFieldByKey(obj, field, NAME);
     }
 	
+	public static String getFieldLabel(String obj, String field)
+	{
+		String label = '';
+		Schema.SObjectField objField = getFieldByKey(obj, field, NAME);
+		
+		if (objField != null)
+			label = objField.getDescribe().getLabel();
+		
+		return label;
+		
+    }
+    
 	public static Schema.DisplayType getFieldType(String obj, String field)
 	{
 		
@@ -332,6 +350,7 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method to determine if a given object and field name is valid.
+       System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.isValidSFDCFieldName('Contact', 'Email'));
 	 */
 	public static Boolean isValidSFDCFieldName(String objName, String sfdcFieldName)
 	{
@@ -578,7 +597,7 @@ public with sharing class HelperSchema {
                     {
                         System.debug(LoggingLevel.DEBUG, 'We have attribs!');
                         Map<String, Object> attribs = (Map<String, Object>) currentStructure.get('attributes');
-                        String url = (String) attribs.get('url');
+                        String url = (String) attribs.get(ListViewHelper.TYPE_URL);
                         data.valueId = url.substringAfterLast('/');
                         System.debug(LoggingLevel.DEBUG, 'Id - ' + data.valueId);
                     }

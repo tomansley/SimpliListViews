@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-18-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -15,6 +15,7 @@
  *                                                 Added DisplayTextSearch org wide config
  * 6.0   08-03-2021   tom.h.ansley@medtronic.com   Performance enhancement when retrieving listview objects
  * 7.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
+ * 8.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables, added hyperlink action config
  **/
 global with sharing class ListViewHelper {
     
@@ -25,17 +26,26 @@ global with sharing class ListViewHelper {
     public static final String TYPE_CORE   = 'Core';
     public static final String TYPE_CUSTOM = 'Custom';
     
-    public static final String TYPE_BOOLEAN     = 'boolean';
-    public static final String TYPE_DOUBLE      = 'double';
-    public static final String TYPE_STRING      = 'string';
-    public static final String TYPE_DECIMAL     = 'decimal';
-    public static final String TYPE_CURRENCY    = 'currency';
-    public static final String TYPE_DATE        = 'date';
-    public static final String TYPE_DATETIME    = 'datetime';
-    public static final String TYPE_NUMBER      = 'number';
-    public static final String TYPE_BLOB        = 'blob';
-    public static final String TYPE_PERCENT     = 'percent';
-    public static final String TYPE_TIME        = 'time';
+    public static final String TYPE_BOOLEAN       = 'boolean';
+    public static final String TYPE_DOUBLE        = 'double';
+    public static final String TYPE_STRING        = 'string';
+    public static final String TYPE_DECIMAL       = 'decimal';
+    public static final String TYPE_CURRENCY      = 'currency';
+    public static final String TYPE_DATE          = 'date';
+    public static final String TYPE_DATETIME      = 'datetime';
+    public static final String TYPE_NUMBER        = 'number';
+    public static final String TYPE_BLOB          = 'blob';
+    public static final String TYPE_PERCENT       = 'percent';
+    public static final String TYPE_TIME          = 'time';
+    public static final String TYPE_PICKLIST      = 'picklist';
+    public static final String TYPE_MULTI_PICK    = 'multipicklist';
+    public static final String TYPE_LOOKUP        = 'lookup';
+    public static final String TYPE_TEXTAREA      = 'textarea';
+    public static final String TYPE_RICH_TEXTAREA = 'rich textarea';
+    public static final String TYPE_URL           = 'url';
+    public static final String TYPE_EMAIL         = 'email';
+    public static final String TYPE_PHONE         = 'phone';
+    public static final String TYPE_INTEGER       = 'integer';
 
     public static final String SUBTYPE_MANUAL = 'Manual';
     public static final String SUBTYPE_TOOLING = 'Tooling';
@@ -1201,6 +1211,14 @@ global with sharing class ListViewHelper {
 
         actions.add(oppsCloseUpdateAction);
 
+        List_View_Action__c hyperAction = new List_View_Action__c();
+        hyperAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        hyperAction.Label__c            = 'Go To A Cool App';
+        hyperAction.Object_Type__c      = 'simpli_lv__List_View__c';
+        hyperAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+
+        actions.add(hyperAction);
+
         HelperDatabase.insertRecords(actions, 'Simpli_lv__List_View_Action__c');
 
         List<List_View_Action_Parameter__c> params = new List<List_View_Action_Parameter__c>();
@@ -1211,7 +1229,7 @@ global with sharing class ListViewHelper {
         param.Display_Order__c    = 1;
         param.List_View_Action__c = acctUpdateAction.Id;
         param.Placeholder_Text__c = 'Account name goes here...';
-        param.Type__c             = 'STRING';
+        param.Type__c             = ListViewHelper.TYPE_STRING;
 
         params.add(param);
 
@@ -1221,7 +1239,7 @@ global with sharing class ListViewHelper {
         param.Display_Order__c    = 2;
         param.List_View_Action__c = acctUpdateAction.Id;
         param.Placeholder_Text__c = 'Industry goes here...';
-        param.Type__c             = 'STRING';
+        param.Type__c             = ListViewHelper.TYPE_STRING;
 
         params.add(param);
 
@@ -1231,7 +1249,17 @@ global with sharing class ListViewHelper {
         param.Display_Order__c    = 1;
         param.List_View_Action__c = oppsCloseUpdateAction.Id;
         param.Placeholder_Text__c = '';
-        param.Type__c             = 'DATE';
+        param.Type__c             = ListViewHelper.TYPE_DATE;
+
+        params.add(param);
+
+        param                     = new List_View_Action_Parameter__c();
+        param.Field_API_Name__c   = 'URL';
+        param.Label__c            = 'URL';
+        param.Display_Order__c    = -1;
+        param.List_View_Action__c = hyperAction.Id;
+        param.Type__c             = ListViewHelper.TYPE_URL;
+        param.Default_Value__c    = 'https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000FZ7BDUA1';
 
         params.add(param);
 
@@ -1271,7 +1299,7 @@ global with sharing class ListViewHelper {
         List_View_Config_Parameter__c param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config.Id;
         param2.Parameter_Name__c   = 'AdditionalFields';
-        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param2.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
         param2.Parameter_Label__c  = 'Additional Fields';
         params2.add(param2);
@@ -1279,7 +1307,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config.Id;
         param2.Parameter_Name__c   = 'TotalColumns';
-        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param2.Parameter_Value__c  = 'AnnualRevenue';
         param2.Parameter_Label__c  = 'Total Columns';
         params2.add(param2);
@@ -1298,7 +1326,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'ListViewObjects';
-        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param2.Parameter_Value__c  = '';
         param2.Parameter_Label__c  = 'List View Objects';
         params2.add(param2);
@@ -1306,7 +1334,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'IncludedObjectTypes';
-        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param2.Parameter_Value__c  = '';
         param2.Parameter_Label__c  = 'Included Object Types';
         params2.add(param2);
@@ -1314,7 +1342,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'ExcludedObjectTypes';
-        param2.Parameter_Type__c   = 'String';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param2.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
         param2.Parameter_Label__c  = 'Excluded Object Types';
         params2.add(param2);
@@ -1322,7 +1350,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'DisplayActionsButton';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Display Actions Button';
         params2.add(param2);
@@ -1330,7 +1358,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'AllowAdmin';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Display Admin Button';
         params2.add(param2);
@@ -1338,7 +1366,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Display List View Reprocessing Button';
         params2.add(param2);
@@ -1346,7 +1374,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'DisplayOriginalListViewButton';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Display Original List View Button';
         params2.add(param2);
@@ -1354,7 +1382,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'DisplaySelectedCount';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Display Selected Count';
         params2.add(param2);
@@ -1362,7 +1390,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'AllowDataExport';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Allow Data Export';
         params2.add(param2);
@@ -1370,7 +1398,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'AllowAutomaticDataRefresh';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Allow Automatic Data Refresh';
         params2.add(param2);
@@ -1378,7 +1406,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'DisplayRowCount';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Display Row Count';
         params2.add(param2);
@@ -1386,7 +1414,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'MaxRowsDisplayed';
-        param2.Parameter_Type__c   = 'Number';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
         param2.Parameter_Value__c  = '2500';
         param2.Parameter_Label__c  = 'Max Rows Displayed';
         params2.add(param2);
@@ -1394,7 +1422,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'QueryPagingSize';
-        param2.Parameter_Type__c   = 'Number';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
         param2.Parameter_Value__c  = '250';
         param2.Parameter_Label__c  = 'Query Paging Size';
         params2.add(param2);
@@ -1402,7 +1430,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'IsInitialized';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'false';
         param2.Parameter_Label__c  = 'Is Initialized';
         params2.add(param2);
@@ -1410,7 +1438,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'AllowInlineEditing';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Allow Inline Editing';
         params2.add(param2);
@@ -1418,7 +1446,7 @@ global with sharing class ListViewHelper {
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'DisplayTextSearch';
-        param2.Parameter_Type__c   = 'Boolean';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Display Text Search';
         params2.add(param2);
@@ -1428,7 +1456,7 @@ global with sharing class ListViewHelper {
         //---------------------------------------
         param2 = new List_View_Config_Parameter__c();
 		param2.Parameter_Name__c = 'AdditionalFields';
-		param2.Parameter_Type__c = 'String';
+		param2.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param2.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
 		param2.List_View_Config__c = config3.Id;
         param2.Parameter_Label__c  = 'Additional Fields';
@@ -1436,7 +1464,7 @@ global with sharing class ListViewHelper {
         
         param2 = new List_View_Config_Parameter__c();
 		param2.Parameter_Name__c = 'TotalColumns';
-		param2.Parameter_Type__c = 'String';
+		param2.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param2.Parameter_Value__c = 'AnnualRevenue';
 		param2.List_View_Config__c = config3.Id;
         param2.Parameter_Label__c  = 'Total Columns';

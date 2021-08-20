@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-18-2021
+  @last modified on  : 08-20-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -650,7 +650,7 @@
         <!-- The modal view if the ACTION button is pressed and we need to display something    -->
         <!-- ---------------------------------------------------------------------------------- -->
         <c-simpli-u-i-list-views-action-modal show-modal={showActionModal}
-                                        action-api-name={selectedAction}
+                                        action-api-name={selectedActionKey}
                                         record-count={selectedRecordCount}
                                         record-ids={selectedRecordIdsStr}
                                         onprocessed={processActionModal}

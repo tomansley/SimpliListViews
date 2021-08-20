@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-17-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -11,6 +11,7 @@
  * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added logic when list views are not initialized
  * 4.0   07-30-2021   tom.h.ansley@medtronic.com   Added updateRecords() method
  * 5.0   08-16-2021   tom.h.ansley@medtronic.com   Updated getListViewsActions() and added permission check for each action before display
+ * 6.0   08-20-2021   tom.h.ansley@medtronic.com   renamed getListViewsActions() to getListViewActions()
 **/
 public without sharing class ListViewController
 {
@@ -313,19 +314,11 @@ public without sharing class ListViewController
 	}
 
     @AuraEnabled(cacheable=true)
-    public static List<SelectOption> getListViewsActions(String objectType, String listViewName)
+    public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewsActions(' + objectType + ', ' + listViewName + ')');
-        List<SelectOption> actionsOptions = new List<SelectOption>();
-
-        Map<String, String> actions = ListViewActionHelper.getListViewActionsForListView(objectType, listViewName);
-
-        for (String actionName: actions.keySet())
-            actionsOptions.add(new SelectOption(actions.get(actionName), actionName));
-
-        actionsOptions.sort();
-
-        return actionsOptions;
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewActions(' + objectType + ', ' + listViewName + ')');
+        
+        return ListViewActionHelper.getListViewActions(objectType, listViewName);
     }
 
     @AuraEnabled(cacheable=true)

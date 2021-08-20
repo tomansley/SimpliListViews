@@ -1,17 +1,18 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-18-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
  * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic to handle identification of inline-editing for rows and fields. Beefed up FieldWrapper to handle inline-editing (mainly type identification methods), 
+ * 4.0   08-20-2021   tom.h.ansley@medtronic.com   Updated all strings to static final variables, Added display vs. non-display action params and added hyperlink action type 
 **/
 public with sharing abstract class ListViewAbstract {
     
-    public static Set<String> validTotalColumns = new Set<String>{'integer', 'decimal', 'currency'};
+    public static Set<String> validTotalColumns = new Set<String>{ListViewHelper.TYPE_INTEGER, ListViewHelper.TYPE_DECIMAL, ListViewHelper.TYPE_CURRENCY};
     public static Set<String> validNameColumnNames = new Set<String>{'name', 'casenumber'}; //holds the list of column names that if found will produce a link to the record.
 
     public List_View__c listview = null;                              //holds the list view record associated with this request.
@@ -454,7 +455,7 @@ public with sharing abstract class ListViewAbstract {
             {
                 if (fieldsByColumn.get(column.columnIndex) == null)
                 {
-                    addField(new FieldWrapper('', 'string', String.valueOf(column.columnIndex), column.columnIndex));
+                    addField(new FieldWrapper('', ListViewHelper.TYPE_STRING, String.valueOf(column.columnIndex), column.columnIndex));
                 }
             }
             List<FieldWrapper> sortedFields = fields.values();
@@ -757,8 +758,8 @@ public with sharing abstract class ListViewAbstract {
 
         public void setType(String type)
         {
-            if (type == 'string' && this.name.contains('.Name'))
-                this.type = 'lookup';
+            if (type == ListViewHelper.TYPE_STRING && this.name.contains('.Name'))
+                this.type = ListViewHelper.TYPE_LOOKUP;
             else 
                 this.type = type;
         }
@@ -882,28 +883,28 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public Boolean getIsString()
         {
-            if (this.type == 'string') return true;
+            if (this.type == ListViewHelper.TYPE_STRING) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsTextArea()
         {
-            if (this.type == 'textarea') return true;
+            if (this.type == ListViewHelper.TYPE_TEXTAREA) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsURL()
         {
-            if (this.type == 'url') return true;
+            if (this.type == ListViewHelper.TYPE_URL) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsBoolean()
         {
-            if (this.type == 'boolean') return true;
+            if (this.type == ListViewHelper.TYPE_BOOLEAN) return true;
             return false;    
         }
         
@@ -952,91 +953,91 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public Boolean getIsLookup()
         {
-            if (this.type == 'lookup') return true;
+            if (this.type == ListViewHelper.TYPE_LOOKUP) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsCurrency()
         {
-            if (this.type == 'currency') return true;
+            if (this.type == ListViewHelper.TYPE_CURRENCY) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsDate()
         {
-            if (this.type == 'date') return true;
+            if (this.type == ListViewHelper.TYPE_DATE) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsDateTime()
         {
-            if (this.type == 'datetime') return true;
+            if (this.type == ListViewHelper.TYPE_DATETIME) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsTime()
         {
-            if (this.type == 'time') return true;
+            if (this.type == ListViewHelper.TYPE_TIME) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsPicklist()
         {
-            if (this.type == 'picklist') return true;
+            if (this.type == ListViewHelper.TYPE_PICKLIST) return true;
             return false;    
         }
 
         @AuraEnabled(cacheable=true)
         public Boolean getIsMultiPicklist()
         {
-            if (this.type == 'multipicklist') return true;
+            if (this.type == ListViewHelper.TYPE_MULTI_PICK) return true;
             return false;    
         }
 
         @AuraEnabled(cacheable=true)
         public Boolean getIsDecimal()
         {
-            if (this.type == 'decimal') return true;
+            if (this.type == ListViewHelper.TYPE_DECIMAL) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsInteger()
         {
-            if (this.type == 'integer') return true;
+            if (this.type == ListViewHelper.TYPE_INTEGER) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsDouble()
         {
-            if (this.type == 'double') return true;
+            if (this.type == ListViewHelper.TYPE_DOUBLE) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsPercent()
         {
-            if (this.type == 'percent') return true;
+            if (this.type == ListViewHelper.TYPE_PERCENT) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsPhone()
         {
-            if (this.type == 'phone') return true;
+            if (this.type == ListViewHelper.TYPE_PHONE) return true;
             return false;    
         }
         
         @AuraEnabled(cacheable=true)
         public Boolean getIsEmail()
         {
-            if (this.type == 'email') return true;
+            if (this.type == ListViewHelper.TYPE_EMAIL) return true;
             return false;    
         }
         
@@ -1343,7 +1344,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean getUpdateImmediate()
         {
             if (getType().toLowerCase() == 'color' 
-                || getType().toLowerCase() == 'boolean') 
+                || getType().toLowerCase() == ListViewHelper.TYPE_BOOLEAN) 
                 return true;
             else 
                 return false;
@@ -1352,7 +1353,7 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public Boolean getIsBoolean()
         {
-            if (getType().toLowerCase() == 'boolean') 
+            if (getType().toLowerCase() == ListViewHelper.TYPE_BOOLEAN) 
                 return true;
             else 
                 return false;            
@@ -1380,26 +1381,61 @@ public with sharing abstract class ListViewAbstract {
     public class ActionWrapper
     {
         public List_View_Action__c action;
-        public List<ActionParameterWrapper> parameters;
+        public List<ActionParameterWrapper> displayParameters;
+        public List<ActionParameterWrapper> nonDisplayParameters;
 
         public ActionWrapper(List_View_Action__c action)
         {
             this.action = action;
-            parameters = new List<ActionParameterWrapper>();
+            displayParameters = new List<ActionParameterWrapper>();
+            nonDisplayParameters = new List<ActionParameterWrapper>();
             for (List_View_Action_Parameter__c param: action.List_View_Action_Parameters__r)
-                parameters.add(new ActionParameterWrapper(param));
+            {
+                ActionParameterWrapper wrapper = new ActionParameterWrapper(param);
+                if (wrapper.getIsDisplayed())
+                    displayParameters.add(wrapper);
+                else
+                    nonDisplayParameters.add(wrapper);
+            }
         }
 
         @AuraEnabled(cacheable=true)
-        public List<ActionParameterWrapper> getParameters()
+        public Boolean getHasDisplayParameters()
         {
-            return parameters;    
+            if (displayParameters.size() > 0)
+                return true;
+            else
+                return false;
         }
 
         @AuraEnabled(cacheable=true)
-        public String getLabel()
+        public List<ActionParameterWrapper> getDisplayParameters()
+        {
+            return displayParameters;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public List<ActionParameterWrapper> getNonDisplayParameters()
+        {
+            return nonDisplayParameters;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLabel() //do not change this. Its used on the UI for SelectOption
         {
             return action.Label__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getPrimaryKey()
+        {
+            return action.Primary_Key__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getValue() //do not change this. Its used on the UI for SelectOption
+        {
+            return action.Primary_Key__c;
         }
 
         @AuraEnabled(cacheable=true)
@@ -1408,6 +1444,29 @@ public with sharing abstract class ListViewAbstract {
             return action.Object_Type__c;
         }
 
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsHyperlink()
+        {
+            return action.Is_Hyperlink__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getHyperlinkTarget()
+        {
+            return action.Hyperlink_Target__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getHyperlink()
+        {
+            String url = '';
+            for (ActionParameterWrapper param: nonDisplayParameters)
+            {
+                if (param.getAPIName().toUpperCase() == ListViewActionHelper.PARAM_KEY_URL)
+                    url = param.getValue();
+            }
+            return url;
+        }
     }
 
     //---------------------------------------------------------
@@ -1452,6 +1511,140 @@ public with sharing abstract class ListViewAbstract {
             return param.Placeholder_Text__c;
         }
 
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDisplayed()
+        {
+            if (param.Display_Order__c == -1)
+                return false;
+            else    
+                return true;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsString()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_STRING) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTextArea()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_TEXTAREA) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsURL()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_URL) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsBoolean()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_BOOLEAN) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsLookup()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_LOOKUP) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsCurrency()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_CURRENCY) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDate()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_DATE) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDateTime()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_DATETIME) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTime()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_TIME) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPicklist()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_PICKLIST) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsMultiPicklist()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_MULTI_PICK) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDecimal()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_DECIMAL) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsInteger()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_INTEGER) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDouble()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_DOUBLE) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPercent()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_PERCENT) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPhone()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_PHONE) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsEmail()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_EMAIL) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsRichText()
+        {
+            if (param.Type__c == ListViewHelper.TYPE_RICH_TEXTAREA) return true;
+            return false;    
+        }
     }
 
 }

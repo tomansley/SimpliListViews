@@ -2,12 +2,13 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-16-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
+ * 3.0   08-20-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables, added 2 new fields - Is_Hyperlink__c, Hyperlink_Target__c, new logic to handle whether actions are displayed based on user permissions
 **/
 public with sharing class ListViewActionHelper {
 
@@ -18,6 +19,8 @@ public with sharing class ListViewActionHelper {
     public static final String PERM_READ   = 'Read';
     public static final String PERM_EDIT   = 'Edit';
     public static final String PERM_DELETE = 'Delete';
+
+    public static final String PARAM_KEY_URL = 'URL';
 
     public static String getPrimaryKey(List_View_Action__c action)
     {
@@ -36,6 +39,8 @@ public with sharing class ListViewActionHelper {
                                                         RecordTypeId,
                                                         RecordType.Name,
                                                         Permissions__c,
+                                                        Is_Hyperlink__c,
+                                                        Hyperlink_Target__c,
                                                         (SELECT Field_API_Name__c,
                                                                 Label__c,
                                                                 Display_Order__c,
@@ -63,6 +68,8 @@ public with sharing class ListViewActionHelper {
                         RecordTypeId,
                         RecordType.Name,
                         Permissions__c,
+                        Is_Hyperlink__c,
+                        Hyperlink_Target__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -80,11 +87,11 @@ public with sharing class ListViewActionHelper {
     * @author tom.h.ansley@medtronic.com | 08-15-2021 
     * @return Map<String, String> the primary key of the action and the action name
     **/
-    public static Map<String, String> getListViewActionsForListView(String objectType, String listViewName)
+    public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName)
     {
-        Map<String, String> actions = new Map<String, String>();
+        List<ListViewAbstract.ActionWrapper> actions = new List<ListViewAbstract.ActionWrapper>();
 
-        //get the list view
+        //get the list views
         List_View__c listview = ListViewHelper.getListViews(objectType, listViewName).values()[0];
 
         //get the actions based on the list view
@@ -94,27 +101,10 @@ public with sharing class ListViewActionHelper {
         {
             List_View_Action__c action = lvActions.get(actionName);
             if (canPerformAction(objectType, action))
-                actions.put(actionName, action.Primary_Key__c);         
+                actions.add(new ListViewAbstract.ActionWrapper(action));         
         }
 
         return actions;
-    }
-
-    public static Boolean canPerformAction(String objectType, List_View_Action__c action)
-    {
-        Boolean result = true;
-        if (!String.isEmpty(action.Permissions__c))
-        {
-            if (action.Permissions__c.contains(PERM_CREATE))
-                result = HelperSchema.checkObjectCreateable(objectType, false);       
-            if (action.Permissions__c.contains(PERM_EDIT))
-                result = HelperSchema.checkObjectUpdateable(objectType, false);       
-            if (action.Permissions__c.contains(PERM_DELETE))
-                result = HelperSchema.checkObjectDeletable(objectType, false);       
-            if (action.Permissions__c.contains(PERM_READ))
-                result = HelperSchema.checkObjectAccessible(objectType, false);       
-        }
-        return result;
     }
 
     /**
@@ -147,8 +137,18 @@ public with sharing class ListViewActionHelper {
                                                 Subtype__c,
                                                 RecordTypeId,
                                                 RecordType.Name,
-                                                Permissions__c
-                                            FROM List_View_Action__c
+                                                Permissions__c,
+                                                Is_Hyperlink__c,
+                                                Hyperlink_Target__c,
+                                                (SELECT Field_API_Name__c,
+                                                        Label__c,
+                                                        Display_Order__c,
+                                                        Type__c,
+                                                        Default_Value__c,
+                                                        Placeholder_Text__c
+                                                FROM List_View_Action_Parameters__r
+                                                ORDER BY Display_Order__c NULLS LAST)
+                                                    FROM List_View_Action__c
                                             WHERE RecordTypeId = :rt
                                                     AND (Object_Type__c = :listview.Object_Name__c
                                                         OR Object_Type__c = NULL)
@@ -161,5 +161,22 @@ public with sharing class ListViewActionHelper {
             actionsByName.put(action.Label__c, action);
 
         return actionsByName;
+    }
+
+    private static Boolean canPerformAction(String objectType, List_View_Action__c action)
+    {
+        Boolean result = true;
+        if (!String.isEmpty(action.Permissions__c))
+        {
+            if (action.Permissions__c.contains(PERM_CREATE))
+                result = HelperSchema.checkObjectCreateable(objectType, false);       
+            if (action.Permissions__c.contains(PERM_EDIT))
+                result = HelperSchema.checkObjectUpdateable(objectType, false);       
+            if (action.Permissions__c.contains(PERM_DELETE))
+                result = HelperSchema.checkObjectDeletable(objectType, false);       
+            if (action.Permissions__c.contains(PERM_READ))
+                result = HelperSchema.checkObjectAccessible(objectType, false);       
+        }
+        return result;
     }
 }
