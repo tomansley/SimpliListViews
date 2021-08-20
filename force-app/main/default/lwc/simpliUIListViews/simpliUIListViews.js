@@ -1414,7 +1414,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         //EDIT All
         //------------------------------------------------------
-        } else if (this.selectedAction.label === 'EditAll')
+        } else if (this.selectedAction.label === 'Edit All')
         {
 
             console.log('We are editing all records for ' + this.pageName);

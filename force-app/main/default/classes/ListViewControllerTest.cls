@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-18-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -261,7 +261,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(field.getURL(), null);
 
         
-        List<ListViewController.SelectOption> actions = ListViewController.getListViewsActions('Account', 'AllAccounts');
+        List<ListViewAbstract.ActionWrapper> actions = ListViewController.getListViewActions('Account', 'AllAccounts');
 
         System.assertNotEquals(actions, null);
         System.assert(actions.size() > 0);
