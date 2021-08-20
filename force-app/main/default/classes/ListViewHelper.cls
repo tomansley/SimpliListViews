@@ -1144,13 +1144,8 @@ global with sharing class ListViewHelper {
         return soql;
     }
 
-    global static void insertCoreConfiguration()
+    public static List<List_View_Action__c> insertCoreActions()
     {
-
-        //-----------------------------------------------------
-        // Create List View Actions
-        //-----------------------------------------------------
-
         List<List_View_Action__c> actions = new List<List_View_Action__c>();
 
         List_View_Action__c orgNewAction = new List_View_Action__c();
@@ -1158,6 +1153,7 @@ global with sharing class ListViewHelper {
         orgNewAction.Label__c            = 'New';
         orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgNewAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
+        orgNewAction.Is_Active__c        = true;
 
         actions.add(orgNewAction);
 
@@ -1166,6 +1162,7 @@ global with sharing class ListViewHelper {
         orgCloneAction.Label__c            = 'Clone';
         orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgCloneAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
+        orgCloneAction.Is_Active__c        = true;
 
         actions.add(orgCloneAction);
 
@@ -1174,6 +1171,7 @@ global with sharing class ListViewHelper {
         orgEditAction.Label__c            = 'Edit';
         orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgEditAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+        orgEditAction.Is_Active__c        = true;
 
         actions.add(orgEditAction);
 
@@ -1182,6 +1180,7 @@ global with sharing class ListViewHelper {
         orgEditAllAction.Label__c            = 'Edit All';
         orgEditAllAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgEditAllAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+        orgEditAllAction.Is_Active__c        = true;
 
         actions.add(orgEditAllAction);
 
@@ -1190,6 +1189,7 @@ global with sharing class ListViewHelper {
         orgDeleteAction.Label__c            = 'Delete';
         orgDeleteAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgDeleteAction.Permissions__c      = ListViewActionHelper.PERM_DELETE;
+        orgDeleteAction.Is_Active__c        = true;
 
         actions.add(orgDeleteAction);
 
@@ -1199,6 +1199,7 @@ global with sharing class ListViewHelper {
         acctUpdateAction.Object_Type__c      = 'Account';
         acctUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		acctUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+        acctUpdateAction.Is_Active__c        = true;
 
         actions.add(acctUpdateAction);
 
@@ -1208,6 +1209,7 @@ global with sharing class ListViewHelper {
         oppsCloseUpdateAction.Object_Type__c      = 'Opportunity';
         oppsCloseUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		oppsCloseUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+        oppsCloseUpdateAction.Is_Active__c        = true;
 
         actions.add(oppsCloseUpdateAction);
 
@@ -1215,10 +1217,21 @@ global with sharing class ListViewHelper {
         hyperAction.Apex_Class_Name__c  = 'ListViewActionNull';
         hyperAction.Label__c            = 'Go To A Cool App';
         hyperAction.Object_Type__c      = 'simpli_lv__List_View__c';
+        hyperAction.Is_Hyperlink__c     = true;
         hyperAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+        hyperAction.Is_Active__c        = true;
 
         actions.add(hyperAction);
 
+        List_View_Action__c mailAction = new List_View_Action__c();
+        mailAction.Apex_Class_Name__c  = 'ListViewActionEmail';
+        mailAction.Label__c            = 'Send Email';
+        mailAction.Object_Type__c      = 'Contact';
+        mailAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		mailAction.Permissions__c      = ListViewActionHelper.PERM_READ;
+        mailAction.Is_Active__c        = true;
+
+        actions.add(mailAction);
         HelperDatabase.insertRecords(actions, 'Simpli_lv__List_View_Action__c');
 
         List<List_View_Action_Parameter__c> params = new List<List_View_Action_Parameter__c>();
@@ -1263,12 +1276,33 @@ global with sharing class ListViewHelper {
 
         params.add(param);
 
+        param                     = new List_View_Action_Parameter__c();
+        param.Field_API_Name__c   = 'Subject';
+        param.Label__c            = 'Email Subject';
+        param.Display_Order__c    = 1;
+        param.List_View_Action__c = mailAction.Id;
+        param.Type__c             = ListViewHelper.TYPE_STRING;
+        param.Default_Value__c    = '';
+
+        params.add(param);
+
+        param                     = new List_View_Action_Parameter__c();
+        param.Field_API_Name__c   = 'Body';
+        param.Label__c            = 'Email Body';
+        param.Display_Order__c    = 2;
+        param.List_View_Action__c = mailAction.Id;
+        param.Type__c             = ListViewHelper.TYPE_RICH_TEXTAREA;
+        param.Default_Value__c    = '';
+
+        params.add(param);
+
         HelperDatabase.insertRecords(params, 'Simpli_lv__List_View_Action_Parameter__c');
 
-        //-----------------------------------------------------
-        // Create List View Configs
-        //-----------------------------------------------------
+        return actions;
+    }
 
+    public static List<List_View_Config__c> insertCoreListViewConfig()
+    {
         List<List_View_Config__c> configs = new List<List_View_Config__c>();
 
         List_View_Config__c config = new List_View_Config__c();
@@ -1493,9 +1527,11 @@ global with sharing class ListViewHelper {
 
         HelperDatabase.insertRecords(conditions, 'Simpli_lv__List_View_Config_Condition__c');
 
-        //-----------------------------------------------------
-        // Create List Views
-        //-----------------------------------------------------
+        return configs;
+    }
+
+    public static List<List_View__c> insertCoreListViews()
+    {
         List<List_View__c> listViews = new List<List_View__c>();
 
         List_View__c lv             = new List_View__c();
@@ -1532,6 +1568,17 @@ global with sharing class ListViewHelper {
         listViews.add(lv);
 
         HelperDatabase.insertRecords(listViews, 'Simpli_lv__List_View__c');
+
+        return listViews;
+    }
+
+    global static void insertCoreConfiguration()
+    {
+        insertCoreActions();
+
+        insertCoreListViewConfig();
+
+        insertCoreListViews();
     }
 
     /*

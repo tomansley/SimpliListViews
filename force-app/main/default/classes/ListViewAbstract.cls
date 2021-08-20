@@ -1451,12 +1451,6 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
-        public String getHyperlinkTarget()
-        {
-            return action.Hyperlink_Target__c;
-        }
-
-        @AuraEnabled(cacheable=true)
         public String getHyperlink()
         {
             String url = '';

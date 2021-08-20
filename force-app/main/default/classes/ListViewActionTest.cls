@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 06-30-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -19,7 +19,7 @@ private class ListViewActionTest {
     static testMethod void listViewActionParameterTest() 
     {
 
-        List<List_View_Action__c> lvActions = HelperTest.createListViewActions();
+        List<List_View_Action__c> lvActions = ListViewHelper.insertCoreActions();
 
         Test.startTest();
             List_View_Action__c updateAction = ListViewActionHelper.getListViewActionByKey('Update:Account');
@@ -46,7 +46,7 @@ private class ListViewActionTest {
     {
 
         Test.startTest();
-            List<List_View_Action__c> lvActions = HelperTest.createListViewActions();
+            List<List_View_Action__c> lvActions = ListViewHelper.insertCoreActions();
         Test.stopTest();
 
         System.assert(lvActions != null);
@@ -58,7 +58,7 @@ private class ListViewActionTest {
 
         Test.startTest();
         
-            HelperTest.createListViewActions();
+            ListViewHelper.insertCoreActions();
 
             List_View_Action__c deleteAction = ListViewActionHelper.getListViewActionByKey('Delete:null');
 
@@ -78,7 +78,7 @@ private class ListViewActionTest {
 
     static testMethod void listViewActionDeleteProcessTest() {
 
-        HelperTest.createListViewActions();
+        ListViewHelper.insertCoreActions();
 
         Account acct = HelperTest.insertAccount('List View Account');
 
@@ -94,7 +94,7 @@ private class ListViewActionTest {
 
     static testMethod void listViewActionUpdateProcessTest() {
 
-        HelperTest.createListViewActions();
+        ListViewHelper.insertCoreActions();
 
         Account acct = HelperTest.insertAccount('List View Account');
 
@@ -110,7 +110,7 @@ private class ListViewActionTest {
 
     static testMethod void listViewActionOppCloseProcessTest() {
 
-        HelperTest.createListViewActions();
+        ListViewHelper.insertCoreActions();
 
         Account acct = HelperTest.insertAccount('List View Account');
         Opportunity opp = HelperTest.insertOpportunity(acct, 'Opportunity 1');
@@ -134,6 +134,22 @@ private class ListViewActionTest {
             System.assertEquals(result, ListViewAction.RESULT_OK + ':');
 
         Test.stopTest();
+
+    }
+
+    static testMethod void listViewActionEmailTest() {
+
+        ListViewHelper.insertCoreActions();
+        Account acct = HelperTest.insertAccount('Send Email Test Account');
+        Contact cont = HelperTest.insertContact(acct);
+        
+        Test.startTest();
+        
+            String result = ListViewController.processAction('SendEmail:Contact', '["' + cont.Id + '"]', '[["Subject","Test Subject"],["Body","<p>This is the <b>email </b>body</p>"]]');
+
+        Test.stopTest();
+
+        System.assert(result.contains(ListViewAction.RESULT_OK + ':'));
 
     }
 

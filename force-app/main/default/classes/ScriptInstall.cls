@@ -272,7 +272,9 @@ global with sharing class ScriptInstall implements InstallHandler {
             Boolean hasEdit    = false;
             Boolean hasEditAll = false;
             Boolean hasHyper   = false;
+            Boolean hasMail    = false;
             List_View_Action__c hyperAction = null;
+            List_View_Action__c mailAction   = null;
             List<List_View_Action__c> newActions = new List<List_View_Action__c>();
             List<List_View_Action_Parameter__c> newActionParams = new List<List_View_Action_Parameter__c>();
             for (List_View_Action__c action: actions)
@@ -280,22 +282,29 @@ global with sharing class ScriptInstall implements InstallHandler {
                 if (action.Label__c == 'New' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_CREATE;
+                    action.Is_Active__c   = true;
                     hasNew = true;
                 } else if (action.Label__c == 'Clone' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_CREATE;
+                    action.Is_Active__c   = true;
                     hasClone = true;
                 } else if (action.Label__c == 'Edit' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_EDIT;
+                    action.Is_Active__c   = true;
                     hasEdit = true;
                 } else if (action.Label__c == 'Edit All' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_EDIT;
+                    action.Is_Active__c   = true;
                     hasEditAll = true;
                 } else if (action.Label__c == 'Go To A Cool App' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     hasHyper = true;
+                } else if (action.Label__c == 'Send Email' && action.Apex_Class_Name__c == 'ListViewActionEmail')
+                {
+                    hasMail = true;
                 }
             }
             
@@ -306,8 +315,21 @@ global with sharing class ScriptInstall implements InstallHandler {
                 hyperAction.Label__c            = 'Go To A Cool App';
                 hyperAction.Object_Type__c      = 'simpli_lv__List_View__c';
                 hyperAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-        
+                hyperAction.Is_Active__c        = true;
+
                 newActions.add(hyperAction);
+            }
+
+            if (!hasMail)
+            {
+                mailAction                     = new List_View_Action__c();
+                mailAction.Apex_Class_Name__c  = 'ListViewActionEmail';
+                mailAction.Label__c            = 'Send Email';
+                mailAction.Object_Type__c      = 'Contact';
+                mailAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+                hyperAction.Is_Active__c        = true;
+
+                newActions.add(mailAction);
             }
 
             if (!hasNew)
@@ -317,6 +339,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgNewAction.Label__c            = 'New';
                 orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 orgNewAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
+                orgNewAction.Is_Active__c        = true;
         
                 newActions.add(orgNewAction);
             }
@@ -328,6 +351,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgCloneAction.Label__c            = 'Clone';
                 orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 orgCloneAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
+                orgCloneAction.Is_Active__c        = true;
         
                 newActions.add(orgCloneAction);
             }
@@ -339,6 +363,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgEditAction.Label__c            = 'Edit';
                 orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 orgEditAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+                orgEditAction.Is_Active__c        = true;
                     
                 newActions.add(orgEditAction);
             }
@@ -350,6 +375,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgEditAllAction.Label__c            = 'Edit All';
                 orgEditAllAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 orgEditAllAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+                orgEditAllAction.Is_Active__c        = true;
                             
                 newActions.add(orgEditAllAction);
             }
@@ -370,7 +396,31 @@ global with sharing class ScriptInstall implements InstallHandler {
         
                 newActionParams.add(param);
             }
-            HelperDatabase.updateRecords(newActionParams, 'simpli_lv__List_View_Action_Parameters__c');
+
+            if (!hasMail)
+            {
+                List_View_Action_Parameter__c param = new List_View_Action_Parameter__c();
+                param.Field_API_Name__c   = 'Subject';
+                param.Label__c            = 'Email Subject';
+                param.Display_Order__c    = 1;
+                param.List_View_Action__c = mailAction.Id;
+                param.Type__c             = ListViewHelper.TYPE_STRING;
+                param.Default_Value__c    = '';
+        
+                newActionParams.add(param);
+        
+                param                     = new List_View_Action_Parameter__c();
+                param.Field_API_Name__c   = 'Body';
+                param.Label__c            = 'Email Body';
+                param.Display_Order__c    = 2;
+                param.List_View_Action__c = mailAction.Id;
+                param.Type__c             = ListViewHelper.TYPE_RICH_TEXTAREA;
+                param.Default_Value__c    = '';
+        
+                newActionParams.add(param);
+            }
+
+            HelperDatabase.updateRecords(newActionParams, 'simpli_lv__List_View_Action_Parameter__c');
 
             //send email notifying of the upgrade
             HelperEmail.sendInstallEmail('Upgraded');

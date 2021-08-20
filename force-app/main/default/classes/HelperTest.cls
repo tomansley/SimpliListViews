@@ -27,6 +27,18 @@ public with sharing class HelperTest {
 		return acc;
     }
     
+    public static Contact insertContact(Account acct)
+    {
+		Contact cont = new Contact();
+        cont.FirstName = 'Testy';
+        cont.LastName  = 'Testerson';
+        cont.Email     = 'testy@testerson.com';
+        cont.AccountId = acct.Id;
+        HelperDatabase.insertRecord(cont, 'Contact');
+		
+		return cont;
+    }
+    
     public static Opportunity insertOpportunity(Account acct, String name)
     {
 		Opportunity opp = new Opportunity(Name = name);
@@ -197,76 +209,6 @@ public with sharing class HelperTest {
 		HelperDatabase.updateRecord(orgWideConfig, 'simpli_lv__List_View_Config_Parameter__c');
 
 		return simpliListViews;
-	}
-
-	public static List<List_View_Action__c> createListViewActions()
-	{
-		List<List_View_Action__c> listViewActions = new List<List_View_Action__c>();
-
-		List_View_Action__c delAction = new List_View_Action__c();
-		delAction.Label__c            = 'Delete';
-        delAction.Object_Type__c      = '';
-        delAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		delAction.Apex_Class_Name__c  = 'ListViewActionDelete';
-		delAction.Permissions__c      = ListViewActionHelper.PERM_DELETE;
-
-		listViewActions.add(delAction);
-
-		List_View_Action__c updateAction = new List_View_Action__c();
-		updateAction.Label__c            = 'Update';
-		updateAction.Object_Type__c      = 'Account';
-        updateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		updateAction.Apex_Class_Name__c  = 'ListViewActionUpdate';
-		updateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
-
-		listViewActions.add(updateAction);
-
-        List_View_Action__c oppsCloseUpdateAction = new List_View_Action__c();
-        oppsCloseUpdateAction.Apex_Class_Name__c  = 'ListViewActionOppsClose';
-        oppsCloseUpdateAction.Label__c            = 'Set Close Lost';
-        oppsCloseUpdateAction.Object_Type__c      = 'Opportunity';
-        oppsCloseUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		oppsCloseUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
-
-        listViewActions.add(oppsCloseUpdateAction);
-
-        HelperDatabase.insertRecords(listViewActions, 'Simpli_lv__List_View_Action__c');
-
-		List<List_View_Action_Parameter__c> listViewActionParams = new List<List_View_Action_Parameter__c>();
-
-		List_View_Action_Parameter__c actionParam1 = new List_View_Action_Parameter__c();
-		actionParam1.Label__c            = 'Account Name';
-		actionParam1.Field_API_Name__c   = 'Name';
-		actionParam1.List_View_Action__c = updateAction.Id;
-		actionParam1.Type__c             = ListViewHelper.TYPE_STRING;
-		actionParam1.Default_Value__c    = 'Test Account Name';
-		actionParam1.Placeholder_Text__c = 'Enter an Account Name';
-
-		listViewActionParams.add(actionParam1);
-
-		List_View_Action_Parameter__c actionParam2 = new List_View_Action_Parameter__c();
-		actionParam2.Label__c            = 'Industry';
-		actionParam2.Field_API_Name__c   = 'Industry';
-		actionParam2.List_View_Action__c = updateAction.Id;
-		actionParam2.Type__c             = ListViewHelper.TYPE_STRING;
-		actionParam2.Default_Value__c    = 'Electrical';
-		actionParam2.Placeholder_Text__c = 'Enter an Industry';
-
-		listViewActionParams.add(actionParam2);
-
-        List_View_Action_Parameter__c actionParam3 = new List_View_Action_Parameter__c();
-        actionParam3.Field_API_Name__c   = 'CloseDate';
-        actionParam3.Label__c            = 'Close Date';
-        actionParam3.Display_Order__c    = 1;
-        actionParam3.List_View_Action__c = oppsCloseUpdateAction.Id;
-        actionParam3.Placeholder_Text__c = '';
-        actionParam3.Type__c             = ListViewHelper.TYPE_DATE;
-
-        listViewActionParams.add(actionParam3);
-        HelperDatabase.insertRecords(listViewActionParams, 'Simpli_lv__List_View_Action_Parameter__c');
-
-		return listViewActions;
-
 	}
 
 }

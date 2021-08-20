@@ -9,6 +9,7 @@
  * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
  * 3.0   08-20-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables, added 2 new fields - Is_Hyperlink__c, Hyperlink_Target__c, new logic to handle whether actions are displayed based on user permissions
+ * 4.0   08-20-2021   tom.h.ansley@medtronic.com   Removed Hyperlink_Target__c
 **/
 public with sharing class ListViewActionHelper {
 
@@ -40,7 +41,7 @@ public with sharing class ListViewActionHelper {
                                                         RecordType.Name,
                                                         Permissions__c,
                                                         Is_Hyperlink__c,
-                                                        Hyperlink_Target__c,
+                                                        Is_Active__c,
                                                         (SELECT Field_API_Name__c,
                                                                 Label__c,
                                                                 Display_Order__c,
@@ -50,7 +51,8 @@ public with sharing class ListViewActionHelper {
                                                         FROM List_View_Action_Parameters__r
                                                         ORDER BY Display_Order__c NULLS LAST)
                                                 FROM List_View_Action__c
-                                                WHERE Id IN :actionIds]);
+                                                WHERE Id IN :actionIds
+                                                    AND Is_Active__c = TRUE]);
     }
 
     /*
@@ -69,7 +71,7 @@ public with sharing class ListViewActionHelper {
                         RecordType.Name,
                         Permissions__c,
                         Is_Hyperlink__c,
-                        Hyperlink_Target__c,
+                        Is_Active__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -139,7 +141,7 @@ public with sharing class ListViewActionHelper {
                                                 RecordType.Name,
                                                 Permissions__c,
                                                 Is_Hyperlink__c,
-                                                Hyperlink_Target__c,
+                                                Is_Active__c,
                                                 (SELECT Field_API_Name__c,
                                                         Label__c,
                                                         Display_Order__c,
@@ -154,6 +156,7 @@ public with sharing class ListViewActionHelper {
                                                         OR Object_Type__c = NULL)
                                                     AND (Subtype__c = NULL
                                                         OR Subtype__c IN :subTypes)
+                                                    AND Is_Active__c = TRUE
                                              ORDER BY Label__c];
 
         Map<String, List_View_Action__c> actionsByName = new Map<String, List_View_Action__c>();

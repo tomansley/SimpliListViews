@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 11-05-2020
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -18,7 +18,7 @@ private class ListViewActionBLTest {
 
     static testMethod void listViewControllerTest() {
 
-        List<List_View_Action__c> lvActions = HelperTest.createListViewActions();
+        List<List_View_Action__c> lvActions = ListViewHelper.insertCoreActions();
 
         System.assert(lvActions != null);
         System.assert(lvActions.size() > 0);
