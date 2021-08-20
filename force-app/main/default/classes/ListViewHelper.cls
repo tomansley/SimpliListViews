@@ -162,7 +162,7 @@ global with sharing class ListViewHelper {
         try {
             HelperDatabase.updateRecords(updatedObjs.values(), objType);
         } catch (Exception e) {
-            String message = 'Exception during ListViewHelper.updateRecords() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = 'Exception during ListViewHelper.updateRecords()  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageErrorNonFuture(message);
             result = 'There was an error saving the records - ' + e.getMessage();
         }
@@ -281,7 +281,7 @@ global with sharing class ListViewHelper {
                 HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
 
             } catch (Exception e) {
-                String message = 'Exception during ListViewHelper.updateListViews(' + objectName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                String message = 'Exception during ListViewHelper.updateListViews(' + objectName + ')  ' + ListViewException.getExtendedString(e);
                 ListViewErrorHelper.createUsageError(message); 
             }
     
@@ -352,7 +352,7 @@ global with sharing class ListViewHelper {
                 HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
 
             } catch (Exception e) {
-                String message = 'Exception during ListViewHelper.updateListViews(' + lvIds + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                String message = 'Exception during ListViewHelper.updateListViews(' + lvIds + ')  ' + ListViewException.getExtendedString(e);
                 ListViewErrorHelper.createUsageError(message); 
             }
 
@@ -900,7 +900,7 @@ global with sharing class ListViewHelper {
         try {
             objectRows = Database.query(query);
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getListViewData(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString());
+            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getListViewData(' + query + ')  ' + ListViewException.getExtendedString(e));
             throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         
@@ -956,7 +956,7 @@ global with sharing class ListViewHelper {
         try {
             objectRows = Database.query(soql);
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getListViewData(' + soql + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString());
+            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getListViewData(' + soql + ')  ' + ListViewException.getExtendedString(e));
             throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         

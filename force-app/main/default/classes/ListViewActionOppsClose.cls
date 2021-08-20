@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-28-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -53,7 +53,9 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
 
 
         } catch (Exception e) {
-            String message = ListViewAction.RESULT_ERROR + ':Exception during ListViewActionOppsClose.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = ListViewAction.RESULT_ERROR + ':There was an error updating the opportunities. Please see a system admin.';
+            if (ListViewConfigHelper.isDebuggingOn())
+                message += ' Exception during ListViewActionOppsClose.process()  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
             returnStr = message;
         }

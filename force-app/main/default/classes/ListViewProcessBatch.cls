@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-31-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -62,7 +62,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                 return Database.getQueryLocator(query);
 
         } catch (Exception e) {
-            String message = 'Exception during ListViewProcessBatch.start(' + query + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = 'Exception during ListViewProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageErrorNonFuture(message);
             Database.setSavepoint();
         }
@@ -143,7 +143,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             HelperDatabase.upsertRecords(simpliListViewConfigs, 'Simpli_lv__List_View_Config__c', 'simpli_lv__Primary_Key__c', true);           
 
         } catch (Exception e) {
-            String message = 'Exception during ListViewProcessBatch.execute() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = 'Exception during ListViewProcessBatch.execute()  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageErrorNonFuture(message); 
         }
 	}

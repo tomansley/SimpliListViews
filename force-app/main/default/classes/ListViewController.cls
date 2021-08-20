@@ -224,7 +224,7 @@ public without sharing class ListViewController
         try {
             ListViewUserConfigHelper.updateCurrentUserConfigValue(compName, configName, value);
         } catch (Exception e) {
-            String message = 'Exception during ListViewController.updateUserConfig(' + compName + ',' + configName + ',' + value + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = 'Exception during ListViewController.updateUserConfig(' + compName + ',' + configName + ',' + value + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
             return 'There was an error during user configuration update';
         }
@@ -307,7 +307,7 @@ public without sharing class ListViewController
             jobId = Database.executebatch(b, 40);
         } catch (Exception e) {
             jobId = 'failed';
-            String message = 'Exception during ListViewController.updateAllListViews() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = 'Exception during ListViewController.updateAllListViews()  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
         }
 		return jobId;
@@ -336,7 +336,7 @@ public without sharing class ListViewController
                 action = ListViewActionHelper.getListViewActionByKey(actionName);
                 wrapper = new ListViewAbstract.ActionWrapper(action);
             } catch (Exception e) {
-                String message = 'Exception during ListViewController.getListViewAction(' + actionName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                String message = 'Exception during ListViewController.getListViewAction(' + actionName + ')  ' + ListViewException.getExtendedString(e);
                 ListViewErrorHelper.createUsageError(message); 
             }
         }
@@ -548,7 +548,7 @@ public without sharing class ListViewController
 
         } catch (Exception e) {
             rtnStr = 'Failed:' + e.getMessage();
-            String message = 'Exception during ListViewController.processParamChange(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = 'Exception during ListViewController.processParamChange(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
         }
 
@@ -587,7 +587,7 @@ public without sharing class ListViewController
                                                           (String) mapValues.get('color'));
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
-                String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')  ' + ListViewException.getExtendedString(e);
                 ListViewErrorHelper.createUsageError(message); 
                 }
 
@@ -597,7 +597,7 @@ public without sharing class ListViewController
                 ListViewConfigHelper.deleteListViewCondition(conditionData);
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
-                String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')  ' + ListViewException.getExtendedString(e);
                 ListViewErrorHelper.createUsageError(message); 
             }
         }
@@ -616,7 +616,7 @@ public without sharing class ListViewController
         try {
             action = ListViewActionHelper.getListViewActionByKey(actionKey);
         } catch (Exception e) {
-            String message = 'Exception during ListViewController.processAction(' + actionKey + ',' + dataIds + ',' + valuesMap + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = 'Exception during ListViewController.processAction(' + actionKey + ',' + dataIds + ',' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
             responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find action config for name provided!';
             return responseStr;
@@ -661,8 +661,8 @@ public without sharing class ListViewController
         try {
             responseStr = actionJob.process(listStrIds, mapValues);
         } catch (Exception e) {
-            responseStr = ListViewAction.RESULT_ERROR + ':There was an error processing the records  - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
-            String message = 'Exception during ListViewController.processAction(' + actionKey + ', ' + dataIds + ', ' + valuesMap + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            responseStr = ListViewAction.RESULT_ERROR + ':There was an error processing the records - ' + e.getMessage();
+            String message = 'Exception during ListViewController.processAction(' + actionKey + ', ' + dataIds + ', ' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
     }
         return responseStr;

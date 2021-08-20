@@ -31,7 +31,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                     //Database.executeBatch(new ListViewProcessBatch());
                 }
             } catch (Exception e) {
-                String message = 'Exception during ScriptInstall.onInstall() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+                String message = 'Exception during ScriptInstall.onInstall()  ' + ListViewException.getExtendedString(e);
                 ListViewErrorHelper.createUsageError(message); 
             }
             

@@ -407,7 +407,7 @@ public with sharing class HelperSchema {
 			}
 
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.isValidSFDCFieldName(' + objName + ',' + sfdcFieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.isValidSFDCFieldName(' + objName + ',' + sfdcFieldName + ') ' + ListViewException.getExtendedString(e));
             isValid = false;
         }
 
@@ -427,7 +427,7 @@ public with sharing class HelperSchema {
 			objName.add(sfdcObjectName);
 			Schema.describeSObjects(objName);
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.isValidSFDCObjectName(' + sfdcObjectName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.isValidSFDCObjectName(' + sfdcObjectName + ') ' + ListViewException.getExtendedString(e)); 
             isValid = false;
         }
 		
@@ -537,7 +537,7 @@ public with sharing class HelperSchema {
 				}
 			}
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ')  ' + ListViewException.getExtendedString(e)); 
 			data = null;
         }
         
@@ -611,7 +611,7 @@ public with sharing class HelperSchema {
 				}
 			}
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + structure + ',' + fieldName + ') - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString()); 
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + structure + ',' + fieldName + ')  ' + ListViewException.getExtendedString(e)); 
 			data = null;
         }
         

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-27-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -18,7 +18,7 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
     public override String process(List<String> recordIds, Map<String, Object> fieldValues)
     {
         String returnStr = ListViewAction.RESULT_OK + ':';
-
+        String objType = '';
         try {
 
             if (recordIds == null || recordIds.size() == 0) return ListViewAction.RESULT_OK;
@@ -29,7 +29,7 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
             System.debug(LoggingLevel.DEBUG, 'Field Values      - ' + fieldValues);
 
             //get the type of object from the provided Ids
-            String objType = HelperSchema.getObjectTypeFromId(((String) recordIds[0]).substringBefore(':'));
+            objType = HelperSchema.getObjectTypeFromId(((String) recordIds[0]).substringBefore(':'));
 
             //get an apex Type of the object type
             Type t = Type.forName(objType);
@@ -66,7 +66,9 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
                 returnStr += updatedObjs.size() + ' records updated successfully.';
 
         } catch (Exception e) {
-            String message = ListViewAction.RESULT_ERROR + ':Exception during ListViewActionUpdate.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = ListViewAction.RESULT_ERROR + ':There was an error updating the ' + HelperSchema.getObjectPluralName(objType) + '. Please see a system admin.';
+            if (ListViewConfigHelper.isDebuggingOn())
+                message += ' Exception during ListViewActionUpdate.process()  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
             returnStr = message;
         }

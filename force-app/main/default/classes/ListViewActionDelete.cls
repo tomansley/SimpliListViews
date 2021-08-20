@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 02-17-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -17,7 +17,7 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
     public override String process(List<String> recordIds, Map<String, Object> fieldValues)
 	{
         String returnStr = ListViewAction.RESULT_OK + ':';
-
+        String objType = '';
         try {
 
             if (recordIds == null || recordIds.size() == 0) return returnStr;
@@ -26,7 +26,7 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
             System.debug(LoggingLevel.DEBUG, 'Record Ids        - ' + recordIds);
 
             //get the type of object from the provided Ids
-            String objType = HelperSchema.getObjectTypeFromId(((String) recordIds[0]).substringBefore(':'));
+            objType = HelperSchema.getObjectTypeFromId(((String) recordIds[0]).substringBefore(':'));
 
             //get an apex Type of the object type
             Type t = Type.forName(objType);
@@ -53,7 +53,9 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
                 returnStr += deletedObjs.size() + ' records deleted successfully.';
 
         } catch (Exception e) {
-            String message = ListViewAction.RESULT_ERROR + ':Exception during ListViewActionDelete.process() - ' + e.getMessage() + ' - line: ' + e.getLineNumber() + ' - ' + e.getStackTraceString();
+            String message = ListViewAction.RESULT_ERROR + ':There was an error deleting the ' + HelperSchema.getObjectPluralName(objType) + '. Please see a system admin.';
+            if (ListViewConfigHelper.isDebuggingOn())
+                message += ' Exception during ListViewActionDelete.process() ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
             returnStr = message;
         }

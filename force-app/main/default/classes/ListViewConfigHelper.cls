@@ -18,6 +18,8 @@ public with sharing class ListViewConfigHelper {
     private static List_View_Config__c orgWideConfig                = null;
     private static final String ALL = 'All';
 
+    private static final String DEBUG = 'Debug';
+
     public static final String OPER_EQUAL = 'Equals';
     public static final String OPER_NOT_EQUAL = 'Not Equal';
     public static final String OPER_GREATER = 'Greater Than';
@@ -52,6 +54,11 @@ public with sharing class ListViewConfigHelper {
                 orgWideConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
         }
 
+    }
+
+    public static Boolean isDebuggingOn()
+    {
+        return Boolean.valueOf(getOrgWideConfigParam(DEBUG));
     }
 
     /**
