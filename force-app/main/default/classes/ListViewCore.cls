@@ -1,13 +1,14 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-01-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
  * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Minor changes to allow fields/rows to handle inline-editing
+ * 4.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
 **/
 public with sharing class ListViewCore extends ListViewAbstract {
 
@@ -45,7 +46,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'AdditionalFields';
-            param.Parameter_Type__c   = 'String';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
             param.Parameter_Value__c  = '';
             param.Parameter_Label__c  = 'Additional Fields';
             params.add(param);
@@ -58,7 +59,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'TotalColumns';
-            param.Parameter_Type__c   = 'String';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
             param.Parameter_Value__c  = '';
             param.Parameter_Label__c  = 'Total Columns';
             params.add(param);
@@ -84,7 +85,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'ReturnSize';
-            param.Parameter_Type__c   = 'Number';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
             param.Parameter_Value__c  = '100';
             param.Parameter_Label__c  = 'Return Size';
             params.add(param);
@@ -97,7 +98,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'RefreshRate';
-            param.Parameter_Type__c   = 'Number';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
             param.Parameter_Value__c  = '45';
             param.Parameter_Label__c  = 'Refresh Rate';
             params.add(param);
@@ -110,7 +111,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'AllRows';
-            param.Parameter_Type__c   = 'Boolean';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
             param.Parameter_Value__c  = 'false';
             param.Parameter_Label__c  = 'Include All Rows';
             params.add(param);
@@ -377,7 +378,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                         //if this is a valid column for total calculation and there is a value to calculate
                         if (ListViewAbstract.validTotalColumns.contains(totalField.getType()) && fieldWrapper.getValue() != null && fieldWrapper.getValue() != '')
                         {
-                            if (totalField.getType() == 'currency')
+                            if (totalField.getType() == ListViewHelper.TYPE_CURRENCY)
                             {
                                 if (!String.isEmpty(fieldWrapper.getValue()))
                                 {

@@ -4,12 +4,13 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-10-2021
+ * @Last Modified On   : 08-20-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
  * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic for new admin page.
+ * 4.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
 **/
 public with sharing class ListViewConfigHelper {
 
@@ -465,7 +466,7 @@ public with sharing class ListViewConfigHelper {
             System.debug(LoggingLevel.DEBUG, 'condValue = ' + condition.Value__c);
 
             //if we have a meaningless comparison then skip
-            if ((value == null || value == '') && type != 'string') continue;
+            if ((value == null || value == '') && type != ListViewHelper.TYPE_STRING) continue;
 
             if (condition.Operator__c == OPER_EQUAL) {
                 if (value == condition.Value__c) return condition.Highlight_Color__c;

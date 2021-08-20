@@ -2,13 +2,14 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-16-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-07-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   07-31-2021   tom.h.ansley@medtronic.com   Added List_View_Label__c field
  * 3.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
+ * 4.0   08-18-2021   tom.h.ansley@medtronic.com   Updated all strings to static final strings
 **/
 public with sharing class HelperTest {
 
@@ -65,7 +66,7 @@ public with sharing class HelperTest {
 
 		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'AdditionalFields';
-		param.Parameter_Type__c = 'String';
+		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'Additional Fields';
@@ -73,7 +74,7 @@ public with sharing class HelperTest {
         
         param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'TotalColumns';
-		param.Parameter_Type__c = 'String';
+		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param.Parameter_Value__c = 'AnnualRevenue';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'Total Columns';
@@ -136,7 +137,7 @@ public with sharing class HelperTest {
 
 		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'TotalColumns';
-		param.Parameter_Type__c = 'String';
+		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param.Parameter_Value__c = 'AnnualRevenue';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'Total Columns';
@@ -152,7 +153,7 @@ public with sharing class HelperTest {
         
         param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'ReturnSize';
-		param.Parameter_Type__c = 'Number';
+		param.Parameter_Type__c = ListViewHelper.TYPE_NUMBER;
 		param.Parameter_Value__c = '100';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'Return Size';
@@ -160,7 +161,7 @@ public with sharing class HelperTest {
         
         param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'RefreshRate';
-		param.Parameter_Type__c = 'Number';
+		param.Parameter_Type__c = ListViewHelper.TYPE_NUMBER;
 		param.Parameter_Value__c = '45';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'Refresh Rate';
@@ -168,7 +169,7 @@ public with sharing class HelperTest {
         
         param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'AllRows';
-		param.Parameter_Type__c = 'Boolean';
+		param.Parameter_Type__c = ListViewHelper.TYPE_BOOLEAN;
 		param.Parameter_Value__c = 'false';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'All Rows';
@@ -237,7 +238,7 @@ public with sharing class HelperTest {
 		actionParam1.Label__c            = 'Account Name';
 		actionParam1.Field_API_Name__c   = 'Name';
 		actionParam1.List_View_Action__c = updateAction.Id;
-		actionParam1.Type__c             = 'STRING';
+		actionParam1.Type__c             = ListViewHelper.TYPE_STRING;
 		actionParam1.Default_Value__c    = 'Test Account Name';
 		actionParam1.Placeholder_Text__c = 'Enter an Account Name';
 
@@ -247,7 +248,7 @@ public with sharing class HelperTest {
 		actionParam2.Label__c            = 'Industry';
 		actionParam2.Field_API_Name__c   = 'Industry';
 		actionParam2.List_View_Action__c = updateAction.Id;
-		actionParam2.Type__c             = 'STRING';
+		actionParam2.Type__c             = ListViewHelper.TYPE_STRING;
 		actionParam2.Default_Value__c    = 'Electrical';
 		actionParam2.Placeholder_Text__c = 'Enter an Industry';
 
@@ -259,7 +260,7 @@ public with sharing class HelperTest {
         actionParam3.Display_Order__c    = 1;
         actionParam3.List_View_Action__c = oppsCloseUpdateAction.Id;
         actionParam3.Placeholder_Text__c = '';
-        actionParam3.Type__c             = 'DATE';
+        actionParam3.Type__c             = ListViewHelper.TYPE_DATE;
 
         listViewActionParams.add(actionParam3);
         HelperDatabase.insertRecords(listViewActionParams, 'Simpli_lv__List_View_Action_Parameter__c');

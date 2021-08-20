@@ -1,12 +1,13 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-01-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-22-2020   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Updated getListViewData method to use convenience method
+ * 3.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
 **/
 public with sharing class ListViewCustomToolingQuery extends ListViewCustomToolingAbstract 
 {
@@ -160,7 +161,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                                                     fieldData.parentObjType);
                 field.idValue = fieldData.valueId;
 
-                if (field.getName() == 'Id' || field.getType() == 'lookup') {
+                if (field.getName() == 'Id' || field.getType() == ListViewHelper.TYPE_LOOKUP) {
                     field.createURL();
                 }
 
@@ -256,7 +257,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                         {
                             System.debug(LoggingLevel.DEBUG, 'We have a valid column value to add to total');
                             System.debug(LoggingLevel.DEBUG, 'Old value - ' + totalField.getValue());
-                            if (totalField.getType() == 'currency')
+                            if (totalField.getType() == ListViewHelper.TYPE_CURRENCY)
                                 totalField.setValue(Decimal.valueOf(String.valueOf(fieldWrapper.getValue())) + Decimal.valueOf(totalField.getValue()));
                             else
                                 totalField.setValue(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.getValue()));

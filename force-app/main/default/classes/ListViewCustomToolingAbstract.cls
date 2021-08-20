@@ -1,11 +1,12 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 11-05-2020
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-22-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
 **/
 public with sharing abstract class ListViewCustomToolingAbstract extends ListViewCustomAbstract {
     
@@ -62,7 +63,7 @@ public with sharing abstract class ListViewCustomToolingAbstract extends ListVie
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'TotalColumns';
-            param.Parameter_Type__c   = 'String';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
             param.Parameter_Value__c  = '';
             param.Parameter_Label__c  = 'Total Columns';
             params.add(param);
@@ -88,7 +89,7 @@ public with sharing abstract class ListViewCustomToolingAbstract extends ListVie
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'ReturnSize';
-            param.Parameter_Type__c   = 'Number';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
             param.Parameter_Value__c  = '75';
             param.Parameter_Label__c  = 'Return Size';
             params.add(param);
@@ -101,7 +102,7 @@ public with sharing abstract class ListViewCustomToolingAbstract extends ListVie
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'RefreshRate';
-            param.Parameter_Type__c   = 'Number';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
             param.Parameter_Value__c  = '45';
             param.Parameter_Label__c  = 'Refresh Rate';
             params.add(param);

@@ -2,11 +2,12 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 03-08-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
 **/
 @isTest
 private class ListViewConfigHelperTest {
@@ -37,7 +38,7 @@ private class ListViewConfigHelperTest {
     {
 
         String name = 'Burlington Coat Factory';
-        String type = 'string';
+        String type = ListViewHelper.TYPE_STRING;
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
 
@@ -100,23 +101,23 @@ private class ListViewConfigHelperTest {
 
         System.assert(params.size() > 0);
 
-        String result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Name', 'Additional Fields', 'String');
+        String result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Name', 'Additional Fields', ListViewHelper.TYPE_STRING);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Na', 'Additional Fields', 'String');
+        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Na', 'Additional Fields', ListViewHelper.TYPE_STRING);
 
         System.assert(result != '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'RefreshRate', '45', 'Refresh Rate', 'Number');
+        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'RefreshRate', '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'ReturnSize', '123', 'Return Size', 'Number');
+        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'ReturnSize', '123', 'Return Size', ListViewHelper.TYPE_NUMBER);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AllRows', 'true', 'All Rows', 'Boolean');
+        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AllRows', 'true', 'All Rows', ListViewHelper.TYPE_BOOLEAN);
 
         System.assert(result == '');
 

@@ -1,11 +1,12 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-26-2021
+ * @last modified on  : 08-20-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   06-30-2021   tom.h.ansley@medtronic.com   Initial Version
+ * 2.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
 **/
 @isTest
 global with sharing class ListViewCustomToolingQueryTest {
@@ -25,7 +26,7 @@ global with sharing class ListViewCustomToolingQueryTest {
 
 		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'TotalColumns';
-		param.Parameter_Type__c = 'String';
+		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param.Parameter_Value__c = 'DurationMilliseconds';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'Duration';

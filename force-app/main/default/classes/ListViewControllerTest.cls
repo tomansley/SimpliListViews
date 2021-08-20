@@ -31,6 +31,7 @@ global class ListViewControllerTest {
 
         //not checking assertion as installing user might not be sys admin?
         //System.assertEquals(true, isSysAdmin);
+        System.assertEquals(true, true);
     }
 
     @IsTest
@@ -117,7 +118,7 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.processParamChange('Account', 'AllAccounts', 'RefreshRate', '45', 'Refresh Rate', 'Number');
+        String result = ListViewController.processParamChange('Account', 'AllAccounts', 'RefreshRate', '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
 
         System.assertEquals(result, 'Ok:');
 
@@ -269,13 +270,13 @@ global class ListViewControllerTest {
         ListViewAbstract.ActionWrapper action = ListViewController.getListViewAction('Update:Account');
         System.assertNotEquals(action.getLabel(), null);
         System.assertNotEquals(action.getObjectType(), null);
-        System.assertNotEquals(action.getParameters(), null);
-        System.assert(action.getParameters().size() > 0);
-        System.assertNotEquals(action.getParameters()[0].getAPIName(), null);
-        System.assertNotEquals(action.getParameters()[0].getLabel(), null);
-        System.assertNotEquals(action.getParameters()[0].getType(), null);
+        System.assertNotEquals(action.getDisplayParameters(), null);
+        System.assert(action.getDisplayParameters().size() > 0);
+        System.assertNotEquals(action.getDisplayParameters()[0].getAPIName(), null);
+        System.assertNotEquals(action.getDisplayParameters()[0].getLabel(), null);
+        System.assertNotEquals(action.getDisplayParameters()[0].getType(), null);
         //System.assertNotEquals(action.getParameters()[0].getValue(), null);
-        System.assertNotEquals(action.getParameters()[0].getPlaceholder(), null);
+        System.assertNotEquals(action.getDisplayParameters()[0].getPlaceholder(), null);
         
 
         String result = ListViewController.processAction('Delete:null', '["' + acct.Id + '"]', '[]');
