@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-20-2021
+ * @last modified on  : 08-23-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -9,6 +9,7 @@
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
  * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic to handle identification of inline-editing for rows and fields. Beefed up FieldWrapper to handle inline-editing (mainly type identification methods), 
  * 4.0   08-20-2021   tom.h.ansley@medtronic.com   Updated all strings to static final variables, Added display vs. non-display action params and added hyperlink action type 
+ * 5.0   08-20-2021   tom.h.ansley@medtronic.com   Added SalesforceId to row to differentiate between rowId which includes row number 
 **/
 public with sharing abstract class ListViewAbstract {
     
@@ -416,7 +417,8 @@ public with sharing abstract class ListViewAbstract {
     {
         RowsWrapper parentWrapper;               //pointer to the parent wrapper
         public Map<String, FieldWrapper> fields; //the list of fields and values for the row
-        public String rowId;                     //the SFDC record id. USed to identify rows on the UI
+        public String sfdcId;                    //the SFDC record id
+        public String rowId;                     //the SFDC record id + row # in dataset. i.e. 001ZZZZ:1. USed to identify rows on the UI
         public Boolean highlight;                //indicates whether the row should be highlighted due to conditions set by user
         public String highlightColor;            //the color the row should be set to if being highlighted.
         public Boolean isTotals;                 //indicates whether this row is a totals row.
@@ -426,6 +428,7 @@ public with sharing abstract class ListViewAbstract {
 
         public RowWrapper(String rowId)
         {
+            this.sfdcId         = rowId;
             this.rowId          = rowId;
             this.highlight      = false;
             this.highlightColor = '';
@@ -473,6 +476,13 @@ public with sharing abstract class ListViewAbstract {
         public String getRowId()
         {
             return rowId;
+        }
+
+        
+        @AuraEnabled(cacheable=true)
+        public String getSalesforceId()
+        {
+            return sfdcId;
         }
 
         @AuraEnabled(cacheable=true)
@@ -1418,6 +1428,15 @@ public with sharing abstract class ListViewAbstract {
         public List<ActionParameterWrapper> getNonDisplayParameters()
         {
             return nonDisplayParameters;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public List<ActionParameterWrapper> getAllParameters()
+        {
+            List<ActionParameterWrapper> all = new List<ActionParameterWrapper>();
+            all.addAll(nonDisplayParameters);
+            all.addAll(displayParameters);
+            return all;    
         }
 
         @AuraEnabled(cacheable=true)

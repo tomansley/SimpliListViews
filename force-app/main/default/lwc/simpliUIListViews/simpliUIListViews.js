@@ -1295,31 +1295,92 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     //called when a user selects an action for processing.
     handleActionSelect(event) {
-        var selectedRecords = new Set();
+        var selectedRecordIds = new Set();
         var selectedRowId = '';
         
         this.selectedActionKey = event.target.value;
 
         console.log('Chosen Action - ' + this.selectedActionKey + ' for ' + this.pageName);
 
+        //get the ACTION
         this.objectActionList.forEach(action => {
                                                     if (action.value === this.selectedActionKey) {
                                                         this.selectedAction = action;
                                                     }
                                                 });
 
+        //get the SELECTED RECORD IDs
+        let selectedRows = this.template.querySelectorAll('lightning-input');
+        selectedRows.forEach(element => { 
+                                            if (element.checked === true && element.value != 'all')
+                                            {
+                                                selectedRowId = element.value.substring(0, element.value.indexOf(':'));
+                                                selectedRecordIds.add(selectedRowId);
+                                            }            
+                                        });
+
+                                            
         //------------------------------------------------------
         //HYPERLINK
         //------------------------------------------------------
         if (this.selectedAction.isHyperlink === true)
         {
-            this[NavigationMixin.Navigate]({
-                type: 'standard__webPage',
-                attributes: {
-                    url: this.selectedAction.hyperlink,
-                },
-            });
-            
+            let hyperlink = this.selectedAction.hyperlink;
+            let recordIdStr = '';
+            selectedRecordIds.forEach(recordId => {
+                                                      recordIdStr = recordIdStr + recordId + '%2C'; //%2C = encoded comma
+                                                  });
+            recordIdStr = recordIdStr.slice(0,-3); //remove last "%2C"
+
+            if (selectedRecordIds.size > 1)
+            {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Processing Action',
+                    message: 'Multiple rows cannot be selected for this action',
+                    variant: 'error',
+                    mode: 'dismissable'
+                }));
+
+            } else {
+
+                //go through the action parameters checking for field substitutions
+                this.selectedAction.allParameters.forEach(param => {
+                                                                        let key = '$' + param.aPIName + '$';
+                                                                        if (hyperlink.includes(key))
+                                                                        {
+                                                                            //get the ROW
+                                                                            let row = undefined;
+                                                                            this.listViewDataRows.forEach(element => { 
+                                                                                if (element.isDeleted === false && element.salesforceId === recordIdStr)
+                                                                                {
+                                                                                    row = element;      
+                                                                                }
+                                                                            });        
+
+                                                                            if (param.value === 'Id')
+                                                                            {
+                                                                                hyperlink = hyperlink.replace(key, row.salesforceId);
+                                                                            } else {
+
+                                                                                //get the FIELD value and substitute into hyperlink
+                                                                                row.fields.forEach(element => { 
+                                                                                    if (element.name === param.value)
+                                                                                    {
+                                                                                        hyperlink = hyperlink.replace(key, element.value);      
+                                                                                    }
+                                                                                });        
+                                                                            }
+                                                                        }
+                                                                    });
+
+                console.log('Hyperlink - ' + hyperlink);
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__webPage',
+                    attributes: {
+                        url: hyperlink,
+                    },
+                });
+            }
 
         //------------------------------------------------------
         //NEW
@@ -1341,17 +1402,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else if (this.selectedAction.label === 'Clone')
         {
 
-            //get the selected record Id
-            let selectedRows = this.template.querySelectorAll('lightning-input');
-            selectedRows.forEach(element => { 
-                                                if (element.checked === true && element.value != 'all')
-                                                {
-                                                    selectedRecords.add(element.value);
-                                                    selectedRowId = element.value.substring(0, element.value.indexOf(':'));
-                                                }            
-                                            });
-
-            if (selectedRecords.size !== 1) {    
+            if (selectedRecordIds.size !== 1) {    
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'A single row must be selected for cloning.',
@@ -1378,18 +1429,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else if (this.selectedAction.label === 'Edit')
         {
 
-            //get the selected record Id
-            let selectedRows = this.template.querySelectorAll('lightning-input');
-
-            selectedRows.forEach(element => { 
-                                                if (element.checked === true && element.value != 'all')
-                                                {
-                                                    selectedRecords.add(element.value);
-                                                    selectedRowId = element.value.substring(0, element.value.indexOf(':'));
-                                                }            
-                                            });
-
-            if (selectedRecords.size !== 1) {      
+            if (selectedRecordIds.size !== 1) {      
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'A single row must be selected for editing.',
@@ -1436,17 +1476,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         } else {
 
-            //get the selected record Ids
-            let selectedRows = this.template.querySelectorAll('lightning-input');
-
-            selectedRows.forEach(element => { 
-                                                if (element.checked === true && element.value != 'all')
-                                                {
-                                                    selectedRecords.add(element.value.substring(0, element.value.indexOf(':')));
-                                                }
-                                            });
-
-            if (selectedRecords.size === 0) {
+            if (selectedRecordIds.size === 0) {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'No rows selected for processing.',
@@ -1456,7 +1486,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.dispatchEvent(new CustomEvent('processclick'));
             
             } else {
-                this.selectedRecordIdsStr = JSON.stringify( Array.from(selectedRecords));
+                this.selectedRecordIdsStr = JSON.stringify( Array.from(selectedRecordIds));
 
                 this.selectedActionLabel = 'Label ' + this.selectedAction.label;               //   <-- This to be fixed.
                 
