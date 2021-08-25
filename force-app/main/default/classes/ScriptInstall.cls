@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-20-2021
+ * @last modified on  : 08-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -63,7 +63,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             //------------------------------------------------------------------------------------
             // Fix issue where some list view actions might not have record types - through v1.60
             //------------------------------------------------------------------------------------
-            List<List_View_Action__c> actions = [SELECT Id, Apex_Class_Name__c, Label__c, RecordTypeId FROM List_View_Action__c LIMIT 2000];
+            List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
             List<List_View_Action__c> updatedActions = new List<List_View_Action__c>();
             for (List_View_Action__c action: actions)
             {
@@ -261,6 +261,18 @@ global with sharing class ScriptInstall implements InstallHandler {
                     param.Parameter_Label__c  = 'Display Text Search';
                     orgParams.put(param.Parameter_Name__c, param);
                 }
+
+                if (orgParams.get('Debug') == null)
+                {
+                    List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                    param.List_View_Config__c = orgWideConfig.Id;
+                    param.Parameter_Name__c   = 'Debug';
+                    param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+                    param.Parameter_Value__c  = 'false';
+                    param.Parameter_Label__c  = 'Debug';
+                    orgParams.put(param.Parameter_Name__c, param);
+            
+                }
                 HelperDatabase.upsertRecords(orgParams.values(), 'simpli_lv__List_View_Config_Parameter__c');
             }
 
@@ -270,6 +282,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             Boolean hasNew     = false;
             Boolean hasClone   = false;
             Boolean hasEdit    = false;
+            Boolean hasDelete  = false;
             Boolean hasEditAll = false;
             Boolean hasHyper   = false;
             Boolean hasMail    = false;
@@ -299,6 +312,18 @@ global with sharing class ScriptInstall implements InstallHandler {
                     action.Permissions__c = ListViewActionHelper.PERM_EDIT;
                     action.Is_Active__c   = true;
                     hasEditAll = true;
+                } else if (action.Label__c == 'Delete' && action.Apex_Class_Name__c == 'ListViewActionDelete')
+                {
+                    action.Permissions__c = ListViewActionHelper.PERM_EDIT;
+                    action.Is_Active__c   = true;
+                } else if (action.Label__c == 'Update' && action.Apex_Class_Name__c == 'ListViewActionUpdate')
+                {
+                    action.Permissions__c = ListViewActionHelper.PERM_EDIT;
+                    action.Is_Active__c   = true;
+                } else if (action.Label__c == 'Set Close Lost' && action.Apex_Class_Name__c == 'ListViewActionOppsClose')
+                {
+                    action.Permissions__c = ListViewActionHelper.PERM_EDIT;
+                    action.Is_Active__c   = true;
                 } else if (action.Label__c == 'Go To A Cool App' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     hasHyper = true;
@@ -327,7 +352,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 mailAction.Label__c            = 'Send Email';
                 mailAction.Object_Type__c      = 'Contact';
                 mailAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-                hyperAction.Is_Active__c        = true;
+                mailAction.Is_Active__c        = true;
 
                 newActions.add(mailAction);
             }
@@ -420,7 +445,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 newActionParams.add(param);
             }
 
-            HelperDatabase.updateRecords(newActionParams, 'simpli_lv__List_View_Action_Parameter__c');
+            HelperDatabase.insertRecords(newActionParams, 'simpli_lv__List_View_Action_Parameter__c');
 
             //send email notifying of the upgrade
             HelperEmail.sendInstallEmail('Upgraded');
