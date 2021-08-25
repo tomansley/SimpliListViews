@@ -232,12 +232,21 @@ global class ListViewControllerTest {
         System.assertNotEquals(rows.getCoreListViewURL(), '');
         System.assertNotEquals(rows.getDataAsString(), null);
         System.assertNotEquals(rows.getListView(), null);
+        System.assertNotEquals(rows.getObjectName(), null);
+        System.assertNotEquals(rows.getCoreListId(), null);
+        System.assertNotEquals(rows.getUserTimeZone(), null);
+        System.assertNotEquals(rows.getIsEdited(), null);
+        System.assertNotEquals(rows.getIsCoreListView(), null);
+        System.assertNotEquals(rows.getHasTotalsRow(), null);
+
 
         ListViewAbstract.ListViewWrapper listViewWrapper = rows.getListView();
         System.assertNotEquals(listViewWrapper.getLastModifiedText(), null);
         System.assertNotEquals(listViewWrapper.getLastModifiedBy(), null);
         System.assertNotEquals(listViewWrapper.getLastModifiedDate(), null);
-
+        System.assertNotEquals(listViewWrapper.getOffset(), null);
+        System.assertNotEquals(listViewWrapper.getListViewType(), null);
+        System.assertNotEquals(listViewWrapper.getRowLimit(), null);
 
         ListViewAbstract.RowWrapper row = rows.rows[0];
         System.assertNotEquals(row, null);
@@ -247,6 +256,11 @@ global class ListViewControllerTest {
         System.assert(row.getFields().size() > 0);
         System.assertNotEquals(row.getHighlight(), null);
         System.assertNotEquals(row.getHighlightColor(), null);
+        System.assertNotEquals(row.getSalesforceId(), null);
+        System.assertNotEquals(row.getIsDeleted(), null);
+        System.assertNotEquals(row.getIsEdited(), null);
+        System.assertNotEquals(row.getIsDisplayed(), null);
+
 
         ListViewAbstract.FieldWrapper field = row.getFields()[0];
         System.assertNotEquals(field, null);
@@ -259,7 +273,57 @@ global class ListViewControllerTest {
         System.assertNotEquals(field.getValue(), null);
         System.assertNotEquals(field.getHasURL(), null);
         System.assertNotEquals(field.getURL(), null);
+        System.assertNotEquals(field.getKey(), null);
+        System.assertNotEquals(field.getSortingTooltip(), null);
+        System.assertNotEquals(field.getSortable(), null);
+        System.assertNotEquals(field.getIsEditable(), null);
+        System.assertNotEquals(field.getURLTarget(), null);
+        System.assertNotEquals(field.getFieldObjName(), null);
+        System.assertNotEquals(field.getIsBoolean(), null);
+        System.assertNotEquals(field.getIsCurrency(), null);
+        System.assertNotEquals(field.getIsDate(), null);
+        System.assertNotEquals(field.getIsDateTime(), null);
+        System.assertNotEquals(field.getIsDecimal(), null);
+        System.assertNotEquals(field.getIsDouble(), null);
+        System.assertNotEquals(field.getIsEmail(), null);
+        System.assertNotEquals(field.getIsInteger(), null);
+        System.assertNotEquals(field.getIsLookup(), null);
+        System.assertNotEquals(field.getIsMultiPicklist(), null);
+        System.assertNotEquals(field.getIsPercent(), null);
+        System.assertNotEquals(field.getIsPhone(), null);
+        System.assertNotEquals(field.getIsPicklist(), null);
+        System.assertNotEquals(field.getIsString(), null);
+        System.assertNotEquals(field.getIsTextArea(), null);
+        System.assertNotEquals(field.getIsTime(), null);
+        System.assertNotEquals(field.getIsURL(), null);
+        System.assertNotEquals(field.getUIValue(), null);
+        System.assertNotEquals(field.getUIMultiPicklistValues(), null);
 
+        List<ListViewAbstract.ListViewColumn> columns = ListViewController.getListViewColumns('Account', 'AllAccounts');
+        System.assertNotEquals(columns, null);
+        System.assert(columns.size() > 0);
+
+        ListViewAbstract.ListViewColumn column = columns[0];
+        System.assertNotEquals(column.getIsBoolean(), null);
+        System.assertNotEquals(column.getIsCurrency(), null);
+        System.assertNotEquals(column.getIsDate(), null);
+        System.assertNotEquals(column.getIsDateTime(), null);
+        System.assertNotEquals(column.getIsDecimal(), null);
+        System.assertNotEquals(column.getIsDouble(), null);
+        System.assertNotEquals(column.getIsEmail(), null);
+        System.assertNotEquals(column.getIsInteger(), null);
+        System.assertNotEquals(column.getIsLookup(), null);
+        System.assertNotEquals(column.getIsMultiPicklist(), null);
+        System.assertNotEquals(column.getIsPercent(), null);
+        System.assertNotEquals(column.getIsPhone(), null);
+        System.assertNotEquals(column.getIsPicklist(), null);
+        System.assertNotEquals(column.getIsString(), null);
+        System.assertNotEquals(column.getIsTextArea(), null);
+        System.assertNotEquals(column.getIsTime(), null);
+        System.assertNotEquals(column.getIsURL(), null);
+        System.assertNotEquals(column.getLabel(), null);
+        System.assertNotEquals(column.getType(), null);
+        System.assertNotEquals(column.getValue(), null);
         
         List<ListViewAbstract.ActionWrapper> actions = ListViewController.getListViewActions('Account', 'AllAccounts');
 
@@ -270,13 +334,40 @@ global class ListViewControllerTest {
         ListViewAbstract.ActionWrapper action = ListViewController.getListViewAction('Update:Account');
         System.assertNotEquals(action.getLabel(), null);
         System.assertNotEquals(action.getObjectType(), null);
+        System.assertNotEquals(action.getHasDisplayParameters(), null);
+        System.assertNotEquals(action.getNonDisplayParameters(), null);
+        System.assertNotEquals(action.getAllParameters(), null);
+        System.assertNotEquals(action.getPrimaryKey(), null);
+        System.assertNotEquals(action.getValue(), null);
+        System.assertNotEquals(action.getIsHyperlink(), null);
+        System.assertNotEquals(action.getHyperlink(), null);
+
         System.assertNotEquals(action.getDisplayParameters(), null);
         System.assert(action.getDisplayParameters().size() > 0);
-        System.assertNotEquals(action.getDisplayParameters()[0].getAPIName(), null);
-        System.assertNotEquals(action.getDisplayParameters()[0].getLabel(), null);
-        System.assertNotEquals(action.getDisplayParameters()[0].getType(), null);
-        //System.assertNotEquals(action.getParameters()[0].getValue(), null);
-        System.assertNotEquals(action.getDisplayParameters()[0].getPlaceholder(), null);
+
+        ListViewAbstract.ActionParameterWrapper actionParam = action.getDisplayParameters()[0];
+
+        System.assertNotEquals(actionParam.getAPIName(), null);
+        System.assertNotEquals(actionParam.getLabel(), null);
+        System.assertNotEquals(actionParam.getType(), null);
+        System.assertNotEquals(actionParam.getPlaceholder(), null);
+        System.assertNotEquals(actionParam.getIsBoolean(), null);
+        System.assertNotEquals(actionParam.getIsCurrency(), null);
+        System.assertNotEquals(actionParam.getIsDate(), null);
+        System.assertNotEquals(actionParam.getIsDateTime(), null);
+        System.assertNotEquals(actionParam.getIsDecimal(), null);
+        System.assertNotEquals(actionParam.getIsDouble(), null);
+        System.assertNotEquals(actionParam.getIsEmail(), null);
+        System.assertNotEquals(actionParam.getIsInteger(), null);
+        System.assertNotEquals(actionParam.getIsLookup(), null);
+        System.assertNotEquals(actionParam.getIsMultiPicklist(), null);
+        System.assertNotEquals(actionParam.getIsPercent(), null);
+        System.assertNotEquals(actionParam.getIsPhone(), null);
+        System.assertNotEquals(actionParam.getIsPicklist(), null);
+        System.assertNotEquals(actionParam.getIsString(), null);
+        System.assertNotEquals(actionParam.getIsTextArea(), null);
+        System.assertNotEquals(actionParam.getIsTime(), null);
+        System.assertNotEquals(actionParam.getIsURL(), null);
         
 
         String result = ListViewController.processAction('Delete:null', '["' + acct.Id + '"]', '[]');

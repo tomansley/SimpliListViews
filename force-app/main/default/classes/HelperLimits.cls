@@ -17,7 +17,6 @@ public with sharing class HelperLimits {
             when 'AsyncCalls' { return (Limits.getAsyncCalls() + 2) > Limits.getLimitAsyncCalls();}
             when 'CPUTime' { return (Limits.getCpuTime() + 2) > Limits.getLimitCpuTime();}
             when 'DMLRows' { return (Limits.getDmlRows() + 2) > Limits.getLimitDmlRows();}
-            when 'DMLStatements' { return (Limits.getDmlStatements() + 2) > Limits.getLimitDmlStatements();}
             when 'EmailInvocations' { return (Limits.getEmailInvocations() + 2) > Limits.getLimitEmailInvocations();}
             when 'FutureCalls' { return (Limits.getFutureCalls() + 2) > Limits.getLimitFutureCalls();}
             when 'HeapSize' { return (Limits.getHeapSize() + 2) > Limits.getLimitHeapSize();}
@@ -25,6 +24,7 @@ public with sharing class HelperLimits {
             when 'QueryRows' { return (Limits.getQueryRows() + 2) > Limits.getLimitQueryRows();}
             when 'QueueableJobs' { return (Limits.getQueueableJobs() + 2) > Limits.getLimitQueueableJobs();}
             when 'SOSLQueries' { return (Limits.getSoslQueries() + 2) > Limits.getLimitSoslQueries();}
+            when 'DMLStatements' { return (Limits.getDmlStatements() + 2) > Limits.getLimitDmlStatements();}
             when else { throw new ListViewException('Provided name ' + limitName + ' not supported');}
         }
     }

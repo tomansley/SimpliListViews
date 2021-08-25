@@ -64,7 +64,7 @@ public with sharing abstract class ListViewAbstract {
     * @author tom.h.ansley@medtronic.com | 10-26-2020 
     * @return Map<String, String> the map of column labels with column API names used as keys by the UI.
     **/
-    public List<ListViewColumn> getColumnLabels()
+    public List<ListViewColumn> getColumnData()
     {
         SObject exampleRow = null;   
 

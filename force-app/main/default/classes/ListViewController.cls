@@ -695,7 +695,7 @@ public without sharing class ListViewController
         //set all request information into the apex processing class.
         lvlogic.setRequestData(listview);
 
-        List<ListViewAbstract.ListViewColumn> columnData = lvLogic.getColumnLabels();
+        List<ListViewAbstract.ListViewColumn> columnData = lvLogic.getColumnData();
 
         columnData.sort();
 
