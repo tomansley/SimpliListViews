@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-20-2021
+ * @last modified on  : 08-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -26,6 +26,30 @@ public with sharing class ListViewActionHelper {
     public static String getPrimaryKey(List_View_Action__c action)
     {
         return action.Label__c.deleteWhitespace() + ':' + action.Object_Type__c;
+    }
+
+    public static List<List_View_Action__c> getListViewActions()
+    {
+        return [SELECT Label__c,
+                        Apex_Class_Name__c,
+                        Object_Type__c,
+                        Primary_Key__c,
+                        Subtype__c,
+                        RecordTypeId,
+                        RecordType.Name,
+                        Permissions__c,
+                        Is_Hyperlink__c,
+                        Is_Active__c,
+                        (SELECT Field_API_Name__c,
+                                Label__c,
+                                Display_Order__c,
+                                Type__c,
+                                Default_Value__c,
+                                Placeholder_Text__c
+                        FROM List_View_Action_Parameters__r
+                        ORDER BY Display_Order__c NULLS LAST)
+                FROM List_View_Action__c
+                LIMIT 2000];
     }
 
     public static Map<Id, List_View_Action__c> getListViewConfigs(Set<Id> actionIds) 
