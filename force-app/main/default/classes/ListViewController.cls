@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-20-2021
+ * @last modified on  : 08-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -12,7 +12,8 @@
  * 4.0   07-30-2021   tom.h.ansley@medtronic.com   Added updateRecords() method
  * 5.0   08-16-2021   tom.h.ansley@medtronic.com   Updated getListViewsActions() and added permission check for each action before display
  * 6.0   08-20-2021   tom.h.ansley@medtronic.com   renamed getListViewsActions() to getListViewActions()
-**/
+ * 6.0   08-25-2021   tom.h.ansley@medtronic.com   renamed getListViewColumnLabels() to getListViewColumns()
+ **/
 public without sharing class ListViewController
 {
 
@@ -669,14 +670,13 @@ public without sharing class ListViewController
     }
 
     @AuraEnabled(cacheable=true)
-    public static List<SelectOption> getListViewColumnLabels(String objectName, String listViewName)
+    public static List<ListViewAbstract.ListViewColumn> getListViewColumns(String objectName, String listViewName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewColumnLabels(' + objectName + ', ' + listViewName + ')');
-        List<SelectOption> labelOptions = new List<SelectOption>();
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewColumns(' + objectName + ', ' + listViewName + ')');
 
         //get the core SFDC list view data
         Map<Id, List_View__c> listViews = ListViewHelper.getListViews(objectName, listViewName);
-        if (listViews.size() == 0) return new List<SelectOption>();
+        if (listViews.size() == 0) return new List<ListViewAbstract.ListViewColumn>();
         List_View__c listView = listViews.values()[0];
 
         //-------------------------------------------------------------------
@@ -695,14 +695,11 @@ public without sharing class ListViewController
         //set all request information into the apex processing class.
         lvlogic.setRequestData(listview);
 
-        Map<String, String> labels = lvLogic.getColumnLabels();
+        List<ListViewAbstract.ListViewColumn> columnData = lvLogic.getColumnLabels();
 
-        for (String fieldName: labels.keySet())
-            labelOptions.add(new SelectOption(fieldName, labels.get(fieldName)));         
-    
-        labelOptions.sort();
+        columnData.sort();
 
-        return labelOptions;
+        return columnData;
     }
 
     /**

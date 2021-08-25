@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-20-2021
+ * @last modified on  : 08-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -141,11 +141,11 @@ global class ListViewControllerTest {
 
     }
 
-    static testMethod void getListViewColumnLabelsTest()
+    static testMethod void getListViewColumnsTest()
     {
         HelperTest.createCoreListViews();
 
-        List<ListViewController.SelectOption> labels = ListViewController.getListViewColumnLabels('Account', 'AllAccounts');
+        List<ListViewAbstract.ListViewColumn> labels = ListViewController.getListViewColumns('Account', 'AllAccounts');
 
         System.assert(labels.size() > 0);
     }
