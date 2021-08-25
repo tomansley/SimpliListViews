@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-20-2021
+ * @last modified on  : 08-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -1483,6 +1483,14 @@ global with sharing class ListViewHelper {
         param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'true';
         param2.Parameter_Label__c  = 'Display Text Search';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'Debug';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param2.Parameter_Value__c  = 'false';
+        param2.Parameter_Label__c  = 'Debug';
         params2.add(param2);
 
         //---------------------------------------
