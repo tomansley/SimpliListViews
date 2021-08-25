@@ -1357,7 +1357,18 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                                                                 }
                                                                             });        
 
-                                                                            if (param.value === 'Id')
+                                                                            if (row === undefined)
+                                                                            {
+                                                                                this.dispatchEvent(new ShowToastEvent({
+                                                                                  title: 'Error Processing Action',
+                                                                                  message: 'A row must be selected for this action',
+                                                                                  variant: 'error',
+                                                                                  mode: 'dismissable'
+                                                                                }));
+
+                                                                                hyperlink = '';
+
+                                                                            } else if (param.value === 'Id')
                                                                             {
                                                                                 hyperlink = hyperlink.replace(key, row.salesforceId);
                                                                             } else {
@@ -1374,12 +1385,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                                                     });
 
                 console.log('Hyperlink - ' + hyperlink);
-                this[NavigationMixin.Navigate]({
-                    type: 'standard__webPage',
-                    attributes: {
-                        url: hyperlink,
-                    },
-                });
+
+                if (hyperlink !== '')
+                {
+                    this[NavigationMixin.Navigate]({
+                        type: 'standard__webPage',
+                        attributes: {
+                            url: hyperlink,
+                        },
+                    });
+                }
             }
 
         //------------------------------------------------------
