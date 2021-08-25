@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-23-2021
+ * @last modified on  : 08-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -10,10 +10,11 @@
  * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic to handle identification of inline-editing for rows and fields. Beefed up FieldWrapper to handle inline-editing (mainly type identification methods), 
  * 4.0   08-20-2021   tom.h.ansley@medtronic.com   Updated all strings to static final variables, Added display vs. non-display action params and added hyperlink action type 
  * 5.0   08-20-2021   tom.h.ansley@medtronic.com   Added SalesforceId to row to differentiate between rowId which includes row number 
+ * 6.0   08-25-2021   tom.h.ansley@medtronic.com   Updated column logic to return type of column, added flag for total column identification on fields,  
 **/
 public with sharing abstract class ListViewAbstract {
     
-    public static Set<String> validTotalColumns = new Set<String>{ListViewHelper.TYPE_INTEGER, ListViewHelper.TYPE_DECIMAL, ListViewHelper.TYPE_CURRENCY};
+    public static Set<String> validTotalColumns = new Set<String>{ListViewHelper.TYPE_INTEGER, ListViewHelper.TYPE_DECIMAL, ListViewHelper.TYPE_CURRENCY, ListViewHelper.TYPE_DOUBLE, ListViewHelper.TYPE_NUMBER};
     public static Set<String> validNameColumnNames = new Set<String>{'name', 'casenumber'}; //holds the list of column names that if found will produce a link to the record.
 
     public List_View__c listview = null;                              //holds the list view record associated with this request.
@@ -63,7 +64,7 @@ public with sharing abstract class ListViewAbstract {
     * @author tom.h.ansley@medtronic.com | 10-26-2020 
     * @return Map<String, String> the map of column labels with column API names used as keys by the UI.
     **/
-    public Map<String, String> getColumnLabels()
+    public List<ListViewColumn> getColumnLabels()
     {
         SObject exampleRow = null;   
 
@@ -87,7 +88,7 @@ public with sharing abstract class ListViewAbstract {
             exampleRow = (SObject) t.newInstance();
         }
 
-        Map<String, String> colLabels = new Map<String, String>();
+        List<ListViewColumn> listViewColumns = new List<ListViewColumn>();
 
         //get all columns from the list view
         List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
@@ -105,7 +106,7 @@ public with sharing abstract class ListViewAbstract {
                 HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
          
                 if (d != null && !d.isChildRel)
-                    colLabels.put(fieldName, d.label);
+                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
             }
             
         }
@@ -126,11 +127,11 @@ public with sharing abstract class ListViewAbstract {
                 HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
          
                 if (d != null)
-                    colLabels.put(fieldName, d.label);
+                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
             }
         }
 
-        return colLabels;
+        return listViewColumns;
     }
 
     public void setRequestData(List_View__c listview)
@@ -532,14 +533,16 @@ public with sharing abstract class ListViewAbstract {
         {
             String dataStr = '';
 
-            //get the field data. We make sure to escape delimiter
-            for (FieldWrapper fieldData: getFields())
+            if (!this.getIsTotals())
             {
-                dataStr += '"' + fieldData.getValue().replaceAll('"', '""') + '"' + ',';
+                //get the field data. We make sure to escape delimiter
+                for (FieldWrapper fieldData: getFields())
+                {
+                    dataStr += '"' + fieldData.getValue().replaceAll('"', '""') + '"' + ',';
+                }
+
+                dataStr = dataStr.removeEnd(',') + '\n';
             }
-
-            dataStr = dataStr.removeEnd(',') + '\n';
-
             return dataStr;
         }
 
@@ -577,39 +580,204 @@ public with sharing abstract class ListViewAbstract {
          * Method to calculate and set the conditional highlighting of rows based on provided configuration conditions.
          * We pass in the condition details each time as its a complex object that cannot be passed to the lightning UI
          */
-        public void calculateHighlighting(Map<String, List<ListViewCondition>> lvConfigConditions)
+        public void calculateHighlighting(List<ListViewCondition> conditions)
         {
-            System.debug(LoggingLevel.DEBUG, 'Calculating highlighting for row!');
-            System.debug(LoggingLevel.DEBUG, 'Conditions are - ' + lvConfigConditions);
-            //for each field
-            for (FieldWrapper field: fields.values())
+            System.debug(LoggingLevel.FINE, 'Calculating highlighting for row!');
+            System.debug(LoggingLevel.FINE, 'Conditions are - ' + conditions);
+
+            //REVERSE conditions due to precedence
+            List<ListViewCondition> revConditions = new List<ListViewCondition>();
+
+            for(Integer i = conditions.size() - 1; i >= 0; i--){
+                revConditions.add(conditions[i]);
+            }            
+
+            //for each condition
+            for (ListViewCondition condition: revConditions)
             {
-                System.debug(LoggingLevel.DEBUG, 'Looking at field with name = ' + field.name + ' and value = ' + field.getValue());
+                System.debug(LoggingLevel.FINE, 'Working with - ' + condition.getFieldName());
 
-                //check of there is a condition name which matches a field
-                List<ListViewCondition> conditions = lvConfigConditions.get(field.name.toLowerCase());
-                if (conditions == null && !String.isEmpty(field.getLongName()))
-                    conditions = lvConfigConditions.get(field.getLongName().toLowerCase());
-
-                //if there is then validate
-                if (conditions != null)
+                //go through each field
+                for (FieldWrapper field: fields.values())
                 {
 
-                    System.debug(LoggingLevel.DEBUG, 'We have ' + conditions.size() + ' matching conditions!');
+                    //if we have a match between field name and condition field name
+                    if (condition.getFieldName() == field.name.toLowerCase() || condition.getFieldName() == field.getLongName().toLowerCase())
+                    {
 
-                    List<List_View_Config_Condition__c> lvConditions = new List<List_View_Config_Condition__c>();
-                    for (ListViewCondition condition: conditions)
-                        lvConditions.add(condition.getCondition());
+                        System.debug(LoggingLevel.DEBUG, 'We have a matching condition!');
 
-                    String color = ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, lvConditions);
+                        String color = ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, condition.getCondition());
 
-                    System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + color);
+                        System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + color);
 
-                    //get the highlight color as well regardless.
-                    if (color != '')
-                        highlightColor = color;
+                        //get the highlight color as well regardless.
+                        if (color != '')
+                            highlightColor = color;
+                    }
+
                 }
             }
+
+        }
+    }
+
+    //---------------------------------------------------------------------
+    //COLUMN - wrapper holding data for a single column in a table.
+    //---------------------------------------------------------------------
+    public class ListViewColumn implements Comparable
+    {
+        public String label;
+        public String name;
+        public String type;
+
+        public ListViewColumn(String label, String name, String type)
+        {
+            this.label = label;
+            this.name = name;
+            this.type = type;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLabel()
+        {
+            return label;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getValue()
+        {
+            return name;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getType()
+        {
+            return type;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsString()
+        {
+            if (this.type == ListViewHelper.TYPE_STRING) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTextArea()
+        {
+            if (this.type == ListViewHelper.TYPE_TEXTAREA) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsURL()
+        {
+            if (this.type == ListViewHelper.TYPE_URL) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsBoolean()
+        {
+            if (this.type == ListViewHelper.TYPE_BOOLEAN) return true;
+            return false;    
+        }
+                
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsLookup()
+        {
+            if (this.type == ListViewHelper.TYPE_LOOKUP) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsCurrency()
+        {
+            if (this.type == ListViewHelper.TYPE_CURRENCY) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDate()
+        {
+            if (this.type == ListViewHelper.TYPE_DATE) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDateTime()
+        {
+            if (this.type == ListViewHelper.TYPE_DATETIME) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTime()
+        {
+            if (this.type == ListViewHelper.TYPE_TIME) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPicklist()
+        {
+            if (this.type == ListViewHelper.TYPE_PICKLIST) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsMultiPicklist()
+        {
+            if (this.type == ListViewHelper.TYPE_MULTI_PICK) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDecimal()
+        {
+            if (this.type == ListViewHelper.TYPE_DECIMAL) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsInteger()
+        {
+            if (this.type == ListViewHelper.TYPE_INTEGER) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDouble()
+        {
+            if (this.type == ListViewHelper.TYPE_DOUBLE) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPercent()
+        {
+            if (this.type == ListViewHelper.TYPE_PERCENT) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPhone()
+        {
+            if (this.type == ListViewHelper.TYPE_PHONE) return true;
+            return false;    
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsEmail()
+        {
+            if (this.type == ListViewHelper.TYPE_EMAIL) return true;
+            return false;    
+        }
+
+        public Integer compareTo(Object compareTo) {
+            ListViewColumn desc2 = (ListViewColumn) compareTo;
+            return label.compareTo(desc2.label);
         }
     }
 
@@ -637,6 +805,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isEditable;     //identifies whether the field can be edited inline.
         public String parentObjType;   //the API name of the object that this field looks up to
         public SObject fieldObj;       //the SObject associated with the field. Used when retrieving lookup information
+        public Boolean isTotalsRow;    //identifies whether the row this field is a part of is a totals row.
 
         public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
         {
@@ -649,6 +818,8 @@ public with sharing abstract class ListViewAbstract {
             this.urlTarget     = '_self';
             this.objValue      = objValue;
             this.parentObjType = parentObjType;
+            this.longName      = '';
+            this.isTotalsRow   = false;
 
             this.setType(type);
             this.setValue(objValue);
@@ -671,6 +842,7 @@ public with sharing abstract class ListViewAbstract {
             this.sortIndex   = '';
             this.columnIndex = columnIndex;
             this.isSortable  = true;
+            this.isTotalsRow = false;
 
             this.setType(type);
 
@@ -681,6 +853,11 @@ public with sharing abstract class ListViewAbstract {
             debug       += 'columnIndex - ' + this.columnIndex + '\n';
             debug       += '---------------------------------------------------------------\n';
             System.debug(LoggingLevel.FINE, debug);
+        }
+
+        public void setIsTotalsRow(Boolean isTotalsRow)
+        {
+            this.isTotalsRow = isTotalsRow;
         }
         
         @AuraEnabled(cacheable=true)
@@ -782,6 +959,10 @@ public with sharing abstract class ListViewAbstract {
             //No Value!
             if (this.objValue == null) {
                 strValue = '';
+
+            } else if (this.isTotalsRow)
+            {
+                strValue = String.valueOf(objValue);
 
             } else if (getIsBoolean()) 
             {
@@ -925,7 +1106,7 @@ public with sharing abstract class ListViewAbstract {
         public String getUIValue()
         {
             String uiStr = '';
-            if (objValue != null)
+            if (!this.isTotalsRow && objValue != null)
             {
                 if (getIsDateTime()) {
                         uiStr = String.valueOf(objValue).replace(' ', 'T') + 'Z';
@@ -1135,7 +1316,7 @@ public with sharing abstract class ListViewAbstract {
         public DateTime lastModifiedDate;
         public String lastModifiedBy;
         public Map<String, ListViewParam> parameters;
-        public Map<String, List<ListViewCondition>> conditions;
+        public List<ListViewCondition> conditions;
         public String name;
         public String label;
         public String obj;
@@ -1145,7 +1326,7 @@ public with sharing abstract class ListViewAbstract {
             this.name = name;
             this.obj = obj;
             parameters       = new Map<String,ListViewParam>();
-            conditions       = new Map<String, List<ListViewCondition>>();
+            conditions       = new List<ListViewCondition>();
         }
 
         /*
@@ -1161,7 +1342,7 @@ public with sharing abstract class ListViewAbstract {
             lastModifiedDate = listViewConfig.LastModifiedDate;
             lastModifiedBy   = listViewConfig.LastModifiedBy.Name;
             parameters       = new Map<String,ListViewParam>();
-            conditions       = new Map<String, List<ListViewCondition>>();
+            conditions       = new List<ListViewCondition>();
 
             for (List_View_Config_Parameter__c param: params)
             {
@@ -1181,15 +1362,7 @@ public with sharing abstract class ListViewAbstract {
 
 
             for (List_View_Config_Condition__c condition: listViewConfig.List_View_Config_Conditions__r)
-            {
-                List<ListViewCondition> conditionList = conditions.get(condition.Field_Name__c.toLowerCase());
-                if (conditionList == null)
-                {
-                    conditionList = new List<ListViewCondition>();
-                    conditions.put(condition.Field_Name__c.toLowerCase(), conditionList);
-                }
-                conditionList.add(new ListViewCondition(condition));
-            }
+                conditions.add(new ListViewCondition(condition));
             
         }
 
@@ -1256,20 +1429,9 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public List<ListViewCondition> getConditions()
         {
-            List<ListViewCondition> allConditions = new List<ListViewCondition>();
-            for (String name: conditions.keySet())
-                allConditions.addAll(conditions.get(name));
-
-            return allConditions;
+            return conditions;
         }
 
-        public List<ListViewCondition> getCondition(String field)
-        {
-            return conditions.get(field);
-        }
-
-
-        
     }
 
     public class ListViewParam implements Comparable
@@ -1440,15 +1602,15 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
-        public String getLabel() //do not change this. Its used on the UI for SelectOption
-        {
-            return action.Label__c;
-        }
-
-        @AuraEnabled(cacheable=true)
         public String getPrimaryKey()
         {
             return action.Primary_Key__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLabel() //do not change this. Its used on the UI for SelectOption
+        {
+            return action.Label__c;
         }
 
         @AuraEnabled(cacheable=true)

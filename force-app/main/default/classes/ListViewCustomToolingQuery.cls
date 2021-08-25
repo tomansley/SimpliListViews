@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-20-2021
+ * @last modified on  : 08-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -236,6 +236,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                                             fieldWrapper.getName(),
                                             fieldWrapper.columnIndex,
                                             '');
+                        totalField.setIsTotalsRow(true);
 
                         System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
 
