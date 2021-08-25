@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-11-2021
+ * @last modified on  : 08-23-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -30,7 +30,10 @@ public with sharing class ListViewConfigDescriptions {
     public static String getLongDescription(String name)
     {
         populateDescriptions();
-        return descriptions.get(name).Long_Description__c;
+        if (descriptions.get(name) != null)
+            return descriptions.get(name).Long_Description__c;
+        else 
+            return '';
     }
 
     public static List<List_View_Config_Description__mdt> getDescriptions(String type)
