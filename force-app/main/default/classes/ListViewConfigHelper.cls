@@ -4,13 +4,14 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-20-2021
+ * @Last Modified On   : 08-25-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
  * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
  * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic for new admin page.
  * 4.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
+ * 4.0   08-25-2021   tom.h.ansley@medtronic.com   Major enhancement to condition validation for more types
 **/
 public with sharing class ListViewConfigHelper {
 
@@ -138,7 +139,7 @@ public with sharing class ListViewConfigHelper {
 
             Object newValue = newParams.get(paramName);
 
-            System.debug(LoggingLevel.DEBUG, 'NEW VALUE - ' + paramName + ' - '  + newValue);
+            System.debug(LoggingLevel.FINE, 'NEW VALUE - ' + paramName + ' - '  + newValue);
 
             if (paramDetail.Parameter_Type__c.toLowerCase() == ListViewHelper.TYPE_BOOLEAN)
             {
@@ -196,7 +197,7 @@ public with sharing class ListViewConfigHelper {
     public static String updateListViewParam(String objectName, String listViewName, String paramName, String paramValue, String paramLabel, String paramType)
     {
 
-        System.debug(LoggingLevel.DEBUG, 'Starting updateListViewParam(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ')');
+        System.debug(LoggingLevel.FINE, 'Starting updateListViewParam(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ')');
 
         String errorStr = ListViewConfigHelper.validateParameter(objectName, listViewName, paramName, paramValue);
 
@@ -216,7 +217,7 @@ public with sharing class ListViewConfigHelper {
             //if we have a parameter
             if (params.size() > 0)
             {
-                System.debug(LoggingLevel.DEBUG, 'Param found - ' + params[0]);
+                System.debug(LoggingLevel.FINE, 'Param found - ' + params[0]);
 
                 params[0].Parameter_Value__c = paramValue;
             
@@ -238,7 +239,7 @@ public with sharing class ListViewConfigHelper {
 
             HelperDatabase.upsertRecords(params, 'Simpli_lv__List_View_Config_Parameter__c');
 
-            System.debug(LoggingLevel.DEBUG, 'Finished upserting param!');
+            System.debug(LoggingLevel.FINE, 'Finished upserting param!');
 
         }
 
@@ -265,7 +266,7 @@ public with sharing class ListViewConfigHelper {
 
     public static void deleteListViewCondition(String id)
     {
-        System.debug(LoggingLevel.DEBUG, 'Deleting list view condition - ' + id);
+        System.debug(LoggingLevel.FINE, 'Deleting list view condition - ' + id);
 
         HelperSchema.checkListViewConfigsAccessible();
 
@@ -284,7 +285,7 @@ public with sharing class ListViewConfigHelper {
      */
     public static List<List_View_Config__c> getListViewConfig(String objectName, String listViewName) 
     {
-        System.debug(LoggingLEvel.DEBUG, 'Starting getListViewConfig(' + objectName + ', ' + listViewName + ')');
+        System.debug(LoggingLEvel.FINE, 'Starting getListViewConfig(' + objectName + ', ' + listViewName + ')');
 
         List<List_View_Config__c> configs = new List<List_View_Config__c>();
 
@@ -316,7 +317,7 @@ public with sharing class ListViewConfigHelper {
         if (configs.size() > 1)
             throw new ListViewException('Found more than one list view config with name - ' + listViewName + ' and object - ' + objectName);
 
-        System.debug(LoggingLevel.DEBUG, 'Returning configs - ' + configs);
+        System.debug(LoggingLevel.FINE, 'Returning configs - ' + configs);
         return configs;
     }
 
@@ -434,7 +435,7 @@ public with sharing class ListViewConfigHelper {
             
                     String soql = 'SELECT ' + selectStr + ' FROM ' + objectName + ' LIMIT 1';
 
-                    System.debug(LoggingLevel.DEBUG, 'Param Validation SOQL - ' + soql);
+                    System.debug(LoggingLevel.FINE, 'Param Validation SOQL - ' + soql);
 
                     List<SObject> result = Database.query(soql);
 
@@ -451,48 +452,113 @@ public with sharing class ListViewConfigHelper {
     * @description Method to validate a condition given an object being validated against and
     * a condition. The return of an HTML color indicates the condition yielded a result. If no
     * color was returned the value did meet any criteria.
+    *
+    * NOTE - DATE and DATETIME come through as millisecond strings and therefore need to be converted.
+    *
     * @author tom.h.ansley@medtronic.com | 08-05-2020 
     * @param value the value being validated against
     * @param type the type of the value being validated against
     * @param conditions the conditions the value is being validated against
     * @return String either an HTML color (condition match) or empty string (condition not met)
     **/
-    public static String validateFieldCondition(Object value, String type, List<List_View_Config_Condition__c> conditions)
+    public static String validateFieldCondition(Object value, String type, List_View_Config_Condition__c condition)
     {
+        try {
+            System.debug(LoggingLevel.FINE, 'Starting validateFieldCondition(' + value + ',' + type + ')');
+            System.debug(LoggingLevel.FINE, 'Conditions - ' + condition);
 
-        System.debug(LoggingLevel.DEBUG, 'Starting validateFieldCondition(' + value + ',' + type + ')');
-        System.debug(LoggingLevel.DEBUG, 'Conditions - ' + conditions);
-
-        if (value == null || conditions == null || conditions.size() == 0) return '';
-    
-        for (List_View_Config_Condition__c condition: conditions)
-        {
-            System.debug(LoggingLevel.DEBUG, 'Value     = ' + value);
-            System.debug(LoggingLevel.DEBUG, 'Type      = ' + type);
-            System.debug(LoggingLevel.DEBUG, 'Operator  = ' + condition.Operator__c);
-            System.debug(LoggingLevel.DEBUG, 'condValue = ' + condition.Value__c);
+            if (value == null || condition == null) return '';
+        
+            System.debug(LoggingLevel.FINE, 'Value     = ' + value);
+            System.debug(LoggingLevel.FINE, 'Type      = ' + type);
+            System.debug(LoggingLevel.FINE, 'Operator  = ' + condition.Operator__c);
+            System.debug(LoggingLevel.FINE, 'condValue = ' + condition.Value__c);
 
             //if we have a meaningless comparison then skip
-            if ((value == null || value == '') && type != ListViewHelper.TYPE_STRING) continue;
+            if ((value == null || value == '') && type != ListViewHelper.TYPE_STRING) return '';
 
+            //EQUAL
             if (condition.Operator__c == OPER_EQUAL) {
-                if (value == condition.Value__c) return condition.Highlight_Color__c;
+                if (type == ListViewHelper.TYPE_DOUBLE) {
+                    if (value == Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                } else if (type == ListViewHelper.TYPE_DATE) {
+                    if (HelperDate.convertMillisToDate((String) value) == Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                } else if (type == ListViewHelper.TYPE_DATETIME) {
+                    if (HelperDate.convertMillisToDateTime((String) value) == DateTime.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                } else if (type == ListViewHelper.TYPE_TIME) {
+                    if (HelperDate.getTimeFromString((String) value) == HelperDate.getTimeFromString(condition.Value__c)) return condition.Highlight_Color__c;
+                } else if (String.valueOf(value) == condition.Value__c) return condition.Highlight_Color__c;
+
+            //NOT EQUAL
             } else if (condition.Operator__c == OPER_NOT_EQUAL) {
-                if (value != condition.Value__c) return condition.Highlight_Color__c;
+                if (type == ListViewHelper.TYPE_DOUBLE) {
+                    if (value != Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                } else if (type == ListViewHelper.TYPE_DATE) {
+                    if (HelperDate.convertMillisToDate((String) value) != Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                } else if (type == ListViewHelper.TYPE_DATETIME) {
+                    if (HelperDate.convertMillisToDateTime((String) value) != DateTime.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                } else if (type == ListViewHelper.TYPE_TIME) {
+                    if (HelperDate.getTimeFromString((String) value) != HelperDate.getTimeFromString(condition.Value__c)) return condition.Highlight_Color__c;
+                } else if (String.valueOf(value) != condition.Value__c) return condition.Highlight_Color__c;
+
+            //GREATER THAN
             } else if (condition.Operator__c == OPER_GREATER) {
-                if (type == ListViewHelper.TYPE_STRING && String.valueOf(value) > condition.Value__c) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DECIMAL && Decimal.valueOf(String.valueOf(value)) > Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DATE && Date.valueOf(value) > Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                if ((type == ListViewHelper.TYPE_STRING 
+                        || type == ListViewHelper.TYPE_EMAIL 
+                        || type == ListViewHelper.TYPE_MULTI_PICK 
+                        || type == ListViewHelper.TYPE_PHONE 
+                        || type == ListViewHelper.TYPE_PICKLIST 
+                        || type == ListViewHelper.TYPE_RICH_TEXTAREA
+                        || type == ListViewHelper.TYPE_TEXTAREA
+                        || type == ListViewHelper.TYPE_URL) 
+                        && String.valueOf(value) > condition.Value__c) return condition.Highlight_Color__c;
+                else if ((type == ListViewHelper.TYPE_DECIMAL 
+                        || type == ListViewHelper.TYPE_CURRENCY 
+                        || type == ListViewHelper.TYPE_NUMBER 
+                        || type == ListViewHelper.TYPE_PERCENT) 
+                        && Decimal.valueOf(String.valueOf(value)) > Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DATE && HelperDate.convertMillisToDate((String) value) > Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DATETIME && HelperDate.convertMillisToDateTime((String) value) > DateTime.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DOUBLE && Double.valueOf(value) > Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_INTEGER && Integer.valueOf(value) > Integer.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_TIME && HelperDate.getTimeFromString((String) value) > HelperDate.getTimeFromString(condition.Value__c)) return condition.Highlight_Color__c;
+        
+            //LESS THAN
             } else if (condition.Operator__c == OPER_LESS) {
-                if (type == ListViewHelper.TYPE_STRING && String.valueOf(value) < condition.Value__c) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DECIMAL && Decimal.valueOf(String.valueOf(value)) < Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DATE && Date.valueOf(value) < Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                if ((type == ListViewHelper.TYPE_STRING 
+                        || type == ListViewHelper.TYPE_EMAIL 
+                        || type == ListViewHelper.TYPE_MULTI_PICK 
+                        || type == ListViewHelper.TYPE_PHONE 
+                        || type == ListViewHelper.TYPE_PICKLIST 
+                        || type == ListViewHelper.TYPE_RICH_TEXTAREA
+                        || type == ListViewHelper.TYPE_TEXTAREA
+                        || type == ListViewHelper.TYPE_URL) 
+                        && String.valueOf(value) < condition.Value__c) return condition.Highlight_Color__c;
+                else if ((type == ListViewHelper.TYPE_DECIMAL 
+                        || type == ListViewHelper.TYPE_CURRENCY 
+                        || type == ListViewHelper.TYPE_NUMBER 
+                        || type == ListViewHelper.TYPE_PERCENT) 
+                        && Decimal.valueOf(String.valueOf(value)) < Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DATE && HelperDate.convertMillisToDate((String) value) < Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DATETIME && HelperDate.convertMillisToDateTime((String) value) < DateTime.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DOUBLE && Double.valueOf(value) < Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_INTEGER && Integer.valueOf(value) < Integer.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_TIME && HelperDate.getTimeFromString((String) value) < HelperDate.getTimeFromString(condition.Value__c)) return condition.Highlight_Color__c;
+
+            //CONTAINS
             } else if (condition.Operator__c == OPER_CONTAINS) {
-                if (((String) value).contains((String) condition.Value__c)) return condition.Highlight_Color__c;
+                if (type == ListViewHelper.TYPE_DATETIME
+                    || type == ListViewHelper.TYPE_DATE
+                    || type == ListViewHelper.TYPE_TIME
+                    || type == ListViewHelper.TYPE_PERCENT
+                    || type == ListViewHelper.TYPE_CURRENCY) throw new ListViewException('Cannot use "Contains" operator on DateTime, Date, Time, Percent or Currency types');
+                if (String.valueOf(value).contains(condition.Value__c)) return condition.Highlight_Color__c;
             }
-
+        } catch (Exception e) {
+            String message = 'Exception during ListViewController.validateFieldCondition(' + value + ',' + type + ',' + condition + ')  ' + ListViewException.getExtendedString(e);
+            if (!HelperLimits.hasReachedLimit('DMLStatements'))
+                ListViewErrorHelper.createUsageError(message); 
         }
-
         return '';
     }
 
