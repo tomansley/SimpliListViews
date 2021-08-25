@@ -40,11 +40,12 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track error                        //holds any error details.
     @track paramNameLoad;               //on entry into a param value the name is set here.
     @track paramValueLoad;              //on entry into a param value the value is set here.
+    @track firstConditionField;         //the first condition in the fields list
     @track newConditionField;
     @track newConditionColumn;          //the complex column object set when field is selected
     @track newConditionOperator;
     @track newConditionValue;
-    @track newConditionOrder;
+    @track newConditionOrder = '1';
     @track newConditionColor;
     @track configChanged;               //identifies if a change has been made which needs to force a data refresh
 
@@ -109,12 +110,6 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
         console.log('Starting simpliUIListViewsAdminModal.renderedCallback');
     
-        this.newConditionField;
-        this.newConditionOperator = 'Equals';
-        this.newConditionValue;
-        this.newConditionOrder = '1';
-        this.newConditionColor = '#000000';
-
         if (this.listViewConfig === undefined) {
             this.configChanged = false;
         }
@@ -184,7 +179,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     wiredListViewColumns({ error, data }) {
         if (data) { 
             console.log('List view column label retrieval successful'); 
-            this.listViewColumns = data; 
+            this.listViewColumns = data;
+            this.resetNewCondition();
         } else if (error) { 
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.listViewColumns = undefined; 
@@ -383,9 +379,16 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     }
 
     resetNewCondition() {
-        this.newConditionColumn = undefined;
+        if (this.listViewColumns !== undefined && this.listViewColumns.length > 0)
+        {
+            this.firstConditionField = this.listViewColumns[0].value;
+            this.newConditionColumn = this.listViewColumns[0];
+            this.newConditionField = this.listViewColumns[0].value;
+        }
         this.newConditionValue = undefined;
-        this.newConditionField = undefined;
+        this.newConditionColor = '#DBFFB4';
+        this.newConditionOperator = 'Equals';
+        this.newConditionOrder = '1';
     }
 
     handleClose() {

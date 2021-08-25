@@ -183,6 +183,7 @@
                                                         <lightning-combobox placeholder={label.Select_A_Column}  
                                                                             onchange={handleConditionFieldChange} 
                                                                             options={listViewColumns}
+                                                                            value={firstConditionField}
                                                                             variant=label-hidden>
                                                         </lightning-combobox>
                                                     </div>
@@ -191,7 +192,7 @@
                                                     <div title="Operator">
                                                         <lightning-combobox placeholder={label.Select_A_Value}
                                                                             value="Equals"
-                                                                            onblur={handleConditionOperatorChange}
+                                                                            onchange={handleConditionOperatorChange}
                                                                             options={operatorList}
                                                                             variant=label-hidden>
                                                         </lightning-combobox>                        
@@ -270,7 +271,7 @@
                                                         <lightning-input type="color" 
                                                                             variant="label-hidden" 
                                                                             onchange={handleConditionColorChange}
-                                                                            value="#000000">
+                                                                            value="#DBFFB4">
                                                         </lightning-input>
                                                     </div>
                                                 </td>
