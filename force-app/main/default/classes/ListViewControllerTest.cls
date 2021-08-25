@@ -66,7 +66,7 @@ global class ListViewControllerTest {
 
         Map<String, String> configs = ListViewController.getComponentConfig('CompName 1');
 
-        System.assertEquals(17, configs.size());
+        System.assertEquals(18, configs.size());
         System.assertEquals('Account:AllAccounts', configs.get('pinnedListView'));
 
         //update user config
@@ -75,7 +75,7 @@ global class ListViewControllerTest {
 
         configs = ListViewController.getComponentConfig('CompName 1');
 
-        System.assertEquals(17, configs.size());
+        System.assertEquals(18, configs.size());
         System.assertEquals('Contact:AllContacts', configs.get('pinnedListView'));
 
 

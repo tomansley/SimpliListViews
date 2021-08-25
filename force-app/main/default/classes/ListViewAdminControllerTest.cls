@@ -28,7 +28,7 @@ global class ListViewAdminControllerTest {
 
             System.assertEquals('All', config.getObject());
             System.assertEquals('All', config.getName());
-            System.assertEquals(16, config.getParameters().size());
+            System.assertEquals(17, config.getParameters().size());
 
             ListViewAbstract.ListViewParam param = config.getParameters()[0];
             System.assertNotEquals(param.getReadOnly(), null);
