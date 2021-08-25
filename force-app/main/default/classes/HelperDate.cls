@@ -1,12 +1,13 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-02-2021
+ * @last modified on  : 08-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   07-29-2021   tom.h.ansley@medtronic.com   Initial Version
  * 2.0   08-02-2021   tom.h.ansley@medtronic.com   Added convertDateToDateTime() method
+ * 3.0   08-25-2021   tom.h.ansley@medtronic.com   Added getTimeFromString(), convertMillisToDateTime() and convertMillisToDate() methods
 **/
 public with sharing class HelperDate {
 
@@ -15,6 +16,28 @@ public with sharing class HelperDate {
     public static final String YEAR = 'Year';
     public static final String HOUR = 'Hour';
     public static final String MINUTE = 'Minute';
+
+    //06:45:00 AM
+    //System.debug(LoggingLevel.DEBUG, 'RESULT - ' + (HelperDate.getTimeFromString('06:46:00 AM') > HelperDate.getTimeFromString('06:47:00 AM')));
+    public static Time getTimeFromString(String timeStr)
+    {
+        Integer hour = Integer.valueOf(timeStr.substring(0, 2));
+        if (timeStr.substring(9) == 'PM') hour = hour + 12;
+        return Time.newInstance(hour, 
+                                Integer.valueOf(timeStr.substring(3, 5)),
+                                Integer.valueOf(timeStr.substring(6, 8)), 
+                                0);
+    }
+
+    public static DateTime convertMillisToDateTime(String millis)
+    {
+        return DateTime.newInstance(Long.valueOf((String) millis));
+    }
+
+    public static Date convertMillisToDate(String millis)
+    {
+        return DateTime.newInstance(Long.valueOf((String) millis)).date();
+    }
 
     public static DateTime convertDateToDateTime(Date theDate)
     {
