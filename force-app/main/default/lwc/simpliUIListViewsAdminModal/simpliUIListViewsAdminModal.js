@@ -23,7 +23,7 @@ import Add_Condition from '@salesforce/label/c.Add_Condition';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
 import getCachedListViewConfig from '@salesforce/apex/ListViewController.getCachedListViewConfig';
-import getListViewColumnLabels from '@salesforce/apex/ListViewController.getListViewColumnLabels';
+import getListViewColumns from '@salesforce/apex/ListViewController.getListViewColumns';
 import processParamChange from '@salesforce/apex/ListViewController.processParamChange';
 import processConditionChange from '@salesforce/apex/ListViewController.processConditionChange';
 
@@ -36,11 +36,12 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @api listViewName;                  //the name of the list view.
     @api recordCount;                   //the number of record Ids passed in.
     @track listViewConfig               //holds all configuration for the list view
-    @track listViewColumnLabels         //holds all column label information
+    @track listViewColumns              //holds all column label information
     @track error                        //holds any error details.
     @track paramNameLoad;               //on entry into a param value the name is set here.
     @track paramValueLoad;              //on entry into a param value the value is set here.
     @track newConditionField;
+    @track newConditionColumn;          //the complex column object set when field is selected
     @track newConditionOperator;
     @track newConditionValue;
     @track newConditionOrder;
@@ -55,13 +56,30 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     }
 
     get operatorList() {
-        return [
-            { label: 'Equals', value: 'Equals' },
-            { label: 'Not Equal', value: 'Not Equal' },
-            { label: 'Greater Than', value: 'Greater Than' },
-            { label: 'Less Than', value: 'Less Than' },
-            { label: 'Contains', value: 'Contains' },
-        ];
+        if (this.newConditionColumn === undefined) {
+            return [ ];
+        } else if (this.newConditionColumn.type === 'boolean') {
+            return [
+                { label: 'Equals', value: 'Equals' },
+                { label: 'Not Equal', value: 'Not Equal' },
+            ];
+        } else if (this.newConditionColumn.type === 'date' 
+                    || this.newConditionColumn.type === 'datetime') {
+            return [
+                { label: 'Equals', value: 'Equals' },
+                { label: 'Not Equal', value: 'Not Equal' },
+                { label: 'Greater Than', value: 'Greater Than' },
+                { label: 'Less Than', value: 'Less Than' },
+            ];
+        } else {
+            return [
+                { label: 'Equals', value: 'Equals' },
+                { label: 'Not Equal', value: 'Not Equal' },
+                { label: 'Greater Than', value: 'Greater Than' },
+                { label: 'Less Than', value: 'Less Than' },
+                { label: 'Contains', value: 'Contains' },
+            ];
+        }
     }
 
     get orderList() {
@@ -75,7 +93,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     }
 
     label = { Close, List_View_Config, Settings, Parameter_Name, Value, Select_A_Value, Highlighting, Add_Remove, Field,
-              Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition }
+              Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition,
+            }
 
     constructor() {
         super();
@@ -161,14 +180,14 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     /*
      * Wiring to get the list of objects in the system
      */
-    @wire (getListViewColumnLabels, { objectName: '$listViewObject', listViewName: '$listViewName' })
-    wiredListViewColumnLabels({ error, data }) {
+    @wire (getListViewColumns, { objectName: '$listViewObject', listViewName: '$listViewName' })
+    wiredListViewColumns({ error, data }) {
         if (data) { 
             console.log('List view column label retrieval successful'); 
-            this.listViewColumnLabels = data; 
+            this.listViewColumns = data; 
         } else if (error) { 
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.listViewColumnLabels = undefined; 
+            this.listViewColumns = undefined; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Column Labels',
                 message: 'There was an error retrieving the list view column labels. Please see an administrator - ' + error.body.message + '\n\n' + error.body.stackTrace,
@@ -334,7 +353,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     }));
                     this.getListViewConfig();
                     this.configChanged = true;
-                
+                    this.resetNewCondition();
+
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error!',
@@ -362,12 +382,19 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
     }
 
+    resetNewCondition() {
+        this.newConditionColumn = undefined;
+        this.newConditionValue = undefined;
+        this.newConditionField = undefined;
+    }
+
     handleClose() {
         setTimeout(function(){
             console.log('after');
         },500); //give the parameter time to be saved before sending message to parent
         this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
         this.configChanged = false;
+        this.resetNewCondition();
     }
 
     handleCloseClick(event) {
@@ -376,11 +403,21 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         },500); //give the parameter time to be saved before sending message to parent
         this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
         this.configChanged = false;
+        this.resetNewCondition();
     }
 
     handleConditionFieldChange(event) {
         this.newConditionField = event.target.value;
         console.log('New Condition Field Change - ' + this.newConditionField);
+
+        //go find type for new field and set
+        this.listViewColumns.forEach(element => {
+                                                    if (element.value === this.newConditionField)
+                                                    {
+                                                        this.newConditionColumn = element;
+                                                    }
+                                                });
+        this.newConditionValue = undefined;
     }
 
     handleConditionOperatorChange(event) {
