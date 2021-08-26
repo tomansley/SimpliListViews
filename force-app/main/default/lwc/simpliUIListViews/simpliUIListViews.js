@@ -146,7 +146,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     rowDataStr = '';
 
     //for tracking list view init process
-    @track isInitialized = true;        //indicates whether the list views have been initialized for the first time or not.
+    @track isInitialized = undefined;        //indicates whether the list views have been initialized for the first time or not.
     @track showProgress = false;        //indicates whether the progress bar should be displayed
     @track batchId = '';                //indicates the batch Id of the list view batch process.
     @track isInitializing = true;       //indicates whether we are initializing the page or not.
@@ -197,206 +197,213 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     async renderedCallback() {
 
         console.log('Starting simpliUIListViews.renderedCallback for ' + this.pageName);
+
+        this.checkInitialized();
+
         //this ensures we only call this once for each page load
-        if (this.componentConfig === undefined) {
+        if (this.componentConfig === undefined && this.isInitialized === true) {
             this.spinnerOn();
 
-            console.log('User config is undefined for ' + this.pageName);
+            if (this.isInitialized === true)
+            {
+                console.log('User config is undefined for ' + this.pageName);
 
-            //always subscribe to the message channel
-            this.subscribeMC();
+                //always subscribe to the message channel
+                this.subscribeMC();
 
-            if (this.mode === 'Single List View') {
+                if (this.mode === 'Single List View') {
 
-                if (this.singleListViewObject === '' || this.singleListViewApiName === '')
-                {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Single List View Configuration Error',
-                        message: 'If using Single List View mode the list view object and API name must be provided.',
-                        variant: 'error',
-                        mode: 'sticky'
-                    }));
-                    return;
-                } else {
-
-                    this.isModeSingle     = true;
-                    this.isModeApp        = false;
-                    this.selectedObject   = this.singleListViewObject;
-                    this.selectedListView = this.singleListViewApiName;
-
-                    this.refreshAllListViewData();
-                }
-            }
-
-            if (this.mode === 'Related List View') {
-
-                if (this.singleListViewObject === '' || this.singleListViewApiName === '' || this.joinFieldName === '')
-                {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Related List View Configuration Error',
-                        message: 'If using Related List View mode the list view object, list view API name and join field name must be provided.',
-                        variant: 'error',
-                        mode: 'sticky'
-                    }));
-                    return;
-                } else {
-
-                    this.isModeRelated    = true;
-                    this.isModeApp        = false;
-                    this.selectedObject   = this.singleListViewObject;
-                    this.selectedListView = this.singleListViewApiName;
-
-                    if (this.joinData !== '') //only set list view data if there is join data.
+                    if (this.singleListViewObject === '' || this.singleListViewApiName === '')
                     {
-                        this.refreshAllListViewData();
-                    }
-                }
-            }
-
-            this.urlObject = this.currentPageReference.state.ObjectName;
-            this.urlListView = this.currentPageReference.state.ListViewName;
-            
-            console.log('URL object    - ' + this.urlObject + ' for ' + this.pageName);
-            console.log('URL list view - ' + this.urlListView + ' for ' + this.pageName);
-            console.log('Ltn page name - ' + this.pageName + ' for ' + this.pageName);
-            console.log('Page Mode     - ' + this.mode + ' for ' + this.pageName);
-
-            getComponentConfig({compName: this.pageName })
-            .then(result => {
-                console.log('Component configs retrieved successfully - ' + result + ' for ' + this.pageName);
-                this.componentConfig = result;
-                console.log('Component config size - ' + this.componentConfig.length + ' for ' + this.pageName);
-
-                let pinnedListView = this.componentConfig.pinnedListView;
-                console.log('Pinned list view string - ' + pinnedListView);
-
-                if (this.toBool(this.componentConfig.AllowAdmin) === false) { 
-                    if (this.isSysAdmin === true)
-                        this.allowAdmin = true;
-                    else
-                        this.allowAdmin = false;
-                 }
-                else if (this.toBool(this.componentConfig.AllowAdmin) === true) { this.allowAdmin = true; }
-                if (this.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
-                if (this.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
-                if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
-                if (this.toBool(this.componentConfig.DisplayRowCount) === false) { this.displayRowCount = false; }
-                if (this.toBool(this.componentConfig.DisplaySelectedCount) === false) { this.displaySelectedCount = false; }
-                if (this.toBool(this.componentConfig.DisplayTextSearch) === false) { this.displayTextSearch = false; }
-                if (this.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
-                if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
-                if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
-
-                //if we have a URL object then use it
-                if (this.urlObject != undefined) {
-                    this.selectedObject = this.urlObject
-
-                //otherwise if they have a pinned list view then use it, if possible.
-                } else if (pinnedListView != undefined && pinnedListView != '') {
-                    this.isPinned = true;
-                    this.pinnedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
-                    this.pinnedListView = pinnedListView.substring(pinnedListView.lastIndexOf(':')+1);
-
-                    console.log('Pinned object    - ' + this.pinnedObject);
-                    console.log('Pinned list view - ' + this.pinnedListView);
-
-                    //force a refresh of the list view objects. This will then force a refresh of the list view names and then the list view data.
-                    getListViewObjects({includedObjects: this.includedObjects, excludedObjects: this.excludedObjects })
-                    .then(result => {
-                        this.handleListViewObjects(result);
-                    })
-                    .catch(error => {
                         this.dispatchEvent(new ShowToastEvent({
-                            title: 'Error Retrieving List View Objects',
-                            message: 'There was an error retrieving the list view objects. Please see an administrator - ' + error.body.message,
+                            title: 'Single List View Configuration Error',
+                            message: 'If using Single List View mode the list view object and API name must be provided.',
                             variant: 'error',
                             mode: 'sticky'
                         }));
-                        console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-                    });
-        
-                } else {
-                    console.log('There is no URL object and no pinned list view for ' + this.pageName);
-                    this.isInitializing = false;
-                    this.spinnerOff();
-                }
-            })
-            .catch(error => {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Error Retrieving User Config',
-                    message: 'There was an error retrieving the user config. Please see an administrator - ' + error.body.message,
-                    variant: 'error',
-                    mode: 'sticky'
-                }));
-                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
-            });
-
-            getUserSortConfigs({compName: this.pageName })
-            .then(result => {
-                console.log('User sort configs retrieved successful - ' + result + ' for ' + this.pageName);
-                this.userSortConfigs = result;
-
-                var listViewSortFields = JSON.parse(result);
-                console.log('List view sort fields size - ' + listViewSortFields.listviews.length); 
-
-                //EXAMPLE JSON - {"listviews": [{"name": "Account:Simpli_LV_Acct_1","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"}]}, {"name": "Account:PlatinumandGoldSLACustomers","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"},{"sortIndex": "2", "fieldName": "Id", "sortDirection": "false"}]}]}
-                for (var m in listViewSortFields.listviews) {
-
-                    let listviewSorting = listViewSortFields.listviews[m];
-                    //if we are working with the current list view
-                    if (listviewSorting.name === this.pinnedObject + ':' + this.pinnedListView) {
-                        
-                        for (var i = 0; i < listviewSorting.fields.length; i++) {
-
-                            let sortDirection = listviewSorting.fields[i].sortDirection;
-
-                            if (sortDirection === undefined || sortDirection === '') {
-                                sortDirection = true;
-                            } else {
-                                sortDirection = this.toBool(sortDirection)
-                            }
-
-                            let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
-                            this.columnSortData.set(Number(listviewSorting.fields[i].sortIndex), columnData);
-                        }
-
-                        this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
-                        
-                        this.listViewSortData.set(listviewSorting.name, this.columnSortData);
-                    
-                        //for all other list views
+                        return;
                     } else {
-                        let columnSortData = new Map();
-                
-                        for (var i = 0; i < listviewSorting.fields.length; i++) {
 
-                            let sortDirection = listviewSorting.fields[i].sortDirection;
+                        this.isModeSingle     = true;
+                        this.isModeApp        = false;
+                        this.selectedObject   = this.singleListViewObject;
+                        this.selectedListView = this.singleListViewApiName;
+
+                        this.refreshAllListViewData();
+                    }
+                }
+
+                if (this.mode === 'Related List View') {
+
+                    if (this.singleListViewObject === '' || this.singleListViewApiName === '' || this.joinFieldName === '')
+                    {
+                        this.dispatchEvent(new ShowToastEvent({
+                            title: 'Related List View Configuration Error',
+                            message: 'If using Related List View mode the list view object, list view API name and join field name must be provided.',
+                            variant: 'error',
+                            mode: 'sticky'
+                        }));
+                        return;
+                    } else {
+
+                        this.isModeRelated    = true;
+                        this.isModeApp        = false;
+                        this.selectedObject   = this.singleListViewObject;
+                        this.selectedListView = this.singleListViewApiName;
+
+                        if (this.joinData !== '') //only set list view data if there is join data.
+                        {
+                            this.refreshAllListViewData();
+                        }
+                    }
+                }
+
+                this.urlObject = this.currentPageReference.state.ObjectName;
+                this.urlListView = this.currentPageReference.state.ListViewName;
+                
+                console.log('URL object    - ' + this.urlObject + ' for ' + this.pageName);
+                console.log('URL list view - ' + this.urlListView + ' for ' + this.pageName);
+                console.log('Ltn page name - ' + this.pageName + ' for ' + this.pageName);
+                console.log('Page Mode     - ' + this.mode + ' for ' + this.pageName);
+
+                getComponentConfig({compName: this.pageName })
+                .then(result => {
+                    console.log('Component configs retrieved successfully - ' + result + ' for ' + this.pageName);
+                    this.componentConfig = result;
+                    console.log('Component config size - ' + this.componentConfig.length + ' for ' + this.pageName);
+
+                    let pinnedListView = this.componentConfig.pinnedListView;
+                    console.log('Pinned list view string - ' + pinnedListView);
+
+                    if (this.toBool(this.componentConfig.AllowAdmin) === false) { 
+                        if (this.isSysAdmin === true)
+                            this.allowAdmin = true;
+                        else
+                            this.allowAdmin = false;
+                    }
+                    else if (this.toBool(this.componentConfig.AllowAdmin) === true) { this.allowAdmin = true; }
+                    if (this.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
+                    if (this.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
+                    if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
+                    if (this.toBool(this.componentConfig.DisplayRowCount) === false) { this.displayRowCount = false; }
+                    if (this.toBool(this.componentConfig.DisplaySelectedCount) === false) { this.displaySelectedCount = false; }
+                    if (this.toBool(this.componentConfig.DisplayTextSearch) === false) { this.displayTextSearch = false; }
+                    if (this.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
+                    if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
+                    if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
+
+                    //if we have a URL object then use it
+                    if (this.urlObject != undefined) {
+                        this.selectedObject = this.urlObject
+
+                    //otherwise if they have a pinned list view then use it, if possible.
+                    } else if (pinnedListView != undefined && pinnedListView != '') {
+                        this.isPinned = true;
+                        this.pinnedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
+                        this.pinnedListView = pinnedListView.substring(pinnedListView.lastIndexOf(':')+1);
+
+                        console.log('Pinned object    - ' + this.pinnedObject);
+                        console.log('Pinned list view - ' + this.pinnedListView);
+
+                        //force a refresh of the list view objects. This will then force a refresh of the list view names and then the list view data.
+                        getListViewObjects({includedObjects: this.includedObjects, excludedObjects: this.excludedObjects })
+                        .then(result => {
+                            this.handleListViewObjects(result);
+                        })
+                        .catch(error => {
+                            this.dispatchEvent(new ShowToastEvent({
+                                title: 'Error Retrieving List View Objects',
+                                message: 'There was an error retrieving the list view objects. Please see an administrator - ' + error.body.message,
+                                variant: 'error',
+                                mode: 'sticky'
+                            }));
+                            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+                        });
+            
+                    } else {
+                        console.log('There is no URL object and no pinned list view for ' + this.pageName);
+                        this.isInitializing = false;
+                        this.spinnerOff();
+                    }
+                })
+                .catch(error => {
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Error Retrieving User Config',
+                        message: 'There was an error retrieving the user config. Please see an administrator - ' + error.body.message,
+                        variant: 'error',
+                        mode: 'sticky'
+                    }));
+                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
+                });
+
+                getUserSortConfigs({compName: this.pageName })
+                .then(result => {
+                    console.log('User sort configs retrieved successful - ' + result + ' for ' + this.pageName);
+                    this.userSortConfigs = result;
+
+                    var listViewSortFields = JSON.parse(result);
+                    console.log('List view sort fields size - ' + listViewSortFields.listviews.length); 
+
+                    //EXAMPLE JSON - {"listviews": [{"name": "Account:Simpli_LV_Acct_1","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"}]}, {"name": "Account:PlatinumandGoldSLACustomers","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"},{"sortIndex": "2", "fieldName": "Id", "sortDirection": "false"}]}]}
+                    for (var m in listViewSortFields.listviews) {
+
+                        let listviewSorting = listViewSortFields.listviews[m];
+                        //if we are working with the current list view
+                        if (listviewSorting.name === this.pinnedObject + ':' + this.pinnedListView) {
                             
-                            if (sortDirection === undefined || sortDirection === '') {
-                                sortDirection = true;
-                            } else {
-                                sortDirection = this.toBool(sortDirection)
+                            for (var i = 0; i < listviewSorting.fields.length; i++) {
+
+                                let sortDirection = listviewSorting.fields[i].sortDirection;
+
+                                if (sortDirection === undefined || sortDirection === '') {
+                                    sortDirection = true;
+                                } else {
+                                    sortDirection = this.toBool(sortDirection)
+                                }
+
+                                let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
+                                this.columnSortData.set(Number(listviewSorting.fields[i].sortIndex), columnData);
                             }
 
-                            let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
-                            columnSortData.set(Number(listviewSorting.fields[i].sortIndex), columnData);
+                            this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
+                            
+                            this.listViewSortData.set(listviewSorting.name, this.columnSortData);
+                        
+                            //for all other list views
+                        } else {
+                            let columnSortData = new Map();
+                    
+                            for (var i = 0; i < listviewSorting.fields.length; i++) {
+
+                                let sortDirection = listviewSorting.fields[i].sortDirection;
+                                
+                                if (sortDirection === undefined || sortDirection === '') {
+                                    sortDirection = true;
+                                } else {
+                                    sortDirection = this.toBool(sortDirection)
+                                }
+
+                                let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
+                                columnSortData.set(Number(listviewSorting.fields[i].sortIndex), columnData);
+                            }
+
+                            this.listViewSortData.set(listviewSorting.name, columnSortData);
+
                         }
-
-                        this.listViewSortData.set(listviewSorting.name, columnSortData);
-
-                    }
-                } 
-            })
-            .catch(error => {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Error Handling User Config',
-                    message: 'There was an error handling the user sort config. Please see an administrator - ' + error.body.message,
-                    variant: 'error',
-                    mode: 'sticky'
-                }));
-                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
-            });
-
+                    } 
+                })
+                .catch(error => {
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Error Handling User Config',
+                        message: 'There was an error handling the user sort config. Please see an administrator - ' + error.body.message,
+                        variant: 'error',
+                        mode: 'sticky'
+                    }));
+                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
+                });
+            } else {
+                this.spinnerOff();
+            }
         } else {
             console.log('No page initialization needed for ' + this.pageName);
         }
@@ -420,14 +427,21 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
     }
 
+    /*
+     * Method called when a row is edited and the SAVE button on the row is clicked.
+     */
+    checkInitialized() {
 
-
-    @wire (getIsInitialized, { })
-    wiredIsInitialized({ error, data }) {
-        if (data) { 
-            console.log('Is Initialized called successfully - ' + data + ' for ' + this.pageName);
-            this.isInitialized = data; 
-        } else if (error) { 
+        getIsInitialized({})
+        .then(result => {
+            console.log('Is Initialized called successfully - ' + result + ' for ' + this.pageName);
+            this.isInitialized = result; 
+            if (this.isInitialized === false)
+            {
+                this.spinner = false; //a special case where we set it directly.
+            }
+        })
+        .catch(error => {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Checking Initialization',
@@ -435,8 +449,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 variant: 'error',
                 mode: 'sticky'
             }));
-        }
-    }
+        });
+
+    }     
 
     /*
      * Wiring to get the (Complex Object) list of actions available for the provided object type
@@ -1143,12 +1158,20 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     }
 
     //called when a user clicks the button to refresh the list views.
-    handleProcessListViewsButtonClick() {
+    handleProcessListViewsButtonClick(event) {
 
         this.spinnerOn();
         console.log('Listview process button clicked for ' + this.pageName);
         console.log('selectedObject - ' + this.selectedObject + ' for ' + this.pageName);
         console.log('selectedListView - ' + this.selectedListView + ' for ' + this.pageName);
+        console.log('DATA - ' + event.currentTarget.dataset.type);
+
+        //if we need to initialize after install or upgrade
+        if (event.currentTarget.dataset.type !== undefined && event.currentTarget.dataset.type === 'full' && this.isInitialized === false)
+        {
+            this.selectedObject = undefined;
+            this.selectedListView = undefined;
+        }
 
         //if we have selected a specific list view to update
         if (this.selectedObject != undefined && this.selectedListView != undefined && this.isInitialized === true)

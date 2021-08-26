@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-20-2021
+  @last modified on  : 08-26-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -34,7 +34,7 @@
                                 </div>
                             </lightning-layout-item>
                             <lightning-layout-item padding="horizontal-small" >
-                                <lightning-button variant="brand" label={label.Refresh} title={label.Refresh_List_Views} icon-name="action:new_task" class="slds-m-left_x-small" onclick={handleProcessListViewsButtonClick}></lightning-button>
+                                <lightning-button variant="brand" label={label.Refresh} title={label.Refresh_List_Views} icon-name="action:new_task" class="slds-m-left_x-small" onclick={handleProcessListViewsButtonClick} data-type="full"></lightning-button>
                             </lightning-layout-item>
                         </lightning-layout>
                     </template>
@@ -477,7 +477,7 @@
                                                             </template>
                                                             <template if:true={fieldData.isPercent}>
                                                                 <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                    <lightning-formatted-number value={fieldData.value} format-style="percent"></lightning-formatted-number>
+                                                                    <lightning-formatted-number value={fieldData.value} format-style="percent-fixed" maximum-fraction-digits="2"></lightning-formatted-number>
                                                                 </div>
                                                             </template>
                                                             <template if:true={fieldData.isURL}>
@@ -573,7 +573,7 @@
                                                         </template>
                                                         <template if:true={fieldData.isPercent}>
                                                             <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" formatter="percent" step="0.01" name="input10" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" step="0.01" formatter="percent-fixed" name="input10" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
                                                             </div>
                                                         </template>
                                                         <template if:true={fieldData.isURL}>
