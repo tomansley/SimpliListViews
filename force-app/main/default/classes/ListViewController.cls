@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-25-2021
+ * @last modified on  : 08-29-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -656,7 +656,19 @@ public without sharing class ListViewController
         }
 
         //create the object from configuration.
-        ListViewAction actionJob = (ListViewAction) t.newInstance();
+        ListViewAction actionJob = null;
+        
+        //if we have a FLOW
+        if (action.Is_Flow__c == true) {
+            if (String.isEmpty(action.Flow_API_Name__c)) throw new ListViewException('Flow actions must have a flow API name');
+            ListViewActionFlow actionFlow = (ListViewActionFlow) t.newInstance();
+            actionFlow.setFlowName(action.Flow_API_Name__c);
+            actionJob = actionFlow;
+
+        //if we have a REGULAR ACTION
+        } else {
+            actionJob = (ListViewAction) t.newInstance();
+        }
 
         //process the object
         try {

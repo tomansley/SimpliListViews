@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-20-2021
+ * @last modified on  : 09-11-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -190,6 +190,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                           columnMetaData.name,
                                                           columnMetaData.columnIndex,
                                                           parentObjType);
+                    field.setIsEditable(fieldData.isEditable);
 
                     if (ListViewAbstract.validNameColumnNames.contains(fieldData.name.toLowerCase()))     
                     {        

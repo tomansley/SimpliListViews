@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-25-2021
+ * @last modified on  : 09-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -40,6 +40,8 @@ public with sharing class ListViewActionHelper {
                         Permissions__c,
                         Is_Hyperlink__c,
                         Is_Active__c,
+                        Is_Flow__c,
+                        Flow_API_Name__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -66,6 +68,8 @@ public with sharing class ListViewActionHelper {
                                                         Permissions__c,
                                                         Is_Hyperlink__c,
                                                         Is_Active__c,
+                                                        Is_Flow__c,
+                                                        Flow_API_Name__c,
                                                         (SELECT Field_API_Name__c,
                                                                 Label__c,
                                                                 Display_Order__c,
@@ -96,6 +100,8 @@ public with sharing class ListViewActionHelper {
                         Permissions__c,
                         Is_Hyperlink__c,
                         Is_Active__c,
+                        Is_Flow__c,
+                        Flow_API_Name__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -166,6 +172,8 @@ public with sharing class ListViewActionHelper {
                                                 Permissions__c,
                                                 Is_Hyperlink__c,
                                                 Is_Active__c,
+                                                Is_Flow__c,
+                                                Flow_API_Name__c,
                                                 (SELECT Field_API_Name__c,
                                                         Label__c,
                                                         Display_Order__c,
