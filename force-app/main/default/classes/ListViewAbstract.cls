@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-25-2021
+ * @last modified on  : 09-11-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -821,8 +821,8 @@ public with sharing abstract class ListViewAbstract {
             this.longName      = '';
             this.isTotalsRow   = false;
 
-            this.setType(type);
             this.setValue(objValue);
+            this.setType(type); //must be below setValue() as it uses value to determine type in some cases.
 
             String debug = '\n\n---------------------------------------------------------------\n';
             debug       += 'Label - ' + this.label + '\n';
@@ -947,6 +947,8 @@ public with sharing abstract class ListViewAbstract {
         {
             if (type == ListViewHelper.TYPE_STRING && this.name.contains('.Name'))
                 this.type = ListViewHelper.TYPE_LOOKUP;
+            else if (type == ListViewHelper.TYPE_STRING  && this.getValue().contains('<img src='))
+                this.type = ListViewHelper.TYPE_IMAGE;
             else 
                 this.type = type;
         }
@@ -1044,7 +1046,9 @@ public with sharing abstract class ListViewAbstract {
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + idValue;
             else if (fieldObj != null)
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldObj.get('Id')) + '/view';
-
+            else
+                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(objValue) + '/view';
+            
             this.urlStr = urlStr;
         }
 
@@ -1069,6 +1073,13 @@ public with sharing abstract class ListViewAbstract {
         public void setParentObjType(String parentObjType)
         {
             this.parentObjType = parentObjType;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsId()
+        {
+            if (this.type == ListViewHelper.TYPE_ID) return true;
+            return false;    
         }
         
         @AuraEnabled(cacheable=true)
@@ -1139,6 +1150,20 @@ public with sharing abstract class ListViewAbstract {
                 return String.valueOf(objValue).split(';');
             else
                 return new List<String>();
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsImage()
+        {
+            if (this.type == ListViewHelper.TYPE_IMAGE) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsNotImage()
+        {
+            if (this.type == ListViewHelper.TYPE_IMAGE) return false;
+            return true;    
         }
 
         @AuraEnabled(cacheable=true)

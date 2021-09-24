@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-25-2021
+ * @last modified on  : 09-11-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -26,6 +26,7 @@ global with sharing class ListViewHelper {
     public static final String TYPE_CORE   = 'Core';
     public static final String TYPE_CUSTOM = 'Custom';
     
+    public static final String TYPE_ID            = 'id';
     public static final String TYPE_BOOLEAN       = 'boolean';
     public static final String TYPE_DOUBLE        = 'double';
     public static final String TYPE_STRING        = 'string';
@@ -46,6 +47,7 @@ global with sharing class ListViewHelper {
     public static final String TYPE_EMAIL         = 'email';
     public static final String TYPE_PHONE         = 'phone';
     public static final String TYPE_INTEGER       = 'integer';
+    public static final String TYPE_IMAGE         = 'image';
 
     public static final String SUBTYPE_MANUAL = 'Manual';
     public static final String SUBTYPE_TOOLING = 'Tooling';

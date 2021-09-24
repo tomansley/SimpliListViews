@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 08-26-2021
+  @last modified on  : 09-11-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -413,6 +413,11 @@
                                                             </div>
                                                         </template>
                                                         <template if:false={fieldData.uRL}>
+                                                            <template if:true={fieldData.isId}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                    <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick} rel="noreferrer">{fieldData.value}</a>
+                                                                </div>
+                                                            </template>
                                                             <template if:true={fieldData.isString}>
                                                                 <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                     {fieldData.value}
@@ -486,11 +491,16 @@
                                                                 </div>
                                                             </template>
                                                             <template if:true={fieldData.isPicklist}>
-                                                                <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" >
+                                                                <div id={rowData.rowId} title={fieldData.value} class="slds-truncate">
                                                                     {fieldData.value}
                                                                 </div>
                                                             </template>
-                                                            <template if:true={fieldData.isMultiPicklist} class="slds-truncate" >
+                                                            <template if:true={fieldData.isImage}>
+                                                                <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
+                                                                    <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isMultiPicklist} class="slds-truncate">
                                                                 {fieldData.value}
                                                             </template>
                                                         </template>
@@ -506,9 +516,16 @@
                                             <template for:each={rowData.fields} for:item="fieldData">
                                                 <td key={fieldData.key} data-label={fieldData.label}>
                                                     <template if:false={fieldData.isEditable}>
-                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                            {fieldData.value}
-                                                        </div>
+                                                        <template if:true={fieldData.isImage}>
+                                                            <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
+                                                                <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                            </div>
+                                                        </template>
+                                                        <template if:true={fieldData.isNotImage}>
+                                                            <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                {fieldData.value}
+                                                            </div>
+                                                        </template>
                                                     </template>
                                                     <template if:true={fieldData.isEditable}>
                                                         <template if:true={fieldData.isString}>
