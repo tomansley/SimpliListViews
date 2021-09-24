@@ -94,6 +94,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isModeSingle       = false;  //indicates whether the current mode is SINGLE LIST VIEW
     @track isModeApp          = true;   //indicates whether the current mode is APP PAGE
 
+    @track uniqueComponentId  = '';
     @track isSysAdmin         = false;  //indicates whether the current user is a sys admin.
     @track textSearchText = '';         //holds the current value for text searching.
     @track joinData           = '';     //holds the join data coming in from an external list view.....if it exists.
@@ -202,11 +203,18 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         //this ensures we only call this once for each page load
         if (this.componentConfig === undefined && this.isInitialized === true) {
+
             this.spinnerOn();
 
             if (this.isInitialized === true)
             {
                 console.log('User config is undefined for ' + this.pageName);
+
+                //this is for sending messages to other components. Ensures uniqueness.
+                let num = Math.floor(Math.random() * 1000000);
+                this.uniqueComponentId = this.pageName + ':' + num.toString();
+
+                console.log('Component Id created - ' + this.uniqueComponentId);
 
                 //always subscribe to the message channel
                 this.subscribeMC();
@@ -745,10 +753,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleMessage(message) {
 
         this.receivedMessage = message;
-        console.log(this.pageName + ' received a message from ' + this.receivedMessage.pageName + ' for ' + this.pageName);
+        console.log(this.pageName + ' received a message from ' + this.receivedMessage.uniqueComponentId + ' for ' + this.pageName);
 
         //if we have a list view selected AND if we have selected a specific list view to update
-        if (this.selectedObject != undefined && this.receivedMessage.pageName != this.pageName && this.joinFieldName != undefined && this.joinFieldName != '')
+        if (this.selectedObject != undefined && this.receivedMessage.uniqueComponentId != this.uniqueComponentId && this.joinFieldName != undefined && this.joinFieldName != '')
         {
             console.log('We have a joined field name - ' + this.joinFieldName + ' for ' + this.pageName);
             console.log('Record ids from message - ' + this.receivedMessage.recordIds + ' for ' + this.pageName);
@@ -780,7 +788,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         });
 
         } else {
-            console.log('Page names are the same or we do not have a joined field name so ignoring message! for ' + this.pageName);
+            console.log('Page names are the same or we do not have a joined field name so ignoring message! for ' + this.uniqueComponentId);
         }
 
     }
@@ -922,7 +930,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         if (this.useMessageChannel === true) {
             console.time('handleRecordSelectChange3');
 
-            console.log('Sending to message channel for ' + this.pageName);
+            console.log('Sending to message channel for ' + this.uniqueComponentId);
             //run through all the checkbox components again now that they have been set
             var recordIds = '';        
 
@@ -953,13 +961,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             const message = {
                 recordIds: recordIds,
                 objectType: this.selectedObject,
-                pageName: this.pageName
+                uniqueComponentId: this.uniqueComponentId
             };
             publish(this.messageContext, LISTVIEW_MC, message);        
             console.timeEnd('handleRecordSelectChange3');
         
         } else {
-            console.log('NOT sending to message channel for ' + this.pageName);
+            console.log('NOT sending to message channel for ' + this.uniqueComponentId);
         }
 
         this.spinnerOff();
@@ -1686,7 +1694,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * Method which sets all rows in the current data set to be editable
      */
     setAllRowsEdited() {
-        if (this.toBool(this.allowInlineEditing) === true && this.listViewData.isCoreListView === true)
+        if (this.toBool(this.allowInlineEditing) === true)
         {
             this.isEdited = true;
             this.listViewData.isEdited = true;
@@ -1706,7 +1714,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('Row set to be edited - ' + event.target.id + ' for ' + this.pageName);
         const rowId = event.target.id.split('-')[0];
 
-        if (this.toBool(this.allowInlineEditing) === true && this.listViewData.isCoreListView === true)
+        if (this.toBool(this.allowInlineEditing) === true)
         {
             this.isEdited = true;
             this.listViewData.isEdited = true;
