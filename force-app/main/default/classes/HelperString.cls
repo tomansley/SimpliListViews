@@ -1,3 +1,9 @@
+/**
+ * @description       : 
+ * @author            : tom.h.ansley@medtronic.com
+ * @last modified on  : 09-27-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
+**/
 public with sharing class HelperString {
 
     /*
@@ -14,5 +20,22 @@ public with sharing class HelperString {
         dataSet = new Set<String>(data.split(splitChar));
 
         return dataSet;
+    }
+
+    public static String getStringFromSet(Set<String> data, String splitChar)
+    {
+        String dataStr = '';
+
+        if (data == null)
+            return dataStr;
+
+        if (splitChar == null)
+            splitChar = ',';
+
+        for (String item: data)
+            dataStr += item + splitChar;
+
+
+        return dataStr;
     }
 }

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-20-2021
+ * @last modified on  : 09-27-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -12,7 +12,7 @@
 global with sharing class ListViewProcessBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
     
     private String query = 'SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE SObjectType != null';
-    private final Integer batchSize = 40;
+    private final Integer batchSize = 50;
     private Set<Id> listViewIds = null;
 
     /*
@@ -58,8 +58,11 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
 
-                HelperSchema.checkSelectAccessible(query);
-                return Database.getQueryLocator(query);
+            System.debug(LoggingLevel.FINE, 'SOQL - ' + query);
+            System.debug(LoggingLevel.FINE, 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ','));
+            
+            HelperSchema.checkSelectAccessible(query);
+            return Database.getQueryLocator(query);
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
@@ -79,10 +82,13 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
         
             List<ListView> listViews = (List<ListView>) scope;
 
+            Set<String> sObjectSet = new Set<String>();
             for (ListView listView: listViews)
             {
 
                 System.debug(LoggingLevel.DEBUG, 'Getting ListView - ' + listView);
+
+                if (String.isEmpty(listView.SObjectType) || String.isEmpty(listView.Id)) continue;
 
                 //create URL to find the list view query
                 String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v50.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
@@ -101,6 +107,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                     simpliListView.Label__c                 = listView.Name;
                     simpliListView.Core_ListView_Id__c      = listView.Id;
                     simpliListView.Primary_Key__c           = listview.SObjectType + ':' + listView.DeveloperName;
+                    System.debug(LoggingLevel.DEBUG, 'PRIMARY KEY - ' + simpliListView.Primary_Key__c);
                     simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
                     
                     User usr = UserHelper.getUserDetails(listView.CreatedById);
@@ -134,11 +141,17 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
                     simpliListViewConfigs.add(config);
 
+                    sObjectSet.add(listView.SobjectType);
+
                 } catch (Exception e) {
+                    System.debug(LoggingLevel.FINE, 'Exception thrown - ' + e.getMessage() + ' - ' + e.getStackTraceString());
                     //we don't care about exceptions here because it means the listview is not one that can be handled.
                 }
             }
             
+            System.debug(LoggingLevel.FINE, 'SObjects - ' + HelperString.getStringFromSet(sObjectSet, ','));
+
+
             HelperDatabase.upsertRecords(simpliListViews, 'Simpli_lv__List_View__c', 'simpli_lv__Primary_Key__c', true);
             HelperDatabase.upsertRecords(simpliListViewConfigs, 'Simpli_lv__List_View_Config__c', 'simpli_lv__Primary_Key__c', true);           
 
