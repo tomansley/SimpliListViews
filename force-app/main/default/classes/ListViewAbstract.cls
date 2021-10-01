@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 09-11-2021
+ * @last modified on  : 09-29-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -1654,6 +1654,36 @@ public with sharing abstract class ListViewAbstract {
         public Boolean getIsHyperlink()
         {
             return action.Is_Hyperlink__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsFlow()
+        {
+            return action.Is_Flow__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFlowAPIName()
+        {
+            return action.Flow_API_Name__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFlowType()
+        {
+            return action.Flow_Type__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFlowFrameHeight()
+        {
+            return action.Flow_Frame_Height__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFlowFrameWidth()
+        {
+            return action.Flow_Frame_Width__c;
         }
 
         @AuraEnabled(cacheable=true)

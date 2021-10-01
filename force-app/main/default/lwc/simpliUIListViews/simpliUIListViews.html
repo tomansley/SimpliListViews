@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 09-11-2021
+  @last modified on  : 10-01-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -429,17 +429,17 @@
                                                                 </div>
                                                             </template>
                                                             <template if:true={fieldData.isDate}>
-                                                                <div id={rowData.rowId}>
+                                                                <div id={rowData.rowId} class="slds-truncate">
                                                                     <lightning-formatted-date-time value={fieldData.value} year="numeric" month="numeric" day="numeric"></lightning-formatted-date-time>
                                                                 </div>
                                                             </template>
                                                             <template if:true={fieldData.isDateTime}>
-                                                                <div id={rowData.rowId}>
+                                                                <div id={rowData.rowId} class="slds-truncate">
                                                                     <lightning-formatted-date-time time-zone={listViewData.userTimeZone} value={fieldData.value} year="numeric" month="numeric" day="numeric" hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
                                                                 </div>
                                                             </template>
                                                             <template if:true={fieldData.isTime}>
-                                                                <div id={rowData.rowId}>
+                                                                <div id={rowData.rowId} class="slds-truncate">
                                                                     <lightning-formatted-date-time value={fieldData.value} hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
                                                                 </div>
                                                             </template>
@@ -663,6 +663,18 @@
                 </lightning-card>
             </template>
         </template>
+
+        <!-- ---------------------------------------------------------------------------------- -->
+        <!-- The modal view if a SCREENS FLOW action is selected                                -->
+        <!-- ---------------------------------------------------------------------------------- -->
+        <c-simpli-u-i-list-views-flow-frame show-modal={showFlowModal}
+                                        record-ids={selectedRecordIds}
+                                        action-api-name={selectedActionKey}
+                                        onprocessed={processFlowModal}
+                                        oncancelled={cancelFlowModal}
+                                        onfinished={finishFlowModal}>
+        </c-simpli-u-i-list-views-flow-frame>
+
         <!-- ---------------------------------------------------------------------------------- -->
         <!-- The modal view if the ACTION button is pressed and we need to display something    -->
         <!-- ---------------------------------------------------------------------------------- -->

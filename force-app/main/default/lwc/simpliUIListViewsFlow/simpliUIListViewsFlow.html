@@ -1,0 +1,11 @@
+<!--
+  @description       : This page holds the iframe which handles the flow display. It only creates the URL and redirects to a VF page.
+  @author            : tom.h.ansley@medtronic.com
+  @last modified on  : 10-01-2021
+  @last modified by  : tom.h.ansley@medtronic.com
+-->
+<template>
+    <template if:true={url}>
+        <iframe width={width} height={height} src={fullUrl} frameborder="0"></iframe>
+    </template>
+</template>

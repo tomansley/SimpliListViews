@@ -116,8 +116,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track objectActionList;            //holds the (Complex Object) list of available actions for the selected object
     //@track listViewConfigParams;       //holds the config parameters for the chosen list view (if one exists)
     @track showActionModal;             //indicates whether the action modal form should be displayed.
+    @track showFlowModal;               //indicates whether the flow modal form should be displayed.
     @track showAdminModal;              //indicates whether the admin modal form should be displayed.
     @track selectedRecordIdsStr;        //holds the set of record ids that have been selected as a string
+    @track selectedRecordIds;           //holds the set of record ids that have been selected
     @track selectedRecordCount = 0;     //the number of records selected. Passed into the modal dialog.  
     @track isPinned = false;            //identifies whether this list view and object have been pinned.
     @track pinnedListView = undefined;  //the list view that is pinned if there is a pinned list view.
@@ -1326,7 +1328,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     //called when a user selects an action for processing.
     handleActionSelect(event) {
-        var selectedRecordIds = new Set();
+        this.selectedRecordIds = new Set();
         var selectedRowId = '';
         
         this.selectedActionKey = event.target.value;
@@ -1346,7 +1348,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                             if (element.checked === true && element.value != 'all')
                                             {
                                                 selectedRowId = element.value.substring(0, element.value.indexOf(':'));
-                                                selectedRecordIds.add(selectedRowId);
+                                                this.selectedRecordIds.add(selectedRowId);
                                             }            
                                         });
 
@@ -1358,12 +1360,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         {
             let hyperlink = this.selectedAction.hyperlink;
             let recordIdStr = '';
-            selectedRecordIds.forEach(recordId => {
+            this.selectedRecordIds.forEach(recordId => {
                                                       recordIdStr = recordIdStr + recordId + '%2C'; //%2C = encoded comma
                                                   });
             recordIdStr = recordIdStr.slice(0,-3); //remove last "%2C"
 
-            if (selectedRecordIds.size > 1)
+            if (this.selectedRecordIds.size > 1)
             {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
@@ -1429,6 +1431,21 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
 
         //------------------------------------------------------
+        //SCREEN FLOW (AUTOMATED FLOWS HAPPEN IN CUSTOM)
+        //------------------------------------------------------
+        } else if (this.selectedAction.isFlow === true && this.selectedAction.flowType === 'Screen Flow')
+        {
+            this.selectedRecordIdsStr = JSON.stringify( Array.from(this.selectedRecordIds));
+
+            this.selectedActionLabel = 'Label ' + this.selectedAction.label;
+            
+            console.log('Action Label selected - ' + this.selectedActionLabel + ' for ' + this.pageName);
+            console.log('Action name           - ' + this.selectedAction.value + ' for ' + this.pageName);
+            console.log('Action Record Ids     - ' + this.selectedRecordIdsStr + ' for ' + this.pageName);
+    
+            this.showFlowModal = true;
+
+        //------------------------------------------------------
         //NEW
         //------------------------------------------------------
         } else if (this.selectedAction.label === 'New')
@@ -1448,7 +1465,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else if (this.selectedAction.label === 'Clone')
         {
 
-            if (selectedRecordIds.size !== 1) {    
+            if (this.selectedRecordIds.size !== 1) {    
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'A single row must be selected for cloning.',
@@ -1475,7 +1492,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else if (this.selectedAction.label === 'Edit')
         {
 
-            if (selectedRecordIds.size !== 1) {      
+            if (this.selectedRecordIds.size !== 1) {      
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'A single row must be selected for editing.',
@@ -1522,7 +1539,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         } else {
 
-            if (selectedRecordIds.size === 0) {
+            if (this.selectedRecordIds.size === 0) {
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Processing Action',
                     message: 'No rows selected for processing.',
@@ -1532,7 +1549,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.dispatchEvent(new CustomEvent('processclick'));
             
             } else {
-                this.selectedRecordIdsStr = JSON.stringify( Array.from(selectedRecordIds));
+                this.selectedRecordIdsStr = JSON.stringify( Array.from(this.selectedRecordIds));
 
                 this.selectedActionLabel = 'Label ' + this.selectedAction.label;               //   <-- This to be fixed.
                 
@@ -1571,6 +1588,22 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
     }
  
+    cancelFlowModal() {    
+        this.resetActionComboBox();
+        this.showFlowModal = false;
+    }
+
+    finishFlowModal() {   
+
+        //reset the selected record Ids
+        let selectedRows = this.template.querySelectorAll('lightning-input');
+        selectedRows.forEach(element => element.checked = false);
+        this.selectedRecordCount  = 0;
+        this.showFlowModal      = false;
+
+        this.refreshAllListViewData();
+    }
+
     cancelActionModal() {    
         this.resetActionComboBox();
         this.showActionModal = false;

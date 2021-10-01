@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-08-2021
+ * @last modified on  : 09-29-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -42,6 +42,9 @@ public with sharing class ListViewActionHelper {
                         Is_Active__c,
                         Is_Flow__c,
                         Flow_API_Name__c,
+                        Flow_Frame_Height__c,
+                        Flow_Frame_Width__c,
+                        Flow_Type__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -70,6 +73,9 @@ public with sharing class ListViewActionHelper {
                                                         Is_Active__c,
                                                         Is_Flow__c,
                                                         Flow_API_Name__c,
+                                                        Flow_Frame_Height__c,
+                                                        Flow_Frame_Width__c,
+                                                        Flow_Type__c,
                                                         (SELECT Field_API_Name__c,
                                                                 Label__c,
                                                                 Display_Order__c,
@@ -101,7 +107,10 @@ public with sharing class ListViewActionHelper {
                         Is_Hyperlink__c,
                         Is_Active__c,
                         Is_Flow__c,
+                        Flow_Type__c,
                         Flow_API_Name__c,
+                        Flow_Frame_Height__c,
+                        Flow_Frame_Width__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -173,7 +182,10 @@ public with sharing class ListViewActionHelper {
                                                 Is_Hyperlink__c,
                                                 Is_Active__c,
                                                 Is_Flow__c,
+                                                Flow_Type__c,
                                                 Flow_API_Name__c,
+                                                Flow_Frame_Height__c,
+                                                Flow_Frame_Width__c,
                                                 (SELECT Field_API_Name__c,
                                                         Label__c,
                                                         Display_Order__c,
