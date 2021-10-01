@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-29-2021
+ * @last modified on  : 10-01-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -20,7 +20,7 @@ public without sharing class ListViewController
     @AuraEnabled(cacheable=true)
     public static Boolean isSysAdmin()
     {
-        return HelperProfile.isSysAdmin();
+        return HelperProfile.hasModifyAll();
     }
 
     /*

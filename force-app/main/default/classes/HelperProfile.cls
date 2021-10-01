@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-18-2021
+ * @last modified on  : 10-01-2021
  * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperProfile {
@@ -9,9 +9,25 @@ public with sharing class HelperProfile {
     private static Map<String, Profile> profilesByName = null;
     private static Map<String, Profile> profilesById = null;
 
+    public static Boolean hasModifyAll()
+    {
+        List<PermissionSet> permSet = [SELECT ProfileId FROM PermissionSet WHERE PermissionsModifyAllData=true AND ProfileId = :UserInfo.getProfileId()];
+
+        if (permSet.size() > 0)
+            return true;
+        else
+            return false;
+    }
+
     public static Boolean isSysAdmin()
     {
-        if (UserInfo.getProfileId() == getProfile('System Administrator').Id)
+        String sysAdmin = System.label.System_Administrator;
+        System.debug('LANGUAGE - ' + UserInfo.getLanguage());
+        
+        if (UserInfo.getLanguage() == 'ko') sysAdmin = '시스템 관리자'; //korean
+        else if (UserInfo.getLanguage() == 'he') sysAdmin = 'מנהל מערכת'; //hebrew
+
+        if (UserInfo.getProfileId() == getProfile(sysAdmin).Id)
             return true;
         return false;
     }
@@ -40,7 +56,7 @@ public with sharing class HelperProfile {
         return profilesById.get(profId);
     }
     
-    private static void getProfiles()
+    public static void getProfiles()
     {
     	
     	profilesByName = new Map<String, Profile>();
@@ -51,6 +67,7 @@ public with sharing class HelperProfile {
 		for (Profile prof: profiles)
         {
 			profilesByName.put(prof.Name, prof);
+            System.debug(LoggingLevel.DEBUG, prof.Name + ' - ' + prof);
         }
         
         for (Profile prof: profiles)
