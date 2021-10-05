@@ -37,7 +37,7 @@ import Refresh_List_Views from '@salesforce/label/c.Refresh_List_Views';
 import Search_List_Dot from '@salesforce/label/c.Search_List_Dot';
 import Processing_Status from '@salesforce/label/c.Processing_Status';
 
-import isSysAdmin from '@salesforce/apex/ListViewController.isSysAdmin';
+import hasModifyAll from '@salesforce/apex/ListViewController.hasModifyAll';
 import getIsInitialized from '@salesforce/apex/ListViewController.getIsInitialized';
 import getListViewObjects from '@salesforce/apex/ListViewController.getListViewObjects';
 import getObjectListViews from '@salesforce/apex/ListViewController.getObjectListViews';
@@ -95,7 +95,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isModeApp          = true;   //indicates whether the current mode is APP PAGE
 
     @track uniqueComponentId  = '';
-    @track isSysAdmin         = false;  //indicates whether the current user is a sys admin.
+    @track hasModifyAll       = false;  //indicates whether the current user is allowed to modify all data.
     @track textSearchText = '';         //holds the current value for text searching.
     @track joinData           = '';     //holds the join data coming in from an external list view.....if it exists.
     @track modifiedText;                //holds the last modified text that should be displayed based on the component config
@@ -286,7 +286,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     console.log('Pinned list view string - ' + pinnedListView);
 
                     if (this.toBool(this.componentConfig.AllowAdmin) === false) { 
-                        if (this.isSysAdmin === true)
+                        if (this.hasModifyAll === true)
                             this.allowAdmin = true;
                         else
                             this.allowAdmin = false;
@@ -427,11 +427,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     messageContext;
     
     
-    @wire (isSysAdmin, { })
+    @wire (hasModifyAll, { })
     wiredIsSysAdmin({ error, data }) {
         if (data) { 
             console.log('Is sys admin called successfully - ' + data + ' for ' + this.pageName);
-            this.isSysAdmin = data; 
+            this.hasModifyAll = data; 
         } else if (error) { 
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
         }

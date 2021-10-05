@@ -1,22 +1,27 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-01-2021
+ * @last modified on  : 10-04-2021
  * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperProfile {
 
     private static Map<String, Profile> profilesByName = null;
     private static Map<String, Profile> profilesById = null;
+    private static Boolean hasModifyAll = null;
 
     public static Boolean hasModifyAll()
     {
-        List<PermissionSet> permSet = [SELECT ProfileId FROM PermissionSet WHERE PermissionsModifyAllData=true AND ProfileId = :UserInfo.getProfileId()];
+        if (hasModifyAll == null)
+        {
+            List<PermissionSet> permSet = [SELECT ProfileId FROM PermissionSet WHERE PermissionsModifyAllData=true AND ProfileId = :UserInfo.getProfileId()];
 
-        if (permSet.size() > 0)
-            return true;
-        else
-            return false;
+            if (permSet.size() > 0)
+                hasModifyAll = true;
+            else
+                hasModifyAll = false;
+        }
+        return hasModifyAll;
     }
 
     public static Boolean isSysAdmin()

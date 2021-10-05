@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 09-11-2021
+ * @last modified on  : 10-04-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -454,7 +454,7 @@ global with sharing class ListViewHelper {
             for (List_View__c listView: listViews.values())
             {
                 //only admin can view tooling API list views
-                if (listView.SubType__c != SUBTYPE_TOOLING || HelperProfile.isSysAdmin())
+                if (listView.SubType__c != SUBTYPE_TOOLING || HelperProfile.hasModifyAll())
                 {
                     Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(listView.Object_Name__c);
                     if (objDesc != null && !orgWideExcObjs.contains(objDesc.getName()) && !pageWideExcObjs.contains(objDesc.getName()))
@@ -1628,7 +1628,7 @@ global with sharing class ListViewHelper {
 
         if (lv.OwnerId == UserInfo.getUserId()) return true;
 
-        if (HelperProfile.isSysAdmin()) return true;
+        if (HelperProfile.hasModifyAll()) return true;
 
         if (lv.All_Internal_Users__c != null && lv.All_Internal_Users__c) return true;
 

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-25-2021
+ * @last modified on  : 10-04-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -25,12 +25,12 @@ global class ListViewControllerTest {
 
         Test.startTest();
 
-            Boolean isSysAdmin = ListViewController.isSysAdmin();
+            Boolean hasModifyAll = ListViewController.hasModifyAll();
 
         Test.stopTest();
 
         //not checking assertion as installing user might not be sys admin?
-        //System.assertEquals(true, isSysAdmin);
+        //System.assertEquals(true, hasModifyAll);
         System.assertEquals(true, true);
     }
 
