@@ -20,8 +20,8 @@ export default class simpliUIListViewsFlow extends LightningElement {
             {
                 const moveEvt = new CustomEvent('finish', {
                     detail: {
-                        flowStatus: event.data.flowStatus,
-                        flowParams: event.data.flowParams,
+                        //flowStatus: event.data.flowStatus,
+                        //flowParams: event.data.flowParams,
                         flowName: this.flowName
                     }
                 });
@@ -31,7 +31,27 @@ export default class simpliUIListViewsFlow extends LightningElement {
 
 
         let sfIdent = 'force.com';
-        this.url = window.location.href.substring(0, window.location.href.indexOf(sfIdent) + sfIdent.length) + '/apex/simpliUIListViewsFlow?flowName=';
+        this.url = window.location.href.substring(0, window.location.href.indexOf(sfIdent) + sfIdent.length) + '/apex/simpli_lv__simpliUIListViewsFlow?flowName=';
+    }
+
+    get finalWidth() {
+        let finalWidth = '100%';
+        if (this.width !== undefined && this.width !== '')
+        {
+            finalWidth = this.width;
+        }
+
+        return finalWidth;
+    }
+
+    get finalHeight() {
+        let finalHeight = '300';
+        if (this.height !== undefined && this.height !== '')
+        {
+            finalHeight = this.height;
+        }
+
+        return finalHeight;
     }
 
     //method to get the full URL including the ORIGIN and RECORDIDS.
@@ -53,11 +73,11 @@ export default class simpliUIListViewsFlow extends LightningElement {
         }
 
         recordIdStr = '&recordIds=' + encodeURI(recordIdStr);
-
         let origin = '&origin=' + encodeURI(this.url);
-        let test = this.url + this.flowName + recordIdStr + origin;
+        let finalURL = this.url + this.flowName + recordIdStr + origin;
 
+        console.log('FINAL URL - ' + finalURL);
         
-        return test;
+        return finalURL;
     }
 }

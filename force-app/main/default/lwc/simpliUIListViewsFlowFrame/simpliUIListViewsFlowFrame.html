@@ -5,7 +5,7 @@
                        2. The flow LWC component which holds the iframe
                        3. The iframe which contains the flow
   @author            : tom.h.ansley@medtronic.com
-  @last modified on  : 10-01-2021
+  @last modified on  : 10-02-2021
   @last modified by  : tom.h.ansley@medtronic.com
 -->
 <template>
@@ -16,13 +16,13 @@
                 <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
                     aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
                     <div class="slds-modal__container" style="align-items: center;">
-                        <header class="slds-modal__header" style="min-width: 275%;">
+                        <header class="slds-modal__header" style="min-width: 1200px;">
                             <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
                                 <lightning-icon icon-name="utility:close" alternative-text="close" variant="warning"></lightning-icon>
                                 <span class="slds-assistive-text">{label.Close}</span>
                             </button>
                         </header>
-                        <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1" style="min-width: 275%;">
+                        <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1" style="min-width: 1200px;">
                             <c-simpli-u-i-list-views-flow width={listViewAction.flowFrameWidth} 
                                                         height={listViewAction.flowFrameHeight} 
                                                         flow-name={listViewAction.flowAPIName} 

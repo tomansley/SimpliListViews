@@ -1,13 +1,13 @@
 <!--
   @description       : 
   @author            : tom.h.ansley@medtronic.com
-  @last modified on  : 10-01-2021
+  @last modified on  : 10-02-2021
   @last modified by  : tom.h.ansley@medtronic.com
 -->
-<apex:page id="simpliUIListViewsFlow" showHeader="false" sidebar="false" lightningStylesheets="true">
+<apex:page controller="ListViewFlowController" id="simpliUIListViewsFlow" showHeader="false" sidebar="false" lightningStylesheets="true">
     <html>
         <head>
-            <apex:includeLightning/>
+            <apex:includeLightning />
         </head>
         <body class="slds-scope">
             
@@ -20,8 +20,8 @@
                     parent.postMessage({
                         flowStatus: event.getParam("status"),
                         flowParams: event.getParam("outputVariables"),
-                        flowOrigin: "{!$CurrentPage.parameters.origin}"
-                    }, "{!$CurrentPage.parameters.origin}");
+                        flowOrigin: "{!JSENCODE($CurrentPage.parameters.origin)}"
+                    }, "{!JSENCODE($CurrentPage.parameters.origin)}");
                 };
 
                 //creating the input variables for the flow which in this case are the selected record Ids
@@ -29,17 +29,17 @@
                     {
                         name : "recordIds",
                         type : "String",
-                        value : [{!$CurrentPage.parameters.recordIds}]
+                        value : [{!recordIds}]
                     }
                 ];
                 
                 //call the flow using the callback function and the input variables
-                $Lightning.use("c:simpliUIListViewsFlowApp", function () {
+                $Lightning.use("simpli_lv:simpliUIListViewsFlowApp", function () {
                     // Create the flow component and set the onstatuschange attribute
                     $Lightning.createComponent("lightning:flow", {"onstatuschange": statusChange},
                         "screenFlow",
                         function (component) {
-                            component.startFlow("{!$CurrentPage.parameters.flowname}", inputVariables);
+                            component.startFlow("{!JSENCODE($CurrentPage.parameters.flowname)}", inputVariables);
                         }
                     );
                 });

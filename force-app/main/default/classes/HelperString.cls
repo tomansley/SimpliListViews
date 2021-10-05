@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 09-27-2021
+ * @last modified on  : 10-02-2021
  * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperString {
@@ -35,6 +35,7 @@ public with sharing class HelperString {
         for (String item: data)
             dataStr += item + splitChar;
 
+        dataStr = dataStr.removeEnd(splitChar);
 
         return dataStr;
     }
