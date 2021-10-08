@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 09-11-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -13,7 +13,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
     public override List<List_View_Config_Parameter__c> getConfigParams(List_View_Config__c config)
     {
-        System.debug(LoggingLevel.DEBUG, 'Entering getConfigParams');
+        System.debug(LoggingLevel.FINE, 'Entering getConfigParams');
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
 
         Map<String, List_View_Config_Parameter__c> paramsByName = new Map<String, List_View_Config_Parameter__c>(); 
@@ -113,7 +113,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                    List<ListViewHelper.ColumnSortData> sortData)
     {
         Long startTime = System.now().getTime();
-        System.debug('Starting ListViewCore.handleRowsToWrapper');
+        System.debug(LoggingLevel.FINE, 'Starting ListViewCore.handleRowsToWrapper');
 
         Map<String, ListViewHelper.ColumnSortData> sortDataByFieldName = new Map<String, ListViewHelper.ColumnSortData>();
         for (ListViewHelper.ColumnSortData columnData: sortData)
@@ -132,7 +132,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         {
             Map<String, Object> columnData = (Map<String, Object>) column;
 
-            String fieldName = ((String) columnData.get('fieldNameOrPath')).toLowerCase();
+            String fieldName = ((String) columnData.get('fieldNameOrPath'));
 
             FieldWrapper field = new FieldWrapper((String) columnData.get('label'), 
                                                     (String) columnData.get('type'),
@@ -165,9 +165,9 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 //if its a relationship field
                 if (popFields.get(field) instanceof List<SObject>)
                 {
-                    childFields.put(field.toLowerCase(), popFields.get(field));
+                    childFields.put(field, popFields.get(field));
                 } else {
-                    normalFields.put(field.toLowerCase(), popFields.get(field));
+                    normalFields.put(field, popFields.get(field));
                 }
             }
 
@@ -177,31 +177,35 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             //this for loop ONLY GOES THROUGH NONE CHILD FIELDS
             for (FieldWrapper columnMetaData: rows.getFieldMetaData())
             {
-                if (normalFields.keySet().contains(columnMetaData.name.substringBefore('.').toLowerCase()))
+                if (normalFields.keySet().contains(columnMetaData.name.substringBefore('.')))
                 {
                     HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnMetaData.name);
-
-                    String fieldDataType = fieldData.type.name().toLowerCase();
-                    String parentObjType = fieldData.parentObjType.toLowerCase();
     
                     FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                           fieldData.value, 
-                                                          fieldData.type.name().toLowerCase(),
+                                                          fieldData.type.name(),
                                                           columnMetaData.name,
                                                           columnMetaData.columnIndex,
-                                                          parentObjType);
+                                                          fieldData.parentObjType);
+
                     field.setIsEditable(fieldData.isEditable);
 
-                    if (ListViewAbstract.validNameColumnNames.contains(fieldData.name.toLowerCase()))     
-                    {        
-                        //if we have the name of the object
-                        if (fieldData.fieldObj != null)
-                        {
-                            field.setFieldObj(fieldData.fieldObj);
-                            field.createURL();
-                        }
+                    //if field metadata shows its a lookup and the lookup records id is available then set it
+                    if (fieldData.objValueId != null)
+                    {
+                        field.setObjValueId(fieldData.objValueId);
+                        field.setFieldObj(fieldData.objValue);
+                    } else {
+                        field.setObjValueId(rowWrapper.getSalesforceId()); //if this is not a lookup then set its own wrappers SFDC Id
                     }
 
+                    System.debug(LoggingLevel.FINE, 'Field - ' + field);
+
+                    if (ListViewAbstract.validNameColumnNames.contains(field.getName()))  //if the name of the field is in the list identifying a link field
+                    {
+                        field.createURL();
+                    }
+                    
                     if (sortDataByFieldName.containsKey(columnMetaData.name))
                     {
                         field.sortIndex = String.valueOf(sortDataByFieldName.get(columnMetaData.name).sortIndex);
@@ -229,6 +233,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
                     if (deleteHeaderData == false) 
                         deleteHeaderData = true; //once we have cloned the first wrapper with all fields this ensures all other rows have their header fields removed.
+                    else 
+                        clonedWrapper.setIsEditable(false); //no cloned wrappers can be editable after the header row.
 
                     //this for loop ONLY GOES THROUGH CHILD FIELDS
                     for (FieldWrapper columnMetaData: rows.getFieldMetaData())
@@ -240,26 +246,27 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                             String fieldName = columnMetaData.name.removeStart(childFieldKey + '.');
                             HelperSchema.FieldData fieldData = HelperSchema.getFieldData(child, fieldName);
 
-                            String fieldDataType = fieldData.type.name().toLowerCase();
-                            String parentObjType = fieldData.parentObjType.toLowerCase();
-
                             FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                                   fieldData.value, 
-                                                                  fieldData.type.name().toLowerCase(),
+                                                                  fieldData.type.name(),
                                                                   fieldName,
                                                                   columnMetaData.columnIndex,
-                                                                  parentObjType);
+                                                                  fieldData.parentObjType);
                             field.longName = columnMetaData.name;
 
-                            if (ListViewAbstract.validNameColumnNames.contains(fieldData.name.toLowerCase()))     
+                            if (fieldData.objValueId != null)
+                                field.setObjValueId(fieldData.objValueId);
+        
+                            System.debug(LoggingLevel.FINE, 'Field - ' + field);
+        
+                            if (ListViewAbstract.validNameColumnNames.contains(fieldData.name)             //if we have the name of the object
+                                && fieldData.objValue != null        //if we have field data.
+                                && fieldData.value != null)  //if we have a display value
                             {
-                                if (fieldData.fieldObj != null)
-                                {
-                                    field.setFieldObj(fieldData.fieldObj);
-                                    field.createURL();
-                                }
+                                field.setFieldObj(fieldData.objValue);
+                                field.createURL();
                             }
-
+    
                             if (sortDataByFieldName.containsKey(fieldName))
                             {
                                 field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
@@ -285,7 +292,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         }
 
         System.debug(LoggingLevel.DEBUG, rows.getDebugString());
-        System.debug('Ending ListViewCore.handleRowsToWrapper - ' + (System.now().getTime() - startTime));
+        System.debug(LoggingLevel.DEBUG, 'Ending ListViewCustomManual.handleRowsToWrapper - ' + (System.now().getTime() - startTime));
         return rows;
     }
 

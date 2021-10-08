@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-25-2021
+ * @Last Modified On   : 10-08-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -148,7 +148,8 @@ public with sharing class ListViewConfigHelper {
             {
                 paramDetail.Parameter_Value__c = String.valueOf(newValue);
             } else if (paramDetail.Parameter_Name__c == 'ExcludedObjectTypes' //total hack as we cannot add new picklist values
-                    || paramDetail.Parameter_Name__c == 'IncludedObjectTypes')
+                    || paramDetail.Parameter_Name__c == 'IncludedObjectTypes'
+                    || paramDetail.Parameter_Name__c == 'ExcludedRecordPopoverTypes')
             {
                 paramDetail.Parameter_Value__c = '';
                 List<Object> values = (List<Object>) newValue;

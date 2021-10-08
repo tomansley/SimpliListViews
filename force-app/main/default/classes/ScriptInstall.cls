@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-25-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -273,6 +273,31 @@ global with sharing class ScriptInstall implements InstallHandler {
                     orgParams.put(param.Parameter_Name__c, param);
             
                 }
+
+                if (orgParams.get('DisplayRecordPopovers') == null)
+                {
+                    List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                    param.List_View_Config__c = orgWideConfig.Id;
+                    param.Parameter_Name__c   = 'DisplayRecordPopovers';
+                    param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+                    param.Parameter_Value__c  = 'true';
+                    param.Parameter_Label__c  = 'Display Record Popovers';
+                    orgParams.put(param.Parameter_Name__c, param);
+            
+                }
+
+                if (orgParams.get('ExcludedRecordPopoverTypes') == null)
+                {
+                    List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                    param.List_View_Config__c = orgWideConfig.Id;
+                    param.Parameter_Name__c   = 'ExcludedRecordPopoverTypes';
+                    param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+                    param.Parameter_Value__c  = '';
+                    param.Parameter_Label__c  = 'Excluded Record Popover Types';
+                    orgParams.put(param.Parameter_Name__c, param);
+            
+                }
+
                 HelperDatabase.upsertRecords(orgParams.values(), 'simpli_lv__List_View_Config_Parameter__c');
             }
 

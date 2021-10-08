@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 08-20-2021
+ * @Last Modified On   : 10-08-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    06/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -42,7 +42,7 @@ public with sharing class HelperSchema {
 	/*
 	 * Method to return the object that a given objects field looks up to. For example, if the 
 	 * obj = User and the field = ProfileId the value returned will be "Profile"
-        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getFieldLookupObject('Account', 'LastModifiedById'));
+        System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getFieldLookupObject('Account', 'LastModifiedById'));
 
 	 */
 	public static String getFieldLookupObject(String obj, String field)
@@ -72,11 +72,11 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method to return a describe result for a given object and field.
-       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getFieldDescribeResult('Account','LastModifiedBy'));  
+       System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getFieldDescribeResult('Account','LastModifiedBy'));  
 	 */
 	public static Schema.DescribeFieldResult getFieldDescribeResult(String obj, String field)
 	{
-        System.debug(LoggingLEvel.DEBUG, 'getFieldDescribeResult(' + obj + ', ' + field + ')');
+        System.debug(LoggingLevel.FINE, 'getFieldDescribeResult(' + obj + ', ' + field + ')');
         Schema.DescribeFieldResult result = null;
         
         initSObjectSchema(obj);
@@ -135,8 +135,8 @@ public with sharing class HelperSchema {
 	/*
 	 * Method that returns the describe result of an SObject.
     
-       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getObjectSchema('simpli_lv__List_View_Org_Wide_Setting__mdt'));
-       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getObjectSchema('Bogus'));
+       System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getObjectSchema('simpli_lv__List_View_Org_Wide_Setting__mdt'));
+       System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getObjectSchema('Bogus'));
 	 
      */
 	public static Schema.DescribeSObjectResult getObjectSchema(String name)
@@ -155,9 +155,14 @@ public with sharing class HelperSchema {
 		return getObjectSchema(objName).getLabelPlural();
     }
     
+	public static String getObjectLabel(String objName)
+	{
+		return getObjectSchema(objName).getLabel();
+    }
+    
     /*
-       System.debug(LoggingLEvel.DEBUG, 'FAKE RESULT - ' + HelperSchema.isObject('Fake Object'));
-       System.debug(LoggingLEvel.DEBUG, 'FAKE RESULT - ' + HelperSchema.isObject('ApexLog'));
+       System.debug(LoggingLevel.FINE, 'FAKE RESULT - ' + HelperSchema.isObject('Fake Object'));
+       System.debug(LoggingLevel.FINE, 'FAKE RESULT - ' + HelperSchema.isObject('ApexLog'));
      */
     public static Boolean isObject(String objName)
     {
@@ -176,8 +181,8 @@ public with sharing class HelperSchema {
 	 * 
 	 * Method will return an empty string if the field is not a lookup field.
 	 * 
-	  System.debug(LoggingLevel.DEBUG, 'RESULT 1 - ' + HelperSchema.getObjectTypeForField('Contact', 'Name'));
-	  System.debug(LoggingLevel.DEBUG, 'RESULT 2 - ' + HelperSchema.getObjectTypeForField('Contact', 'AccountId'));
+	  System.debug(LoggingLevel.FINE, 'RESULT 1 - ' + HelperSchema.getObjectTypeForField('Contact', 'Name'));
+	  System.debug(LoggingLevel.FINE, 'RESULT 2 - ' + HelperSchema.getObjectTypeForField('Contact', 'AccountId'));
 	 */
 	public static String getObjectTypeForField(String obj, String field)
 	{
@@ -296,7 +301,7 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method which, given an object API name and a field label or name returns the schema of the field.
-      System.debug(LoggingLevel.DEBUG, 'Field Data - ' + HelperSchema.getFieldByKey('Account', 'LastModifiedBy', HelperSchema.NAME));
+      System.debug(LoggingLevel.FINE, 'Field Data - ' + HelperSchema.getFieldByKey('Account', 'LastModifiedBy', HelperSchema.NAME));
 	 */
 	public static Schema.SObjectField getFieldByKey(String obj, String key, String keyType)
 	{
@@ -318,10 +323,10 @@ public with sharing class HelperSchema {
 	 * Method which given an object API name returns those fields that are available for the object.
 	 * The returned map has its keys based on either the fields Label or Name, depending on the 
 	 * provided keyType.
-       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getFieldsForObject('simpli_lv__List_View_Org_Wide_Setting__mdt', HelperSchema.NAME));
+       System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getFieldsForObject('simpli_lv__List_View_Org_Wide_Setting__mdt', HelperSchema.NAME));
        Map<String, Schema.SObjectField> fields = HelperSchema.getFieldsForObject('Account', HelperSchema.NAME);
        for (Schema.SObjectField field: fields.values())
-            System.debug(LoggingLevel.DEBUG, 'FIELD - ' + field);
+            System.debug(LoggingLevel.FINE, 'FIELD - ' + field);
 	 */
 	public static Map<String, Schema.SObjectField> getFieldsForObject(String obj, String keyType)
 	{
@@ -350,7 +355,7 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method to determine if a given object and field name is valid.
-       System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.isValidSFDCFieldName('Contact', 'Email'));
+       System.debug(LoggingLevel.FINE, 'Result ' + HelperSchema.isValidSFDCFieldName('Contact', 'Email'));
 	 */
 	public static Boolean isValidSFDCFieldName(String objName, String sfdcFieldName)
 	{
@@ -366,7 +371,7 @@ public with sharing class HelperSchema {
 
             //split field into parts.
 			List<String> fieldHierarchy = sfdcFieldName.split('\\.');
-            System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
+            System.debug(LoggingLevel.FINE, 'Field Hierarchy - ' + fieldHierarchy);
 
             String objType = objName;
             Schema.DescribeSObjectResult objDescribe = HelperSchema.getObjectSchema(objType);
@@ -376,14 +381,14 @@ public with sharing class HelperSchema {
 
 			for (String field: fieldHierarchy)
 			{
-                System.debug('Current Field - ' + field);
-                System.debug('Current Object - ' + objType);
+                System.debug(LoggingLevel.FINE, 'Current Field - ' + field);
+                System.debug(LoggingLevel.FINE, 'Current Object - ' + objType);
                 
 				//if we are at the last field then get the value and return
 				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
 				{
 					//get the object type                    
-                    System.debug(LoggingLevel.DEBUG, 'Last Field!');
+                    System.debug(LoggingLevel.FINE, 'Last Field!');
                     
                     Schema.SObjectField objField = HelperSchema.getFieldByKey(objType, field, NAME);
                     if (objField != null)
@@ -411,7 +416,7 @@ public with sharing class HelperSchema {
             isValid = false;
         }
 
-        System.debug(LoggingLevel.DEBUG, 'Field validation result for ' + objName + '/' + sfdcFieldName + ' is ' + isValid);
+        System.debug(LoggingLevel.FINE, 'Field validation result for ' + objName + '/' + sfdcFieldName + ' is ' + isValid);
 		return isValid;
 		
 	}
@@ -440,7 +445,7 @@ public with sharing class HelperSchema {
      * the value for the field as well as field information. This data
      * is returned in a structure which includes the following data - 
      * 
-	 *	fieldObj - a pointer to the SObject holding the field
+	 *	objValue - a pointer to the SObject holding the field
      *  name  - the API name of the field
      *  label - the label of the field
      *  type - the type of the field holding the data value
@@ -449,14 +454,14 @@ public with sharing class HelperSchema {
 	 * 
 	   Account acc = [SELECT Name, Owner.Name, Owner.Alias, Owner.Profile.Name FROM Account WHERE Name LIKE 'Burling%' LIMIT 1];
 	   HelperSchema.FieldData d = HelperSchema.getFieldData(acc, 'Owner.Alias');
-	   System.debug('Account Name - ' + d.name + ', ' + d.label + ', ' + d.type + ', ' + d.value);
+	   System.debug(LoggingLevel.FINE, 'Account Name - ' + d.name + ', ' + d.label + ', ' + d.type + ', ' + d.value);
 	 * 
      */
     public static FieldData getFieldData(SObject obj, String fieldName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting getFieldData(' + fieldName + ', ' + obj + ')');
+        System.debug(LoggingLevel.FINE, 'Starting getFieldData(' + fieldName + ', ' + obj + ')');
 		FieldData data = null;
-        String valueId = null;
+        String objValueId = null;
 		String label = '';
 
 		try {
@@ -468,7 +473,7 @@ public with sharing class HelperSchema {
 
 			List<String> fieldHierarchy = fieldName.split('\\.');
 
-            System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
+            System.debug(LoggingLevel.FINE, 'Field Hierarchy - ' + fieldHierarchy);
 
             SObject currentObj = obj;
             
@@ -483,8 +488,8 @@ public with sharing class HelperSchema {
 				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
 				{
 					//get the object type                    
-                    System.debug(LoggingLevel.DEBUG, 'Object Type - ' + objType);
-                    System.debug(LoggingLevel.DEBUG, 'Field       - ' + field);
+                    System.debug(LoggingLevel.FINE, 'Object Type - ' + objType);
+                    System.debug(LoggingLevel.FINE, 'Field       - ' + field);
 
 
 					//get the field describe
@@ -505,27 +510,27 @@ public with sharing class HelperSchema {
 
                         data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
 						data.parentObjType = getObjectType(currentObj);
-                        data.valueId = valueId;
+                        data.objValueId = objValueId;
                         data.isEditable = fieldDesc.isUpdateable();
 					}
 					
 				//if we are not at the last field then get the fields object
 				} else {
-                    System.debug(LoggingLevel.DEBUG, 'Not at last field. Current field - ' + field);
+                    System.debug(LoggingLevel.FINE, 'Not at last field. Current field - ' + field);
                     Boolean isSet = false;
 
-                    System.debug(LoggingLevel.DEBUG, 'old currentObj - ' + currentObj);
+                    System.debug(LoggingLevel.FINE, 'old currentObj - ' + currentObj);
                     currentObj = currentObj.getSObject(field);
-                    System.debug(LoggingLevel.DEBUG, 'new currentObj - ' + currentObj);
+                    System.debug(LoggingLevel.FINE, 'new currentObj - ' + currentObj);
                     if (currentObj != null)
                     {
                         isSet = true;
                         objType = getObjectType(currentObj);
 
                         //only provide the Id value if there are only two fields in the hierarchy. i.e. CreatedBy.Name
-                        if (valueId == null && fieldHierarchy.size() == 2)
+                        if (objValueId == null && fieldHierarchy.size() == 2)
                         {
-                            valueId = String.valueOf(currentObj.get('Id'));
+                            objValueId = String.valueOf(currentObj.get('Id'));
                         }
 
                     } else {
@@ -542,7 +547,7 @@ public with sharing class HelperSchema {
         }
         
         if (data != null)
-            System.debug(LoggingLevel.DEBUG, data.getDebugString());
+            System.debug(LoggingLevel.FINE, data.getDebugString());
         
             return data;
     }
@@ -558,10 +563,10 @@ public with sharing class HelperSchema {
     **/
     public static FieldData getFieldData(Map<String, Object> structure, String fieldName, String objType)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting getFieldData(' + fieldName + ', ' + objType + ', ' + structure + ')');
+        System.debug(LoggingLevel.FINE, 'Starting getFieldData(' + fieldName + ', ' + objType + ', ' + structure + ')');
 
         FieldData data = null;
-        String valueId = null;
+        String objValueId = null;
 		String label = '';
 
 		try {
@@ -573,7 +578,7 @@ public with sharing class HelperSchema {
 
 			List<String> fieldHierarchy = fieldName.split('\\.');
 
-            System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + fieldHierarchy);
+            System.debug(LoggingLevel.FINE, 'Field Hierarchy - ' + fieldHierarchy);
 
             Map<String, Object> currentStructure = structure;
             String currentParentObjType = objType;
@@ -585,9 +590,9 @@ public with sharing class HelperSchema {
 				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
 				{
 
-                    System.debug(LoggingLevel.DEBUG, 'Field - ' + field);
-                    System.debug(LoggingLevel.DEBUG, 'Value - ' + currentStructure.get(field));
-                    System.debug(LoggingLevel.DEBUG, 'Parent Obj - ' + currentParentObjType);
+                    System.debug(LoggingLevel.FINE, 'Field - ' + field);
+                    System.debug(LoggingLevel.FINE, 'Value - ' + currentStructure.get(field));
+                    System.debug(LoggingLevel.FINE, 'Parent Obj - ' + currentParentObjType);
 
                     data = new FieldData(field, currentStructure.get(field));
                     data.parentObjType = currentParentObjType;
@@ -595,19 +600,19 @@ public with sharing class HelperSchema {
                     //get the Id if this is a lookup to another object
                     if (currentStructure.get('attributes') != null)
                     {
-                        System.debug(LoggingLevel.DEBUG, 'We have attribs!');
+                        System.debug(LoggingLevel.FINE, 'We have attribs!');
                         Map<String, Object> attribs = (Map<String, Object>) currentStructure.get('attributes');
                         String url = (String) attribs.get(ListViewHelper.TYPE_URL);
-                        data.valueId = url.substringAfterLast('/');
-                        System.debug(LoggingLevel.DEBUG, 'Id - ' + data.valueId);
+                        data.objValueId = url.substringAfterLast('/');
+                        System.debug(LoggingLevel.FINE, 'Id - ' + data.objValueId);
                     }
 
 				//if we are not at the last field then get the fields object
 				} else {
-                    System.debug(LoggingLevel.DEBUG, 'Old structure - ' + currentStructure);
+                    System.debug(LoggingLevel.FINE, 'Old structure - ' + currentStructure);
                     currentStructure = (Map<String, Object>) currentStructure.get(field);
                     currentParentObjType = field;
-                    System.debug(LoggingLevel.DEBUG, 'New structure - ' + currentStructure);
+                    System.debug(LoggingLevel.FINE, 'New structure - ' + currentStructure);
 				}
 			}
         } catch (Exception e) {
@@ -884,11 +889,11 @@ public with sharing class HelperSchema {
 		//if this object has not been described yet get the data
 		if (objectDescribeByName.get(obj) == null)
 		{
-			System.debug(LoggingLevel.DEBUG, 'Trying to initialize schema with name - ' + obj);
+			System.debug(LoggingLevel.FINE, 'Trying to initialize schema with name - ' + obj);
 			Schema.SObjectType objSchema = Schema.getGlobalDescribe().get(obj);
 			if (objSchema != null)
 			{
-				System.debug(LoggingLevel.DEBUG, 'Found schema with name - ' + obj);
+				System.debug(LoggingLevel.FINE, 'Found schema with name - ' + obj);
                 objectDescribeByName.put(obj, objSchema);
                 
                 List<Schema.SObjectField> fields = objSchema.getDescribe().fields.getMap().values();
@@ -914,7 +919,7 @@ public with sharing class HelperSchema {
 				}
 
 			} else if (allowRecurring) {
-				System.debug(LoggingLevel.DEBUG, 'NO schema with name - ' + obj);
+				System.debug(LoggingLevel.FINE, 'NO schema with name - ' + obj);
 				initSObjectSchema(DOMAIN_NAME + obj, false);
 			}
 		}
@@ -965,7 +970,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectFieldAccessible(String objName, String fieldName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldAccessible called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
+		System.debug(LoggingLevel.FINE, 'checkObjectFieldAccessible called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
 
         fieldName = scrubFieldName(fieldName);
 
@@ -994,7 +999,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectFieldCreateable(String objName, String fieldName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldCreateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
+		System.debug(LoggingLevel.FINE, 'checkObjectFieldCreateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
 
         fieldName = scrubFieldName(fieldName);
 
@@ -1022,7 +1027,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectFieldUpdateable(String objName, String fieldName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectFieldUpdateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
+		System.debug(LoggingLevel.FINE, 'checkObjectFieldUpdateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
 
         fieldName = scrubFieldName(fieldName);
 
@@ -1050,7 +1055,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectCreateable(String objName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectCreateable called with objName - ' + objName);
+		System.debug(LoggingLevel.FINE, 'checkObjectCreateable called with objName - ' + objName);
 
 		if (getObjectSchema(objName).isCreateable()) {
 			return true;
@@ -1076,7 +1081,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectAccessible(String objName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectAccessible called with objName - ' + objName);
+		System.debug(LoggingLevel.FINE, 'checkObjectAccessible called with objName - ' + objName);
 
         //if we are using Tooling API the object might not be in the schema.
 		if (getObjectSchema(objName) != null)
@@ -1108,7 +1113,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectUpdateable(String objName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectUpdateable called with objName - ' + objName);
+		System.debug(LoggingLevel.FINE, 'checkObjectUpdateable called with objName - ' + objName);
 
 		if (getObjectSchema(objName).isUpdateable()) {
 			return true;
@@ -1134,7 +1139,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectDeletable(SObject obj, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectDeletable called with obj - ' + obj);
+		System.debug(LoggingLevel.FINE, 'checkObjectDeletable called with obj - ' + obj);
 
 		if (obj == null || obj.Id == null)
 			throw new ListViewException('HelperSchema.checkObjectDeletable called with null Object or object with empty Id');
@@ -1165,7 +1170,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Boolean checkObjectDeletable(String objName, Boolean throwExc)
 	{
-		System.debug(LoggingLevel.DEBUG, 'checkObjectDeletable called with objName - ' + objName);
+		System.debug(LoggingLevel.FINE, 'checkObjectDeletable called with objName - ' + objName);
 
 		if (getObjectSchema(objName).isDeletable()) {
 			return true;
@@ -1192,19 +1197,19 @@ public with sharing class HelperSchema {
     public class FieldData 
     {
 
-        public SObject fieldObj        {get; set;}
+        public SObject objValue        {get; set;}
         public String parentObjType    {get; set;}
         public String name             {get; set;}
         public String label            {get; set;}
         public Schema.DisplayType type {get; set;}
         public Object value            {get; set;} //holds the string value. i.e. CreatedBy.Name = "Tom Ansley" 
-        public String valueId          {get; set;} //holds the id value if its a lookup. i.e. CreatedBy.Name = 0053h000000xrj3AAA
+        public String objValueId          {get; set;} //holds the id value if its a lookup. i.e. CreatedBy.Name = 0053h000000xrj3AAA
         public Boolean isChildRel      {get; set;}
         public Boolean isEditable      {get; set;}
 
-        public FieldData(String name, String label, Schema.DisplayType type, Object value, SObject fieldObj)
+        public FieldData(String name, String label, Schema.DisplayType type, Object value, SObject objValue)
         {
-			this.fieldObj      = fieldObj;
+			this.objValue      = objValue;
             this.name          = name;
             this.label         = label;
             this.type          = type;
@@ -1226,13 +1231,13 @@ public with sharing class HelperSchema {
         public String getDebugString()
         {
             String debug = '\n\n----------------\n';
-            debug += 'fieldObj      - ' + fieldObj + '\n';
+            debug += 'objValue      - ' + objValue + '\n';
             debug += 'parentObjType - ' + parentObjType + '\n';
             debug += 'name          - ' + name + '\n';
             debug += 'label         - ' + label + '\n';
             debug += 'type          - ' + type + '\n';
             debug += 'value         - ' + value + '\n';
-            debug += 'valueId       - ' + valueId + '\n';
+            debug += 'objValueId    - ' + objValueId + '\n';
             debug += 'isChildRel    - ' + isChildRel + '\n';
             debug += 'isEditable    - ' + isEditable + '\n';
             debug += '----------------\n';

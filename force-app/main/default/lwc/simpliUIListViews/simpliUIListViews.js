@@ -60,28 +60,30 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     wiredObjectListViewsResult;
     wiredListViewObjectsResult;
 
-    @api mode                  = 'App Page'; //indicates the mode the page is in for displaying the list view. i.e. app, single etc.
-    @api pageName              = '';                 //this is NOT the page name but the COMPONENT name
-    @api hasMainTitle          = undefined;
-    @api mainTitle             = 'List Views';
-    @api includedObjects       = '';
-    @api excludedObjects       = '';
-    @api joinFieldName         = '';
-    @api useMessageChannel     = false;
-    @api allowRefresh          = false; //config indicating whether the auto refresh checkbox is made available.
-    @api allowInlineEditing    = false; //config indicating whether inline editing is available
-    @api allowAdmin            = false;  //indicates whether the admin button should display to the user
-    @api displayActions        = false;
-    @api displayReprocess      = false;
-    @api displayURL            = false;
-    @api displayRowCount       = false;
-    @api displaySelectedCount  = false;
+    @api mode                       = 'App Page'; //indicates the mode the page is in for displaying the list view. i.e. app, single etc.
+    @api pageName                   = '';                 //this is NOT the page name but the COMPONENT name
+    @api hasMainTitle               = undefined;
+    @api mainTitle                  = 'List Views';
+    @api includedObjects            = '';
+    @api excludedObjects            = '';
+    @api joinFieldName              = '';
+    @api useMessageChannel          = false;
+    @api allowRefresh               = false; //config indicating whether the auto refresh checkbox is made available.
+    @api allowInlineEditing         = false; //config indicating whether inline editing is available
+    @api displayRecordPopovers      = false; //config indicating whether record popovers should be displayed
+    @api allowAdmin                 = false;  //indicates whether the admin button should display to the user
+    @api displayActions             = false;
+    @api displayReprocess           = false;
+    @api displayURL                 = false;
+    @api displayRowCount            = false;
+    @api displaySelectedCount       = false;
     @api displayOrigButton;             //this is not used....deprecated.
-    @api displayModified       = false;
-    @api displayExportButton   = false;
-    @api displayTextSearch     = false;  //identifies whether the text search field should be displayed.
-    @api singleListViewObject  = '';     //if in SINGLE mode holds the list view object to use.
-    @api singleListViewApiName = '';     //if in SINGLE mode holds the list view API name to use.
+    @api displayModified            = false;
+    @api displayExportButton        = false;
+    @api displayTextSearch          = false;  //identifies whether the text search field should be displayed.
+    @api singleListViewObject       = '';     //if in SINGLE mode holds the list view object to use.
+    @api singleListViewApiName      = '';     //if in SINGLE mode holds the list view API name to use.
+    @api excludedRecordPopoverTypes = '';     //Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name.
 
     @api set joinCriteria(value) {
         this.setJoinCriteria(value);
@@ -134,6 +136,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track offset = -1;
     @track rowLimit = -1;
 
+    //for handling hover changes
+    @track hoverSFDCId;
+    @track hoverAPIName;
+    @track hoverLabelName;
+    @track hoverIsDisplayed;
+    @track hoverPositionLeft;
+    @track hoverPositionTop;
+    hoverErrorTypes = '';                    //holds those types for which an error is returned when attempting to create the popover
+
     //for handling column width changes
     @track mouseStart;
     @track oldWidth;
@@ -149,7 +160,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     rowDataStr = '';
 
     //for tracking list view init process
-    @track isInitialized = undefined;        //indicates whether the list views have been initialized for the first time or not.
+    @track isInitialized = true;       //indicates whether the list views have been initialized for the first time or not.
     @track showProgress = false;        //indicates whether the progress bar should be displayed
     @track batchId = '';                //indicates the batch Id of the list view batch process.
     @track isInitializing = true;       //indicates whether we are initializing the page or not.
@@ -301,6 +312,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     if (this.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
                     if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
                     if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
+                    if (this.toBool(this.componentConfig.DisplayRecordPopovers) === false) { this.displayRecordPopovers = false; }
+
+                    this.excludedRecordPopoverTypes = this.excludedRecordPopoverTypes + this.componentConfig.ExcludedRecordPopoverTypes;
 
                     //if we have a URL object then use it
                     if (this.urlObject != undefined) {
@@ -495,6 +509,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.selectedRecordCount = 0;
         this.isEdited = false;
         this.textSearchText = '';
+        this.hoverIsDisplayed = false;
         let selectedRows = this.template.querySelectorAll('lightning-input');
         selectedRows.forEach(element => element.checked = false);
 
@@ -1326,6 +1341,100 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     }
 
+    /*
+     * Called when a user tries to change the width of a column.
+     */
+    calculateWidth(event) {
+        var childObj = event.target
+        var parObj = childObj.parentNode;
+        while(parObj.tagName != 'TH') {
+            parObj = parObj.parentNode;
+        }
+        console.log('Final tag name ' + parObj.tagName + ' for ' + this.pageName);
+        var mouseStart=event.clientX;
+        this.mouseStart = mouseStart;
+        this.oldWidth = parObj.offsetWidth;
+        this.parentObj = parObj;
+        // Stop text selection event
+        if(event.stopPropagation) event.stopPropagation();
+        if(event.preventDefault) event.preventDefault();
+        event.cancelBubble=true;
+        event.returnValue=false;
+    };
+
+    /*
+     * Called when a user tries to change the width of a column.
+     */
+    setNewWidth(event) {
+
+        if (this.mouseStart === undefined) return;
+
+        var childObj = event.target
+        var parObj = childObj.parentNode;
+        while(parObj.tagName != 'TH') {
+            parObj = parObj.parentNode;
+        }
+        var newWidth = event.clientX- parseFloat(this.mouseStart)+parseFloat(this.oldWidth);
+        this.parentObj.style.width = newWidth+'px';
+
+        this.mouseStart = undefined;
+    };
+
+    /*
+     * Method that gets fired when a user clicks on one of the column headings to have that column
+     * be a part of the data sorting. The page can have multiple columns be a part of the sort.
+     */
+    sortColumns(event) {
+        this.spinnerOn();
+
+        //get all values from the event
+        let fieldName = event.currentTarget.dataset.name;
+        let sortDirection = event.currentTarget.dataset.sortdir;
+        let sortIndex = event.currentTarget.dataset.sortindex;
+        
+        //turn all the values into their respective data types
+        if (sortIndex === undefined || sortIndex === '') {
+            sortIndex = this.columnSortData.size;
+        }
+        sortIndex = Number(sortIndex);
+        
+        if (sortDirection === undefined || sortDirection === '') {
+            sortDirection = true;
+        }  else {
+            sortDirection = this.toBool(sortDirection)
+        }
+
+        let columnData = undefined;
+
+        //if a user has clicked on a column that is already being sorted then switch the direction
+        if (this.columnSortData.has(sortIndex)) {
+            columnData = this.columnSortData.get(sortIndex);
+
+            //if this is the second click on the column then switch the column.
+            if (columnData[2] === true) {
+                columnData[2] = false; 
+                this.columnSortData.set(sortIndex, columnData);
+
+            //if this is the third click on the column then reset all sorting data.
+            } else {
+                this.columnSortData = new Map(); 
+            }
+
+        //if this is the first time clicking on a column then just add the column for sorting.
+        } else {
+            columnData = [sortIndex, fieldName, sortDirection];
+            this.columnSortData.set(sortIndex, columnData);
+        }
+
+        this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
+        this.listViewSortData.set(this.selectedObject + ':' + this.selectedListView, this.columnSortData);
+        this.refreshAllListViewData();
+    }
+
+    //-------------------------------------------------------------------------------------------
+    //ACTIONS
+    //-------------------------------------------------------------------------------------------
+
     //called when a user selects an action for processing.
     handleActionSelect(event) {
         this.selectedRecordIds = new Set();
@@ -1573,12 +1682,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         });
     }
 
-    handleAdminButtonClick(event) {
-        console.log('Admin button clicked for ' + this.pageName);
-
-        this.showAdminModal = true;
-    }
-
     //called if the user selects the cancel button.
     handleCancelButtonClick(event) {
         var action = event.target.label;
@@ -1588,22 +1691,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
     }
  
-    cancelFlowModal() {    
-        this.resetActionComboBox();
-        this.showFlowModal = false;
-    }
-
-    finishFlowModal() {   
-
-        //reset the selected record Ids
-        let selectedRows = this.template.querySelectorAll('lightning-input');
-        selectedRows.forEach(element => element.checked = false);
-        this.selectedRecordCount  = 0;
-        this.showFlowModal      = false;
-
-        this.refreshAllListViewData();
-    }
-
     cancelActionModal() {    
         this.resetActionComboBox();
         this.showActionModal = false;
@@ -1621,6 +1708,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.refreshAllListViewData();
     }
 
+    //-------------------------------------------------------------------------------------------
+    //ADMIN
+    //-------------------------------------------------------------------------------------------
+
+    handleAdminButtonClick(event) {
+        console.log('Admin button clicked for ' + this.pageName);
+
+        this.showAdminModal = true;
+    }
+
     /*
      * Method called after the admin modal dialog is closed.
      */
@@ -1633,95 +1730,29 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
     }
 
-    /*
-     * Called when a user tries to change the width of a column.
-     */
-    calculateWidth(event) {
-        var childObj = event.target
-        var parObj = childObj.parentNode;
-        while(parObj.tagName != 'TH') {
-            parObj = parObj.parentNode;
-        }
-        console.log('Final tag name ' + parObj.tagName + ' for ' + this.pageName);
-        var mouseStart=event.clientX;
-        this.mouseStart = mouseStart;
-        this.oldWidth = parObj.offsetWidth;
-        this.parentObj = parObj;
-        // Stop text selection event
-        if(event.stopPropagation) event.stopPropagation();
-        if(event.preventDefault) event.preventDefault();
-        event.cancelBubble=true;
-        event.returnValue=false;
-    };
+    //-------------------------------------------------------------------------------------------
+    //FLOW
+    //-------------------------------------------------------------------------------------------
 
-    /*
-     * Called when a user tries to change the width of a column.
-     */
-    setNewWidth(event) {
+    cancelFlowModal() {    
+        this.resetActionComboBox();
+        this.showFlowModal = false;
+    }
 
-        if (this.mouseStart === undefined) return;
+    finishFlowModal() {   
 
-        var childObj = event.target
-        var parObj = childObj.parentNode;
-        while(parObj.tagName != 'TH') {
-            parObj = parObj.parentNode;
-        }
-        var newWidth = event.clientX- parseFloat(this.mouseStart)+parseFloat(this.oldWidth);
-        this.parentObj.style.width = newWidth+'px';
+        //reset the selected record Ids
+        let selectedRows = this.template.querySelectorAll('lightning-input');
+        selectedRows.forEach(element => element.checked = false);
+        this.selectedRecordCount  = 0;
+        this.showFlowModal      = false;
 
-        this.mouseStart = undefined;
-    };
-
-    /*
-     * Method that gets fired when a user clicks on one of the column headings to have that column
-     * be a part of the data sorting. The page can have multiple columns be a part of the sort.
-     */
-    sortColumns(event) {
-        this.spinnerOn();
-
-        //get all values from the event
-        let fieldName = event.currentTarget.dataset.name;
-        let sortDirection = event.currentTarget.dataset.sortdir;
-        let sortIndex = event.currentTarget.dataset.sortindex;
-        
-        //turn all the values into their respective data types
-        if (sortIndex === undefined || sortIndex === '') {
-            sortIndex = this.columnSortData.size;
-        }
-        sortIndex = Number(sortIndex);
-        
-        if (sortDirection === undefined || sortDirection === '') {
-            sortDirection = true;
-        }  else {
-            sortDirection = this.toBool(sortDirection)
-        }
-
-        let columnData = undefined;
-
-        //if a user has clicked on a column that is already being sorted then switch the direction
-        if (this.columnSortData.has(sortIndex)) {
-            columnData = this.columnSortData.get(sortIndex);
-
-            //if this is the second click on the column then switch the column.
-            if (columnData[2] === true) {
-                columnData[2] = false; 
-                this.columnSortData.set(sortIndex, columnData);
-
-            //if this is the third click on the column then reset all sorting data.
-            } else {
-                this.columnSortData = new Map(); 
-            }
-
-        //if this is the first time clicking on a column then just add the column for sorting.
-        } else {
-            columnData = [sortIndex, fieldName, sortDirection];
-            this.columnSortData.set(sortIndex, columnData);
-        }
-
-        this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
-        this.listViewSortData.set(this.selectedObject + ':' + this.selectedListView, this.columnSortData);
         this.refreshAllListViewData();
     }
+
+    //-------------------------------------------------------------------------------------------
+    //INLINE EDITING
+    //-------------------------------------------------------------------------------------------
 
     /*
      * Method which sets all rows in the current data set to be editable
@@ -1752,7 +1783,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.isEdited = true;
             this.listViewData.isEdited = true;
             this.listViewDataRows.forEach(element => { 
-                if (element.isDeleted === false && element.rowId === rowId)
+                if (element.isDeleted === false && element.rowId === rowId && element.isEditable)
                 {
                     element.isEdited = true;      
                 }
@@ -2004,4 +2035,53 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             strValue !== 'undefined') ? '1' : strValue;
         return strValue === 'true' || strValue === '1' ? true : false
     };
+
+    //-------------------------------------------------------------------------------------------
+    // POPOVER
+    //-------------------------------------------------------------------------------------------
+    displayHoverDetails(event) {
+        console.log('Field set for hover - ' + event.currentTarget.dataset.sfdcId + ', ' + event.currentTarget.dataset.apiName + ', ' + event.currentTarget.dataset.labelName + ' for ' + this.pageName);
+
+        if (this.excludedRecordPopoverTypes.includes(event.currentTarget.dataset.apiName))
+        {
+            console.log('Hover not displayed. Object type in excluded popover types');
+        
+        //if there was an error retrieving the popover details then don't try display again
+        } else if (this.hoverErrorTypes.includes(event.currentTarget.dataset.apiName))
+        {
+            console.log('Hover not displayed. Object type in hover error list');
+
+        //if we are allowed to display popovers then update
+        } else if (this.displayRecordPopovers === true)
+        {            
+            console.log('Popover to be displayed');
+            console.log('Page coords        - ' + event.pageX + ', ' + event.pageY + ' for ' + this.pageName);
+
+            this.hoverSFDCId = event.currentTarget.dataset.sfdcId;
+            this.hoverAPIName = event.currentTarget.dataset.apiName;
+            this.hoverLabelName = event.currentTarget.dataset.labelName;
+            this.hoverIsDisplayed = true;
+            this.hoverPositionTop = event.pageY - 240; //have to move up as this is the number of pixels used for the header
+            this.hoverPositionLeft = event.pageX + 10; //have to move left as this is the number of pixels used for the sidebar    
+        } else {
+            console.log('Record popovers disabled');
+        }
+    }
+
+    /*
+     * Method called when a row is edited and the RESET button on the row is clicked forcing a full data reset of the row.
+     */
+    hideHoverDetails(event) {
+        console.log('Popover set for hiding - ' + this.pageName);
+        this.hoverIsDisplayed = false;
+    }
+
+    processHoverError(event) {
+        this.hideHoverDetails(event);
+        if (!this.hoverErrorTypes.includes(event.detail))
+        {
+            this.hoverErrorTypes = this.hoverErrorTypes + ',' + event.detail;
+        }
+    }
+
 }

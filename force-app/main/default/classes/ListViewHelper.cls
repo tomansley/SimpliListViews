@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-04-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -204,7 +204,7 @@ global with sharing class ListViewHelper {
         //turn to JSON
         String jsonStr = JSON.serialize(listViewObjects);
 
-        System.debug(LoggingLevel.DEBUG, 'JSON - ' + jsonStr);
+        System.debug(LoggingLevel.FINE, 'JSON - ' + jsonStr);
 
         ListViewConfigHelper.setOrgWideConfigParam('ListViewObjects', jsonStr);
 
@@ -277,7 +277,7 @@ global with sharing class ListViewHelper {
 
                 updatedListViews.add(simpliListView);
 
-                System.debug(LoggingLevel.DEBUG, 'Updated Simpli List View - ' + simpliListView);
+                System.debug(LoggingLevel.FINE, 'Updated Simpli List View - ' + simpliListView);
 
                 //use the metadata API to try and enrich the listview data.
                 HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
@@ -348,7 +348,7 @@ global with sharing class ListViewHelper {
 
                 updatedListViews.add(simpliListView);
 
-                System.debug(LoggingLevel.DEBUG, 'Updated Simpli List View - ' + simpliListView);
+                System.debug(LoggingLevel.FINE, 'Updated Simpli List View - ' + simpliListView);
 
                 //use the metadata API to try and enrich the listview data.
                 HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
@@ -393,7 +393,7 @@ global with sharing class ListViewHelper {
     */
     public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs, Boolean isInit)
     {
-        System.debug(LoggingLevel.DEBUG, 'ListViewHelper.getListViewObjects(' + pageWideIncObjs + ', ' + pageWideExcObjs + ', ' + isInit + ')');
+        System.debug(LoggingLevel.FINE, 'ListViewHelper.getListViewObjects(' + pageWideIncObjs + ', ' + pageWideExcObjs + ', ' + isInit + ')');
 
         Map<String, String> mappedListviewObjects = new Map<String, String>();
         Map<String, String> listViewObjects =  null;
@@ -401,9 +401,9 @@ global with sharing class ListViewHelper {
         listViewObjects =  new Map<String, String>();
 
         String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
-        System.debug(LoggingLevel.DEBUG, 'Org Wide Excluded Object Types - ' + exclObjs);
+        System.debug(LoggingLevel.FINE, 'Org Wide Excluded Object Types - ' + exclObjs);
         Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
-        System.debug(LoggingLevel.DEBUG, 'orgWideExcObjs size - ' + orgWideExcObjs.size());
+        System.debug(LoggingLevel.FINE, 'orgWideExcObjs size - ' + orgWideExcObjs.size());
 
         HelperSchema.checkListViewAccessible();
 
@@ -425,7 +425,7 @@ global with sharing class ListViewHelper {
             {
                 String objAPIName = (String) result.get('simpli_lv__Object_Name__c');
 
-                System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
+                System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
 
                 Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objAPIName);
                 if (objDesc != null)
@@ -473,13 +473,13 @@ global with sharing class ListViewHelper {
         String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
         Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
 
-        System.debug(LoggingLevel.DEBUG, 'pageWideIncObjs ' + pageWideIncObjs);
-        System.debug(LoggingLevel.DEBUG, 'orgWideIncObjs ' + orgWideIncObjs);
+        System.debug(LoggingLevel.FINE, 'pageWideIncObjs ' + pageWideIncObjs);
+        System.debug(LoggingLevel.FINE, 'orgWideIncObjs ' + orgWideIncObjs);
     
         for (String objAPIName: listViewObjects.keySet())
         {
 
-            System.debug('Working ' + objAPIName);
+            System.debug(LoggingLevel.FINE, 'Working ' + objAPIName);
             //if there are PAGE included objects then only include those.
             if (pageWideIncObjs.isEmpty() || pageWideIncObjs.contains(objAPIName))
             {
@@ -488,7 +488,7 @@ global with sharing class ListViewHelper {
                 if (orgWideIncObjs.isEmpty() || orgWideIncObjs.contains(objAPIName))
                 {
                     mappedListviewObjects.put(objAPIName, listViewObjects.get(objAPIName));
-                    System.debug(LoggingLevel.DEBUG, 'Adding mapping - ' + objAPIName);
+                    System.debug(LoggingLevel.FINE, 'Adding mapping - ' + objAPIName);
                 }
             }
         }
@@ -498,13 +498,13 @@ global with sharing class ListViewHelper {
             resultStr += 'Object ' + objectName + ' - ' + mappedListviewObjects.get(objectName) + '\n';
         resultStr = '-------------------------------------------------\n\n';
 
-        System.debug(LoggingLevel.DEBUG, resultStr);
+        System.debug(LoggingLevel.FINE, resultStr);
         return mappedListviewObjects;
     }
 
     public static Map<Id, List_View__c> getListViewsByType(String type)
     {
-        System.debug(LoggingLevel.DEBUG, 'Called getListViewsByType(type ' + type);
+        System.debug(LoggingLevel.FINE, 'Called getListViewsByType(type ' + type);
 
         Set<Id> rtIds = new Set<Id>();
         if (type == TYPE_ALL || type == TYPE_CUSTOM)
@@ -555,7 +555,7 @@ global with sharing class ListViewHelper {
      */
     public static Map<Id, List_View__c> getListViewsById(Set<Id> lvIds, Boolean onlyCore)
     {
-        System.debug(LoggingLevel.DEBUG, 'Called getListViewsById(lvIds ' + lvIds + ', onlyCore ' + onlyCore);
+        System.debug(LoggingLevel.FINE, 'Called getListViewsById(lvIds ' + lvIds + ', onlyCore ' + onlyCore);
 
         Set<Id> rtIds = new Set<Id>();
         rtIds.add(ListViewHelper.coreRTId);
@@ -607,7 +607,7 @@ global with sharing class ListViewHelper {
     public static Map<String, List_View__c> getListViewsByObject(String objAPIName)
     {
 
-        System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
+        System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
 
         //if we have a core list view object make sure that the user has access to the object itself if its
         if (HelperSchema.isObject(objAPIName) && !HelperSchema.checkObjectAccessible(objAPIName, false))
@@ -657,8 +657,8 @@ global with sharing class ListViewHelper {
      */
     public static Map<Id, List_View__c> getListViews(String objAPIName, String listViewAPIName)
     {
-        System.debug(LoggingLevel.DEBUG, 'objAPIName - ' + objAPIName);
-        System.debug(LoggingLevel.DEBUG, 'listViewAPIName - ' + listViewAPIName);
+        System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
+        System.debug(LoggingLevel.FINE, 'listViewAPIName - ' + listViewAPIName);
 
         HelperSchema.checkListViewAccessible();
 
@@ -712,7 +712,7 @@ global with sharing class ListViewHelper {
         if (joinRecordIds != null)
             debug += 'joinRecordIds Size - ' + joinRecordIds.size() + '\n';
         debug += 'joinRecordIds      - ' + joinRecordIds + '\n\n';
-        System.debug(LoggingLevel.DEBUG, debug);
+        System.debug(LoggingLevel.FINE, debug);
 
         Map<String, String> lvConfigParams = new Map<String, String>();
         if (lvConfig != null) //there might not be config yet for this list view
@@ -792,7 +792,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         if (sortData?.size() > 0)
         {
-            System.debug('SORT DATA - ' + sortData);
+            System.debug(LoggingLevel.FINE, 'Sort data - ' + sortData);
             orderByStr = ' ORDER BY ';
             
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
@@ -806,7 +806,7 @@ global with sharing class ListViewHelper {
                     else
                         orderByStr += 'DESC NULLS FIRST, ';
                 } else {
-                    System.debug(LoggingLevel.DEBUG, 'Sort column not valid - ' + columnSortData.fieldName);
+                    System.debug(LoggingLevel.FINE, 'Sort column not valid - ' + columnSortData.fieldName);
                     throw new ListViewException('Sort column not valid - ' + columnSortData.fieldName);
                 }
             }
@@ -850,8 +850,8 @@ global with sharing class ListViewHelper {
 
                     //if we DO have an offset then increase it but not above the return size max
                     } else {
-                        System.debug(LoggingLEvel.DEBUG, 'Offset - ' + offset);
-                        System.debug(LoggingLEvel.DEBUG, 'returnSize - ' + returnSize);
+                        System.debug(LoggingLevel.FINE, 'Offset - ' + offset);
+                        System.debug(LoggingLevel.FINE, 'returnSize - ' + returnSize);
                         
                         //if we have NOT hit the max
                         if ((offset + rowLimit) < returnSize)
@@ -875,7 +875,7 @@ global with sharing class ListViewHelper {
             }
         }
 
-        System.debug(LoggingLevel.DEBUG, 'LIMIT STR - ' + limitStr);
+        System.debug(LoggingLevel.FINE, 'LIMIT STR - ' + limitStr);
 
         //------------------------------------------------------
         // Handle the ALL ROWS statement
@@ -895,7 +895,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         query = 'SELECT ' + selectStr + ' FROM ' + whereStr + orderByStr + limitStr + allRowsStr;
 
-        System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + query);
+        System.debug(LoggingLevel.FINE, 'Final SOQL - ' + query);
 
         //get rows of data from query
         List<SObject> objectRows = null;
@@ -989,7 +989,7 @@ global with sharing class ListViewHelper {
         if (joinRecordIds != null)
             debug += 'joinRecordIds Size - ' + joinRecordIds.size() + '\n';
         debug += 'joinRecordIds      - ' + joinRecordIds + '\n\n';
-        System.debug(LoggingLevel.DEBUG, debug);
+        System.debug(LoggingLevel.FINE, debug);
 
         Map<String, String> lvConfigParams = new Map<String, String>();
         if (lvConfig != null) //there might not be config yet for this list view
@@ -1002,23 +1002,23 @@ global with sharing class ListViewHelper {
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
         String selectStr = soql.substringBeforeLast(' FROM ');
-        System.debug(LoggingLevel.DEBUG, 'selectStr - ' + selectStr);
+        System.debug(LoggingLevel.FINE, 'selectStr - ' + selectStr);
         String objectName = soql.substringAfterLast(' FROM ');
         if (objectName.contains(' '))
             objectName = objectName.substringBefore(' ');
-        System.debug(LoggingLevel.DEBUG, 'objectName - ' + objectName);
+        System.debug(LoggingLevel.FINE, 'objectName - ' + objectName);
         String whereStr = 'WHERE ' + soql.substringAfterLast(' WHERE ');
         if (whereStr == 'WHERE ') 
             whereStr = '';
         if (whereStr.containsIgnoreCase(' ORDER BY '))
             whereStr = whereStr.substringBefore(' ORDER BY ');
-        System.debug(LoggingLevel.DEBUG, 'whereStr - ' + whereStr);
+        System.debug(LoggingLevel.FINE, 'whereStr - ' + whereStr);
         String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ').substringBeforeLast(' LIMIT ');
-        System.debug(LoggingLevel.DEBUG, 'orderByStr - ' + orderByStr);
+        System.debug(LoggingLevel.FINE, 'orderByStr - ' + orderByStr);
         String limitStr = '';
         if (soql.containsIgnoreCase(' LIMIT '))
             limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
-        System.debug(LoggingLevel.DEBUG, 'limitStr - ' + limitStr);
+        System.debug(LoggingLevel.FINE, 'limitStr - ' + limitStr);
 
         //check the object is accessible by this user
         HelperSchema.checkObjectAccessible(objectName);
@@ -1039,7 +1039,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         if (sortData?.size() > 0)
         {
-            System.debug('SORT DATA - ' + sortData);
+            System.debug(LoggingLevel.FINE, 'Sort data - ' + sortData);
             orderByStr = ' ORDER BY ';
             
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
@@ -1053,7 +1053,7 @@ global with sharing class ListViewHelper {
                     else
                         orderByStr += 'DESC NULLS FIRST, ';
                 } else {
-                    System.debug(LoggingLevel.DEBUG, 'Sort column not valid - ' + columnSortData.fieldName);
+                    System.debug(LoggingLevel.FINE, 'Sort column not valid - ' + columnSortData.fieldName);
                 }
             }
 
@@ -1097,8 +1097,8 @@ global with sharing class ListViewHelper {
 
                     //if we DO have an offset then increase it but not above the return size max
                     } else {
-                        System.debug(LoggingLEvel.DEBUG, 'Offset - ' + offset);
-                        System.debug(LoggingLEvel.DEBUG, 'returnSize - ' + returnSize);
+                        System.debug(LoggingLevel.FINE, 'Offset - ' + offset);
+                        System.debug(LoggingLevel.FINE, 'returnSize - ' + returnSize);
                         
                         //if we have NOT hit the max
                         if ((offset + rowLimit) < returnSize)
@@ -1121,7 +1121,7 @@ global with sharing class ListViewHelper {
                 limitStr = ' LIMIT 100';
             }
         }
-        System.debug(LoggingLevel.DEBUG, 'LIMIT STR 2 - ' + limitStr);
+        System.debug(LoggingLevel.FINE, 'LIMIT STR - ' + limitStr);
 
         //------------------------------------------------------
         // Handle the ALL ROWS statement
@@ -1141,7 +1141,7 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         soql = selectStr + ' FROM ' + objectName + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
 
-        System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + soql);
+        System.debug(LoggingLevel.FINE, 'Final SOQL - ' + soql);
 
         return soql;
     }
@@ -1489,6 +1489,22 @@ global with sharing class ListViewHelper {
 
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'DisplayRecordPopovers';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param2.Parameter_Value__c  = 'true';
+        param2.Parameter_Label__c  = 'Display Record Popovers';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'ExcludedRecordPopoverTypes';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param2.Parameter_Value__c  = '';
+        param2.Parameter_Label__c  = 'Excluded Record Popover Types';
+        params2.add(param2);
+
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
         param2.Parameter_Name__c   = 'Debug';
         param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param2.Parameter_Value__c  = 'false';
@@ -1648,7 +1664,7 @@ global with sharing class ListViewHelper {
 
         public ColumnSortData(String fieldName, Boolean sortDirection, Integer sortIndex)
         {
-            this.fieldName     = fieldName.toLowerCase();
+            this.fieldName     = fieldName;
             this.sortDirection = sortDirection;
             this.sortIndex     = sortIndex;
         }

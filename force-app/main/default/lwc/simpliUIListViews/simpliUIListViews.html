@@ -3,16 +3,17 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 10-01-2021
+  @last modified on  : 10-08-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-03-2020   tom.h.ansley@medtronic.com   Initial Version
   2.0   07-28-2021   tom.h.ansley@medtronic.com   Changed all strings to labels.
+  3.0   10-08-2021   tom.h.ansley@medtronic.com   Added popover functionality.
 
 -->
 <template>
-    <div class="outerDiv">
+    <div class="outerDiv" onclick={hideHoverDetails} onmouseleave={hideHoverDetails} >
         <template if:true={spinner}>
             <lightning-spinner alternative-text={label.Loading} class="pageSpinnerHolder"></lightning-spinner>
         </template>
@@ -49,7 +50,7 @@
         </template>
 
         <!-- ---------------------------------------------------------------------------------- -->
-        <!-- Section which holds all picklist and buttons for determine list view functionality -->
+        <!-- Section which holds all picklist and buttons for list view functionality           -->
         <!-- ---------------------------------------------------------------------------------- -->
         <template if:true={isInitialized}>
             <lightning-card>
@@ -407,12 +408,21 @@
                                                 </template>
                                                 <template if:false={rowData.isDeleted}>
                                                     <td id={rowData.rowId} key={fieldData.key} data-label={fieldData.label} ondblclick={setRowEdited}>
-                                                        <template if:true={fieldData.uRL}>
-                                                            <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick} rel="noreferrer">{fieldData.value}</a>
+                                                        <template if:true={fieldData.hasURL}>
+                                                            <div id={rowData.rowId} 
+                                                                 class="slds-truncate" 
+                                                                 title={fieldData.value}>
+                                                                <a href={fieldData.uRL} onmouseover={displayHoverDetails} 
+                                                                                        data-sfdc-id={fieldData.objValueId} 
+                                                                                        data-api-name={fieldData.fieldObjName}
+                                                                                        data-label-name={fieldData.fieldObjLabel}
+                                                                                        target={fieldData.uRLTarget} 
+                                                                                        value={rowData.rowId} 
+                                                                                        onclick={handleURLClick} 
+                                                                                        rel="noreferrer">{fieldData.value}</a>
                                                             </div>
                                                         </template>
-                                                        <template if:false={fieldData.uRL}>
+                                                        <template if:false={fieldData.hasURL}>
                                                             <template if:true={fieldData.isId}>
                                                                 <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                     <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick} rel="noreferrer">{fieldData.value}</a>
@@ -535,7 +545,7 @@
                                                         </template>
                                                         <template if:true={fieldData.isTextArea}>
                                                             <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name="input0" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name="input01" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
                                                             </div>
                                                         </template>
                                                         <template if:true={fieldData.isDate}>
@@ -602,6 +612,7 @@
                                                             <div id={rowData.rowId} title={fieldData.value}>
                                                                 <c-simpli-u-i-list-views-picklist type="picklist"
                                                                                                 row-id={rowData.rowId} 
+                                                                                                sfdc-id={rowData.salesforceId}
                                                                                                 object-api-name={listViewData.objectName} 
                                                                                                 selected-value={fieldData.value}  
                                                                                                 pick-list-field-api-name={fieldData.name}
@@ -614,6 +625,7 @@
                                                                 <c-simpli-u-i-list-views-picklist type="multipicklist"
                                                                                                 size=2
                                                                                                 row-id={rowData.rowId} 
+                                                                                                sfdc-id={rowData.salesforceId}
                                                                                                 object-api-name={listViewData.objectName} 
                                                                                                 selected-value={fieldData.uIMultiPicklistValues}  
                                                                                                 pick-list-field-api-name={fieldData.name}
@@ -626,7 +638,7 @@
                                                                 <c-simpli-u-i-list-views-lookup field-name={fieldData.name} 
                                                                                                 row-id={rowData.rowId} 
                                                                                                 initial-name={fieldData.value}
-                                                                                                initial-id={fieldData.idValue}
+                                                                                                initial-id={fieldData.objValueId}
                                                                                                 field-obj-name={fieldData.fieldObjName}
                                                                                                 onlookupchange={handleFieldDataChange}>
                                                                 </c-simpli-u-i-list-views-lookup>
@@ -665,34 +677,46 @@
         </template>
 
         <!-- ---------------------------------------------------------------------------------- -->
+        <!-- The POPUP view if the mouse moves over a field which has hover information                                -->
+        <!-- ---------------------------------------------------------------------------------- -->
+        <c-simpli-u-i-list-views-hover-detail is-displayed={hoverIsDisplayed}
+                                              record-id={hoverSFDCId}
+                                              record-api-name={hoverAPIName}
+                                              record-label-name={hoverLabelName}
+                                              position-left={hoverPositionLeft}
+                                              position-top={hoverPositionTop}
+                                              onerror={processHoverError}>
+        </c-simpli-u-i-list-views-hover-detail>
+
+        <!-- ---------------------------------------------------------------------------------- -->
         <!-- The modal view if a SCREENS FLOW action is selected                                -->
         <!-- ---------------------------------------------------------------------------------- -->
         <c-simpli-u-i-list-views-flow-frame show-modal={showFlowModal}
-                                        record-ids={selectedRecordIds}
-                                        action-api-name={selectedActionKey}
-                                        onprocessed={processFlowModal}
-                                        oncancelled={cancelFlowModal}
-                                        onfinished={finishFlowModal}>
+                                            record-ids={selectedRecordIds}
+                                            action-api-name={selectedActionKey}
+                                            onprocessed={processFlowModal}
+                                            oncancelled={cancelFlowModal}
+                                            onfinished={finishFlowModal}>
         </c-simpli-u-i-list-views-flow-frame>
 
         <!-- ---------------------------------------------------------------------------------- -->
         <!-- The modal view if the ACTION button is pressed and we need to display something    -->
         <!-- ---------------------------------------------------------------------------------- -->
         <c-simpli-u-i-list-views-action-modal show-modal={showActionModal}
-                                        action-api-name={selectedActionKey}
-                                        record-count={selectedRecordCount}
-                                        record-ids={selectedRecordIdsStr}
-                                        onprocessed={processActionModal}
-                                        oncancelled={cancelActionModal}>
+                                              action-api-name={selectedActionKey}
+                                              record-count={selectedRecordCount}
+                                              record-ids={selectedRecordIdsStr}
+                                              onprocessed={processActionModal}
+                                              oncancelled={cancelActionModal}>
         </c-simpli-u-i-list-views-action-modal>
 
         <!-- ---------------------------------------------------------------------------------- -->
         <!-- The modal view if the ADMIN button is pressed and we need to display something     -->
         <!-- ---------------------------------------------------------------------------------- -->
         <c-simpli-u-i-list-views-admin-modal show-modal={showAdminModal}
-                                        list-view-object={selectedObject}
-                                        list-view-name={selectedListView}
-                                        onclose={processAdminModal}>
+                                             list-view-object={selectedObject}
+                                             list-view-name={selectedListView}
+                                             onclose={processAdminModal}>
         </c-simpli-u-i-list-views-admin-modal>
     </div>
 </template>

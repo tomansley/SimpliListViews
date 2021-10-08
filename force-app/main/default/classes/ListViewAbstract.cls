@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 09-29-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -15,7 +15,7 @@
 public with sharing abstract class ListViewAbstract {
     
     public static Set<String> validTotalColumns = new Set<String>{ListViewHelper.TYPE_INTEGER, ListViewHelper.TYPE_DECIMAL, ListViewHelper.TYPE_CURRENCY, ListViewHelper.TYPE_DOUBLE, ListViewHelper.TYPE_NUMBER};
-    public static Set<String> validNameColumnNames = new Set<String>{'name', 'casenumber'}; //holds the list of column names that if found will produce a link to the record.
+    public static Set<String> validNameColumnNames = new Set<String>{'Name', 'CaseNumber'}; //holds the list of column names that if found will produce a link to the record.
 
     public List_View__c listview = null;                              //holds the list view record associated with this request.
     public List_View_Config__c config = null;                         //holds the SFDC list view config SObject
@@ -120,7 +120,7 @@ public with sharing abstract class ListViewAbstract {
             //get the field names in a list
             List<String> fields = lvConfig.getParameter('AdditionalFields').getValue().deleteWhitespace().split(',');
 
-            System.debug(LoggingLevel.DEBUG, 'Additional Fields - ' + fields);
+            System.debug(LoggingLevel.FINE, 'Additional Fields - ' + fields);
 
             for (String fieldName: fields)
             {
@@ -145,7 +145,7 @@ public with sharing abstract class ListViewAbstract {
     */
     public void setRequestData(List_View__c listview, List<ListViewHelper.ColumnSortData> columnSortData, String joinField, Set<String> joinRecordIds, Integer offset)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewAbstract.setRequestData - ' + listview);
+        System.debug(LoggingLevel.FINE, 'Starting ListViewAbstract.setRequestData - ' + listview);
         this.listview       = listview;
         this.columnSortData = columnSortData;
         this.joinField      = joinField;
@@ -400,7 +400,7 @@ public with sharing abstract class ListViewAbstract {
                 for (String fieldKey: row.fields.keySet())
                 {
                     FieldWrapper field = row.fields.get(fieldKey);
-                    debug += '        Key - ' + fieldKey + ', Name - ' + field.name + ', Label - ' + field.label + ', Value - ' + field.getValue() + ', Type - ' + field.getType() + '\n';
+                    debug += '        Key - ' + fieldKey + ', Name - ' + field.name + ', Long Name - ' + field.longName + ', Label - ' + field.label + ', Value - ' + field.getValue() + ', Type - ' + field.getType() + ', objValueId - ' + field.objValueId + ', URL Str - ' + field.urlStr + ', parentObjType - ' + field.parentObjType + ', isTotalsRow - ' + field.isTotalsRow + ', isEditable - ' + field.isEditable + '\n';
                 }                    
                 debug += '' + '\n';
             }
@@ -425,6 +425,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isTotals;                 //indicates whether this row is a totals row.
         public Boolean isDeleted;                //indicates whether this row is for a deleted record.
         public Boolean isEdited;                 //indicates whether the row has been edited or not.
+        public Boolean isEditable;               //indicates whether the row is editable or not.
         public Boolean isDisplayed;              //indicates whether the row should be displayed or not. (used with text search)
 
         public RowWrapper(String rowId)
@@ -436,14 +437,14 @@ public with sharing abstract class ListViewAbstract {
             fields              = new Map<String, FieldWrapper>();
             isTotals            = false;
             isEdited            = false;
+            isEditable          = true;
             isDisplayed         = true;
         }
 
         public void addField(FieldWrapper field)
         {
-            System.debug(LoggingLevel.FINE, 'Adding Field - ' + field.getName() + ':' + field.columnIndex + ' -- ' + field);
+            field.setKey(this.getRowId());
             fields.put(field.getName() + ':' + field.columnIndex, field);
-            field.key = rowId + ':' + String.valueOf(field.columnIndex);
         }
 
         @AuraEnabled(cacheable=true)
@@ -505,6 +506,17 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
+        public Boolean getIsEditable()
+        {
+            return isEditable;
+        }
+
+        public void setIsEditable(Boolean isEditable)
+        {
+            this.isEditable = isEditable;
+        }
+
+        @AuraEnabled(cacheable=true)
         public Boolean getIsDeleted()
         {
             return isDeleted;
@@ -554,26 +566,27 @@ public with sharing abstract class ListViewAbstract {
         **/
         public RowWrapper cloneWrapper(Boolean deleteFieldData)
         {
-            RowWrapper clone = new RowWrapper(rowId);
-            clone.fields = new Map<String, FieldWrapper>();
+
+            //Clone ROW
+            RowWrapper rowClone = new RowWrapper(rowId);
+            rowClone.parentWrapper  = this.parentWrapper;
+            rowClone.highlight      = this.highlight;
+            rowClone.sfdcId         = this.sfdcId;
+            rowClone.highlightColor = this.highlightColor;
+            rowClone.isTotals       = this.isTotals;
+            rowClone.isDeleted      = this.isDeleted;
+            rowClone.isEdited       = this.isEdited;
+            rowClone.isDisplayed    = this.isDisplayed;
+            rowClone.fields         = new Map<String, FieldWrapper>();
+
+
+            //Clone FIELDS
             for (FieldWrapper field: fields.values())
             {
-                Object objValue = null;
-                if (!deleteFieldData)
-                {
-                    objValue = field.objValue;
-                }
-                FieldWrapper cloneField = new FieldWrapper(field.label, objValue, field.type, field.name, field.columnIndex, field.parentObjType);
-                cloneField.fieldObj = field.fieldObj;
-                cloneField.createURL();
-                clone.addField(cloneField);
+                rowClone.addField(field.cloneField(deleteFieldData));
             }
-            clone.highlight = this.highlight;
-            clone.highlightColor = this.highlightColor;
-            clone.isTotals = this.isTotals;
-            clone.isDeleted = this.isDeleted;
     
-            return clone;
+            return rowClone;
         }
 
         /*
@@ -605,11 +618,11 @@ public with sharing abstract class ListViewAbstract {
                     if (condition.getFieldName() == field.name.toLowerCase() || condition.getFieldName() == field.getLongName().toLowerCase())
                     {
 
-                        System.debug(LoggingLevel.DEBUG, 'We have a matching condition!');
+                        System.debug(LoggingLevel.FINE, 'We have a matching condition!');
 
                         String color = ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, condition.getCondition());
 
-                        System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + color);
+                        System.debug(LoggingLevel.FINE, 'Condition validation result = ' + color);
 
                         //get the highlight color as well regardless.
                         if (color != '')
@@ -789,9 +802,10 @@ public with sharing abstract class ListViewAbstract {
     public class FieldWrapper implements Comparable
     {
 
-        public String label;
+        public String label;           //the label of the field
         public Object objValue;        //the value as an Object
-        public String idValue;
+        public String objValueId;      //the id of the objValue record if it is a lookup
+        public SObject fieldObj;       //the SObject associated with the field. Used when retrieving lookup information
         public String type;
         public String urlStr;          //the URL that the field should display if one is available.
         public String urlTarget;       //identifies the target of the URL
@@ -804,7 +818,6 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isSortable;     //identifies whether the field is sortable.
         public Boolean isEditable;     //identifies whether the field can be edited inline.
         public String parentObjType;   //the API name of the object that this field looks up to
-        public SObject fieldObj;       //the SObject associated with the field. Used when retrieving lookup information
         public Boolean isTotalsRow;    //identifies whether the row this field is a part of is a totals row.
 
         public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
@@ -823,7 +836,7 @@ public with sharing abstract class ListViewAbstract {
 
             this.setValue(objValue);
             this.setType(type); //must be below setValue() as it uses value to determine type in some cases.
-
+            
             String debug = '\n\n---------------------------------------------------------------\n';
             debug       += 'Label - ' + this.label + '\n';
             debug       += 'type - ' + this.type + '\n';
@@ -858,6 +871,11 @@ public with sharing abstract class ListViewAbstract {
         public void setIsTotalsRow(Boolean isTotalsRow)
         {
             this.isTotalsRow = isTotalsRow;
+        }
+
+        public void setKey(String rowId)
+        {
+            key = rowId + ':' + String.valueOf(this.columnIndex);
         }
         
         @AuraEnabled(cacheable=true)
@@ -926,6 +944,9 @@ public with sharing abstract class ListViewAbstract {
         public void setFieldObj(SObject fieldObj)
         {
             this.fieldObj = fieldObj;
+            if (String.isEmpty(objValueId) && fieldObj != null)
+                objValueId = String.valueOf(fieldObj.get('Id'));
+
         }
 
         public void setIsEditable(Boolean isEditable)
@@ -1017,39 +1038,42 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
-        public String getIdValue()
+        public String getObjValueId()
         {
-            return idValue;
+            return objValueId;
         }
 
-        public void setIdValue(String idValue)
+        public void setObjValueId(String objValueId)
         {
-            this.idValue = idValue;
+            this.objValueId = objValueId;
         }
 
         @AuraEnabled
         public Boolean getHasURL()
         {
-            if (this.urlStr == null) return false;
+            if (String.isEmpty(this.urlStr)) return false;
             return true;    
         }
         
         public void createURL()
         {
-            System.debug(LoggingLevel.DEBUG, 'createURL called - ' + parentObjType + ', ' + idValue);
+            System.debug(LoggingLevel.FINE, 'createURL called - ' + parentObjType + ', ' + objValueId + ', ' + fieldObj);
             String urlStr = '';
             urlTarget = '_blank';
 
             if (parentObjType == 'ApexLog')
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/setup/ApexDebugLogDetail/page?address=%2Fp%2Fsetup%2Flayout%2FApexDebugLogDetailEdit%2Fd%3Fapex_log_id%3D' + String.valueOf(objValue);
             else if (parentObjType == 'ApexClassOrTrigger')
-                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + idValue;
+                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + objValueId;
             else if (fieldObj != null)
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldObj.get('Id')) + '/view';
-            else
+            else if (this.name == 'id')
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(objValue) + '/view';
+            else
+                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + objValueId + '/view';
             
             this.urlStr = urlStr;
+            System.debug(LoggingLevel.FINE, 'createURL result - ' + urlStr);
         }
 
         @AuraEnabled(cacheable=true)
@@ -1064,6 +1088,15 @@ public with sharing abstract class ListViewAbstract {
             return urlTarget;
         }
         
+        @AuraEnabled(cacheable=true)
+        public String getFieldObjLabel()
+        {
+            if (!String.isEmpty(parentObjType))
+                return HelperSchema.getObjectLabel(parentObjType);
+            else
+                return '';
+        }
+
         @AuraEnabled(cacheable=true)
         public String getFieldObjName()
         {
@@ -1256,6 +1289,34 @@ public with sharing abstract class ListViewAbstract {
             if (this.type == ListViewHelper.TYPE_EMAIL) return true;
             return false;    
         }
+
+        public FieldWrapper cloneField(Boolean deleteFieldData)
+        {
+            Object objValue = null;
+            if (!deleteFieldData)
+                objValue = this.objValue;
+            FieldWrapper cloneField = new FieldWrapper(label, objValue, type, name, columnIndex, parentObjType);
+            cloneField.isSortable = isSortable;
+            cloneField.setIsTotalsRow(isTotalsRow);
+            cloneField.longName = longName;
+            cloneField.urlTarget = urlTarget;
+            cloneField.sortDir = sortDir;
+            cloneField.urlStr = urlStr;
+            cloneField.setFieldObj(fieldObj);
+            cloneField.objValueId = objValueId;
+
+            //if we are not deleting the field then it means its the header record so allow edits.
+            if (!deleteFieldData)
+            {
+                cloneField.setIsEditable(isEditable);
+
+            //if we are deleting the field it means its a child record so no edits allowed.
+            } else {
+                cloneField.setIsEditable(false);
+            }
+
+            return cloneField;
+        }
         
         public Integer compareTo(Object compareTo) {
             FieldWrapper field = (FieldWrapper) compareTo;
@@ -1383,7 +1444,7 @@ public with sharing abstract class ListViewAbstract {
                                                                         readonly));
             }
 
-            System.debug(LoggingLevel.DEBUG, 'All config params - ' + parameters);
+            System.debug(LoggingLevel.FINE, 'All config params - ' + parameters);
 
 
             for (List_View_Config_Condition__c condition: listViewConfig.List_View_Config_Conditions__r)
@@ -1560,7 +1621,8 @@ public with sharing abstract class ListViewAbstract {
         public Boolean getIsListString()
         {
             if (getName() == 'ExcludedObjectTypes'  //total hack as we cannot add new picklist values!
-                || getName() == 'IncludedObjectTypes') 
+                || getName() == 'IncludedObjectTypes'
+                || getName() == 'ExcludedRecordPopoverTypes') 
                 return true;
             else 
                 return false;            
