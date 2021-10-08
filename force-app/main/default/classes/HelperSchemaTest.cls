@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 07-22-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -55,19 +55,19 @@ public with sharing class HelperSchemaTest {
         System.assertEquals('User', typeName);
 
         Boolean isValid = HelperSchema.isValidSFDCFieldName('Account', 'Name');
-        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + isValid);
+        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
         isValid = HelperSchema.isValidSFDCFieldName('Account', 'LastModifiedBy.Name');
-        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + isValid);
+        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
         isValid = HelperSchema.isValidSFDCFieldName('Account', 'LastModifiedBy.Profile.Name');
-        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + isValid);
+        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
         isValid = HelperSchema.isValidSFDCFieldName('List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
-        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + isValid);
+        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
         isValid = HelperSchema.isValidSFDCFieldName('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
-        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + isValid);
+        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
 
         HelperSchema.checkObjectFieldAccessible('Account', 'Name');

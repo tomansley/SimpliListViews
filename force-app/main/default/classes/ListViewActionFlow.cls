@@ -1,7 +1,7 @@
 /**
  * @description       : Implementation of an action to start flows.
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 09-24-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Ver   Date         Author                       Modification
  * 1.0   08-29-2021   tom.h.ansley@medtronic.com   Initial Version
@@ -22,7 +22,7 @@ public with sharing class ListViewActionFlow extends ListViewAction {
 
     public override String process(List<String> recordIds, Map<String, Object> fieldValues)
     {
-        System.debug(LoggingLevel.DEBUG, 'Processing ListViewActionFlow with flow name - ' + flowName);
+        System.debug(LoggingLevel.FINE, 'Processing ListViewActionFlow with flow name - ' + flowName);
         String returnStr = ListViewAction.RESULT_OK + ':';
         try {
             if (flowName == null) throw new ListViewException('ListViewActionFlow must have its flow name set before processing');
@@ -46,14 +46,14 @@ public with sharing class ListViewActionFlow extends ListViewAction {
 
             returnStr += 'Flow successfully started';
         } catch (Exception e) {
-            System.debug(LoggingLevel.DEBUG, 'Error found - ' + e.getMessage() + ', stack - ' + e.getStackTraceString());
+            System.debug(LoggingLevel.FINE, 'Error found - ' + e.getMessage() + ', stack - ' + e.getStackTraceString());
             String message = ListViewAction.RESULT_ERROR + ':There was an error starting the flow (' + flowName + '). Please see a system admin.';
             if (ListViewConfigHelper.isDebuggingOn())
                 message += ' Exception during ListViewActionFlow.process() ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageError(message); 
             returnStr = message;
         }
-        System.debug(LoggingLevel.DEBUG, 'Finished processing ListViewActionFlow with flow name - ' + flowName);
+        System.debug(LoggingLevel.FINE, 'Finished processing ListViewActionFlow with flow name - ' + flowName);
         return returnStr;
     }
 }

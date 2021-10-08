@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-01-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -45,7 +45,7 @@ public with sharing class ListViewAdminController {
     @AuraEnabled(cacheable=true)
     public static List<ListViewController.SelectOption> getObjectNames()
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewAdminController.getObjectNames()');
+        System.debug(LoggingLevel.FINE, 'Starting ListViewAdminController.getObjectNames()');
         List<ListViewController.SelectOption> objNames = new List<ListViewController.SelectOption>();
 
         Map<String, String> objMap = HelperSchema.getAllObjectNames();

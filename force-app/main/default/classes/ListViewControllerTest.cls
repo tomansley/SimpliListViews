@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 10-04-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -66,7 +66,7 @@ global class ListViewControllerTest {
 
         Map<String, String> configs = ListViewController.getComponentConfig('CompName 1');
 
-        System.assertEquals(18, configs.size());
+        System.assertEquals(20, configs.size());
         System.assertEquals('Account:AllAccounts', configs.get('pinnedListView'));
 
         //update user config
@@ -75,7 +75,7 @@ global class ListViewControllerTest {
 
         configs = ListViewController.getComponentConfig('CompName 1');
 
-        System.assertEquals(18, configs.size());
+        System.assertEquals(20, configs.size());
         System.assertEquals('Contact:AllContacts', configs.get('pinnedListView'));
 
 
@@ -189,9 +189,16 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.updateChangedListViews();
+        Test.startTest();
+
+            Test.setMock(HttpCalloutMock.class, new ListViewControllerTest.ListViewControllerTest_CalloutMock());
+
+            String result = ListViewController.updateChangedListViews();
+
+        Test.stopTest();
 
         System.assertEquals(result, 'success');
+
     }
 
 

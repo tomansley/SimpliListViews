@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-25-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -30,7 +30,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
        response = request2.processRequest();
        String logBody = (String) response.responseData;
 
-       System.debug(LoggingLevel.DEBUG, 'BODY - ' + logBody);
+       System.debug(LoggingLevel.FINE, 'BODY - ' + logBody);
 
      */
     public ListViewCustomToolingQuery()
@@ -50,7 +50,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
         endPoint += '/services/data/v' + HelperREST.getNewestAPIVersion() + '/tooling/query?q=' + EncodingUtil.urlEncode(soql, 'UTF-8');
 
-        System.debug(LoggingLevel.DEBUG, 'Endpoint returned - ' + endPoint);
+        System.debug(LoggingLevel.FINE, 'Endpoint returned - ' + endPoint);
         return endPoint;
     }
 
@@ -67,7 +67,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
         */
     private ListViewAbstract.RowsWrapper handleJSONToWrapper(String responseStr)
     {
-        System.debug('Starting ListViewCustomToolingQuery.handleJSONToWrapper - ' + System.now().getTime());
+        System.debug(LoggingLevel.FINE, 'Starting ListViewCustomToolingQuery.handleJSONToWrapper - ' + System.now().getTime());
         ListViewAbstract.RowsWrapper rows = new ListViewAbstract.RowsWrapper(listView);
         
         //------------------------------------------------------
@@ -141,17 +141,17 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                 String fieldName = (String) columnData.get('fieldNameOrPath');
                 String label     = (String) columnData.get('label');
 
-                System.debug(LoggingLevel.DEBUG, 'Field - ' + fieldName + ', Type - ' + fieldType);
+                System.debug(LoggingLevel.FINE, 'Field - ' + fieldName + ', Type - ' + fieldType);
 
                 //get the value of the field
                 HelperSchema.FieldData fieldData = HelperSchema.getFieldData(data, fieldName, this.lvConfig.getObject());
 
                 //we need to turn the value into its correct class.
                 Object fieldValue = fieldData.value;
-                System.debug(LoggingLevel.DEBUG, 'FIELD VALUE --- ' + fieldValue);
+                System.debug(LoggingLevel.FINE, 'FIELD VALUE --- ' + fieldValue);
                 if (fieldValue instanceof String) 
                     fieldValue = ListViewHelper.getObjectForValue(fieldType, (String) fieldValue);
-                System.debug(LoggingLevel.DEBUG, 'NEW FIELD VALUE --- ' + fieldValue);
+                System.debug(LoggingLevel.FINE, 'NEW FIELD VALUE --- ' + fieldValue);
 
                 FieldWrapper field = new FieldWrapper(label,
                                                     fieldValue, 
@@ -159,7 +159,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                                                     fieldName,
                                                     columnIndex,
                                                     fieldData.parentObjType);
-                field.idValue = fieldData.valueId;
+                field.objValueId = fieldData.objValueId;
 
                 if (field.getName() == 'Id' || field.getType() == ListViewHelper.TYPE_LOOKUP) {
                     field.createURL();
@@ -187,11 +187,11 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
             rows.hasTotalsRow = true;
 
-            System.debug(LoggingLevel.DEBUG, 'Starting total column calculations!');
+            System.debug(LoggingLevel.FINE, 'Starting total column calculations!');
 
             String totalColumns = lvConfig.getParameter('TotalColumns').getValue();
 
-            System.debug(LoggingLevel.DEBUG, 'TotalColumns - ' + totalColumns);
+            System.debug(LoggingLevel.FINE, 'TotalColumns - ' + totalColumns);
 
             RowWrapper totalWrapper = new RowWrapper('000000000000000000');
             totalWrapper.highlight = true;
@@ -238,7 +238,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                                             '');
                         totalField.setIsTotalsRow(true);
 
-                        System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
+                        System.debug(LoggingLevel.FINE, 'Added total field - ' + totalField);
 
                         totalWrapper.addField(totalField);
                     }
@@ -246,23 +246,23 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                     //see if the field is a column to be totalled
                     if (totalColumns != null && totalColumns.contains(fieldWrapper.getName()))
                     {
-                        System.debug(LoggingLevel.DEBUG, 'Found a column to total - ' + fieldWrapper.getName());
+                        System.debug(LoggingLevel.FINE, 'Found a column to total - ' + fieldWrapper.getName());
 
-                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getValue() - ' + fieldWrapper.getValue());
-                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getType() - ' + fieldWrapper.getType());
-                        System.debug(LoggingLevel.DEBUG, 'totalField.value - ' + totalField.getValue());
-                        System.debug(LoggingLevel.DEBUG, 'totalField.getType() - ' + totalField.getType());
+                        System.debug(LoggingLevel.FINE, 'fieldWrapper.getValue() - ' + fieldWrapper.getValue());
+                        System.debug(LoggingLevel.FINE, 'fieldWrapper.getType() - ' + fieldWrapper.getType());
+                        System.debug(LoggingLevel.FINE, 'totalField.value - ' + totalField.getValue());
+                        System.debug(LoggingLevel.FINE, 'totalField.getType() - ' + totalField.getType());
 
                         //if this is a valid column for total calculation and there is a value to calculate
                         if (ListViewAbstract.validTotalColumns.contains(totalField.getType()) && !String.isEmpty(fieldWrapper.getValue()))
                         {
-                            System.debug(LoggingLevel.DEBUG, 'We have a valid column value to add to total');
-                            System.debug(LoggingLevel.DEBUG, 'Old value - ' + totalField.getValue());
+                            System.debug(LoggingLevel.FINE, 'We have a valid column value to add to total');
+                            System.debug(LoggingLevel.FINE, 'Old value - ' + totalField.getValue());
                             if (totalField.getType() == ListViewHelper.TYPE_CURRENCY)
                                 totalField.setValue(Decimal.valueOf(String.valueOf(fieldWrapper.getValue())) + Decimal.valueOf(totalField.getValue()));
                             else
                                 totalField.setValue(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.getValue()));
-                            System.debug(LoggingLevel.DEBUG, 'New value - ' + totalField.getValue());
+                            System.debug(LoggingLevel.FINE, 'New value - ' + totalField.getValue());
 
                             
                         }
@@ -274,7 +274,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
         }
 
-        System.debug('Ending ListViewCustomToolingQuery.handleJSONToWrapper - ' + System.now().getTime());
+        System.debug(LoggingLevel.DEBUG, 'Ending ListViewCustomToolingQuery.handleJSONToWrapper - ' + System.now().getTime());
         return rows;
     }
 

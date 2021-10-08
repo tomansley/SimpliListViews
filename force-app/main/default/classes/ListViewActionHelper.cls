@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-29-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -159,7 +159,7 @@ public with sharing class ListViewActionHelper {
     **/
     public static Map<String, List_View_Action__c> getListViewActionsByListView(List_View__c listview)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting getListViewActionsByListView(' + listview + ')');
+        System.debug(LoggingLevel.FINE, 'Starting getListViewActionsByListView(' + listview + ')');
         HelperSchema.checkListViewActionsAccessible();
 
         Id rt = ListViewActionHelper.coreRTId;

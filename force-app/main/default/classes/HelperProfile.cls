@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-04-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperProfile {
@@ -27,7 +27,7 @@ public with sharing class HelperProfile {
     public static Boolean isSysAdmin()
     {
         String sysAdmin = System.label.System_Administrator;
-        System.debug('LANGUAGE - ' + UserInfo.getLanguage());
+        System.debug(LoggingLevel.FINE, 'Language - ' + UserInfo.getLanguage());
         
         if (UserInfo.getLanguage() == 'ko') sysAdmin = '시스템 관리자'; //korean
         else if (UserInfo.getLanguage() == 'he') sysAdmin = 'מנהל מערכת'; //hebrew
@@ -72,7 +72,7 @@ public with sharing class HelperProfile {
 		for (Profile prof: profiles)
         {
 			profilesByName.put(prof.Name, prof);
-            System.debug(LoggingLevel.DEBUG, prof.Name + ' - ' + prof);
+            System.debug(LoggingLevel.FINE, prof.Name + ' - ' + prof);
         }
         
         for (Profile prof: profiles)

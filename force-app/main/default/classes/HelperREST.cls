@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 06-30-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -49,9 +49,7 @@ public with sharing class HelperREST {
         System.debug(LoggingLevel.DEBUG, 'REQUEST BODY - ' + body);
         
         Http h = new Http();
-        HttpResponse res = null;
-        
-        res = h.send(req);
+        HttpResponse res = h.send(req);
 
         System.debug(LoggingLevel.DEBUG, 'RESPONSE - ' + res);
         System.debug(LoggingLevel.DEBUG, 'RESPONSE BODY - ' + res.getBody());

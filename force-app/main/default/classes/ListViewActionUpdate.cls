@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-20-2021
+ * @last modified on  : 10-08-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -23,10 +23,10 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
 
             if (recordIds == null || recordIds.size() == 0) return ListViewAction.RESULT_OK;
 
-            System.debug(LoggingLevel.DEBUG, 'Record Ids Size   - ' + recordIds.size());
-            System.debug(LoggingLevel.DEBUG, 'Record Ids        - ' + recordIds);
-            System.debug(LoggingLevel.DEBUG, 'Field Values Size - ' + fieldValues.size());
-            System.debug(LoggingLevel.DEBUG, 'Field Values      - ' + fieldValues);
+            System.debug(LoggingLevel.FINE, 'Record Ids Size   - ' + recordIds.size());
+            System.debug(LoggingLevel.FINE, 'Record Ids        - ' + recordIds);
+            System.debug(LoggingLevel.FINE, 'Field Values Size - ' + fieldValues.size());
+            System.debug(LoggingLevel.FINE, 'Field Values      - ' + fieldValues);
 
             //get the type of object from the provided Ids
             objType = HelperSchema.getObjectTypeFromId(recordIds[0]);
