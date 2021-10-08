@@ -17,11 +17,12 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     @api pickListFieldApiName;        //field API name of the field being displayed.
     @api label;                       //label if any to be displayed. For Simpli this is hidden
     @api variant;                     //the variant to use for the component. Usually = label-hidden
-    @api rowId;                       //the row Id of the record in question. Used to identify the record type for picklist option values.
+    @api rowId;                       //the row Id of the record in question.
+    @api sfdcId;                      //holds the SFDC Id of the record in question. Used to identify the record type for picklist option values.
     @api sourceLabel = 'Available';   //label displayed above the AVAILABLE options.
     @api selectedLabel = 'Selected';  //label displayed above the SELECTED options.
     @api size = 5;                    //the number of options to display if we are displaying the multi-picklist
-
+                 
     @track compName;
     @track value;
     recordTypeIdValue;
@@ -65,15 +66,25 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
 
         this.compName = this.rowId + ':' + this.pickListFieldApiName;
 
+        console.log('In simpliUIListViewsPicklist.renderedCallback');
+        console.log('type     - ' + this.type);
+        console.log('label  - ' + this.label);
+        console.log('variant    - ' + this.variant);
+        console.log('rowId - ' + this.rowId);
+        console.log('sfdcId - ' + this.sfdcId);
+        console.log('objectApiName    - ' + this.objectApiName);
+        console.log('pickListFieldApiName - ' + this.pickListFieldApiName);
+
     }
 
     /*
      * Method to retrieve the row data for the provided row Id. This method is not currently used as we have not implemented dependent picklists.
      */
-    @wire(getRecord, { recordId: '$rowId', fields: ['$pickListFieldApiName'], optionalFields: [] })
+    @wire(getRecord, { recordId: '$sfdcId', fields: ['$pickListFieldApiName'], optionalFields: [] })
     getRecord({ error, data }) {
         if (data) {
-            this.recordTypeId = this.data.data.recordTypeId;
+            this.recordTypeId = data.recordTypeId;
+            console.log('Record type retrieved - ' + this.recordTypeId);
         } else if (error) {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
         }
@@ -85,14 +96,13 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     @wire(getObjectInfo, { objectApiName: '$objectApiName' })
     getRecordTypeId({ error, data }) {
         if (data) {
-            this.record = data;
+            let response = data;
             if(this.recordTypeId === undefined){
-                this.recordTypeId = this.record.defaultRecordTypeId;
+                this.recordTypeId = response.defaultRecordTypeId;
             }
-            console.log("Default Record Type Id", JSON.stringify(this.record.defaultRecordTypeId));
+            console.log("Default Record Type Id", JSON.stringify(response.defaultRecordTypeId));
         } else if (error) {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.record = undefined;
         }
     }
                      
@@ -102,15 +112,15 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     @wire(getPicklistValuesByRecordType, { recordTypeId: '$recordTypeId', objectApiName: '$objectApiName' })
     wiredOptions({ error, data }) {
         if (data) {
-            this.record = data;
+            let response = data;
 
             //if we have a valid picklist field then get the options.
-            if(this.record.picklistFieldValues[this.pickListFieldApiName] !== undefined) {
+            if(response.picklistFieldValues[this.pickListFieldApiName] !== undefined) {
                 let tempOptions = [];
                 if (this.type === 'picklist') {
                     tempOptions = [{ label: '--None--', value: "" }];
                 }
-                let temp2Options = this.record.picklistFieldValues[this.pickListFieldApiName].values;
+                let temp2Options = response.picklistFieldValues[this.pickListFieldApiName].values;
                 temp2Options.forEach(opt => tempOptions.push(opt));
 
                 this.options = tempOptions;
@@ -128,14 +138,17 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             //otherwise set it based on provided value/s
             } else {
                 if (this.type === 'picklist') {
-                    this.value = this.options.find(listItem => listItem.value === this.selectedValue).value;
+                    let pickVal = this.options.find(listItem => listItem.value === this.value);
+                    if (pickVal !== undefined && pickVal !== null)
+                    {
+                        this.value = pickVal.value;
+                    }
                 } else if (this.type === 'multipicklist') {
-                    this.value = this.selectedValue;
+                    this.value = this.value;
                 }
             }
         } else if (error) {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.record = undefined;
         }
     }
 
