@@ -1,5 +1,7 @@
 # SimpliListViews
 
+Trying to figure out a problem? Try this FAQ page - https://github.com/tomansley/SimpliListViews/wiki/FAQ
+
 ## Feature Overview
 * List views for all objects on one page
 * Lists up to 2500 records allowed
@@ -81,7 +83,7 @@ These settings are maintained as part of the Lightning app that the component is
 * <b>Use Message Channel - </b>Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!
 
 ### List View Configuration</b>
-These settings affect individual list views in the SFDC org. They would typically be set at a user level after the list view has been created. The settings are found in the List View Configs object. Each config has a set of parameters that can be set based on needs.</p>
+These settings affect individual list views in the SFDC org. They would typically be set at a user level after the list view has been created. The user can change these settings by clicking on the list views admin button when viewing the list view. The settings data itself is found in the List View Configs object. Each config has a set of parameters (each corresponding to a configuration) that can be set based on needs.</p>
 * <b>Additional Fields - </b>Holds the API field names of additional fields that should be displayed in the list view. This is handy for setting fields which might not be available in the standard list view builder. These fields might include lookup fields outside of those available via the standard Salesforce list view builder.
 * <b>Include All Rows - </b>Indicates whether deleted and archived records should be included in list view results.
 * <b>Return Size - </b>Indicates the number of rows that should be returned. This value is defaulted to 250. The higher this value, the more page performance will be reduced.
@@ -91,11 +93,15 @@ These settings affect individual list views in the SFDC org. They would typicall
 
 ## Actions
 Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. The following actions have been implemented and made available in the app exchange package.
-* Edit (single record)
-* Delete (multiple records)
-* Clone (single record)
-* New (single record)
-* Account Update (multiple records)
+* Edit (single record) - edits the currently selected record
+* Edit All (multiple records) - sets all records currently visible on the component to inline editing. Can only be used for list views of 100 records or less
+* Delete (multiple records) - deletes all records that are selected
+* Clone (single record) - clones the currently selected record
+* New (single record) - create a new record (record type based on currently selected list view)
+* Send Email (multiple records) - allows for the sending of emails to the chosen records. The email address is taken from a field on the record based on the following rules (in this precedence) - field configured on the action, does the object have a field called Email, does the object have a field called Email__c.
+* Account Update (multiple records) - an example action which accepts two user entered fields and updates all selected records based on the input.
+* Set Close Lost - an example action which marks all selected records as Close - Lost. Only available on the opportunity.
+* Go To A Cool App - an example hyperlink which opens a new browser window/tab and takes the user to the configured URL. (List View object only)</li>
 
 ### Action Configuration
 All actions are configured for use by the application. Their configuration is held in the List View Actions table (simpli_lv__List_View_Action__c). The following described each field - 
