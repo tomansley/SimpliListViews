@@ -63,7 +63,7 @@ public class ListViewMetadataAPIService {
     }
 
     public class MetadataPort {
-        public String endpoint_x = URL.getSalesforceBaseUrl().toExternalForm() + '/services/Soap/m/32.0';
+        public String endpoint_x = URL.getSalesforceBaseUrl().toExternalForm() + '/services/Soap/m/51.0';
         public Map<String,String> inputHttpHeaders_x;
         public Map<String,String> outputHttpHeaders_x;
         public String clientCertName_x;
@@ -106,6 +106,7 @@ public class ListViewMetadataAPIService {
                 );
             }
             response_x = response_map_x.get('response_x');
+            System.debug(LoggingLevel.FINE, 'RESPONSE_X - ' + response_x);
             return response_x.getResult();
         }
     }

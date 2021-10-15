@@ -1,6 +1,6 @@
 /**
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-08-2021
+ * @last modified on  : 10-15-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -44,10 +44,10 @@ global with sharing class ListViewHelper {
     public static final String TYPE_TEXTAREA      = 'textarea';
     public static final String TYPE_RICH_TEXTAREA = 'rich textarea';
     public static final String TYPE_URL           = 'url';
+    public static final String TYPE_HTML          = 'html';
     public static final String TYPE_EMAIL         = 'email';
     public static final String TYPE_PHONE         = 'phone';
     public static final String TYPE_INTEGER       = 'integer';
-    public static final String TYPE_IMAGE         = 'image';
 
     public static final String SUBTYPE_MANUAL = 'Manual';
     public static final String SUBTYPE_TOOLING = 'Tooling';
@@ -254,7 +254,7 @@ global with sharing class ListViewHelper {
         {
 
             //create URL to find the list view query
-            String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v40.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
+            String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v52.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
             
             //get list view describe
             String callResponse = HelperREST.performInternalCallout(endPoint, null);
@@ -264,12 +264,17 @@ global with sharing class ListViewHelper {
                 Map<String,Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(callResponse);
 
                 List_View__c simpliListView = new List_View__c();
-                simpliListView.API_Name__c              = listView.DeveloperName;
+                String apiName = listView.DeveloperName;
+                System.debug(LoggingLevel.DEBUG, 'PREFIX - ' + listView.NamespacePrefix);
+                if (!String.isEmpty(listView.NamespacePrefix))
+                    apiName = listView.NamespacePrefix + '__' + apiName;
+                System.debug(LoggingLevel.DEBUG, 'API NAME - ' + apiName);
                 simpliListView.Object_Name__c           = listview.SObjectType;
                 simpliListView.Describe__c              = callResponse;
                 simpliListView.Label__c                 = listView.Name;
                 simpliListView.Core_ListView_Id__c      = listView.Id;
-                simpliListView.Primary_Key__c           = listview.SObjectType + ':' + listView.DeveloperName;
+                simpliListView.Primary_Key__c           = listview.SObjectType + ':' + apiName;
+                System.debug(LoggingLevel.DEBUG, 'PRIMARY KEY - ' + simpliListView.Primary_Key__c);
                 simpliListView.OwnerId                  = listView.CreatedById;
                 simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
                 simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
@@ -318,14 +323,14 @@ global with sharing class ListViewHelper {
         }
 
         //get the CORE list views.
-        HelperSchema.checkSelectAccessible('SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView');
-        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE Id IN :listViewsByCoreId.keySet()];
+        HelperSchema.checkSelectAccessible('SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView');
+        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView WHERE Id IN :listViewsByCoreId.keySet()];
         
         for (ListView listView: coreListViews)
         {
 
             //create URL to find the list view query
-            String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v40.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
+            String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v52.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
             
             //get list view describe
             String callResponse = HelperREST.performInternalCallout(endPoint, null);
@@ -335,12 +340,18 @@ global with sharing class ListViewHelper {
                 Map<String,Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(callResponse);
 
                 List_View__c simpliListView = new List_View__c();
-                simpliListView.API_Name__c              = listView.DeveloperName;
+                String apiName = listView.DeveloperName;
+                System.debug(LoggingLevel.DEBUG, 'PREFIX - ' + listView.NamespacePrefix);
+                if (!String.isEmpty(listView.NamespacePrefix))
+                    apiName = listView.NamespacePrefix + '__' + apiName;
+                System.debug(LoggingLevel.DEBUG, 'API NAME - ' + apiName);
+                    
+                simpliListView.API_Name__c              = apiName;
                 simpliListView.Object_Name__c           = listview.SObjectType;
                 simpliListView.Describe__c              = callResponse;
                 simpliListView.Label__c                 = listView.Name;
                 simpliListView.Core_ListView_Id__c      = listView.Id;
-                simpliListView.Primary_Key__c           = listview.SObjectType + ':' + listView.DeveloperName;
+                simpliListView.Primary_Key__c           = listview.SObjectType + ':' + apiName;
                 simpliListView.OwnerId                  = listView.CreatedById;
                 simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
                 simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
@@ -544,7 +555,8 @@ global with sharing class ListViewHelper {
         //now check security
         for (List_View__c lv: listviews)
         {
-            lvs.put(lv.Id, lv);
+            if (isVisible(lv))
+                lvs.put(lv.Id, lv);
         }
         return lvs;
 
@@ -595,7 +607,8 @@ global with sharing class ListViewHelper {
         //now check security
         for (List_View__c lv: listviews)
         {
-            lvs.put(lv.Id, lv);
+            if (isVisible(lv))
+                lvs.put(lv.Id, lv);
         }
         return lvs;
     }
@@ -646,7 +659,8 @@ global with sharing class ListViewHelper {
         //now check security
         for (List_View__c listview: listviews)
         {
-            listViewsByName.put(listview.API_Name__c, listview);
+            if (isVisible(listview))
+                listViewsByName.put(listview.API_Name__c, listview);
         }
 
         return listviewsByName;
@@ -694,7 +708,8 @@ global with sharing class ListViewHelper {
         //now check security
         for (List_View__c listview: listviews)
         {
-            listViewsById.put(listview.Id, listview);
+            if (isVisible(listview))
+                listViewsById.put(listview.Id, listview);
         }
 
         return listviewsById;
@@ -724,11 +739,16 @@ global with sharing class ListViewHelper {
         //check the object is accessible by this user
         HelperSchema.checkObjectAccessible(listview.Object_Name__c);
 
-            //---------------------------------------------------
+        //---------------------------------------------------
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
         String query = listview.Core_ListView_Query__c;
         String selectStr = query.substringBetween('SELECT ', ' FROM ');
+        String objectName = query.substringAfterLast(' FROM ');
+        if (objectName.contains(' '))
+            objectName = objectName.substringBefore(' ');
+        System.debug(LoggingLevel.FINE, 'objectName - ' + objectName);
+
         String whereStr = null;
         String orderByStr = '';
         if (query.containsIgnoreCase(' ORDER BY '))
@@ -737,6 +757,7 @@ global with sharing class ListViewHelper {
         } else {
             whereStr = query.substringAfter(' FROM ');
         }
+        whereStr = whereStr.removeStart(objectName);
 
         //------------------------------------------------------
         // Update all additional fields on the SELECT statement
@@ -891,9 +912,18 @@ global with sharing class ListViewHelper {
         }
 
         //------------------------------------------------------
+        // Handle the USING SCOPE statement
+        //------------------------------------------------------
+        String scopeStr = 'USING SCOPE ';
+        if (!String.isEmpty(listview.Filter_Scope__c))
+            scopeStr += listview.Filter_Scope__c;
+        else
+            scopeStr += 'Everything';
+
+        //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------
-        query = 'SELECT ' + selectStr + ' FROM ' + whereStr + orderByStr + limitStr + allRowsStr;
+        query = 'SELECT ' + selectStr + ' FROM ' + objectName + ' ' + scopeStr + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
 
         System.debug(LoggingLevel.FINE, 'Final SOQL - ' + query);
 
@@ -1137,9 +1167,18 @@ global with sharing class ListViewHelper {
         }
 
         //------------------------------------------------------
+        // Handle the USING SCOPE statement
+        //------------------------------------------------------
+        String scopeStr = 'USING SCOPE ';
+        if (!String.isEmpty(lvConfig?.getListView().Filter_Scope__c))
+            scopeStr += lvConfig.getListView().Filter_Scope__c;
+        else
+            scopeStr += 'Everything';
+
+        //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------
-        soql = selectStr + ' FROM ' + objectName + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
+        soql = selectStr + ' FROM ' + objectName + ' ' + scopeStr + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
 
         System.debug(LoggingLevel.FINE, 'Final SOQL - ' + soql);
 
@@ -1308,7 +1347,7 @@ global with sharing class ListViewHelper {
         List<List_View_Config__c> configs = new List<List_View_Config__c>();
 
         List_View_Config__c config = new List_View_Config__c();
-        config.Name                = 'PlatinumandGoldSLACustomers';
+        config.Name                = 'simpli_lv__PlatinumandGoldSLACustomers';
         config.List_View_Label__c  = 'Platinum And Gold SLA Customers';
         config.List_View_Object__c = 'Account';
         config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
@@ -1322,7 +1361,7 @@ global with sharing class ListViewHelper {
         configs.add(config2);
 
         List_View_Config__c config3 = new List_View_Config__c();
-        config3.Name                = 'AllAccounts';
+        config3.Name                = 'simpli_lv__AllAccounts';
         config3.List_View_Object__c = 'Account';
         config.List_View_Label__c   = 'All Accounts';
         config3.Primary_Key__c      = config3.List_View_Object__c + ':' + config3.Name;
@@ -1544,7 +1583,7 @@ global with sharing class ListViewHelper {
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.List_View_Config__c = config.Id;
-        condition.Field_Name__c       = 'Account Name';
+        condition.Field_Name__c       = 'Name';
         condition.Operator__c         = 'Contains';
         condition.Value__c            = 'Burlington';
         condition.Order__c            = '1';
@@ -1610,25 +1649,38 @@ global with sharing class ListViewHelper {
     /*
      * Method to check security and determine whether the list view is visible
      * to the requesting user. The following security is performed.
-     * 1. if user is owner
-     * 2. if list view allows all internal users.
-     * 3. if user is in allowed roles
+     * 1. if user is sys admin - TRUE
+     * 2. if user is owner - TRUE
+     * 3. if list view has role requirement and user is in role - TRUE
      * 4. if user is in allowed groups
      * 5. if user is in allowed territories
      */
-/*    public static Boolean isVisible(List_View__c lv)
+    public static Boolean isVisible(List_View__c lv)
     {
+
+        //if the user has modify all data (sys admin) then TRUE
+        if (HelperProfile.hasModifyAll()) return true;
+
+        //if the current user owns the list view then TRUE
         if (lv.OwnerId == UserInfo.getUserId()) return true;
 
-        if (lv.All_Internal_Users__c != null && lv.All_Internal_Users__c) return true;
+        //get list of groups that need to be checked for membership
+        Set<String> groups = new Set<String>();
+        if (!String.isEmpty(lv.Groups__c))
+            groups.addAll(lv.Groups__c.split(','));
+        if (!String.isEmpty(lv.Roles__c))
+            groups.addAll(lv.Roles__c.split(','));
+        if (!String.isEmpty(lv.Roles_And_Subordinates__c))
+            groups.addAll(lv.Roles_And_Subordinates__c.split(','));
 
-        User usr = UserHelper.getCurrentUser();
+        System.debug(LoggingLevel.DEBUG, 'GROUPS - ' + groups);
+        Boolean result = true;
+        if (!groups.isEmpty())
+            result = HelperGroup.getIsUserInGroups(groups, UserInfo.getUserId());
 
-        if (lv.Roles__c != null && usr.UserRole != null && lv.Roles__c.contains(usr.UserRole.Name)) return true;
-
-        return false;
+        return result;
     }
-*/
+
     /*
      * Method to check security and determine whether the list view is updateable
      * to the requesting user. The following security is performed.

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 09-27-2021
+ * @last modified on  : 10-13-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -11,8 +11,8 @@
 **/
 global with sharing class ListViewProcessBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
     
-    private String query = 'SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE SObjectType != null';
-    private final Integer batchSize = 50;
+    private String query = 'SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView WHERE SObjectType != null';
+    private final Integer batchSize = 40;
     private Set<Id> listViewIds = null;
 
     /*
@@ -62,10 +62,11 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             System.debug(LoggingLevel.FINE, 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ','));
             
             HelperSchema.checkSelectAccessible(query);
+
             return Database.getQueryLocator(query);
 
         } catch (Exception e) {
-            String message = 'Exception during ListViewProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
+            String message = 'Exception 2 during ListViewProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createUsageErrorNonFuture(message);
             Database.setSavepoint();
         }
@@ -101,12 +102,15 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                     Map<String,Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(callResponse);
 
                     List_View__c simpliListView = new List_View__c();
-                    simpliListView.API_Name__c              = listView.DeveloperName;
+                    String apiName = listView.DeveloperName;
+                    if (!String.isEmpty(listView.NamespacePrefix))
+                        apiName = listView.NamespacePrefix + '__' + apiName;
+                    simpliListView.API_Name__c              = apiName;
                     simpliListView.Object_Name__c           = listview.SObjectType;
                     simpliListView.Describe__c              = callResponse;
                     simpliListView.Label__c                 = listView.Name;
                     simpliListView.Core_ListView_Id__c      = listView.Id;
-                    simpliListView.Primary_Key__c           = listview.SObjectType + ':' + listView.DeveloperName;
+                    simpliListView.Primary_Key__c           = listview.SObjectType + ':' + apiName;
                     System.debug(LoggingLevel.DEBUG, 'PRIMARY KEY - ' + simpliListView.Primary_Key__c);
                     simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
                     
@@ -166,7 +170,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	{
         //delete all list views that are EXCLUDED from being displayed
         //but may have been created at another time
-        Database.executeBatch(new ListViewDeleteBatch());
+        Database.executeBatch(new ListViewPostProcessBatch());
 	}
 	
 	global class ListViewProcessBatchException extends Exception { }
