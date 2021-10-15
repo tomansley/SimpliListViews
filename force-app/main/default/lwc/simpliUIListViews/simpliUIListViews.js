@@ -597,6 +597,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.displayReprocess = false;
             }
 
+            this.refreshTitle = 'Click to perform list view refresh on current list view';
             this.textSearchText = '';
             this.isInitializing = false;
             this.spinnerOff();
@@ -1087,23 +1088,35 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * Method for handling when a user UNPINS a given list view.
      */
     handleUnpinningClick(event) {
-        this.isPinned = false;
 
         updateUserConfig({compName: this.pageName, configName: 'pinnedListView', value: '' })
         .then(result => {
-            console.log('List view unpinning successful for ' + this.pageName);
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'List View Unpinned',
-                message: 'List view successfully unpinned.',
-                variant: 'success',
-                mode: 'dismissable'
-            }));
+            console.log('RESULT - ' + result);
+            if (result === 'success')
+            {
+                console.log('List view unpinning successful for ' + this.pageName);
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'List View Unpinned',
+                    message: 'List view successfully unpinned.',
+                    variant: 'success',
+                    mode: 'dismissable'
+                }));
+                this.isPinned = false;
+            } else {
+                console.log('List view unpinning NOT successful for ' + this.pageName);
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Unpinning List View',
+                    message: 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator.',
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
+            }
         })
         .catch(error => {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Processing Error',
-                message: 'There was an error during user configuration update. Please see an administrator - ' + error.body.message,
+                message: 'There was an error unpinning the list view due to user configuration. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));

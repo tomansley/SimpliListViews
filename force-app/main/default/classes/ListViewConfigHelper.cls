@@ -4,7 +4,7 @@
  * @Author             : tom.h.ansley@medtronic.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 10-08-2021
+ * @Last Modified On   : 10-14-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
@@ -283,6 +283,8 @@ public with sharing class ListViewConfigHelper {
      * Method to retrieve the latest list view configuration. The method first looks at the cache
      * to see if it has already been retrieved. If not it goes and gets it. After retrieving it then
      * checks against default configuration params to ensure all values have been set appropriately
+     * 
+       delete [SELECT Id FROM List_View_Config__c WHERE CreatedDate > 2021-10-12T12:00:00Z];
      */
     public static List<List_View_Config__c> getListViewConfig(String objectName, String listViewName) 
     {

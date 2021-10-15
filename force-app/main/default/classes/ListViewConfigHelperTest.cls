@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 08-24-2021
+ * @last modified on  : 10-14-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -40,7 +40,7 @@ private class ListViewConfigHelperTest {
         String HIGHLIGHT_COLOR = '#c59e9e';
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = 'Account Name';
+        condition.Field_Name__c       = 'Name';
         condition.Order__c            = '1';
         condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
 
@@ -149,7 +149,7 @@ private class ListViewConfigHelperTest {
         String HIGHLIGHT_COLOR = '#c59e9e';
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = 'Account Number';
+        condition.Field_Name__c       = 'AccountNumber';
         condition.Order__c            = '1';
         condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
 
@@ -258,7 +258,7 @@ private class ListViewConfigHelperTest {
         String HIGHLIGHT_COLOR = '#c59e9e';
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = 'Account Number';
+        condition.Field_Name__c       = 'AccountNumber';
         condition.Order__c            = '1';
         condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
 
@@ -367,7 +367,7 @@ private class ListViewConfigHelperTest {
         String HIGHLIGHT_COLOR = '#c59e9e';
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = 'Account Number';
+        condition.Field_Name__c       = 'AccountNumber';
         condition.Order__c            = '1';
         condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
 
@@ -476,7 +476,7 @@ private class ListViewConfigHelperTest {
         String HIGHLIGHT_COLOR = '#c59e9e';
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = 'Account Date';
+        condition.Field_Name__c       = 'AccountDate';
         condition.Order__c            = '1';
         condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
 
@@ -588,7 +588,7 @@ private class ListViewConfigHelperTest {
         String HIGHLIGHT_COLOR = '#c59e9e';
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = 'Account DateTime';
+        condition.Field_Name__c       = 'AccountDateTime';
         condition.Order__c            = '1';
         condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
 
@@ -698,7 +698,7 @@ private class ListViewConfigHelperTest {
         String HIGHLIGHT_COLOR = '#c59e9e';
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = 'Account Time';
+        condition.Field_Name__c       = 'AccountTime';
         condition.Order__c            = '1';
         condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
 
@@ -795,7 +795,7 @@ private class ListViewConfigHelperTest {
         Boolean conditionAdded = true;
 
         try {
-            ListViewConfigHelper.addListViewCondition('Account', 'AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '1', '#000000');
+            ListViewConfigHelper.addListViewCondition('Account', 'simpli_lv__AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '1', '#000000');
 
             HelperSchema.checkListViewConfigsAccessible();
             List_View_Config_Condition__c condition = [SELECT Id FROM List_View_Config_Condition__c WHERE Value__c = 'Testerson'];
@@ -816,7 +816,7 @@ private class ListViewConfigHelperTest {
         List<List_View__c> listViews = HelperTest.createCoreListViews();
 
         HelperSchema.checkListViewConfigsAccessible();
-        List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'Account:AllAccounts'];
+        List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'Account:simpli_lv__AllAccounts'];
 
         //get the parameters of the created list view
         List<List_View_Config_Parameter__c> params = [SELECT Id FROM List_View_Config_Parameter__c WHERE List_View_Config__c = :config.Id];
@@ -825,23 +825,23 @@ private class ListViewConfigHelperTest {
 
         System.assert(params.size() > 0);
 
-        String result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Name', 'Additional Fields', ListViewHelper.TYPE_STRING);
+        String result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Name', 'Additional Fields', ListViewHelper.TYPE_STRING);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Na', 'Additional Fields', ListViewHelper.TYPE_STRING);
+        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Na', 'Additional Fields', ListViewHelper.TYPE_STRING);
 
         System.assert(result != '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'RefreshRate', '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
+        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'RefreshRate', '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'ReturnSize', '123', 'Return Size', ListViewHelper.TYPE_NUMBER);
+        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'ReturnSize', '123', 'Return Size', ListViewHelper.TYPE_NUMBER);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'AllAccounts', 'AllRows', 'true', 'All Rows', ListViewHelper.TYPE_BOOLEAN);
+        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'AllRows', 'true', 'All Rows', ListViewHelper.TYPE_BOOLEAN);
 
         System.assert(result == '');
 

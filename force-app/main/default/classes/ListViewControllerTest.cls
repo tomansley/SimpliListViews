@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 10-08-2021
+ * @last modified on  : 10-14-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -50,7 +50,7 @@ global class ListViewControllerTest {
 
         Test.stopTest();
 
-        System.assertEquals('0:', result);
+        System.assertEquals('0:Waiting', result);
         System.assertEquals(false, isInit);
         System.assertEquals(true, isInit2);
     }
@@ -62,21 +62,21 @@ global class ListViewControllerTest {
         Test.startTest();
             
         //create user config by doing an upsert
-        ListViewController.updateUserConfig('CompName 1', 'pinnedListView', 'Account:AllAccounts');
+        ListViewController.updateUserConfig('CompName 1', 'pinnedListView', 'Account:simpli_lv__AllAccounts');
 
         Map<String, String> configs = ListViewController.getComponentConfig('CompName 1');
 
         System.assertEquals(20, configs.size());
-        System.assertEquals('Account:AllAccounts', configs.get('pinnedListView'));
+        System.assertEquals('Account:simpli_lv__AllAccounts', configs.get('pinnedListView'));
 
         //update user config
-        ListViewController.updateUserConfig('CompName 1', 'pinnedListView', 'Contact:AllContacts');
-        ListViewController.updateUserConfig('CompName 2', 'pinnedListView', 'Account:AllAccounts');
+        ListViewController.updateUserConfig('CompName 1', 'pinnedListView', 'Contact:simpli_lv__AllContacts');
+        ListViewController.updateUserConfig('CompName 2', 'pinnedListView', 'Account:simpli_lv__AllAccounts');
 
         configs = ListViewController.getComponentConfig('CompName 1');
 
         System.assertEquals(20, configs.size());
-        System.assertEquals('Contact:AllContacts', configs.get('pinnedListView'));
+        System.assertEquals('Contact:simpli_lv__AllContacts', configs.get('pinnedListView'));
 
 
 
@@ -107,7 +107,7 @@ global class ListViewControllerTest {
 
             Test.setMock(HttpCalloutMock.class, new ListViewControllerTest.ListViewControllerTest_CalloutMock());
 
-            String result = ListViewController.updateSingleListView('Account', 'AllAccounts');
+            String result = ListViewController.updateSingleListView('Account', 'simpli_lv__AllAccounts');
 
         Test.stopTest();
 
@@ -118,7 +118,7 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.processParamChange('Account', 'AllAccounts', 'RefreshRate', '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
+        String result = ListViewController.processParamChange('Account', 'simpli_lv__AllAccounts', 'RefreshRate', '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
 
         System.assertEquals(result, 'Ok:');
 
@@ -128,14 +128,14 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.processConditionChange('Account', 'AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"]]');
+        String result = ListViewController.processConditionChange('Account', 'simpli_lv__AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"]]');
 
         System.assertEquals(result, 'Ok:');
 
         HelperSchema.checkListViewConfigsAccessible();
         List_View_Config_Condition__c condition = [SELECT ID FROM List_View_Config_Condition__c WHERE Value__c = 'Dickenson plc'];
 
-        result = ListViewController.processConditionChange('Account', 'AllAccounts', 'remove', condition.Id);
+        result = ListViewController.processConditionChange('Account', 'simpli_lv__AllAccounts', 'remove', condition.Id);
 
         System.assertEquals(result, 'Ok:');
 
@@ -145,7 +145,7 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        List<ListViewAbstract.ListViewColumn> labels = ListViewController.getListViewColumns('Account', 'AllAccounts');
+        List<ListViewAbstract.ListViewColumn> labels = ListViewController.getListViewColumns('Account', 'simpli_lv__AllAccounts');
 
         System.assert(labels.size() > 0);
     }
@@ -155,7 +155,7 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        ListViewAbstract.ListViewConfigWrapper lvConfig = ListViewController.getListViewConfig('Account', 'AllAccounts');
+        ListViewAbstract.ListViewConfigWrapper lvConfig = ListViewController.getListViewConfig('Account', 'simpli_lv__AllAccounts');
 
         System.assertNotEquals(lvConfig.listViewConfig, null);
 
@@ -228,7 +228,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(listviews, null);
         System.assert(listviews.size() > 0);
 
-        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'AllAccounts', '', '', '', -1);
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'simpli_lv__AllAccounts', '', '', '', -1);
 
         System.assertNotEquals(rows, null);
         System.assertNotEquals(rows.getFieldMetaData(), null);
@@ -306,7 +306,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(field.getUIValue(), null);
         System.assertNotEquals(field.getUIMultiPicklistValues(), null);
 
-        List<ListViewAbstract.ListViewColumn> columns = ListViewController.getListViewColumns('Account', 'AllAccounts');
+        List<ListViewAbstract.ListViewColumn> columns = ListViewController.getListViewColumns('Account', 'simpli_lv__AllAccounts');
         System.assertNotEquals(columns, null);
         System.assert(columns.size() > 0);
 
@@ -332,7 +332,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(column.getType(), null);
         System.assertNotEquals(column.getValue(), null);
         
-        List<ListViewAbstract.ActionWrapper> actions = ListViewController.getListViewActions('Account', 'AllAccounts');
+        List<ListViewAbstract.ActionWrapper> actions = ListViewController.getListViewActions('Account', 'simpli_lv__AllAccounts');
 
         System.assertNotEquals(actions, null);
         System.assert(actions.size() > 0);

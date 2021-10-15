@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom.h.ansley@medtronic.com
   @group             : 
-  @last modified on  : 10-08-2021
+  @last modified on  : 10-13-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -124,6 +124,19 @@
                     </template>
 
                     <!-- ------------------------- -->
+                    <!-- REFRESH BUTTON            -->
+                    <!-- ------------------------- -->
+                    <template if:true={displayReprocess}>
+                        <lightning-layout-item>
+                            <lightning-button-icon title={refreshTitle} 
+                                                size="medium" 
+                                                icon-name="action:new_task" 
+                                                onclick={handleProcessListViewsButtonClick}>
+                            </lightning-button-icon>
+                        </lightning-layout-item>
+                    </template>
+
+                    <!-- ------------------------- -->
                     <!-- PIN/UNPIN BUTTON          -->
                     <!-- ------------------------- -->
                     <template if:true={isModeApp}>
@@ -217,19 +230,6 @@
                                         </lightning-combobox>
                                     </lightning-layout-item>
                                 </template>
-                            </template>
-
-                            <!-- ------------------------- -->
-                            <!-- REFRESH BUTTON            -->
-                            <!-- ------------------------- -->
-                            <template if:true={displayReprocess}>
-                                <lightning-layout-item>
-                                    <lightning-button-icon title={refreshTitle} 
-                                                        size="medium" 
-                                                        icon-name="action:new_task" 
-                                                        onclick={handleProcessListViewsButtonClick}>
-                                    </lightning-button-icon>
-                                </lightning-layout-item>
                             </template>
 
                             <!-- ------------------------- -->
@@ -505,7 +505,7 @@
                                                                     {fieldData.value}
                                                                 </div>
                                                             </template>
-                                                            <template if:true={fieldData.isImage}>
+                                                            <template if:true={fieldData.isHTML}>
                                                                 <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
                                                                     <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
                                                                 </div>
@@ -526,7 +526,7 @@
                                             <template for:each={rowData.fields} for:item="fieldData">
                                                 <td key={fieldData.key} data-label={fieldData.label}>
                                                     <template if:false={fieldData.isEditable}>
-                                                        <template if:true={fieldData.isImage}>
+                                                        <template if:true={fieldData.isHTML}>
                                                             <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
                                                                 <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
                                                             </div>

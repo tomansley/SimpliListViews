@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-08-2021
+ * @last modified on  : 10-12-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -24,7 +24,7 @@ public with sharing class HelperREST {
     /*
      * Method to perform an internal callout using the current session Id for
      * security purposes. The body can be null.
-        String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v40.0/sobjects/simpli_lv__List_View_Metadata_Type_Name__mdt/listviews/00B3h000007cUeiEAE/describe';
+        String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v52.0/sobjects/simpli_lv__List_View_Metadata_Type_Name__mdt/listviews/00B3h000007cUeiEAE/describe';
         String callResponse = HelperREST.performInternalCallout(endPoint, null);
 
      */

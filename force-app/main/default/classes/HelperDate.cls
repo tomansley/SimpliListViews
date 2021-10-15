@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-25-2021
+ * @last modified on  : 10-13-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -16,6 +16,12 @@ public with sharing class HelperDate {
     public static final String YEAR = 'Year';
     public static final String HOUR = 'Hour';
     public static final String MINUTE = 'Minute';
+
+    //HelperDate.getSOQLDateTime(System.now().addDays(-1))
+    public static String getSOQLDateTime(DateTime theDate)
+    {
+        return theDate.format('yyyy-MM-dd\'T\'hh:mm:ss\'Z\'');
+    }
 
     //06:45:00 AM
     //System.debug(LoggingLevel.DEBUG, 'RESULT - ' + (HelperDate.getTimeFromString('06:46:00 AM') > HelperDate.getTimeFromString('06:47:00 AM')));

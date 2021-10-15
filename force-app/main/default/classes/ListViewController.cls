@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
  * @group             : 
- * @last modified on  : 10-04-2021
+ * @last modified on  : 10-13-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -42,19 +42,28 @@ public without sharing class ListViewController
                                               NumberOfErrors, 
                                               MethodName, 
                                               JobType, 
-                                              JobItemsProcessed, 
+                                              JobItemsProcessed,
+                                              ApexClass.Name,
                                               Id 
                                        FROM AsyncApexJob 
-                                       WHERE Id = :batchId];
+                                       WHERE ApexClass.Name IN ('ListViewPostProcessBatch', 'ListViewProcessBatch', 'ListViewPreProcessBatch')
+                                                AND Status != 'Completed'];
 
             if (jobs.size() == 0) { 
                 
                 result = '0';
+                status = 'Waiting';
+
+                if(getIsInitialized())
+                {
+                    status = 'Completed';
+                    result = '100';
+                }
 
             } else if (jobs[0].TotalJobItems == 0) {
             
                 result = '0';
-                status = jobs[0].Status;
+                status = jobs[0].Status + ' ' + jobs[0].ApexClass.Name;
 
             } else if (jobs[0].Status == 'Completed') { 
             
@@ -65,7 +74,7 @@ public without sharing class ListViewController
 
                 Decimal percentComp = (Decimal.valueOf(jobs[0].JobItemsProcessed)/Decimal.valueOf(jobs[0].TotalJobItems)) * 100;
                 result = String.valueOf(percentComp);
-                status = jobs[0].Status;
+                status = jobs[0].Status + ' ' + jobs[0].ApexClass.Name;
                 
             }
         } else {
@@ -300,7 +309,8 @@ public without sharing class ListViewController
 	public static String updateAllListViews()
 	{
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateAllListViews()');
-        Simpli_lv.ListViewProcessBatch b = new Simpli_lv.ListViewProcessBatch();
+
+        Simpli_lv.ListViewPreProcessBatch b = new Simpli_lv.ListViewPreProcessBatch();
         
         Id jobId = null;
         
