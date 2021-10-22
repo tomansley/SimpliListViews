@@ -1,13 +1,13 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-13-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
- * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   07-12-2021   tom.h.ansley@medtronic.com   Added setting of org wide config to identify that the list views have been initialized.
+ * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   07-12-2021   tom@ansleyllc.com   Added setting of org wide config to identify that the list views have been initialized.
 **/
 global with sharing class ListViewProcessBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
     

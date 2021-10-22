@@ -1,13 +1,13 @@
 /**
  * @File Name          : ListViewDeleteBatch.cls
  * @Description        : 
- * @Author             : tom.h.ansley@medtronic.com
+ * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 10-01-2021
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 10-22-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
- * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
+ * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
 **/
 public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
 

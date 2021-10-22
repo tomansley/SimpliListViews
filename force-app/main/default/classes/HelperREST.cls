@@ -1,11 +1,11 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-12-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   10-26-2020   tom.h.ansley@medtronic.com   Initial Version
+ * Ver   Date         Author              Modification
+ * 1.0   10-26-2020   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class HelperREST {
 
@@ -59,7 +59,7 @@ public with sharing class HelperREST {
 
     /**
     * @description Method to get the latest API version that is being used on the calling system
-    * @author tom.h.ansley@medtronic.com | 10-29-2020 
+    * @author tom@ansleyllc.com | 10-29-2020 
     * @return String 
     *
         System.debug(LoggingLevel.DEBUG, 'VERSION - ' + HelperREST.getNewestAPIVersion());

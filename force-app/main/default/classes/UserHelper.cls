@@ -1,12 +1,12 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-07-2020
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
- * 1.0   09-09-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 1.0   09-09-2020   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class UserHelper {
 

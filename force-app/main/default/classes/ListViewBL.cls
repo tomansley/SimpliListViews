@@ -1,17 +1,17 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-18-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
- * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
+ * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class ListViewBL {
 
     /**
     * @description Method to validate a list view on insertion
-    * @author tom.h.ansley@medtronic.com | 10-23-2020 
+    * @author tom@ansleyllc.com | 10-23-2020 
     * @param newRecords 
     **/
     public static void validate(List<List_View__c> newRecords)
@@ -28,7 +28,7 @@ public with sharing class ListViewBL {
 
     /**
     * @description Method to set auto-populated fields on the list view on insert
-    * @author tom.h.ansley@medtronic.com | 10-23-2020 
+    * @author tom@ansleyllc.com | 10-23-2020 
     * @param newRecords 
     **/
     public static void setFields(List<List_View__c> newRecords)
@@ -59,7 +59,7 @@ public with sharing class ListViewBL {
 
     /**
     * @description Method to update fields based on provided data.
-    * @author tom.h.ansley@medtronic.com | 03-26-2021 
+    * @author tom@ansleyllc.com | 03-26-2021 
     * @param newRecords 
     * @param oldRecords 
     **/
@@ -77,7 +77,7 @@ public with sharing class ListViewBL {
     /**
     * @description Method which sets the core list view Id to the Id of the record IF THE LIST VIEW IS CUSTOM
     *              This has to be done in after insert as we do not have the Id of the record in the before insert.
-    * @author tom.h.ansley@medtronic.com | 10-23-2020 
+    * @author tom@ansleyllc.com | 10-23-2020 
     * @param newRecords 
     **/
     public static void updateCoreListViewId(Map<Id, List_View__c> newRecords)
@@ -100,7 +100,7 @@ public with sharing class ListViewBL {
     /**
     * @description Method to create a default config for the list view
     *              if none already exists.
-    * @author tom.h.ansley@medtronic.com | 10-25-2020 
+    * @author tom@ansleyllc.com | 10-25-2020 
     * @param newRecords 
     **/
     public static void updateListViewConfigs(Map<Id, List_View__c> newRecords)

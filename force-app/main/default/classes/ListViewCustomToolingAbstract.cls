@@ -1,12 +1,12 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-20-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
- * 1.0   10-22-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
+ * 1.0   10-22-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables
 **/
 public with sharing abstract class ListViewCustomToolingAbstract extends ListViewCustomAbstract {
     

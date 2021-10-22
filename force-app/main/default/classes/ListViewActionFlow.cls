@@ -1,10 +1,10 @@
 /**
  * @description       : Implementation of an action to start flows.
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-08-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Ver   Date         Author                       Modification
- * 1.0   08-29-2021   tom.h.ansley@medtronic.com   Initial Version
+ * 1.0   08-29-2021   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class ListViewActionFlow extends ListViewAction {
     

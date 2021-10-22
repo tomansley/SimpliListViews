@@ -1,13 +1,13 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-13-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   07-29-2021   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   08-02-2021   tom.h.ansley@medtronic.com   Added convertDateToDateTime() method
- * 3.0   08-25-2021   tom.h.ansley@medtronic.com   Added getTimeFromString(), convertMillisToDateTime() and convertMillisToDate() methods
+ * Ver   Date         Author              Modification
+ * 1.0   07-29-2021   tom@ansleyllc.com   Initial Version
+ * 2.0   08-02-2021   tom@ansleyllc.com   Added convertDateToDateTime() method
+ * 3.0   08-25-2021   tom@ansleyllc.com   Added getTimeFromString(), convertMillisToDateTime() and convertMillisToDate() methods
 **/
 public with sharing class HelperDate {
 

@@ -1,10 +1,10 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-20-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Ver   Date         Author                       Modification
- * 1.0   08-19-2021   tom.h.ansley@medtronic.com   Initial Version
+ * 1.0   08-19-2021   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class ListViewActionEmail  extends ListViewAction {
     

@@ -1,13 +1,13 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-08-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
- * 1.0   09-08-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   09-08-2020   tom.h.ansley@medtronic.com   Fixed bug where record ids were being passed in with row nums. Row nums are now stripped.
+ * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   09-08-2020   tom@ansleyllc.com   Fixed bug where record ids were being passed in with row nums. Row nums are now stripped.
 **/
 public with sharing class ListViewActionUpdate  extends ListViewAction {
 

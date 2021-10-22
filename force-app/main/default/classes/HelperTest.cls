@@ -1,15 +1,15 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-14-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   08-07-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   07-31-2021   tom.h.ansley@medtronic.com   Added List_View_Label__c field
- * 3.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
- * 4.0   08-18-2021   tom.h.ansley@medtronic.com   Updated all strings to static final strings
+ * Ver   Date         Author              Modification
+ * 1.0   08-07-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   07-31-2021   tom@ansleyllc.com   Added List_View_Label__c field
+ * 3.0   08-16-2021   tom@ansleyllc.com   Added permission check for each action before display
+ * 4.0   08-18-2021   tom@ansleyllc.com   Updated all strings to static final strings
 **/
 public with sharing class HelperTest {
 
