@@ -1,13 +1,13 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-08-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
- * 3.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
+ * Ver   Date         Author              Modification
+ * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   06-18-2021   tom@ansleyllc.com   Added offset to allow for larger datasets
+ * 3.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables
 **/
 public with sharing class ListViewCustomManual extends ListViewCustomManualAbstract {
 
@@ -103,6 +103,74 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
         return rowData;
     }
+
+    public override List<ListViewColumn> getColumnData()
+    {
+        SObject exampleRow = null;   
+
+        //try to get a true example row
+        List<SObject> objectRows = null;
+        
+        if (listview.RecordTypeId == ListViewHelper.coreRTId)
+            objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true, -1);
+        else 
+            objectRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, null, null, null, true, -1);
+        
+        if (objectRows != null && objectRows.size() > 0) 
+        {
+            exampleRow = objectRows[0];
+        //if no row then use object type (which will not work if there are weird additional fields.)
+        } else {
+            Type t = Type.forName(listview.Object_Name__c);
+            exampleRow = (SObject) t.newInstance();
+        }
+
+        List<ListViewColumn> listViewColumns = new List<ListViewColumn>();
+
+        //get all columns from the list view
+        List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
+
+        //get the CORE SFDC COLUMN meta data
+        for (Object column: allColumns)
+        {
+            Map<String, Object> columnData = (Map<String, Object>) column;
+
+            String fieldName = (String) columnData.get('fieldNameOrPath');
+            Boolean hidden   = (Boolean) columnData.get('hidden');
+
+            if (hidden == null || !hidden)
+            {
+                HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
+         
+                if (d != null && !d.isChildRel)
+                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
+            }
+            
+        }
+
+        //set the CUSTOM COLUMN meta data into the rows wrapper
+        if (lvConfig != null 
+            && lvConfig.getParameter('AdditionalFields') != null 
+            && lvConfig.getParameter('AdditionalFields').getValue() != null
+            && lvConfig.getParameter('AdditionalFields').getValue() != '')
+        {
+            //get the field names in a list
+            List<String> fields = lvConfig.getParameter('AdditionalFields').getValue().deleteWhitespace().split(',');
+
+            System.debug(LoggingLevel.FINE, 'Additional Fields - ' + fields);
+
+            for (String fieldName: fields)
+            {
+                HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
+         
+                if (d != null)
+                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
+            }
+        }
+
+        return listViewColumns;
+    }
+
 
     /*
         * Method to take a list of SObjects retrieved using a listviews query and convert the

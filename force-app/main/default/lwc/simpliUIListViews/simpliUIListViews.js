@@ -53,7 +53,7 @@ import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConf
 import isValidListViewDataRequest from '@salesforce/apex/ListViewController.isValidListViewDataRequest';
 import updateRecord from '@salesforce/apex/ListViewController.updateRecord';
 import updateRecords from '@salesforce/apex/ListViewController.updateRecords';
-
+import getListViewConfigParameter from '@salesforce/apex/ListViewController.getListViewConfigParameter';
 export default class simpliUIListViews extends NavigationMixin(LightningElement) {
 
     wiredListViewDataResult;
@@ -135,6 +135,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track canDisplayActions = false;    //indicates whether the page is in a position where the actions list is active
     @track offset = -1;
     @track rowLimit = -1;
+    @track refreshRate = '';            //the refresh rate in seconds if the list view is auto refreshing.
 
     //for handling hover changes
     @track hoverSFDCId;
@@ -819,9 +820,22 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             this.refreshAllListViewData();            
 
+            if (this.refreshRate === '')
+            {
+                getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'RefreshRate'})
+                .then(result => {
+                    this.refreshRate = result * 1000;  //change to milliseconds                  
+                })
+                .catch(error => {
+                    this.refreshRate = 25000 //if error then set to 25 secs.
+                });
+            }
+            var utcDate = new Date().toUTCString(); 
+            console.log('Refresh rate - ' + this.refreshRate + ' - ' + utcDate);
+
             //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
             //look at its use with setTimeout down the page!
-            setTimeout(this.handleAutoRefreshData.bind(this), 5000);
+            setTimeout(this.handleAutoRefreshData.bind(this), this.refreshRate);
 
         }
     }
@@ -1007,7 +1021,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.columnSortDataStr = '';
         this.columnSortData = new Map(); 
         this.modifiedText = '';
-
+        this.isRefreshed = false;
         console.log('Object selected - ' + this.selectedObject + ' for ' + this.pageName);
     }
 
@@ -1020,7 +1034,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('Old list view - ' + this.selectedListView + ' for ' + this.pageName);
         console.log('Sort data - ' + this.listViewSortData + ' for ' + this.pageName);
         this.spinnerOn();
-        
+        this.isRefreshed = false;
+       
         //set the old column sort information into the list view sort data for caching otherwise it disappears.
         if (this.columnSortDataStr !== '')
         {

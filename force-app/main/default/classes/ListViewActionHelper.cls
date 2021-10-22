@@ -1,15 +1,15 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-08-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
- * 3.0   08-20-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables, added 2 new fields - Is_Hyperlink__c, Hyperlink_Target__c, new logic to handle whether actions are displayed based on user permissions
- * 4.0   08-20-2021   tom.h.ansley@medtronic.com   Removed Hyperlink_Target__c
+ * Ver   Date         Author              Modification
+ * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   08-16-2021   tom@ansleyllc.com   Added permission check for each action before display
+ * 3.0   08-20-2021   tom@ansleyllc.com   Updated strings to static final variables, added 2 new fields - Is_Hyperlink__c, Hyperlink_Target__c, new logic to handle whether actions are displayed based on user permissions
+ * 4.0   08-20-2021   tom@ansleyllc.com   Removed Hyperlink_Target__c
 **/
 public with sharing class ListViewActionHelper {
 
@@ -125,7 +125,7 @@ public with sharing class ListViewActionHelper {
 
     /**
     * @description Method to retrieve the actions associated with an object and list view.
-    * @author tom.h.ansley@medtronic.com | 08-15-2021 
+    * @author tom@ansleyllc.com | 08-15-2021 
     * @return Map<String, String> the primary key of the action and the action name
     **/
     public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName)
@@ -133,7 +133,12 @@ public with sharing class ListViewActionHelper {
         List<ListViewAbstract.ActionWrapper> actions = new List<ListViewAbstract.ActionWrapper>();
 
         //get the list views
-        List_View__c listview = ListViewHelper.getListViews(objectType, listViewName).values()[0];
+        Map<Id, List_View__c> listViews = ListViewHelper.getListViews(objectType, listViewName);
+
+        if (listViews.isEmpty())
+            throw new ListViewException('The list view configuration can not be found for object ' + objectType + ' and list view name - ' + listViewName + ')');
+
+        List_View__c listview = listViews.values()[0];
 
         //get the actions based on the list view
         Map<String, List_View_Action__c> lvActions = ListViewActionHelper.getListViewActionsByListView(listview);
@@ -152,7 +157,7 @@ public with sharing class ListViewActionHelper {
     * @description Method to get all list view actions given the object name and list view type
     *              Note that any actions with an object type of NULL are also returned as these
     *              actions are universal.
-    * @author tom.h.ansley@medtronic.com | 10-31-2020 
+    * @author tom@ansleyllc.com | 10-31-2020 
     * @param objectType the object type of the actions to be returned.
     * @param listViewType one of All, Core or Custom
     * @return Map<String, List_View_Action__c> returned as follows - (API Name, Action)

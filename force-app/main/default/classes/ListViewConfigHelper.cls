@@ -1,17 +1,17 @@
 /**
  * @File Name          : ListViewConfigHelper.cls
  * @Description        : 
- * @Author             : tom.h.ansley@medtronic.com
+ * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 10-14-2021
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 10-22-2021
  * @Modification Log   : 
- * Ver       Date            Author      		    Modification
- * 1.0    6/11/2020   tom.h.ansley@medtronic.com     Initial Version
- * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
- * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic for new admin page.
- * 4.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables
- * 4.0   08-25-2021   tom.h.ansley@medtronic.com   Major enhancement to condition validation for more types
+ * Ver       Date            Author         Modification
+ * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
+ * 2.0   06-18-2021   tom@ansleyllc.com     Added offset to allow for larger datasets
+ * 3.0   07-27-2021   tom@ansleyllc.com     Added logic for new admin page.
+ * 4.0   08-18-2021   tom@ansleyllc.com     Updated strings to static final variables
+ * 4.0   08-25-2021   tom@ansleyllc.com     Major enhancement to condition validation for more types
 **/
 public with sharing class ListViewConfigHelper {
 
@@ -41,17 +41,11 @@ public with sharing class ListViewConfigHelper {
 
             orgWideConfigParams = new Map<String,Object>();
 
-            List<List_View_Config__c> configs = getListViewConfig(ALL, ALL);
-            if (configs.size() == 0)
-            {
-                String message = 'Org wide list view config could not be retrieved';
-                ListViewErrorHelper.createUsageError(message);
-                throw new ListViewException(message);
-            }
+            List_View_Config__c config = getListViewConfig(ALL, ALL);
 
-            orgWideConfig = configs[0];
+            orgWideConfig = config;
 
-            for (List_View_Config_Parameter__c param: configs[0].List_View_Config_Parameters__r)
+            for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
                 orgWideConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
         }
 
@@ -64,7 +58,7 @@ public with sharing class ListViewConfigHelper {
 
     /**
     * @description Method to get the parameter details for the org wide configuration.
-    * @author tom.h.ansley@medtronic.com | 07-07-2021 
+    * @author tom@ansleyllc.com | 07-07-2021 
     **/
     public static Map<String, List_View_Config_Parameter__c> getOrgWideParamDetails()
     {
@@ -75,15 +69,9 @@ public with sharing class ListViewConfigHelper {
     {
         populateOrgWideConfig();
 
-        List<List_View_Config__c> configs = getListViewConfig(ALL, ALL);
-        if (configs.size() == 0)
-        {
-            String message = 'Org wide list view config could not be retrieved';
-            ListViewErrorHelper.createUsageError(message);
-            throw new ListViewException(message);
-        }
+        List_View_Config__c config = getListViewConfig(ALL, ALL);
 
-        for (List_View_Config_Parameter__c param: configs[0].List_View_Config_Parameters__r)
+        for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
         {
             if (param.Parameter_Name__c == settingName)
             {
@@ -107,7 +95,7 @@ public with sharing class ListViewConfigHelper {
 
     /**
     * @description Method to get all the org wide config params
-    * @author tom.h.ansley@medtronic.com | 07-07-2021 
+    * @author tom@ansleyllc.com | 07-07-2021 
     * @return Map<String, Object> 
     **/
     public static Map<String,Object> getOrgWideConfigParams()
@@ -176,7 +164,7 @@ public with sharing class ListViewConfigHelper {
 
     /**
     * @description Method to get the parameter details for a provided list view.
-    * @author tom.h.ansley@medtronic.com | 07-07-2021 
+    * @author tom@ansleyllc.com | 07-07-2021 
     **/
     public static Map<String, List_View_Config_Parameter__c> getListViewParamDetails(String objectName, String listViewName)
     {
@@ -225,7 +213,7 @@ public with sharing class ListViewConfigHelper {
             //we have no parameter so we need to create one
             } else {
 
-                List_View_Config__c config = getListViewConfig(objectName, listViewName)[0];
+                List_View_Config__c config = getListViewConfig(objectName, listViewName);
                 List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
                 param.List_View_Config__c = config.Id;
                 param.Parameter_Name__c   = paramName;
@@ -252,7 +240,7 @@ public with sharing class ListViewConfigHelper {
     {
 
         //get the list view config for the parameter
-        List<List_View_Config__c> lvConfig = getListViewConfig(objectName, listViewName);
+        List_View_Config__c lvConfig = getListViewConfig(objectName, listViewName);
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = fieldName;
@@ -260,7 +248,7 @@ public with sharing class ListViewConfigHelper {
         condition.Operator__c         = fieldOperator;
         condition.Order__c            = fieldOrder;
         condition.Value__c            = fieldValue;
-        condition.List_View_Config__c = lvConfig[0].Id;
+        condition.List_View_Config__c = lvConfig.Id;
 
         HelperDatabase.insertRecord(condition, 'simpli_lv__List_View_Config_Condition__c');
     }
@@ -278,6 +266,21 @@ public with sharing class ListViewConfigHelper {
         HelperDatabase.deleteRecords(conditions, 'simpli_lv__List_View_Config_Condition__c');
 
     }
+
+    public static String getListViewConfigParameter(String objectName, String listViewName, String paramName)
+    {
+        System.debug(LoggingLevel.FINE, 'Starting getListViewConfigParameter(' + objectName + ', ' + listViewName + ', ' + paramName + ')');
+
+        String paramValue = null;
+        List_View_Config__c config = getListViewConfig(objectName, listViewName);
+        for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
+        {
+            if (param.Parameter_Name__c == paramName)
+                paramValue = param.Parameter_Value__c;
+        }   
+
+        return paramValue;
+    }
     
     /*
      * Method to retrieve the latest list view configuration. The method first looks at the cache
@@ -286,7 +289,7 @@ public with sharing class ListViewConfigHelper {
      * 
        delete [SELECT Id FROM List_View_Config__c WHERE CreatedDate > 2021-10-12T12:00:00Z];
      */
-    public static List<List_View_Config__c> getListViewConfig(String objectName, String listViewName) 
+    public static List_View_Config__c getListViewConfig(String objectName, String listViewName) 
     {
         System.debug(LoggingLEvel.FINE, 'Starting getListViewConfig(' + objectName + ', ' + listViewName + ')');
 
@@ -319,9 +322,11 @@ public with sharing class ListViewConfigHelper {
 
         if (configs.size() > 1)
             throw new ListViewException('Found more than one list view config with name - ' + listViewName + ' and object - ' + objectName);
+        else if (configs.size() == 0)
+            throw new ListViewException('No list view config was found with name - ' + listViewName + ' and object - ' + objectName);
 
         System.debug(LoggingLevel.FINE, 'Returning configs - ' + configs);
-        return configs;
+        return configs[0];
     }
 
     public static String getPrimaryKey(String objectName, String listViewName)
@@ -365,7 +370,7 @@ public with sharing class ListViewConfigHelper {
 
     /**
     * @description Method to validate parameter updates
-    * @author tom.h.ansley@medtronic.com | 08-17-2020 
+    * @author tom@ansleyllc.com | 08-17-2020 
     * @param paramName the name of the parameter being updated
     * @param paramValue the value the parameter is being updated to
     * @return String the error message if the parameter is invalid.
@@ -458,7 +463,7 @@ public with sharing class ListViewConfigHelper {
     *
     * NOTE - DATE and DATETIME come through as millisecond strings and therefore need to be converted.
     *
-    * @author tom.h.ansley@medtronic.com | 08-05-2020 
+    * @author tom@ansleyllc.com | 08-05-2020 
     * @param value the value being validated against
     * @param type the type of the value being validated against
     * @param conditions the conditions the value is being validated against

@@ -1,16 +1,16 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-13-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   10-23-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
- * 3.0   07-27-2021   tom.h.ansley@medtronic.com   Added logic to handle identification of inline-editing for rows and fields. Beefed up FieldWrapper to handle inline-editing (mainly type identification methods), 
- * 4.0   08-20-2021   tom.h.ansley@medtronic.com   Updated all strings to static final variables, Added display vs. non-display action params and added hyperlink action type 
- * 5.0   08-20-2021   tom.h.ansley@medtronic.com   Added SalesforceId to row to differentiate between rowId which includes row number 
- * 6.0   08-25-2021   tom.h.ansley@medtronic.com   Updated column logic to return type of column, added flag for total column identification on fields,  
+ * Ver   Date         Author              Modification
+ * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   06-18-2021   tom@ansleyllc.com   Added offset to allow for larger datasets
+ * 3.0   07-27-2021   tom@ansleyllc.com   Added logic to handle identification of inline-editing for rows and fields. Beefed up FieldWrapper to handle inline-editing (mainly type identification methods), 
+ * 4.0   08-20-2021   tom@ansleyllc.com   Updated all strings to static final variables, Added display vs. non-display action params and added hyperlink action type 
+ * 5.0   08-20-2021   tom@ansleyllc.com   Added SalesforceId to row to differentiate between rowId which includes row number 
+ * 6.0   08-25-2021   tom@ansleyllc.com   Updated column logic to return type of column, added flag for total column identification on fields,  
 **/
 public with sharing abstract class ListViewAbstract {
     
@@ -34,7 +34,7 @@ public with sharing abstract class ListViewAbstract {
     *              consumable by the UI. This typically means converting SObject rows into
     *              the ListViewAbstract provided RowsWrapper, RowWrapper and FieldWrapper
     *              objects. These objects have additional fields which are used on the UI.
-    * @author tom.h.ansley@medtronic.com | 10-29-2020 
+    * @author tom@ansleyllc.com | 10-29-2020 
     * @return RowsWrapper the returned data wrapped in metadata which is used by the UI
     **/
     public abstract RowsWrapper getData();
@@ -45,104 +45,31 @@ public with sharing abstract class ListViewAbstract {
     *              a new list view has been created but the configuration does not yet exist and the 
     *              list view is requested to be displayed. This method should set all default configuration 
     *              and parameters to allow the list view to function appropriately.
-    * @author tom.h.ansley@medtronic.com | 10-25-2020 
+    * @author tom@ansleyllc.com | 10-25-2020 
     * @param objectName the object or group name associated with the list view.
     * @param listViewName the list view API name associated with the list view.
     * @return List_View_Config__c 
     **/
     public abstract List<List_View_Config_Parameter__c> getConfigParams(List_View_Config__c config);
 
+    /**
+    * @description Method which returns a map of column labels to column API names. Based on the 
+    *              implementation of the list view the column labels could be stored in a number 
+    *              of places and there may be weird logic to get the values.
+    * @author tom@ansleyllc.com | 10-26-2020 
+    * @return Map<String, String> the map of column labels with column API names used as keys by the UI.
+    **/
+    public abstract List<ListViewColumn> getColumnData();
 
     //----------------------------------------------------------------------------------
     // Concrete methods
     //----------------------------------------------------------------------------------
     
-    /**
-    * @description Method which returns a map of column labels to column API names. Based on the 
-    *              implementation of the list view the column labels could be stored in a number 
-    *              of places and there may be weird logic to get the values.
-    * @author tom.h.ansley@medtronic.com | 10-26-2020 
-    * @return Map<String, String> the map of column labels with column API names used as keys by the UI.
-    **/
-    public List<ListViewColumn> getColumnData()
-    {
-        SObject exampleRow = null;   
-
-        //try to get a true example row
-        List<SObject> objectRows = null;
-        
-        if (listview.SubType__c != ListViewHelper.SUBTYPE_TOOLING) //cannot get an example row if we are working with the tooling API
-        {
-            if (listview.RecordTypeId == ListViewHelper.coreRTId)
-                objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true, -1);
-            else 
-                objectRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, null, null, null, true, -1);
-        }
-        
-        if (objectRows != null && objectRows.size() > 0) 
-        {
-            exampleRow = objectRows[0];
-        //if no row then use object type (which will not work if there are weird additional fields.)
-        } else {
-            Type t = Type.forName(listview.Object_Name__c);
-            exampleRow = (SObject) t.newInstance();
-        }
-
-        List<ListViewColumn> listViewColumns = new List<ListViewColumn>();
-
-        //get all columns from the list view
-        List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
-
-        //get the CORE SFDC COLUMN meta data
-        for (Object column: allColumns)
-        {
-            Map<String, Object> columnData = (Map<String, Object>) column;
-
-            String fieldName = (String) columnData.get('fieldNameOrPath');
-            Boolean hidden   = (Boolean) columnData.get('hidden');
-
-            if (hidden == null || !hidden)
-            {
-                HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
-         
-                if (d != null && !d.isChildRel)
-                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
-            }
-            
-        }
-
-        //set the CUSTOM COLUMN meta data into the rows wrapper
-        if (lvConfig != null 
-            && lvConfig.getParameter('AdditionalFields') != null 
-            && lvConfig.getParameter('AdditionalFields').getValue() != null
-            && lvConfig.getParameter('AdditionalFields').getValue() != '')
-        {
-            //get the field names in a list
-            List<String> fields = lvConfig.getParameter('AdditionalFields').getValue().deleteWhitespace().split(',');
-
-            System.debug(LoggingLevel.FINE, 'Additional Fields - ' + fields);
-
-            for (String fieldName: fields)
-            {
-                HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
-         
-                if (d != null)
-                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
-            }
-        }
-
-        return listViewColumns;
-    }
-
     public void setRequestData(List_View__c listview)
     {
         setRequestData(listview, null, null, null, -1);
     }
 
-    /*
-        List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig('All', 'All');
-
-    */
     public void setRequestData(List_View__c listview, List<ListViewHelper.ColumnSortData> columnSortData, String joinField, Set<String> joinRecordIds, Integer offset)
     {
         System.debug(LoggingLevel.FINE, 'Starting ListViewAbstract.setRequestData - ' + listview);
@@ -152,20 +79,11 @@ public with sharing abstract class ListViewAbstract {
         this.joinRecordIds  = joinRecordIds;
         this.offset         = offset;
 
-        List<List_View_Config__c> lvConfigs = ListViewConfigHelper.getListViewConfig(listview.Object_Name__c, listview.API_Name__c);
+        config = ListViewConfigHelper.getListViewConfig(listview.Object_Name__c, listview.API_Name__c);
 
-        //if we have a configuration
-        if (lvConfigs.size() > 0) 
-        {
-            config = lvConfigs[0];
+        List<List_View_Config_Parameter__c> params = getConfigParams(config);
 
-            List<List_View_Config_Parameter__c> params = getConfigParams(config);
-
-            lvConfig = new ListViewConfigWrapper(listview, config, params);
-
-        } else {
-            throw new ListViewException('Configuration for list view with name "' + listview.Label__c + '" not found. Please reprocess list view');
-        }
+        lvConfig = new ListViewConfigWrapper(listview, config, params);
 
     }
 
@@ -560,7 +478,7 @@ public with sharing abstract class ListViewAbstract {
 
         /**
         * @description Method which clones a row wrapper. 
-        * @author tom.h.ansley@medtronic.com | 03-26-2021 
+        * @author tom@ansleyllc.com | 03-26-2021 
         * @param deleteFieldData identifies if the field values within the field wrappers should be deleted.
         * @return RowWrapper 
         **/
@@ -972,6 +890,8 @@ public with sharing abstract class ListViewAbstract {
                 this.type = ListViewHelper.TYPE_HTML;
             else if (type == ListViewHelper.TYPE_STRING  && this.getValue().contains('<a href='))
                 this.type = ListViewHelper.TYPE_HTML;
+            else if (type == ListViewHelper.TYPE_COMBOBOX)
+                this.type = ListViewHelper.TYPE_STRING;
             else 
                 this.type = type;
         }
@@ -1066,6 +986,8 @@ public with sharing abstract class ListViewAbstract {
             if (parentObjType == 'ApexLog')
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/setup/ApexDebugLogDetail/page?address=%2Fp%2Fsetup%2Flayout%2FApexDebugLogDetailEdit%2Fd%3Fapex_log_id%3D' + String.valueOf(objValue);
             else if (parentObjType == 'ApexClassOrTrigger')
+                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + objValueId;
+                else if (parentObjType == 'CustomObject')
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + objValueId;
             else if (fieldObj != null)
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldObj.get('Id')) + '/view';
@@ -1192,13 +1114,6 @@ public with sharing abstract class ListViewAbstract {
         {
             if (this.type == ListViewHelper.TYPE_HTML) return true;
             return false;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsNotHTML()
-        {
-            if (this.type == ListViewHelper.TYPE_HTML) return false;
-            return true;    
         }
 
         @AuraEnabled(cacheable=true)

@@ -1,18 +1,18 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-13-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   08-04-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
- * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added logic when list views are not initialized
- * 4.0   07-30-2021   tom.h.ansley@medtronic.com   Added updateRecords() method
- * 5.0   08-16-2021   tom.h.ansley@medtronic.com   Updated getListViewsActions() and added permission check for each action before display
- * 6.0   08-20-2021   tom.h.ansley@medtronic.com   renamed getListViewsActions() to getListViewActions()
- * 6.0   08-25-2021   tom.h.ansley@medtronic.com   renamed getListViewColumnLabels() to getListViewColumns()
+ * Ver   Date         Author              Modification
+ * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   06-18-2021   tom@ansleyllc.com   Added offset to allow for larger datasets
+ * 3.0   06-18-2021   tom@ansleyllc.com   Added logic when list views are not initialized
+ * 4.0   07-30-2021   tom@ansleyllc.com   Added updateRecords() method
+ * 5.0   08-16-2021   tom@ansleyllc.com   Updated getListViewsActions() and added permission check for each action before display
+ * 6.0   08-20-2021   tom@ansleyllc.com   renamed getListViewsActions() to getListViewActions()
+ * 6.0   08-25-2021   tom@ansleyllc.com   renamed getListViewColumnLabels() to getListViewColumns()
  **/
 public without sharing class ListViewController
 {
@@ -150,7 +150,11 @@ public without sharing class ListViewController
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getCachedListViewConfig(' + objectName + ', ' + listViewName + ')');
         ListViewAbstract.ListViewConfigWrapper lvConfigWrapper = null;
 
-        List_View__c listview = ListViewHelper.getListViews(objectName, listViewName).values()[0];
+        Map<Id, List_View__c> listViews = ListViewHelper.getListViews(objectName, listViewName);
+        if (listViews.isEmpty())
+            throw new ListViewException('The list view configuration can not be found for object ' + objectName + ' and list view name - ' + listViewName + ')');
+
+        List_View__c listview = listViews.values()[0];
 
         String objType = null;
         if (listView.RecordTypeId == null || listView.RecordTypeId == ListViewHelper.coreRTId)
@@ -178,7 +182,7 @@ public without sharing class ListViewController
                    the JSON request as it makes it easier on the front end to handle. Here is an example JSON response - 
                    {"listviews": [{"name": "Account:Simpli_LV_Acct_1","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"}]}, {"name": "Account:PlatinumandGoldSLACustomers","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"},{"sortIndex": "2", "fieldName": "Id", "sortDirection": "false"}]}]}
 
-    * @author tom.h.ansley@medtronic.com | 10-10-2020 
+    * @author tom@ansleyllc.com | 10-10-2020 
     * @param compName the component name which is the name of the Lightning component that calls this method.
     * @return Map<String, String> 
     **/
@@ -211,10 +215,18 @@ public without sharing class ListViewController
         return sortConfigJSON;
     }
 
+    @AuraEnabled
+    public static String getListViewConfigParameter(String objectName, String listViewName, String paramName){
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfigParameter(' + objectName + ', ' + listViewName + ',' + paramName + ')');
+        String paramValue = ListViewConfigHelper.getListViewConfigParameter(objectName, listViewName, paramName);
+        
+        return paramValue;
+    }
+
     /**
     * @description Method which gets the users configuration for the provided COMPONENT.
     *              Note that this method also gets the org wide defaults as it needs to layer those defaults on top of the user config
-    * @author tom.h.ansley@medtronic.com | 10-10-2020 
+    * @author tom@ansleyllc.com | 10-10-2020 
     * @param compName the component name which is the name of the Lightning component that calls this method.
     * @return Map<String, String> 
     **/
@@ -402,7 +414,7 @@ public without sharing class ListViewController
 
     /**
     * @description Method to retrieve list view data based on user provided criteria.
-    * @author tom.h.ansley@medtronic.com | 06-28-2021 
+    * @author tom@ansleyllc.com | 06-28-2021 
     * @param pageName the name of the lightning page that the list is being displayed on. This is used for list view config retrieval
     * @param objectName the name of the list view object
     * @param listViewName the name of the list view
@@ -536,6 +548,8 @@ public without sharing class ListViewController
             //update the sorting for this user for this list view for this component. This MUST be done at the end!
             ListViewUserConfigHelper.updateSortConfigValue(pageName, sortStr, objectName, listviewName);
 
+        } else {
+            throw new ListViewException('The list view configuration can not be found for object ' + objectName + ' and list view name - ' + listViewName + ')');
         }
         return rowData;
 
@@ -726,7 +740,7 @@ public without sharing class ListViewController
 
     /**
     * @description Method which accepts a record Id and a JSON string containing field data to be updated on the record.
-    * @author tom.h.ansley@medtronic.com | 07-22-2021 
+    * @author tom@ansleyllc.com | 07-22-2021 
     **/
     @AuraEnabled
     public static String updateRecord(String rowId, String rowData)
@@ -754,7 +768,7 @@ public without sharing class ListViewController
 
     /**
     * @description Method which accepts a record Id and a JSON string containing field data to be updated on the record.
-    * @author tom.h.ansley@medtronic.com | 07-30-2021 
+    * @author tom@ansleyllc.com | 07-30-2021 
     **/
     @AuraEnabled
     public static String updateRecords(String rowData)

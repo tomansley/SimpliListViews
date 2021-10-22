@@ -1,16 +1,17 @@
 /**
  * @File Name          : HelperSchema.cls
  * @Description        : 
- * @Author             : tom.h.ansley@medtronic.com
+ * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 10-08-2021
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 10-22-2021
  * @Modification Log   : 
- * Ver       Date            Author      		    Modification
- * 1.0    06/11/2020   tom.h.ansley@medtronic.com     Initial Version
- * 2.0    07/27/2020   tom.h.ansley@medtronic.com     Added getAllObjectNames(), beefed up getValueForField() to correctly handle null values, added isEditable field to the field wrapper.
- * 3.0    08-02-2021   tom.h.ansley@medtronic.com     Added getFieldData(Map<String, Object>, String, String) method for Tooling API
- * 4.0    08-19-2021   tom.h.ansley@medtronic.com     Added getObjectPluralName(String) method, added getFieldLabel(String, String)
+ * Ver       Date            Author          Modification
+ * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
+ * 2.0    07/27/2020   tom@ansleyllc.com     Added getAllObjectNames(), beefed up getValueForField() to correctly handle null values, added isEditable field to the field wrapper.
+ * 3.0    08-02-2021   tom@ansleyllc.com     Added getFieldData(Map<String, Object>, String, String) method for Tooling API
+ * 4.0    08-19-2021   tom@ansleyllc.com     Added getObjectPluralName(String) method, added getFieldLabel(String, String)
+ * 5.0    10-19-2021   tom@ansleyllc.com     Added getAllObjectsByName() method, resolved null pointer exception with getObjectLabel(String)
  **/
 public with sharing class HelperSchema {
 
@@ -30,6 +31,13 @@ public with sharing class HelperSchema {
     public static final String SEARCHABLE = 'searchable';
     public static final String UNDELETABLE = 'undeletable';
     public static final String UPDATEABLE = 'updateable';
+
+    public static Map<String, Schema.SObjectType> getAllObjectsByName() 
+    {
+		Map<String,Schema.SobjectType> describe = Schema.getGlobalDescribe();
+
+        return describe;
+    }
 
 	/*
 	 * Method to get an SObject's type from its Id.
@@ -114,7 +122,7 @@ public with sharing class HelperSchema {
 
     /**
     * @description Method to get a map of all object names and API names
-    * @author tom.h.ansley@medtronic.com | 07-07-2021 
+    * @author tom@ansleyllc.com | 07-07-2021 
     **/
     public static Map<String, String> getAllObjectNames() 
     {
@@ -157,7 +165,11 @@ public with sharing class HelperSchema {
     
 	public static String getObjectLabel(String objName)
 	{
-		return getObjectSchema(objName).getLabel();
+        Schema.DescribeSObjectResult result = getObjectSchema(objName);
+        if (result != null)
+    		return result.getLabel();
+        else
+            return '';
     }
     
     /*
@@ -556,7 +568,7 @@ public with sharing class HelperSchema {
     * @description Method which, given a field name and an object returns the field data.
     *              This method is used for JSON structures returned via API's. For regular
     *              SObjects the getFieldData(SObject, String) method should be used.
-    * @author tom.h.ansley@medtronic.com | 08-01-2021 
+    * @author tom@ansleyllc.com | 08-01-2021 
     * @param structure the structure holding the data necessary to find the field value
     * @param fieldName the field name
     * @return FieldData 

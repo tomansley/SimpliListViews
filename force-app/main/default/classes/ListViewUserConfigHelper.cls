@@ -1,11 +1,11 @@
 /**
  * @description       : Helper class for list view user configuration
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-06-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   09-08-2020   tom.h.ansley@medtronic.com   Initial Version
+ * Ver   Date         Author              Modification
+ * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class ListViewUserConfigHelper {
     
@@ -152,7 +152,7 @@ public with sharing class ListViewUserConfigHelper {
     * @description Method which returns the configuration for a given component. The method gets the components
     *              user config and then layers the org wide config on top ensuring the org wide config takes precedence
     *              as appropriate.
-    * @author tom.h.ansley@medtronic.com | 08-05-2021 
+    * @author tom@ansleyllc.com | 08-05-2021 
     **/
     public static Map<String, String> getComponentConfig(String compName)
     {
@@ -192,9 +192,11 @@ public with sharing class ListViewUserConfigHelper {
             }
         }
 
+        String debug = '\n\n----------------- USER CONFIG ---------------------------------------\n';
         for (String config: userConfigs.keySet())
-            System.debug(LoggingLevel.DEBUG, config + ' - ' + userConfigs.get(config));
-        
+            debug += config + ' - ' + userConfigs.get(config) + '\n';
+        debug += '---------------------------------------------------------------------\n';
+        System.debug(LoggingLevel.DEBUG, debug);
         return userConfigs;
     }
 

@@ -1,11 +1,11 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 07-31-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   11-19-2020   tom.h.ansley@medtronic.com   Initial Version
+ * Ver   Date         Author              Modification
+ * 1.0   11-19-2020   tom@ansleyllc.com   Initial Version
 **/
 @isTest
 private class ListViewHelperTest {
@@ -240,6 +240,30 @@ private class ListViewHelperTest {
                                 'FROM Opportunities ' + 
                                 'ORDER BY Name) ' + 
                         'FROM Account';
+
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+
+        List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
+        sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
+
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+    }
+
+    @IsTest
+    static void getListViewDataSOQLTest8()
+    {
+        String soql = 'SELECT Id FROM Account USING SCOPE everything';
 
         List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
         System.assert(objs.size() > 0);

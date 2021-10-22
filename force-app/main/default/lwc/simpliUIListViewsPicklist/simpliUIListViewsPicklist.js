@@ -27,6 +27,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     @track value;
     recordTypeIdValue;
 
+    hasError = false;                //identifies if there is an error retrieving the picklist values
     isPicklist = false;              //set internally. Identifies that the component being displayed is a PICKLIST
     isMultiPicklist = false;         //set internally. Identifies that the component being displayed is a MULTI-PICKLIST
 
@@ -87,6 +88,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             console.log('Record type retrieved - ' + this.recordTypeId);
         } else if (error) {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+            this.hasError = true;
         }
     }
 
@@ -103,6 +105,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             console.log("Default Record Type Id", JSON.stringify(response.defaultRecordTypeId));
         } else if (error) {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+            this.hasError = true;
         }
     }
                      

@@ -1,11 +1,11 @@
 /**
  * @description       : 
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-08-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   07-07-2021   tom.h.ansley@medtronic.com   Initial Version
+ * Ver   Date         Author              Modification
+ * 1.0   07-07-2021   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class ListViewAdminController {
     
@@ -13,9 +13,7 @@ public with sharing class ListViewAdminController {
     public static ListViewAbstract.ListViewConfigWrapper getOrgWideConfig()
     {
         //get the org wide config
-        List<List_View_Config__c> orgWideConfigs = ListViewConfigHelper.getListViewConfig('All', 'All');
-
-        List_View_Config__c orgWideConfig = orgWideConfigs[0];
+        List_View_Config__c orgWideConfig = ListViewConfigHelper.getListViewConfig('All', 'All');
 
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
         for (List_View_Config_Parameter__c param: orgWideConfig.List_View_Config_Parameters__r)

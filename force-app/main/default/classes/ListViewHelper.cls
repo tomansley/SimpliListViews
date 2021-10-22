@@ -1,21 +1,22 @@
 /**
- * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 10-15-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 10-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
- * 1.0   08-05-2020   tom.h.ansley@medtronic.com   Initial Version
- * 2.0   02-17-2021   tom.h.ansley@medtronic.com   Added New action config
- * 3.0   06-18-2021   tom.h.ansley@medtronic.com   Added offset to allow for larger datasets
- * 4.0   06-18-2021   tom.h.ansley@medtronic.com   Added updateRecord() method to update records based on inline editing, added Edit All action for inline-editing of all list view rows, added org wide config params for identifying if inline-editing is allowed and whether the list views have been initialized.
- * 5.0   08-02-2021   tom.h.ansley@medtronic.com   Added List_View_Label__c,
- *                                                 Added getObjectForValue() for getting proper object for string value, 
- *                                                 Added updateRecords() method to update multiple records based on inline editing, 
- *                                                 Moved in static strings for types from ListViewConfigHelper,  
- *                                                 Added DisplayTextSearch org wide config
- * 6.0   08-03-2021   tom.h.ansley@medtronic.com   Performance enhancement when retrieving listview objects
- * 7.0   08-16-2021   tom.h.ansley@medtronic.com   Added permission check for each action before display
- * 8.0   08-18-2021   tom.h.ansley@medtronic.com   Updated strings to static final variables, added hyperlink action config
+ * Ver   Date         Author              Modification
+ * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   02-17-2021   tom@ansleyllc.com   Added New action config
+ * 3.0   06-18-2021   tom@ansleyllc.com   Added offset to allow for larger datasets
+ * 4.0   06-18-2021   tom@ansleyllc.com   Added updateRecord() method to update records based on inline editing, added Edit All action for inline-editing of all list view rows, added org wide config params for identifying if inline-editing is allowed and whether the list views have been initialized.
+ * 5.0   08-02-2021   tom@ansleyllc.com   Added List_View_Label__c,
+ *                                        Added getObjectForValue() for getting proper object for string value, 
+ *                                        Added updateRecords() method to update multiple records based on inline editing, 
+ *                                        Moved in static strings for types from ListViewConfigHelper,  
+ *                                        Added DisplayTextSearch org wide config
+ * 6.0   08-03-2021   tom@ansleyllc.com   Performance enhancement when retrieving listview objects
+ * 7.0   08-16-2021   tom@ansleyllc.com   Added permission check for each action before display
+ * 8.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables, added hyperlink action config
+ * 9.0   08-18-2021   tom@ansleyllc.com   Added TYPE_COMBOBOX. Added CampaignMember config
  **/
 global with sharing class ListViewHelper {
     
@@ -48,6 +49,7 @@ global with sharing class ListViewHelper {
     public static final String TYPE_EMAIL         = 'email';
     public static final String TYPE_PHONE         = 'phone';
     public static final String TYPE_INTEGER       = 'integer';
+    public static final String TYPE_COMBOBOX      = 'combobox';
 
     public static final String SUBTYPE_MANUAL = 'Manual';
     public static final String SUBTYPE_TOOLING = 'Tooling';
@@ -111,7 +113,7 @@ global with sharing class ListViewHelper {
 
     /**
     * @description Method to update a SINGLE record given its record Id and a map of field updates
-    * @author tom.h.ansley@medtronic.com | 07-29-2021 
+    * @author tom@ansleyllc.com | 07-29-2021 
     * @param fieldValues map of field values with the record Id as key to return map of field values and the API field name being the key of the field values.
     * @return String blank string = success. Anything else is failure.    **/
     public static String updateRecords(Map<String, Map<String, String>> rowValues)
@@ -174,7 +176,7 @@ global with sharing class ListViewHelper {
 
     /**
     * @description Method to update a SINGLE record given its record Id and a map of field updates
-    * @author tom.h.ansley@medtronic.com | 07-22-2021 
+    * @author tom@ansleyllc.com | 07-22-2021 
     * @param rowId the record Id of the record to be updated
     * @param fieldValues map of field values with the field name being the key
     * @return String blank string = success. Anything else is failure.
@@ -758,6 +760,7 @@ global with sharing class ListViewHelper {
             whereStr = query.substringAfter(' FROM ');
         }
         whereStr = whereStr.removeStart(objectName);
+        System.debug(LoggingLevel.FINE, 'whereStr - ' + whereStr);
 
         //------------------------------------------------------
         // Update all additional fields on the SELECT statement
@@ -914,11 +917,14 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Handle the USING SCOPE statement
         //------------------------------------------------------
-        String scopeStr = 'USING SCOPE ';
-        if (!String.isEmpty(listview.Filter_Scope__c))
-            scopeStr += listview.Filter_Scope__c;
-        else
-            scopeStr += 'Everything';
+        String scopeStr = '';
+        if (!whereStr.contains('USING SCOPE ')) //where clause might already contain the scope
+        {
+            if (!String.isEmpty(listview.Filter_Scope__c))
+                scopeStr += 'USING SCOPE ' + listview.Filter_Scope__c;
+            else
+                scopeStr += 'USING SCOPE Everything';
+        }
 
         //------------------------------------------------------
         // Put the query back together again
@@ -1000,7 +1006,7 @@ global with sharing class ListViewHelper {
     * @description Convenience method which assumes the following - 
                    i.  This is not to retrieve an example.
                    ii. This does not have any paging requirements
-    * @author tom.h.ansley@medtronic.com | 06-21-2021 
+    * @author tom@ansleyllc.com | 06-21-2021 
     **/
     public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
@@ -1627,6 +1633,17 @@ global with sharing class ListViewHelper {
         lv.Core_ListView_Columns__c = '[{"fieldNameOrPath": "Name","type": "string","label": "Opp Name"},{"fieldNameOrPath": "StageName","type": "string","label": "Stage"},{"fieldNameOrPath": "CloseDate","type": "date","label": "Close Date"},{"fieldNameOrPath": "ExpectedRevenue","type": "currency","label": "Revenue"},{"fieldNameOrPath": "Account.Name","type": "string","label": "Acct Name"},{"fieldNameOrPath": "Account.Type","type": "string","label": "Acct Type"},{"fieldNameOrPath": "Account.Industry","type": "string","label": "Acct Industry"},{"fieldNameOrPath": "PriceBook2.Name","type": "string","label": "Price Book"},{"fieldNameOrPath": "PriceBook2.IsActive","type": "string","label": "PB Active"},{"fieldNameOrPath": "OpportunityLineItems.Name","type": "string","label": "LI Name"},{"fieldNameOrPath": "OpportunityLineItems.ListPrice","type": "currency","label": "Price"},{"fieldNameOrPath": "OpportunityLineItems.Product2.ProductCode","type": "string","label": "Prod Code"},{"fieldNameOrPath": "OpportunityLineItems.Product2.LastModifiedBy.Name","type": "string","label": "Last Modified"},{"fieldNameOrPath": "OpportunityLineItems.Quantity","type": "decimal","label": "Quantity"},{"fieldNameOrPath": "OpportunityLineItems.TotalPrice","type": "currency","label": "Total"}]';
         lv.Core_ListView_Query__c   = 'SELECT Name, StageName, CloseDate, ExpectedRevenue, Account.Name, Account.Type, Account.Industry, Pricebook2.Name, PriceBook2.IsActive, (SELECT Name, ListPrice, Product2.Name, Product2.ProductCode, Product2.LastModifiedBy.Name, Quantity, TotalPrice FROM OpportunityLineItems) FROM Opportunity WHERE HasOpportunityLineItem = true AND IsWon = false AND IsClosed = false';
         lv.Object_Name__c           = 'Opportunity';
+        lv.RecordTypeId             = ListViewHelper.customRTId;
+        lv.Subtype__c               = 'Manual';
+
+        listViews.add(lv);
+
+        lv                          = new List_View__c();
+        lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+        lv.Label__c                 = 'Campaign Members';
+        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},  {"fieldNameOrPath":"Status","type":"string","label":"Status"},{"fieldNameOrPath":"Type","type":"string","label":"Type"},{"fieldNameOrPath":"Phone","type":"string","label":"Phone"}]';
+        lv.Core_ListView_Query__c   = 'SELECT Name, Status, Type, Phone FROM CampaignMember';
+        lv.Object_Name__c           = 'CampaignMember';
         lv.RecordTypeId             = ListViewHelper.customRTId;
         lv.Subtype__c               = 'Manual';
 
