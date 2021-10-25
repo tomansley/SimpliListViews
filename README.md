@@ -47,40 +47,54 @@ There are 3 different levels of configuration that are available in the app.</p>
 
 ### Org-Wide Custom Settings
 These settings are maintained in the "List View Org Wide Setting" custom metadata type in the org setup. They affect all list views displayed in the SFDC org and are typically set by a system administrator at initial setup
-* <b>Included Object Types - </b>Indicates only those object types that should be included in the object drop down on the list view component. This is a comma-seperated list of object API names. Note that if this value is blank ALL object types are included by default.
-* <b>Excluded Object Types - </b>Indicates those object types that should always be excluded from the object drop down on the list view component. This is a comma-seperated list of object API names. Excluded objects have precedence over included objects.
-* <b>List View Objects - </b>Holds those objects for which core list views have been created. This setting is auto-populated and should not be altered.
-* <b>Allow Automatic Data Refresh - </b>Indicates whether automatic refreshing shold be allowed.
-* <b>Allow Data Export - </b>Indicates whether data exporting should be allowed.
-* <b>Display Actions Button - </b>Indicates whether the action drop-down list should be displayed.
-* <b>Display List View Reprocessing Button - </b>Indicates whether reprocessing of the list view by the user should be allowed.
-* <b>Display Original List View Button - </b>Indicates whether a button should be displayed allowing the user to go directly to the core list view.
-* <b>Display Row Count - </b>Indicates whether the row count should be displayed.
-* <b>Display Selected Count - </b>Indicates whether the count of the selected rows should be displayed.
 
-* <b>Allow Inline Editing - </b>Indicates whether inline editing should be available. Note that inline editing is only available for core list views.
-* <b>Is Initialized - </b>Indicates whether the core list views have been initialized. This setting is auto-populated and should not be altered.
-* <b>Max Rows Displayed - </b>Indicates the maximum number of rows that any list view should be able to display. Defaulted to 2500.
-* <b>Display Selected Count - </b>Indicates whether the count of the selected rows should be displayed.
-* <b>Query Paging Size - </b>Indicates the paging size when data is paged due to large record counts. Defaulted to 250.
+* Allow Admin - Display the button to allow some admin changes to the list view component. Note - users with modify all data checked on their profile will always be able to see this button.
+* Allow Automatic Data Refresh - Should the automatic data refresh button be available?
+* Allow Data Export - Should the user be allowed to export data from the list view?
+* Allow Inline Editing - Should inline editing be available to the user?
+* Debug - Indicates whether extra debugging should be enabled. This may decrease performance.
+* Display Actions Button - Are list view actions allowed? If not, the actions drop down picklist is not displayed
+* Display List View Reprocessing Button - Can the user reprocess a list view if the config is stale? If not this button is not available.
+* Display Modified - Indicates whether the last modified date and user should be displayed.
+* Display Original List View Button - Display the button allowing the user to go directly to the original list view?
+* Display Record Popovers - Indicates whether the record detail popover should be displayed when the user moves the mouse over the record URL or name.
+* Display Row Count - Display the row count to the user? This is required if allowing exporting of data
+* Display Selected Count - Display the selected row count to the user? This is required if allowing exporting of selected data
+* Display Text Search - Indicates whether the user can use the text search capability for returned list view results
+* Excluded Object Types - Indicates the objects that should not be allowed in the list view objects drop down
+* Excluded Record Popover Types - Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name.
+* Included Object Types - Indicates the objects that are allowed in the list view objects drop down. Note - if this setting is used no other objects are displayed
+* Is Initialized - A read-only field indicating whether the core list views have been initialized
+* List View Objects - A read-only field indicating the list view objects that are available to be displayed
+* Max Rows Displayed - The maximum number of rows that will be displayed to the user. Note that Salesforce starts to timeout above 2500 depending on number of list view fields displayed. Use cautiously.
+* Query Paging Size - The page size used when list views are returning more than 500 rows
 
 
 ### Component/Page Level Settings
 These settings are maintained as part of the Lightning app that the component is a part of and deal with the look and feel of the Lightning component. They affect all list views displayed on the component in the page and are typically set by a system administrator when a new page is created. The settings are typically dictated by how the page is being used and perhaps what device.</p>
-* <b>Show Title - </b>Indicates whether the main title on the list view component should be displayed.
-* <b>Title - </b>Identifies what the title on the component should be if the title is being displayed.
-* <b>Display Actions - </b>Indicates whether the actions dropdown should be displayed.
-* <b>Display List View Reprocessing Button - </b>Indicates whether the list view reprocessing button should be displayed. This button allows the user to refresh the list view data based on core list view configuration that may have been changed.
-* <b>Display Original List View Button - </b>Indicates whether to display the button which links to the original related Salesforce list view. This button allows the user to quickly go to the original list view allowing them to make changes to the list view columns or filters as necessary.
-* <b>Included Objects - </b>A comma delimited list of API object names that are to be included on the page. If blank, all objects are included. Note that org-wide settings take precedence over these page-level settings.
-* <b>Excluded Objects - </b>A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded. Note that org-wide settings take precedence over these page-level settings.
-* <b>Display Row Count - </b>Indicates whether the row count should be displayed.
-* <b>Display Selected Count - </b>Indicates whether the selected row count should be displayed.
-* <b>Display Modified Details - </b>Indicates whether the last modified date and user should be displayed.
-* <b>Allow Data Export - </b>Indicates whether the list view data should be made available for download as a CSV file.
-* <b>Allow Automatic Data Refresh - </b>Indicates whether the data refresh checkbox should be made available. This checkbox allows the user to automatically have the page data refreshed. Use with caution!
-* <b>Joined Field Name - </b>The API field name of the field that should be used by this component if it receives ids from another component. If blank, no joining takes place.
-* <b>Use Message Channel - </b>Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!
+* Allow Admin - Display the button to allow some admin changes to the list view component. Note - users with modify all data checked on their profile will always be able to see this button.
+* Allow Automatic Data Refresh - Should the automatic data refresh button be available?
+* Allow Data Export - Should the user be allowed to export data from the list view?
+* Allow Inline Editing - Should inline editing be available to the user?
+* Display Actions Button - Are list view actions allowed? If not, the actions drop down picklist is not displayed
+* Display List View Reprocessing Button - Can the user reprocess a list view if the config is stale? If not this button is not available.
+* Display Modified - Indicates whether the last modified date and user should be displayed.
+* Display Original List View Button - Display the button allowing the user to go directly to the original list view?
+* Display Record Popovers - Indicates whether the record detail popover should be displayed when the user moves the mouse over the record URL or name.
+* Display Row Count - Display the row count to the user? This is required if allowing exporting of data
+* Display Selected Count - Display the selected row count to the user? This is required if allowing exporting of selected data
+* Display Text Search - Indicates whether the user can use the text search capability for returned list view results
+* Excluded Object Types - Indicates the objects that should not be allowed in the list view objects drop down
+* Excluded Record Popover Types - Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name.
+* Has Main Title - Indicates whether the name should be displayed as a header or not.
+* Included Object Types - Indicates the objects that are allowed in the list view objects drop down. Note - if this setting is used no other objects are displayed
+* Join Field Name - The API field name of the field that should be used by this component if it receives ids from another component. If blank, no joining takes place.
+* Main Title - String used if the title is displayed. Names should be distinct within a lightning page.
+* Mode - Indicates the mode the component should be displayed in. App Page = Multi List View, Single List View = Single List View
+* Page Name - Unique string used to identify the list view component and its corresponding user configuration. Names should NEVER be changed.
+* Single List View Api Name - The list view API name to use if displaying the component in SINGLE list view mode.
+* Single List View Object - The list view object to use if displaying the component in SINGLE list view mode.
+* Use Message Channel - Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!
 
 ### List View Configuration</b>
 These settings affect individual list views in the SFDC org. They would typically be set at a user level after the list view has been created. The user can change these settings by clicking on the list views admin button when viewing the list view. The settings data itself is found in the List View Configs object. Each config has a set of parameters (each corresponding to a configuration) that can be set based on needs.</p>
@@ -89,7 +103,7 @@ These settings affect individual list views in the SFDC org. They would typicall
 * <b>Return Size - </b>Indicates the number of rows that should be returned. This value is defaulted to 250. The higher this value, the more page performance will be reduced.
 * <b>Refresh Rate - </b>Holds the number of seconds between refreshes if the list view can be auto refreshed.
 * <b>Total Column Names - </b>Indicates the API field names of the columns within the list view that should have a total in the footer.
-* <b>Total Row Color - </b>The color that the footer row should be displayed in.
+* <b>Total Columns Color - </b>The color that the footer row should be displayed in.
 
 ## Actions
 Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. The following actions have been implemented and made available in the app exchange package.
@@ -157,7 +171,7 @@ If there are parameters that need to be returned by the user these need to be co
 
 ## Other Resources
 
-Features Overview Video - https://www.youtube.com/watch?v=deoNfudkpEw
+Features Overview - https://www.youtube.com/watch?v=deoNfudkpEw
 
 Install Guide - https://www.youtube.com/watch?v=PIzyrWuc1YA
 
@@ -170,3 +184,9 @@ Using Multiple Components On One Page - https://www.youtube.com/watch?v=nJyTWEPC
 Creating Custom List View - https://www.youtube.com/watch?v=OLLpIvXqfWc
 
 Large Datasets and Paging - https://www.youtube.com/watch?v=9eHD7ntFFs0
+
+Custom List View Creation - https://youtu.be/OLLpIvXqfWc
+
+Page Modes - https://youtu.be/SNDSkBCQR8Y
+
+Actions - https://youtu.be/n29zVvM6Xtk
