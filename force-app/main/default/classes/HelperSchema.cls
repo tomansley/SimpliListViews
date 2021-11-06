@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 10-22-2021
+ * @Last Modified On   : 10-27-2021
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -12,6 +12,7 @@
  * 3.0    08-02-2021   tom@ansleyllc.com     Added getFieldData(Map<String, Object>, String, String) method for Tooling API
  * 4.0    08-19-2021   tom@ansleyllc.com     Added getObjectPluralName(String) method, added getFieldLabel(String, String)
  * 5.0    10-19-2021   tom@ansleyllc.com     Added getAllObjectsByName() method, resolved null pointer exception with getObjectLabel(String)
+ * 5.0    10-27-2021   tom@ansleyllc.com     Added getSFDCFieldLabel() method, resolved issue where getting column labels from first row and no data returns empty column name
  **/
 public with sharing class HelperSchema {
 
@@ -369,6 +370,69 @@ public with sharing class HelperSchema {
 	 * Method to determine if a given object and field name is valid.
        System.debug(LoggingLevel.FINE, 'Result ' + HelperSchema.isValidSFDCFieldName('Contact', 'Email'));
 	 */
+	public static String getSFDCFieldLabel(String objName, String sfdcFieldName)
+	{
+        if (objName == null || sfdcFieldName == null) throw new ListViewException('An object (' + objName + ') and field (' + sfdcFieldName + ') name must be provided when using getSFDCFieldLabel() method');
+        String label = '';
+		try {
+
+            //initialize if necessary
+            initSObjectSchema(objName);
+
+            //scrub the field of weird stuff like spaces and toLabel() etc.
+			sfdcFieldName = scrubFieldName(sfdcFieldName);
+
+            //split field into parts.
+			List<String> fieldHierarchy = sfdcFieldName.split('\\.');
+            System.debug(LoggingLevel.FINE, 'Field Hierarchy - ' + fieldHierarchy);
+
+            String objType = objName;
+            Schema.DescribeSObjectResult objDescribe = HelperSchema.getObjectSchema(objType);
+
+			for (String field: fieldHierarchy)
+			{
+                System.debug(LoggingLevel.FINE, 'Current Field - ' + field);
+                System.debug(LoggingLevel.FINE, 'Current Object - ' + objType);
+                
+				//if we are at the last field then get the value and return
+				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
+				{
+					//get the object type                    
+                    System.debug(LoggingLevel.FINE, 'Last Field!');
+                    
+                    Schema.SObjectField objField = HelperSchema.getFieldByKey(objType, field, NAME);
+                    if (objField != null)
+                    {
+                        label = objField.getDescribe().getLabel();
+                        break;
+                    }
+        
+
+				//if we are not at the last field then get the fields object
+				} else {
+                    
+                    //get all field metadata
+                    Schema.DescribeFieldResult fieldDesc = HelperSchema.getFieldDescribeResult(objType,field);
+                    
+                    //use the REAL name to determine fields lookup object
+                    objType = HelperSchema.getFieldLookupObject(objType, fieldDesc.getName());
+				}
+			}
+
+        } catch (Exception e) {
+            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getSFDCFieldLabel(' + objName + ',' + sfdcFieldName + ') ' + ListViewException.getExtendedString(e));
+            label = '';
+        }
+
+        System.debug(LoggingLevel.FINE, 'Field label result for ' + objName + '/' + sfdcFieldName + ' is ' + label);
+		return label;
+		
+	}
+
+    /*
+	 * Method to determine if a given object and field name is valid.
+       System.debug(LoggingLevel.FINE, 'Result ' + HelperSchema.isValidSFDCFieldName('Contact', 'Email'));
+	 */
 	public static Boolean isValidSFDCFieldName(String objName, String sfdcFieldName)
 	{
         if (objName == null || sfdcFieldName == null) return false;
@@ -387,9 +451,6 @@ public with sharing class HelperSchema {
 
             String objType = objName;
             Schema.DescribeSObjectResult objDescribe = HelperSchema.getObjectSchema(objType);
-
-            // Create an instance of provided type
-            SObject currentObj = objectDescribeByName.get(objType).newSObject();
 
 			for (String field: fieldHierarchy)
 			{
@@ -413,8 +474,6 @@ public with sharing class HelperSchema {
 				//if we are not at the last field then get the fields object
 				} else {
                     
-                    Boolean isSet = false;
-
                     //get all field metadata
                     Schema.DescribeFieldResult fieldDesc = HelperSchema.getFieldDescribeResult(objType,field);
                     
@@ -534,6 +593,7 @@ public with sharing class HelperSchema {
                     System.debug(LoggingLevel.FINE, 'old currentObj - ' + currentObj);
                     currentObj = currentObj.getSObject(field);
                     System.debug(LoggingLevel.FINE, 'new currentObj - ' + currentObj);
+                    
                     if (currentObj != null)
                     {
                         isSet = true;
@@ -546,6 +606,10 @@ public with sharing class HelperSchema {
                         }
 
                     } else {
+                        //we might have a currentObj with no data so it bugs out. But, if this is the case 
+                        //and we are trying to retrieve column data that is bad....so we get the label if we can.
+                        if (label == '')
+                            label = getSFDCFieldLabel(objType, fieldName);
                         data = new FieldData(field, label, Schema.DisplayType.STRING, '', null);
                         data.isChildRel = true;
                         return data;
