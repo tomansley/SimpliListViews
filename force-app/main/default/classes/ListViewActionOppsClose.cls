@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -56,7 +56,7 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
             String message = ListViewAction.RESULT_ERROR + ':There was an error updating the opportunities. Please see a system admin.';
             if (ListViewConfigHelper.isDebuggingOn())
                 message += ' Exception during ListViewActionOppsClose.process()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError(message); 
             returnStr = message;
         }
         return returnStr;

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-02-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -22,6 +22,7 @@ public with sharing class HelperTest {
 		acc.BillingPostalCode = '60601';
         acc.BillingCountry = 'USA';
         acc.AnnualRevenue = 125000;
+        acc.Industry = 'Telecommunications';
         HelperDatabase.insertRecord(acc, 'Account');
 		
 		return acc;
@@ -51,7 +52,50 @@ public with sharing class HelperTest {
 		return opp;
     }
     
-	public static List<List_View__c> createCoreListViews()
+    public static User insertUser(String lastname, String profileName, String roleName, String userName, boolean insertRec){
+        User u = new User(
+             ProfileId         = [SELECT Id FROM Profile WHERE Name = :profileName].Id,
+             UserRoleId        = [SELECT Id FROM UserRole WHERE Name = :roleName].Id,
+             LastName          = lastname,
+             Email             = userName+'@ansleyllc.com',
+             Username          = userName+'@ansleyllc.com' + System.currentTimeMillis(),
+             CompanyName       = 'Ansley LLC',
+             Title             = 'Mr',
+             Alias             = userName.left(8),
+             TimeZoneSidKey    = 'America/Los_Angeles',
+             EmailEncodingKey  = 'UTF-8',
+             LanguageLocaleKey = 'en_US',
+             LocaleSidKey      = 'en_US'
+        );
+        if(insertRec)
+        {
+            insert u;
+        }
+        return u;
+    }
+
+    public static User insertUser(String lastname, String profileName, String userName, boolean insertRec){
+        User u = new User(
+             ProfileId         = [SELECT Id FROM Profile WHERE Name =:profileName].Id,
+             LastName          = lastname,
+             Email             = userName+'@ansleyllc.com',
+             Username          = userName+'@ansleyllc.com' + System.currentTimeMillis(),
+             CompanyName       = 'Ansley LLC',
+             Title             = 'Mr',
+             Alias             = userName.left(8),
+             TimeZoneSidKey    = 'America/Los_Angeles',
+             EmailEncodingKey  = 'UTF-8',
+             LanguageLocaleKey = 'en_US',
+             LocaleSidKey      = 'en_US'
+        );
+        if(insertRec)
+        {
+            insert u;
+        }
+        return u;
+    }
+
+    public static List<List_View__c> createCoreListViews()
 	{
 
         List<List_View__c> simpliListViews = new List<List_View__c>();

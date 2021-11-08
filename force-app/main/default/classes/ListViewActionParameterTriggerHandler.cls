@@ -1,3 +1,9 @@
+/**
+ * @description       : 
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 11-04-2021
+ * @last modified by  : tom@ansleyllc.com
+**/
 public with sharing class ListViewActionParameterTriggerHandler {
 
     /*
@@ -7,7 +13,7 @@ public with sharing class ListViewActionParameterTriggerHandler {
      */ 
     public static void onBeforeInsert(List<List_View_Action_Parameter__c> newRecords)
     {
-        ListViewActionParameterBL.validateFieldNames(newRecords);
+        ListViewActionParameterBL.validate(newRecords);
     }
     
     /*
@@ -28,7 +34,7 @@ public with sharing class ListViewActionParameterTriggerHandler {
      */ 
     public static void onBeforeUpdate(Map<Id, List_View_Action_Parameter__c> newRecords, Map<Id, List_View_Action_Parameter__c> oldRecords)
     {
-        ListViewActionParameterBL.validateFieldNames(newRecords.values());
+        ListViewActionParameterBL.validate(newRecords.values());
     }
 
     /*

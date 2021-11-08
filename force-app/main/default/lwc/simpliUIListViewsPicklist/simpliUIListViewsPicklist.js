@@ -3,7 +3,6 @@ import { LightningElement, track, wire, api } from 'lwc';
 import { getPicklistValuesByRecordType } from 'lightning/uiObjectInfoApi';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import { CurrentPageReference } from 'lightning/navigation';
-import { getRecord } from 'lightning/uiRecordApi';
 
 //------------------------ LABELS ------------------------
 import None_Dash from '@salesforce/label/c.None_Dash';
@@ -76,20 +75,6 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         console.log('objectApiName    - ' + this.objectApiName);
         console.log('pickListFieldApiName - ' + this.pickListFieldApiName);
 
-    }
-
-    /*
-     * Method to retrieve the row data for the provided row Id. This method is not currently used as we have not implemented dependent picklists.
-     */
-    @wire(getRecord, { recordId: '$sfdcId', fields: ['$pickListFieldApiName'], optionalFields: [] })
-    getRecord({ error, data }) {
-        if (data) {
-            this.recordTypeId = data.recordTypeId;
-            console.log('Record type retrieved - ' + this.recordTypeId);
-        } else if (error) {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.hasError = true;
-        }
     }
 
     /*

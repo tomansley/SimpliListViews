@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -20,6 +20,8 @@ public without sharing class ListViewController
     @AuraEnabled(cacheable=true)
     public static Boolean hasModifyAll()
     {
+        ListViewErrorHelper.processLogs(true);
+
         return HelperProfile.hasModifyAll();
     }
 
@@ -82,6 +84,9 @@ public without sharing class ListViewController
         }
 
         System.debug(LoggingLevel.DEBUG, 'Finishing ListViewController.getListViewInitProgress with result - ' + result + ':' + status);
+        
+        ListViewErrorHelper.processLogs(true);
+
         return String.valueOf(result) + ':' + status;
     }
 
@@ -99,10 +104,18 @@ public without sharing class ListViewController
 
         Map<String, String> listviewObjects = ListViewHelper.getListViewObjects(incObjs, excObjs);
 
+        String debug = '\n\n================ FINAL OBJECT LIST ================\n';
         for (String apiName: listviewObjects.keySet())
+        {
+            debug += apiName + ' - ' + listviewObjects.get(apiName) + '\n';
             configListOptions.add(new SelectOption(apiName, listviewObjects.get(apiName)));         
-    
+        }
+        debug += '===================================================\n';
+        System.debug(LoggingLevel.DEBUG, debug);
+
         configListOptions.sort();
+
+        ListViewErrorHelper.processLogs(true);
 
         return configListOptions;
     }
@@ -113,6 +126,8 @@ public without sharing class ListViewController
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getIsInitialized()');
 
         Boolean isInitialized = Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam('IsInitialized'));
+
+        ListViewErrorHelper.processLogs(true);
 
         return isInitialized;
     }
@@ -133,6 +148,8 @@ public without sharing class ListViewController
 
         configListOptions.sort();
 
+        ListViewErrorHelper.processLogs(true);
+
         return configListOptions;
     }
 
@@ -141,14 +158,11 @@ public without sharing class ListViewController
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfig(' + objectName + ', ' + listViewName + ')');
 
-        return getCachedListViewConfig(objectName, listViewName);
-    }
+        ListViewAbstract.ListViewConfigWrapper lvConfigWrapper = new ListViewAbstract.ListViewConfigWrapper(objectName, listViewName);
 
-    @AuraEnabled(cacheable=true)
-    public static ListViewAbstract.ListViewConfigWrapper getCachedListViewConfig(String objectName, String listViewName)
-    {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getCachedListViewConfig(' + objectName + ', ' + listViewName + ')');
-        ListViewAbstract.ListViewConfigWrapper lvConfigWrapper = null;
+        if (objectName == null || listViewName == null)
+            return lvConfigWrapper;
+
 
         Map<Id, List_View__c> listViews = ListViewHelper.getListViews(objectName, listViewName);
         if (listViews.isEmpty())
@@ -173,9 +187,10 @@ public without sharing class ListViewController
 
         lvConfigWrapper = lvlogic.lvConfig;
 
+        ListViewErrorHelper.processLogs(true);
+
         return lvConfigWrapper;
     }
-
 
     /**
     * @description Method which gets the users SORT configuration for the provided COMPONENT. The method manually creates
@@ -212,14 +227,20 @@ public without sharing class ListViewController
         }
         sortConfigJSON = sortConfigJSON.removeEnd(',') + ']}';
 
+        ListViewErrorHelper.processLogs(true);
+
         return sortConfigJSON;
     }
 
     @AuraEnabled
-    public static String getListViewConfigParameter(String objectName, String listViewName, String paramName){
+    public static String getListViewConfigParameter(String objectName, String listViewName, String paramName)
+    {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfigParameter(' + objectName + ', ' + listViewName + ',' + paramName + ')');
+        
         String paramValue = ListViewConfigHelper.getListViewConfigParameter(objectName, listViewName, paramName);
         
+        ListViewErrorHelper.processLogs(true);
+
         return paramValue;
     }
 
@@ -236,6 +257,8 @@ public without sharing class ListViewController
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getComponentConfig(' + compName + ')');
         Map<String, String> userConfigs = ListViewUserConfigHelper.getComponentConfig(compName);
         
+        ListViewErrorHelper.processLogs(true);
+
         return userConfigs;
     }
 
@@ -247,9 +270,12 @@ public without sharing class ListViewController
             ListViewUserConfigHelper.updateCurrentUserConfigValue(compName, configName, value);
         } catch (Exception e) {
             String message = 'Exception during ListViewController.updateUserConfig(' + compName + ',' + configName + ',' + value + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError(message); 
             return 'There was an error during user configuration update';
         }
+
+        ListViewErrorHelper.processLogs(true);
+
         return 'success';
     }
 
@@ -259,6 +285,8 @@ public without sharing class ListViewController
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateObjectListViews(' + objectType + ')');
         //update the list view
         Boolean result = ListViewHelper.updateListViews(objectType);
+
+        ListViewErrorHelper.processLogs(true);
 
         return 'success';
     }
@@ -278,7 +306,10 @@ public without sharing class ListViewController
         lvId.add(listviews.values()[0].Id);
 
         //update the list view
+        System.debug(LoggingLevel.FINE, 'A - ' + HelperLimits.getLimitsString());
         Boolean result = ListViewHelper.updateListViews(lvId);
+
+        ListViewErrorHelper.processLogs(true);
 
         return 'success';
     }
@@ -313,7 +344,9 @@ public without sharing class ListViewController
             }
         }
 
-		return 'success';
+        ListViewErrorHelper.processLogs(true);
+
+        return 'success';
 	}
 
 	//SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
@@ -331,9 +364,12 @@ public without sharing class ListViewController
         } catch (Exception e) {
             jobId = 'failed';
             String message = 'Exception during ListViewController.updateAllListViews()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError(message); 
         }
-		return jobId;
+
+        ListViewErrorHelper.processLogs(true);
+
+        return jobId;
 	}
 
     @AuraEnabled(cacheable=true)
@@ -341,16 +377,68 @@ public without sharing class ListViewController
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewActions(' + objectType + ', ' + listViewName + ')');
         
+        ListViewErrorHelper.processLogs(true);
+
         return ListViewActionHelper.getListViewActions(objectType, listViewName);
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
+    public static ListViewAbstract.ActionWrapper getListViewActionAndData(String actionName, String dataIds)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewAction(' + actionName + ', ' + dataIds + ')');
+
+        ListViewAbstract.ActionWrapper wrapper = getListViewAction(actionName);
+
+        try {
+
+            //if we are provided record Ids then get the record and try to set the initial values.
+            if (dataIds != null){
+                List<Object> listIds = (List<Object>) JSON.deserializeUntyped(dataIds);
+                if (listIds.size() == 1)
+                {
+                    //1. get the object API Name
+                    String objAPIName = wrapper.getObjectType();
+
+                    //2. get the single record Id
+                    String recordId = (String) listIds[0];
+
+                    //3. Get the list of fields
+                    List<String> fieldAPINames = new List<String>();
+                    for (ListViewAbstract.ActionParameterWrapper param: wrapper.getDisplayParameters())
+                    {
+                        fieldAPINames.add(param.getAPIName());
+                    }
+
+                    //4. Get record
+                    SObject record = HelperDatabase.query(objAPIName, fieldAPINames, recordId);
+
+                    //5. Set the record values into the action wrapper
+                    if (record != null)
+                    {
+                        for (ListViewAbstract.ActionParameterWrapper param: wrapper.getDisplayParameters())
+                        {
+                            param.setDefaultValue(record.get(param.getAPIName()));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            String message = 'Exception during ListViewController.getListViewAction(' + actionName + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createFutureUsageError(message); 
+        }
+
+        ListViewErrorHelper.processLogs(true);
+
+        return wrapper;
+    }
+
+    @AuraEnabled
     public static ListViewAbstract.ActionWrapper getListViewAction(String actionName)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewAction(' + actionName + ')');
 
         ListViewAbstract.ActionWrapper wrapper = null;
-        if (actionName != '')
+        if (!String.isEmpty(actionName))
         {
 
             List_View_Action__c action = null;
@@ -358,11 +446,15 @@ public without sharing class ListViewController
             try {
                 action = ListViewActionHelper.getListViewActionByKey(actionName);
                 wrapper = new ListViewAbstract.ActionWrapper(action);
+
             } catch (Exception e) {
                 String message = 'Exception during ListViewController.getListViewAction(' + actionName + ')  ' + ListViewException.getExtendedString(e);
-                ListViewErrorHelper.createUsageError(message); 
+                ListViewErrorHelper.createFutureUsageError(message); 
             }
         }
+
+        ListViewErrorHelper.processLogs(true);
+
         return wrapper;
     }
 
@@ -388,7 +480,9 @@ public without sharing class ListViewController
                 joinRecordIds.remove('');
 
                 //if we have any Ids we need to check that the Ids match the field object type
-                if (joinRecordIds.size() > 0)
+                //unless its a polymorphic field, then we just have to go with it!!
+                if (joinRecordIds.size() > 0
+                    && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName))
                 {
                     //get the type of the join field lookup object.
                     String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
@@ -409,6 +503,8 @@ public without sharing class ListViewController
         }
         
         System.debug(LoggingLevel.DEBUG, 'Leaving isValidListViewDataRequest - ' + result);
+        ListViewErrorHelper.processLogs(true);
+
         return result;
     }
 
@@ -446,7 +542,9 @@ public without sharing class ListViewController
                 joinRecordIds.remove('');
 
                 //if we have any Ids we need to check that the Ids match the field object type
-                if (joinRecordIds.size() > 0)
+                //unless its a polymorphic field!
+                if (joinRecordIds.size() > 0
+                    && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName))
                 {
                     //get the type of the join field lookup object.
                     String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
@@ -551,6 +649,9 @@ public without sharing class ListViewController
         } else {
             throw new ListViewException('The list view configuration can not be found for object ' + objectName + ' and list view name - ' + listViewName + ')');
         }
+        
+        ListViewErrorHelper.processLogs(true);
+
         return rowData;
 
     }
@@ -574,8 +675,10 @@ public without sharing class ListViewController
         } catch (Exception e) {
             rtnStr = 'Failed:' + e.getMessage();
             String message = 'Exception during ListViewController.processParamChange(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError(message); 
         }
+
+        ListViewErrorHelper.processLogs(true);
 
         return rtnStr;
     }
@@ -613,7 +716,7 @@ public without sharing class ListViewController
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
                 String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')  ' + ListViewException.getExtendedString(e);
-                ListViewErrorHelper.createUsageError(message); 
+                ListViewErrorHelper.createFutureUsageError(message); 
                 }
 
         } else if (action == 'remove')
@@ -623,9 +726,11 @@ public without sharing class ListViewController
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
                 String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')  ' + ListViewException.getExtendedString(e);
-                ListViewErrorHelper.createUsageError(message); 
+                ListViewErrorHelper.createFutureUsageError(message); 
             }
         }
+
+        ListViewErrorHelper.processLogs(true);
 
         return rtnStr;
     }
@@ -642,7 +747,7 @@ public without sharing class ListViewController
             action = ListViewActionHelper.getListViewActionByKey(actionKey);
         } catch (Exception e) {
             String message = 'Exception during ListViewController.processAction(' + actionKey + ',' + dataIds + ',' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError(message); 
             responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find action config for name provided!';
             return responseStr;
         }
@@ -700,8 +805,11 @@ public without sharing class ListViewController
         } catch (Exception e) {
             responseStr = ListViewAction.RESULT_ERROR + ':There was an error processing the records - ' + e.getMessage();
             String message = 'Exception during ListViewController.processAction(' + actionKey + ', ' + dataIds + ', ' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
-    }
+            ListViewErrorHelper.createFutureUsageError(message); 
+        }
+        
+        ListViewErrorHelper.processLogs(true);
+
         return responseStr;
     }
 
@@ -735,6 +843,8 @@ public without sharing class ListViewController
 
         columnData.sort();
 
+        ListViewErrorHelper.processLogs(true);
+
         return columnData;
     }
 
@@ -761,7 +871,17 @@ public without sharing class ListViewController
             fieldMap.put(fieldName, value);
         }
 
-        String result = ListViewHelper.updateRecord(id, fieldMap);
+        String result = '';
+        try {
+            ListViewHelper.updateRecord(id, fieldMap);
+
+        } catch (Exception e) {
+            String message = 'Exception during ListViewController.updateRecord(' + rowId + ', ' + rowData + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createNonFutureUsageError(message);
+            result = 'There was an error saving the records - ' + e.getMessage();
+        }
+
+        ListViewErrorHelper.processLogs(true);
 
         return result;
     }
@@ -802,9 +922,20 @@ public without sharing class ListViewController
 
         }
         System.debug(LoggingLevel.FINE, 'dataMap - ' + dataMap);
-        String result = ListViewHelper.updateRecords(dataMap);
+        String result = '';
+        try {
+            ListViewHelper.updateRecords(dataMap);
+
+        } catch (Exception e) {
+            String message = 'Exception during ListViewController.updateRecords(' + rowData + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createNonFutureUsageError(message);
+            result = 'There was an error saving the records - ' + e.getMessage();
+        }
+
+        ListViewErrorHelper.processLogs(true);
 
         return result;
+
     }
 
     //=============================

@@ -15,7 +15,7 @@ public with sharing class ListViewFlowController {
         
         //we need to check the record Ids are valid and not an injection for security
         //they should come in as follows - 
-        //"0013h000007JTggAAG","0013h000007JTghAAG","0013h000007JTgcAAG]"
+        //["0013h000007JTggAAG","0013h000007JTghAAG","0013h000007JTgcAAG"]
         String recordIdStr = recordIds.replaceAll('"', ''); //get rid of double quotes
         Set<String> recordIdSet = HelperString.getSetFromString(recordIdStr, ','); //create set
         for (String recordId: recordIdSet)

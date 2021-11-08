@@ -22,7 +22,6 @@ import Enter_A_Value from '@salesforce/label/c.Enter_A_Value';
 import Add_Condition from '@salesforce/label/c.Add_Condition';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
-import getCachedListViewConfig from '@salesforce/apex/ListViewController.getCachedListViewConfig';
 import getListViewColumns from '@salesforce/apex/ListViewController.getListViewColumns';
 import processParamChange from '@salesforce/apex/ListViewController.processParamChange';
 import processConditionChange from '@salesforce/apex/ListViewController.processConditionChange';
@@ -33,7 +32,9 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
     @api showModal;                     //indicates whether this modal dialog should be displayed or not.
     @api listViewObject;                //the object of the list view.
-    @api listViewName;                  //the name of the list view.
+    //have to use get/set methods as we are not using the wired approach
+    @api get listViewName() { return this.lvName; }                  
+         set listViewName(value) { this.lvName = value; this.getListViewConfig(); }
     @api recordCount;                   //the number of record Ids passed in.
     @track listViewConfig               //holds all configuration for the list view
     @track listViewColumns              //holds all column label information
@@ -48,6 +49,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track newConditionOrder = '1';
     @track newConditionColor;
     @track configChanged;               //identifies if a change has been made which needs to force a data refresh
+    @track lvName;                      //the name of the list view.
 
     get booleanList() {
         return [
@@ -112,6 +114,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     
         if (this.listViewConfig === undefined) {
             this.configChanged = false;
+            getListViewConfig();
         }
     }
 
@@ -129,47 +132,25 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     getListViewConfig() {
         console.log('Starting getListViewConfig - ' + this.listViewObject + ' - ' + this.listViewName);
 
-        getListViewConfig({objectName: this.listViewObject, listViewName: this.listViewName})
-        .then(result => {
-            console.log('List view config retrieval successful'); 
-            this.listViewConfig = result;    
-        })
-        .catch(error => {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.listViewConfig = undefined;
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error Retrieving List View Config',
-                message: 'There was an error retrieving the list view configuration. Please see an administrator - ' + error.body.message,
-                variant: 'error',
-                mode: 'sticky'
-            }));
-        });
-
-
-    }
-    /*
-     * Wiring to get the list of config parameters for the chosen object and list view. Note that this wired
-     * method only gets called on INITIALIZATION of the modal dialog. After that the data is updated by calling
-     * the getListViewConfig() method. This is because we do not want the cached results but the updated results.
-     */
-    @wire (getCachedListViewConfig, { objectName: '$listViewObject', listViewName: '$listViewName' })
-    wiredListViewConfig(wiredListViewConfigResult) {
-        this.wiredListViewConfigResult = wiredListViewConfigResult;
-        const { data, error } = wiredListViewConfigResult;
-
-        if (data) { 
-            console.log('Cached list view config retrieval successful'); 
-            this.listViewConfig = data; 
-        } else if (error) { 
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.listViewConfig = undefined;
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error Retrieving List View Config',
-                message: 'There was an error retrieving the list view configuration. Please see an administrator - ' + error.body.message,
-                variant: 'error',
-                mode: 'sticky'
-            }));
+        if (this.listViewObject !== undefined && this.listViewName !== undefined && this.listViewObject !== null && this.listViewName !== null)
+        {
+            getListViewConfig({objectName: this.listViewObject, listViewName: this.listViewName})
+            .then(result => {
+                console.log('List view config retrieval successful'); 
+                this.listViewConfig = result;    
+            })
+            .catch(error => {
+                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+                this.listViewConfig = undefined;
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Retrieving List View Config',
+                    message: 'There was an error retrieving the list view configuration. Please see an administrator - ' + error.body.message,
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
+            });
         }
+
     }
 
     /*

@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -23,6 +23,8 @@ global with sharing class ListViewHelper {
     public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
    
+    public static final Set<String> POLYMORPHIC_FIELDS = new Set<String>{ 'WhatId', 'WhoId'};
+
     public static final String TYPE_ALL    = 'All';
     public static final String TYPE_CORE   = 'Core';
     public static final String TYPE_CUSTOM = 'Custom';
@@ -46,6 +48,7 @@ global with sharing class ListViewHelper {
     public static final String TYPE_RICH_TEXTAREA = 'rich textarea';
     public static final String TYPE_URL           = 'url';
     public static final String TYPE_HTML          = 'html';
+    public static final String TYPE_IMAGE         = 'image';
     public static final String TYPE_EMAIL         = 'email';
     public static final String TYPE_PHONE         = 'phone';
     public static final String TYPE_INTEGER       = 'integer';
@@ -54,6 +57,8 @@ global with sharing class ListViewHelper {
     public static final String SUBTYPE_MANUAL = 'Manual';
     public static final String SUBTYPE_TOOLING = 'Tooling';
     public static final String SUBTYPE_METADATA = 'Metadata';
+
+    private static Boolean simpliLVsGetRetry = false;             //used to identify whether we are trying to perform a list view get retry with the "simpli_lv__" attached.
 
     public static Integer offset           = -1;                  //used to hold the offset that is set when performing a query.
 
@@ -112,16 +117,15 @@ global with sharing class ListViewHelper {
 	}
 
     /**
-    * @description Method to update a SINGLE record given its record Id and a map of field updates
+    * @description Method to update MANY records given their record Ids and a map of field updates
     * @author tom@ansleyllc.com | 07-29-2021 
     * @param fieldValues map of field values with the record Id as key to return map of field values and the API field name being the key of the field values.
     * @return String blank string = success. Anything else is failure.    **/
-    public static String updateRecords(Map<String, Map<String, String>> rowValues)
+    public static Map<Id, SObject>  updateRecords(Map<String, Map<String, String>> rowValues)
     {
-        String result = '';
         Map<Id, SObject> updatedObjs = new Map<Id, SObject>(); //use map to ensure no duplicates
 
-        if (rowValues.size() == 0) return result;
+        if (rowValues.size() == 0) return updatedObjs;
 
         //get object type from id
         String objType = HelperSchema.getSObjectTypeFromId(new List<String>(rowValues.keySet())[0]); //get the first record Id to determine object type. ALL types must be the same!!
@@ -163,15 +167,9 @@ global with sharing class ListViewHelper {
             System.debug(LoggingLevel.FINE, 'Saving record - ' + rec);
         }
 
-        try {
-            HelperDatabase.updateRecords(updatedObjs.values(), objType);
-        } catch (Exception e) {
-            String message = 'Exception during ListViewHelper.updateRecords()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message);
-            result = 'There was an error saving the records - ' + e.getMessage();
-        }
+        HelperDatabase.updateRecords(updatedObjs.values(), objType);
 
-        return result;
+        return updatedObjs;
     }
 
     /**
@@ -181,17 +179,13 @@ global with sharing class ListViewHelper {
     * @param fieldValues map of field values with the field name being the key
     * @return String blank string = success. Anything else is failure.
     **/
-    public static String updateRecord(String rowId, Map<String, String> fieldValues)
+    public static SObject updateRecord(String rowId, Map<String, String> fieldValues)
     {
-        String result = '';
-
         Map<String, Map<String, String>> fieldsByRowId = new Map<String, Map<String, String>>();
 
         fieldsByRowId.put(rowId, fieldValues);
 
-        result = updateRecords(fieldsByRowId);
-
-        return result;
+        return updateRecords(fieldsByRowId).values()[0];
     }
     
 
@@ -229,7 +223,8 @@ global with sharing class ListViewHelper {
                                                                     Name, 
                                                                     SObjectType, 
                                                                     DeveloperName, 
-                                                                    LastModifiedById 
+                                                                    LastModifiedById,
+                                                                    NamespacePrefix
                                                             FROM ListView 
                                                             WHERE LastModifiedById = :UserInfo.getUserId()
                                                                     AND LastModifiedDate > :System.today().addDays(-1)
@@ -249,8 +244,8 @@ global with sharing class ListViewHelper {
         List<List_View__c> updatedListViews = new List<List_View__c>();
 
         //get the CORE list views.
-        HelperSchema.checkSelectAccessible('SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView');
-        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE SObjectType = :objectName];
+        HelperSchema.checkSelectAccessible('SELECT Id, Name, SObjectType, DeveloperName, CreatedById, NamespacePrefix FROM ListView');
+        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, CreatedById, NamespacePrefix FROM ListView WHERE SObjectType = :objectName];
         
         for (ListView listView: coreListViews)
         {
@@ -291,7 +286,7 @@ global with sharing class ListViewHelper {
 
             } catch (Exception e) {
                 String message = 'Exception during ListViewHelper.updateListViews(' + objectName + ')  ' + ListViewException.getExtendedString(e);
-                ListViewErrorHelper.createUsageError(message); 
+                ListViewErrorHelper.createFutureUsageError(message); 
             }
     
         }
@@ -368,7 +363,7 @@ global with sharing class ListViewHelper {
 
             } catch (Exception e) {
                 String message = 'Exception during ListViewHelper.updateListViews(' + lvIds + ')  ' + ListViewException.getExtendedString(e);
-                ListViewErrorHelper.createUsageError(message); 
+                ListViewErrorHelper.createFutureUsageError(message); 
             }
 
         }
@@ -462,20 +457,26 @@ global with sharing class ListViewHelper {
             //------------------------------------
             //OTHER LIST VIEWS
             //------------------------------------
-            Map<Id, List_View__c> listViews = getListViewsByType(TYPE_CUSTOM);
+            Map<Id, List_View__c> listViews = getListViewsByType(TYPE_CUSTOM, false);
 
             for (List_View__c listView: listViews.values())
             {
+
+                System.debug(LoggingLevel.DEBUG, 'Working CUSTOM List View - ' + listView.Label__c);
+
                 //only admin can view tooling API list views
                 if (listView.SubType__c != SUBTYPE_TOOLING || HelperProfile.hasModifyAll())
                 {
+                    System.debug(LoggingLevel.DEBUG, 'Working CUSTOM List View MORE - ' + listView.Object_Name__c);
                     Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(listView.Object_Name__c);
                     if (objDesc != null && !orgWideExcObjs.contains(objDesc.getName()) && !pageWideExcObjs.contains(objDesc.getName()))
                     {
                         String objLabel = objDesc.getLabel();
                         listViewObjects.put(listView.Object_Name__c, objLabel);
+                        System.debug(LoggingLevel.DEBUG, 'GETTING CUSTOM LV LABEL - ' + objLabel);
                     } else if (!orgWideExcObjs.contains(listView.Object_Name__c) && !pageWideExcObjs.contains(listView.Object_Name__c)) {
                         listViewObjects.put(listView.Object_Name__c, listView.Object_Name__c);
+                        System.debug(LoggingLevel.DEBUG, 'USING LV OBJECT AS LABEL - ' + listView.Object_Name__c);
                     }
                 }
             }
@@ -509,13 +510,18 @@ global with sharing class ListViewHelper {
         String resultStr = '\n\n-------------------------------------------------\n';
         for (String objectName: mappedListviewObjects.keySet())
             resultStr += 'Object ' + objectName + ' - ' + mappedListviewObjects.get(objectName) + '\n';
-        resultStr = '-------------------------------------------------\n\n';
+        resultStr += '-------------------------------------------------\n\n';
 
         System.debug(LoggingLevel.FINE, resultStr);
         return mappedListviewObjects;
     }
 
     public static Map<Id, List_View__c> getListViewsByType(String type)
+    {
+        return getListViewsByType(type, true);
+    }
+
+    public static Map<Id, List_View__c> getListViewsByType(String type, Boolean checkVisibility)
     {
         System.debug(LoggingLevel.FINE, 'Called getListViewsByType(type ' + type);
 
@@ -527,7 +533,7 @@ global with sharing class ListViewHelper {
 
         HelperSchema.checkListViewAccessible();
 
-        List<List_View__c> listviews = [SELECT Label__c,
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>([SELECT Label__c,
                                                  Describe__c,
                                                  Core_ListView_Id__c,
                                                  Object_Name__c,
@@ -550,18 +556,15 @@ global with sharing class ListViewHelper {
                                                  Custom_Apex_Class__c,
                                                  Subtype__c
                                            FROM List_View__c
-                                          WHERE RecordTypeId IN :rtIds];
+                                          WHERE RecordTypeId IN :rtIds
+                                          ORDER BY Object_Name__c, Label__c]);
 
-        Map<Id, List_View__c> lvs = new Map<Id, List_View__c>();
-
-        //now check security
-        for (List_View__c lv: listviews)
-        {
-            if (isVisible(lv))
-                lvs.put(lv.Id, lv);
-        }
-        return lvs;
-
+        Map<Id, List_View__c> listviewsById = listviews;
+        
+        if (checkVisibility)
+            listviewsById = getVisibleListViews(listviews, 'getListViewsByType(' + type + ')');
+        
+        return listviewsById;
     }
 
     /*
@@ -578,7 +581,7 @@ global with sharing class ListViewHelper {
 
         HelperSchema.checkListViewAccessible();
 
-        List<List_View__c> listviews = [SELECT Label__c,
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>([SELECT Label__c,
                                                  Describe__c,
                                                  Core_ListView_Id__c,
                                                  Object_Name__c,
@@ -602,17 +605,10 @@ global with sharing class ListViewHelper {
                                                  Subtype__c
                                            FROM List_View__c
                                           WHERE Id IN :lvIds
-                                                AND RecordTypeId IN :rtIds];
+                                                AND RecordTypeId IN :rtIds]);
 
-        Map<Id, List_View__c> lvs = new Map<Id, List_View__c>();
-
-        //now check security
-        for (List_View__c lv: listviews)
-        {
-            if (isVisible(lv))
-                lvs.put(lv.Id, lv);
-        }
-        return lvs;
+        Map<Id, List_View__c> listviewsById = getVisibleListViews(listviews, 'getListViewsById(' + lvIds + ', ' + onlyCore + ')');
+        return listviewsById;
     }
 
     /*
@@ -630,7 +626,7 @@ global with sharing class ListViewHelper {
 
         //get list view data
         HelperSchema.checkListViewAccessible();
-        List<List_View__c> listviews = [SELECT Label__c,
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>([SELECT Label__c,
                                                 Describe__c,
                                                 Core_ListView_Id__c,
                                                 Object_Name__c,
@@ -654,16 +650,15 @@ global with sharing class ListViewHelper {
                                                 Subtype__c
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
-                                        ORDER BY Label__c];
+                                        ORDER BY Label__c]);
+
+        //now check security
+        Map<Id, List_View__c> listviewsById = getVisibleListViews(listviews, 'getListViewsByObject(' + objAPIName + ')');
 
         Map<String, List_View__c> listviewsByName = new Map<String, List_View__c>();
 
-        //now check security
-        for (List_View__c listview: listviews)
-        {
-            if (isVisible(listview))
-                listViewsByName.put(listview.API_Name__c, listview);
-        }
+        for (List_View__c listview: listviewsById.values())
+            listViewsByName.put(listview.API_Name__c, listview);
 
         return listviewsByName;
     }
@@ -679,7 +674,7 @@ global with sharing class ListViewHelper {
         HelperSchema.checkListViewAccessible();
 
         //get list view data
-        List<List_View__c> listviews = [SELECT Label__c,
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>([SELECT Label__c,
                                                 Describe__c,
                                                 Core_ListView_Id__c,
                                                 Object_Name__c,
@@ -703,16 +698,16 @@ global with sharing class ListViewHelper {
                                                 Subtype__c
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
-                                            AND API_Name__c = :listViewAPIName];
+                                            AND API_Name__c = :listViewAPIName]);
 
-        Map<Id, List_View__c> listviewsById = new Map<Id, List_View__c>();
-
-        //now check security
-        for (List_View__c listview: listviews)
+        if (listviews.isEmpty() && !simpliLVsGetRetry)
         {
-            if (isVisible(listview))
-                listViewsById.put(listview.Id, listview);
+            simpliLVsGetRetry = true;
+            listviews = getListViews(objAPIName, 'simpli_lv__' + listViewAPIName);
+            simpliLVsGetRetry = false;
         }
+
+        Map<Id, List_View__c> listviewsById = getVisibleListViews(listviews, 'getListViews(' + objAPIName + ', ' + listViewAPIName + ')');
 
         return listviewsById;
     }
@@ -822,7 +817,7 @@ global with sharing class ListViewHelper {
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
             {
                 //make sure the field name is valid
-                if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, columnSortData.fieldName))
+                if (columnSortData.fieldName.contains('.') || HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, columnSortData.fieldName))
                 {
                     orderByStr += columnSortData.fieldName + ' ';
                     if (columnSortData.sortDirection == true)
@@ -1299,7 +1294,7 @@ global with sharing class ListViewHelper {
         param.Display_Order__c    = 2;
         param.List_View_Action__c = acctUpdateAction.Id;
         param.Placeholder_Text__c = 'Industry goes here...';
-        param.Type__c             = ListViewHelper.TYPE_STRING;
+        param.Type__c             = ListViewHelper.TYPE_PICKLIST;
 
         params.add(param);
 
@@ -1362,14 +1357,14 @@ global with sharing class ListViewHelper {
         List_View_Config__c config2 = new List_View_Config__c();
         config2.Name                = 'All';
         config2.List_View_Object__c = 'All';
-        config.List_View_Label__c   = 'Org Wide Configuration';
+        config2.List_View_Label__c   = 'Org Wide Configuration';
         config2.Primary_Key__c      = config2.List_View_Object__c + ':' + config2.Name;
         configs.add(config2);
 
         List_View_Config__c config3 = new List_View_Config__c();
         config3.Name                = 'simpli_lv__AllAccounts';
         config3.List_View_Object__c = 'Account';
-        config.List_View_Label__c   = 'All Accounts';
+        config3.List_View_Label__c   = 'All Accounts';
         config3.Primary_Key__c      = config3.List_View_Object__c + ':' + config3.Name;
         configs.add(config3);
 
@@ -1672,30 +1667,128 @@ global with sharing class ListViewHelper {
      * 4. if user is in allowed groups
      * 5. if user is in allowed territories
      */
-    public static Boolean isVisible(List_View__c lv)
+    private static Map<Id, List_View__c> getVisibleListViews(Map<Id, List_View__c> listviews, String callId)
     {
+        Map<Id, List_View__c> visible = new Map<Id, List_View__c>();
+        Map<Id, List_View__c> hasGroup = new Map<Id, List_View__c>();
+        Set<String> allGroupNames = new Set<String>();
+        String debug = '\n\n----- List View Visibility Matrix -----\n';
+        debug += 'Call Id              - ' + callId + '\n';
+        debug += 'User                 - ' + UserInfo.getName() + ' (' + UserInfo.getUserId() + ')\n\n';
 
-        //if the user has modify all data (sys admin) then TRUE
-        if (HelperProfile.hasModifyAll()) return true;
+        //if the user has modify all data (sys admin) then return all list views
+        if (HelperProfile.hasModifyAll()) 
+        {
+            visible = listviews;
+            debug += 'Has Modify All           - true\n';
+        
+        } else {
+            debug += 'Has Modify All           - false\n';
 
-        //if the current user owns the list view then TRUE
-        if (lv.OwnerId == UserInfo.getUserId()) return true;
+            for (List_View__c lv: listviews.values())
+            {
+                //if the current user owns the list view then its visible
+                if (lv.OwnerId == UserInfo.getUserId())
+                {
+                    visible.put(lv.Id, lv);
+                    debug += 'Is Owner                 - true (' + lv.Label__c + ')\n';
+                
+                //if there are no groups, roles or territories then its visible
+                } else if (String.isEmpty(lv.Groups__c) 
+                            && String.isEmpty(lv.Roles__c)
+                            && String.isEmpty(lv.Roles_And_Subordinates__c)
+                            && String.isEmpty(lv.Territories_And_Subordinates__c)
+                            && String.isEmpty(lv.Territories__c)) 
+                {                                
+                    visible.put(lv.Id, lv);
+                    debug += 'Is Owner                 - false (' + lv.Label__c + ')\n';
+                    debug += 'NO Group/Role/Territory Data (' + lv.Label__c + ')\n';
+                
+                //if there are groups, roles or territories then add to list views to check
+                } else {
+                    debug += 'Is Owner                 - false (' + lv.Label__c + ')\n';
+                    debug += 'HAS Group/Role/Territory Data (' + lv.Label__c + ')\n';
+                    hasGroup.put(lv.Id, lv);
+                    if (!String.isEmpty(lv.Groups__c))
+                        allGroupNames.addAll(lv.Groups__c.split(','));
+                }
+            }
 
-        //get list of groups that need to be checked for membership
-        Set<String> groups = new Set<String>();
-        if (!String.isEmpty(lv.Groups__c))
-            groups.addAll(lv.Groups__c.split(','));
-        if (!String.isEmpty(lv.Roles__c))
-            groups.addAll(lv.Roles__c.split(','));
-        if (!String.isEmpty(lv.Roles_And_Subordinates__c))
-            groups.addAll(lv.Roles_And_Subordinates__c.split(','));
+        }
 
-        System.debug(LoggingLevel.DEBUG, 'GROUPS - ' + groups);
-        Boolean result = true;
-        if (!groups.isEmpty())
-            result = HelperGroup.getIsUserInGroups(groups, UserInfo.getUserId());
+        //if there are groups, roles or territories
+        if (!hasGroup.isEmpty())
+        {
 
-        return result;
+            //this is used to initialize the groups. We need a better way
+            Map<String, Group> allGroupsByName = HelperGroup.getGroupsByName(allGroupNames);
+
+            for (List_View__c lv: hasGroup.values())
+            {
+                Set<String> groups = new Set<String>();
+                //get list of groups that need to be checked for membership
+                if (!String.isEmpty(lv.Groups__c))
+                    groups.addAll(lv.Groups__c.split(','));
+                debug += '\nList View Groups         - ' + groups + '\n';
+
+                if (!groups.isEmpty())
+                {
+                    Boolean result = HelperGroup.isUserInGroups(groups, UserInfo.getUserId());
+                    debug += 'Is In Group              - ' + result + '(' + lv.Label__c + ')\n';
+                    if (result)
+                        visible.put(lv.Id, lv);
+    
+                } else {
+                    debug += 'Is In Group              - true (no groups)' + '(' + lv.Label__c + ')\n';
+                }
+
+                //==========================================================================
+
+                Set<String> roles = new Set<String>();
+                if (!String.isEmpty(lv.Roles__c))
+                    roles.addAll(lv.Roles__c.split(','));
+                debug += '\nList View Roles          - ' + roles + '\n';
+
+                if (!roles.isEmpty())
+                {
+                    Boolean result = HelperRole.isUserInRoles(roles, false);
+                    debug += 'Is In Roles              - ' + result + '(' + lv.Label__c + ')\n';
+                    if (result)
+                        visible.put(lv.Id, lv);
+    
+                } else {
+                    debug += 'Is In Roles              - true (no roles)' + '(' + lv.Label__c + ')\n';
+                }
+    
+                //==========================================================================
+
+                Set<String> subRoles = new Set<String>();
+                if (!String.isEmpty(lv.Roles_And_Subordinates__c))
+                    subRoles.addAll(lv.Roles_And_Subordinates__c.split(','));
+                debug += '\nList View Sub Roles      - ' + subRoles + '\n';
+    
+                if (!subRoles.isEmpty())
+                {
+                    Boolean result = HelperRole.isUserInRoles(subRoles, true);
+                    debug += 'Is In Roles And Subs     - ' + result + '(' + lv.Label__c + ')\n';
+                    if (result)
+                        visible.put(lv.Id, lv);
+    
+                } else {
+                    debug += 'Is In Roles And Subs     - true (no subroles)' + '(' + lv.Label__c + ')\n';
+                }
+            }
+        }
+        debug += '\n----- Visible List Views -----\n';
+        for (List_View__c lv: visible.values())
+            debug += lv.Label__c + ' - ' + lv.Id + '\n';
+        debug += '---------------------------------------\n\n';
+
+        System.debug(LoggingLevel.FINE, debug);
+        ListViewErrorHelper.addLog('ListViewHelper', debug);
+        
+
+        return visible;
     }
 
     /*

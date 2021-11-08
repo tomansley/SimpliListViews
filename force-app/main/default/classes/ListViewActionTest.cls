@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-04-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -14,12 +14,11 @@ private class ListViewActionTest {
     @testSetup
     private static void createSampleData()
     {
+        ListViewHelper.insertCoreConfiguration();
     }
 
     static testMethod void listViewActionParameterTest() 
     {
-
-        List<List_View_Action__c> lvActions = ListViewHelper.insertCoreActions();
 
         Test.startTest();
             List_View_Action__c updateAction = ListViewActionHelper.getListViewActionByKey('Update:Account');
@@ -42,24 +41,10 @@ private class ListViewActionTest {
 
     }
 
-    static testMethod void listViewActionCreateTest() 
-    {
-
-        Test.startTest();
-            List<List_View_Action__c> lvActions = ListViewHelper.insertCoreActions();
-        Test.stopTest();
-
-        System.assert(lvActions != null);
-        System.assert(lvActions.size() > 0);
-
-    }
-
     static testMethod void listViewActionUpdateTest() {
 
         Test.startTest();
         
-            ListViewHelper.insertCoreActions();
-
             List_View_Action__c deleteAction = ListViewActionHelper.getListViewActionByKey('Delete:null');
 
             String beforePrimaryKey = deleteAction.Primary_Key__c;
@@ -78,8 +63,6 @@ private class ListViewActionTest {
 
     static testMethod void listViewActionDeleteProcessTest() {
 
-        ListViewHelper.insertCoreActions();
-
         Account acct = HelperTest.insertAccount('List View Account');
 
         Test.startTest();
@@ -94,8 +77,6 @@ private class ListViewActionTest {
 
     static testMethod void listViewActionUpdateProcessTest() {
 
-        ListViewHelper.insertCoreActions();
-
         Account acct = HelperTest.insertAccount('List View Account');
 
         Test.startTest();
@@ -109,8 +90,6 @@ private class ListViewActionTest {
     }
 
     static testMethod void listViewActionOppCloseProcessTest() {
-
-        ListViewHelper.insertCoreActions();
 
         Account acct = HelperTest.insertAccount('List View Account');
         Opportunity opp = HelperTest.insertOpportunity(acct, 'Opportunity 1');
@@ -139,7 +118,6 @@ private class ListViewActionTest {
 
     static testMethod void listViewActionEmailTest() {
 
-        ListViewHelper.insertCoreActions();
         Account acct = HelperTest.insertAccount('Send Email Test Account');
         Contact cont = HelperTest.insertContact(acct);
         

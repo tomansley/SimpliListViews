@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 10-22-2021
+ * @Last Modified On   : 11-08-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -54,13 +54,21 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
 
+            String debug = 'SOQL - ' + query;
+            debug += ' Exc Objs - ' + exclObjs;
+
+            System.debug(LoggingLevel.FINE, debug);
+            ListViewErrorHelper.addLog('ListViewPostProcessBatch', debug);
+
+            ListViewErrorHelper.processLogs(false);
+
             HelperSchema.checkListViewAccessible();
 
             return Database.getQueryLocator(query);
 
         } catch (Exception e) {
             String message = 'Exception during ListViewPostProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message);
+            ListViewErrorHelper.createNonFutureUsageError(message);
             Database.setSavepoint();
         }
                 
@@ -76,8 +84,9 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
             
         } catch (Exception e) {
             String message = 'Exception during ListViewPostProcessBatch.execute()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message); 
+            ListViewErrorHelper.createNonFutureUsageError(message); 
         }
+        ListViewErrorHelper.processLogs(false);
     }
     
     /* IMPLEMENTS DATABASE.BATCHABLE INTERFACE */ 
@@ -90,12 +99,13 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
                 ListViewHelper.updateListViewObjectsSetting();
         } catch (Exception e) {
             String message = 'Exception during ListViewPostProcessBatch.finish()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message); 
+            ListViewErrorHelper.createNonFutureUsageError(message); 
         }
 
         //finally set isInitialized to true.
         ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', 'true');
 
+        ListViewErrorHelper.processLogs(false);
     }
     
 }

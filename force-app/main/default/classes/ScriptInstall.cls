@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -32,7 +32,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 }
             } catch (Exception e) {
                 String message = 'Exception during ScriptInstall.onInstall()  ' + ListViewException.getExtendedString(e);
-                ListViewErrorHelper.createUsageError(message); 
+                ListViewErrorHelper.createFutureUsageError(message); 
             }
             
             HelperEmail.sendInstallEmail('Installed');

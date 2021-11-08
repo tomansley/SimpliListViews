@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-04-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -29,16 +29,16 @@ public with sharing class ListViewActionBL {
         for (List_View_Action__c action: newRecords)
         {
             if (action.Object_Type__c != null && !HelperSchema.isValidSFDCObjectName(action.Object_Type__c))
-                throw new ListViewException('Invalid object type (' + action.Object_Type__c + ') provided for list view action.');
+                action.addError('Invalid object type (' + action.Object_Type__c + ') provided for list view action.');
 
             if (action.RecordTypeId == ListViewActionHelper.customRTId && action.Subtype__c == null)
-                throw new ListViewException('Custom actions must have a subtype.');
+                action.addError('Custom actions must have a subtype.');
             
             if (action.RecordTypeId == ListViewActionHelper.coreRTId && action.Subtype__c != null)
-                throw new ListViewException('Core actions cannot have a subtype.');
+                action.addError('Core actions cannot have a subtype.');
 
             if (action.RecordTypeId == ListViewActionHelper.customRTId && action.Subtype__c == 'Manual' && action.Object_Type__c == null)
-                throw new ListViewException('Custom actions of subtype "Manual" must have an object type.');
+                action.addError('Custom actions of subtype "Manual" must have an object type.');
 
         }
 

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -27,7 +27,7 @@ global class ListViewProcessBatchTest {
             job.execute(null);
             job.start(null);
 
-            job.execute(null, [SELECT Id, Name, SObjectType, DeveloperName, CreatedById FROM ListView WHERE SObjectType != null LIMIT 1]);
+            job.execute(null, [SELECT Id, Name, SObjectType, DeveloperName, CreatedById, NamespacePrefix FROM ListView WHERE SObjectType != null LIMIT 1]);
 
         Test.stopTest();
 

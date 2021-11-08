@@ -3,6 +3,7 @@
 
 import search from '@salesforce/apex/ListViewLookupController.search';
 import { api, LightningElement, track, wire } from 'lwc';
+import getRecordName from '@salesforce/apex/ListViewLookupController.getRecordName';
 
 //------------------------ LABELS ------------------------
 import Search_Dot from '@salesforce/label/c.Search_Dot';
@@ -55,7 +56,28 @@ export default class SimpliUIListViewsLookup extends LightningElement {
                 this.hasValue = true;    
                 this.selectedId = this.initialId;
                 this.selectedName = this.initialName;
+            
+            //if we do not have the name of the record to display then get it.
+            } else if (this.initialId !== '' && this.initialName === '')
+            {
+                getRecordName({selectedId: this.initialId, fieldObjName: this.fieldObjName})
+                .then(result => {
+                    console.log('Get record name successful for ' + this.pageName);
+                    console.log('Record name - ' + result);
+
+                    this.selectedName = result;
+    
+                })
+                .catch(error => {
+                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
+                });    
+
+                this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
+                this.hasValue = true;    
+                this.selectedId = this.initialId;
+            
             }
+
             console.log('selectedName  - ' + this.selectedName);
             console.log('selectedId    - ' + this.selectedId);
         }

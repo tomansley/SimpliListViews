@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 10-22-2021
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 10-26-2021
+  @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-18-2020   tom@ansleyllc.com   Initial Version
@@ -92,10 +92,12 @@
     </lightning-card>
     <br/>
     <lightning-card title={label.Issues_And_Questions} icon-name="standard:custom_notification">
-        <div class="slds-var-m-around_medium">
+        <div style="padding-left: 20px;" class="slds-var-m-around_medium">
+            <p>FAQs - <a target="_blank" href="https://github.com/tomansley/SimpliListViews/wiki/FAQ">go here</a></p>
+            <br/>
             <p>If you have any issues, questions or ideas please go to the <a target="_blank" href="https://github.com/tomansley/SimpliListViews">github repository</a> to log them - </p>
             <br/>
-            <p>Other resources which might be of interest - </p>
+            <p>Other resources - </p>
             <br/>
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
@@ -106,6 +108,8 @@
                     <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=nJyTWEPCUac">Using Multiple Components On One Page (Video)</a></li>
                     <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=OLLpIvXqfWc">Creating Custom List View (Video)</a></li>
                     <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=9eHD7ntFFs0">Large Datasets and Paging (Video)</a></li>
+                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=SNDSkBCQR8Y">Page Modes (Video)</a></li>
+                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=n29zVvM6Xtk">Actions (Video)</a></li>
                 </ol>
             </div>
         </div>
@@ -114,13 +118,14 @@
     <lightning-card title={label.Configuration} icon-name="standard:settings">
         <div class="slds-var-m-around_medium">
 
-            <p>There are 3 different levels of configuration that are available. Note that where a setting is available in different levels the org-wide overrides the component and list view settings.</p>
+            <p>There are 4 different levels of configuration that are available. Note that where a setting is available in different levels the org-wide overrides the component and list view settings.</p>
             <br/>
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
                     <li style="padding-bottom: 5px;">Org-wide custom settings</li>
                     <li style="padding-bottom: 5px;">Component or page level settings</li>
-                    <li style="padding-bottom: 5px;">List view or user configuration</li>
+                    <li style="padding-bottom: 5px;">List view settings</li>
+                    <li style="padding-bottom: 5px;">User settings</li>
                 </ol>
             </div>
             <br/>
@@ -153,7 +158,7 @@
             </div>
             <br/><br/>
             <div>
-               <b>List View Configuration</b>
+               <b>List View Settings</b>
                <br/><br/>
                 <p>These settings are maintained by clicking on the cog icon when a list view is being displayed. They affect individual Simpli list views for a specific page and are typically created after the list view has been created.</p>
                 <br/>
@@ -166,6 +171,21 @@
                 </div>
                 <br/>
                 <p>To update a list views setting, select the list view, then click on the cog icon in the top right corner.</p>
+            </div>
+            <br/><br/>
+            <div>
+               <b>User Settings</b>
+               <br/><br/>
+                <p>These settings are maintained per user, for each user that has access to a page or component. The settings are configured based on the action performed by the user. For example, if the user pins a given list view for the page that information will be saved for that user, for that page.</p>
+                <br/>
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:decimal; list-style-position: inside;">
+                        <li style="padding-bottom: 5px;"><b>Sort Order - </b>Indicates the sort order that the user has selected for a given list view for a given page.</li>
+                        <li style="padding-bottom: 5px;"><b>Pinned List View - </b>Identifies the list view that will automatically be displayed when the page is refreshed or initialized.</li>
+                    </ol>
+                </div>
+                <br/>
+                <p>These settings are maintained by the Simpli List View app and should not under normal circumstances be changed by an admin.</p>
             </div>
         </div>
     </lightning-card>

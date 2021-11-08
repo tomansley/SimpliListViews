@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 10-22-2021
+ * @Last Modified On   : 11-08-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -60,7 +60,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
 
         } catch (Exception e) {
             String message = 'Exception during ListViewDeleteBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message);
+            ListViewErrorHelper.createNonFutureUsageError(message);
             Database.setSavepoint();
         }
                 
@@ -76,7 +76,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
             
         } catch (Exception e) {
             String message = 'Exception during ListViewDeleteBatch.execute()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message); 
+            ListViewErrorHelper.createNonFutureUsageError(message); 
         }
     }
     
@@ -90,7 +90,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
                 ListViewHelper.updateListViewObjectsSetting();
         } catch (Exception e) {
             String message = 'Exception during ListViewDeleteBatch.finish()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message); 
+            ListViewErrorHelper.createNonFutureUsageError(message); 
         }
 
         //finally set isInitialized to true.

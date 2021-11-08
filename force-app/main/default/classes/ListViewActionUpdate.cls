@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -23,54 +23,45 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
 
             if (recordIds == null || recordIds.size() == 0) return ListViewAction.RESULT_OK;
 
+            //get the type of object from the provided Ids
+            objType = HelperSchema.getObjectTypeFromId(recordIds[0]);
+
             System.debug(LoggingLevel.FINE, 'Record Ids Size   - ' + recordIds.size());
             System.debug(LoggingLevel.FINE, 'Record Ids        - ' + recordIds);
             System.debug(LoggingLevel.FINE, 'Field Values Size - ' + fieldValues.size());
             System.debug(LoggingLevel.FINE, 'Field Values      - ' + fieldValues);
+            System.debug(LoggingLevel.FINE, 'Object Type       - ' + objType);
 
-            //get the type of object from the provided Ids
-            objType = HelperSchema.getObjectTypeFromId(recordIds[0]);
+            Map<String, String> strFieldValues = new Map<String, String>();
 
-            //get an apex Type of the object type
-            Type t = Type.forName(objType);
-
-            Map<String, SObject> updatedObjs = new Map<String, SObject>();
-            for (String recordId: recordIds)
+            for (String fieldName: fieldValues.keySet())
             {
-
-                //create a new instance
-                SObject obj = (SObject) t.newInstance();
-
-                //set the Id
-                obj.put('Id', recordId);
-
-                //set all the other fields on the update
-                for (String fieldName: fieldValues.keySet())
+                String fieldValue = (String) fieldValues.get(fieldName);
+                if (recordIds.size() == 1 || !String.isEmpty(fieldValue))
                 {
-                    if (fieldValues.get(fieldName) != null && ((String) fieldValues.get(fieldName)) != '')
-                        obj.put(fieldName, fieldValues.get(fieldName));
+                    HelperSchema.checkObjectFieldUpdateable(objType, fieldName);
+                    strFieldValues.put(fieldName, fieldValue); //cast to string
                 }
-            
-                updatedObjs.put(recordId, obj);
             }
 
-            //security review
-            for (String fieldName: fieldValues.keySet())
-                HelperSchema.checkObjectFieldUpdateable(objType, fieldName);
+            Map<String, Map<String, String>> rowValues = new Map<String, Map<String, String>>();
+            for (String recordId: recordIds)
+                rowValues.put(recordId, strFieldValues);
 
-            HelperDatabase.updateRecords(updatedObjs.values(), objType);
-
+            Map<Id,SObject> updatedObjs = ListViewHelper.updateRecords(rowValues);
+            
             if (updatedObjs.size() == 1)
                 returnStr += '1 record updated successfully.';
             else
                 returnStr += updatedObjs.size() + ' records updated successfully.';
 
         } catch (Exception e) {
-            String message = ListViewAction.RESULT_ERROR + ':There was an error updating the ' + HelperSchema.getObjectPluralName(objType) + '. Please see a system admin.';
+            String message = ListViewAction.RESULT_ERROR + ':There was an error updating the object of type ' + objType + '. Please see a system admin.';
             if (ListViewConfigHelper.isDebuggingOn())
                 message += ' Exception during ListViewActionUpdate.process()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError(message); 
             returnStr = message;
+            System.debug(LoggingLevel.DEBUG, message);
         }
         
         return returnStr;

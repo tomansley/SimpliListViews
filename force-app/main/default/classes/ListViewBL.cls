@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-02-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -160,7 +160,7 @@ public with sharing class ListViewBL {
             ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
     
             //set all request information into the apex processing class.
-            lvlogic.setRequestData(listview);
+            //lvlogic.setRequestData(listview);
 
             List<List_View_Config_Parameter__c> params = lvlogic.getConfigParams(configs.get(primaryKey));
 

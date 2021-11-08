@@ -13,17 +13,20 @@ import Action from '@salesforce/label/c.Action';
 
 import processAction from '@salesforce/apex/ListViewController.processAction';
 import getListViewAction from '@salesforce/apex/ListViewController.getListViewAction';
+import getListViewActionAndData from '@salesforce/apex/ListViewController.getListViewActionAndData';
 
 export default class simpliUIListViewsActionModal extends LightningElement {
 
     @api showModal;                     //indicates whether this modal dialog should be displayed or not.
     @api actionApiName;                 //the action that was clicked on.
-    @api recordIds;                     //a concatenated string of record Ids
+    @api recordIds;                     //the record ids of the records to be updated
+
+    @track recordCount;                 //the number of record Ids passed in. Only used in the UI.
     @track listViewAction;              //holds the action data for the provided action API name.
     @track hasParameters = true;        //indicates whether the action has parameters
     @track requestDataMap = new Map();  //holds the map of field/value request data
     @track spinner = false;             //identifies if the spinner should be displayed or not.
-    @api recordCount;                   //the number of record Ids passed in.
+    @track isInitialized = false;
 
     label = { Close, Value, Field_Name, Process, Cancel, Continue_Processing, Selected_Records_With, Action };
 
@@ -32,18 +35,66 @@ export default class simpliUIListViewsActionModal extends LightningElement {
         this.showModal = false;
     }
 
-    /*
-     * Wiring to get the list of objects in the system using a LISTVIEW NAME
-     */
-    @wire (getListViewAction, { actionName: '$actionApiName'})
-    wiredListViewAction({ error, data }) {
-        if (data) { 
-            console.log('SUCCESS DATA GET ' + data); 
-            this.listViewAction = data;
-            this.hasParameters = this.listViewAction.hasDisplayParameters;
-        } else if (error) {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.listViewAction = undefined;}
+    renderedCallback() {
+
+        if (this.showModal === true && !this.isInitialized && this.recordIds !== undefined)
+        {
+            var parsedIds = JSON.parse(this.recordIds);
+            this.recordCount = parsedIds.length; 
+
+            this.recordCount = 1;
+
+            if (this.recordCount === 1)
+            {
+                this.spinner = true;
+                getListViewActionAndData({ actionName: this.actionApiName, dataIds: this.recordIds})
+                .then(result => {
+                    console.log('getListViewActionAndData successfully called'); 
+                    this.listViewAction = result;
+                    this.hasParameters = this.listViewAction.hasDisplayParameters;
+                    this.spinner = false;
+    
+                    this.listViewAction.displayParameters.forEach(element => { 
+                                                                                 
+                                                                                 if (element.value !== null)
+                                                                                 {
+                                                                                     if (element.type === 'datetime' || element.type === 'date' || element.type === 'time')
+                                                                                     {
+                                                                                        this.requestDataMap.set(element.aPIName, element.uIValue);
+                                                                                        console.log('Setting UI key/value - ' + element.aPIName + '/' + element.uIValue);
+                                                                                     } else {
+                                                                                        this.requestDataMap.set(element.aPIName, element.value);
+                                                                                        console.log('Setting key/value - ' + element.aPIName + '/' + element.value);
+                                                                                     }
+                                                                                 }
+                                                                             });
+                })
+                .catch(error => {
+                    console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
+                    this.spinner = false;
+                    return;
+                });
+                
+            } else {
+                this.spinner = true;
+                getListViewAction({ actionName: this.actionApiName})
+                .then(result => {
+                    console.log('getListViewAction successfully called'); 
+                    this.listViewAction = result;
+                    this.hasParameters = this.listViewAction.hasDisplayParameters;
+                    this.spinner = false;
+                })
+                .catch(error => {
+                    console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
+                    this.spinner = false;
+                    return;
+                });
+            }
+
+            this.isInitialized = true;
+    
+        }
+
     }
 
     handleProcessClick() {
@@ -92,6 +143,10 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                         variant: 'success',
                         mode: 'dismissable'
                     }));
+                    this.spinner = false;
+                    this.recordCount = undefined;
+                    this.isInitialized = false;
+                    this.listViewAction = undefined;
                     this.dispatchEvent(new CustomEvent('processed'));
                 
                 } else {
@@ -118,23 +173,48 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                 this.spinner = false;
                 return;
         });
-
-        this.spinner = false;
     }
   
     //called when a value is changed.
     handleValueUpdate(event) {
-        var name = event.currentTarget.dataset.field;
-        var value = event.target.value;
-        this.requestDataMap.set(name, value);
-        console.log('Value updated - ' + event.currentTarget.dataset.field + ' - ' + event.target.value);
+
+        //if data is coming in from a component
+        let fieldValue = '';
+        let fieldName = '';
+
+        //if data is coming in from a component
+        if (event.currentTarget.dataset.type === undefined)
+        {
+            fieldValue = event.detail.selectedValue;
+            fieldName  = event.detail.field;
+        
+        } else {
+            if (event.currentTarget.dataset.type === 'boolean') {
+                if (event.target.checked === true) {
+                    fieldValue = 'true'; //have to turn boolean into string
+                } else { 
+                    fieldValue = 'false'
+                }
+                fieldName  = event.currentTarget.dataset.field;    
+            } else {
+                fieldValue = event.target.value;
+                fieldName  = event.currentTarget.dataset.field;
+            }
+        }
+
+        this.requestDataMap.set(fieldName, fieldValue);
+        console.log('Value updated - ' + fieldName + ' - ' + fieldValue);
     }
 
     handleCancelClick() {
+        this.isInitialized = false;
+        this.listViewAction = undefined;
         this.dispatchEvent(new CustomEvent('cancelled'));
     }
 
     handleClose() {
+        this.isInitialized = false;
+        this.listViewAction = undefined;
         this.dispatchEvent(new CustomEvent('cancelled'));
     }
 

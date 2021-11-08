@@ -1,7 +1,7 @@
 /**
  * @description       : Implementation of an action to start flows.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Ver   Date         Author                       Modification
  * 1.0   08-29-2021   tom@ansleyllc.com   Initial Version
@@ -50,7 +50,7 @@ public with sharing class ListViewActionFlow extends ListViewAction {
             String message = ListViewAction.RESULT_ERROR + ':There was an error starting the flow (' + flowName + '). Please see a system admin.';
             if (ListViewConfigHelper.isDebuggingOn())
                 message += ' Exception during ListViewActionFlow.process() ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError(message); 
             returnStr = message;
         }
         System.debug(LoggingLevel.FINE, 'Finished processing ListViewActionFlow with flow name - ' + flowName);

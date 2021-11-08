@@ -1,0 +1,78 @@
+<!--
+  @description       : 
+  @author            : tom@ansleyllc.com
+  @last modified on  : 11-04-2021
+  @last modified by  : tom.h.ansley@medtronic.com
+-->
+<template>
+    <div style="padding-left: 10px; padding-right: 10px;">
+        <lightning-layout>
+
+            <lightning-layout-item padding="horizontal-small" style="width: 20%;">
+                <lightning-input type="checkbox"
+                                label={label.List_View_Refresh_Scheduled}
+                                value={isTurnedOn} 
+                                onchange={handleIsTurnedOnChange}
+                                variant=label-inline>
+                </lightning-input>               
+            </lightning-layout-item>
+
+            <template if:true={isTurnedOn}>
+                <lightning-layout-item padding="horizontal-small">
+                    <lightning-combobox name="Time Period List"
+                                        value={selectedTimePeriod}
+                                        onchange={handleTimePeriodChange} 
+                                        options={timePeriodsList}
+                                        label={label.Select_Time_Period}>
+                    </lightning-combobox>
+                </lightning-layout-item>
+
+                <template if:true={displayMonths}>
+                    <lightning-layout-item padding="horizontal-small">
+                        <lightning-combobox name="Months List"
+                                            value={selectedMonth}
+                                            onchange={handleMonthChange} 
+                                            options={monthPeriodsList}
+                                            label={label.Select_Month}>
+                        </lightning-combobox>
+                    </lightning-layout-item>    
+                </template>
+
+                <template if:true={displayDays}>
+                    <lightning-layout-item padding="horizontal-small">
+                        <lightning-combobox name="Day List"
+                                            value={selectedDay}
+                                            onchange={handleDayChange} 
+                                            options={dayPeriodsList}
+                                            label={label.Select_Day}>
+                        </lightning-combobox>
+                    </lightning-layout-item>    
+                </template>
+
+                <template if:true={displayHours}>
+                    <lightning-layout-item padding="horizontal-small">
+                        <lightning-combobox name="Hour List"
+                                            value={selectedHour}
+                                            onchange={handleHourChange} 
+                                            options={hourPeriodsList}
+                                            label={label.Select_Hour}>
+                        </lightning-combobox>
+                    </lightning-layout-item>    
+                </template>
+
+                <template if:true={displayMinutes}>
+                    <lightning-layout-item padding="horizontal-small">
+                        <lightning-combobox name="Minute List"
+                                            value={selectedMinute}
+                                            onchange={handleMinuteChange} 
+                                            options={minutePeriodsList}
+                                            label={label.Select_Minute}>
+                        </lightning-combobox>
+                    </lightning-layout-item>    
+                </template>
+
+            </template>
+
+        </lightning-layout>
+    </div>
+</template>

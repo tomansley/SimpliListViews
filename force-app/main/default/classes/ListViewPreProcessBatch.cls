@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -12,8 +12,8 @@
 global with sharing class ListViewPreProcessBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
     
     private String query = 'SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView WHERE SObjectType != null';
-    private final Integer batchSize = 25;
-    private Set<Id> listViewIds = null;
+    private final Integer batchSize             = 25;
+    private Set<Id> listViewIds                 = null;
 
     /*
         Simpli_lv.ListViewPreProcessBatch b = new Simpli_lv.ListViewPreProcessBatch();
@@ -47,19 +47,25 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
 
-            System.debug(LoggingLevel.FINE, 'SOQL - ' + query);
-            System.debug(LoggingLevel.FINE, 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ','));
+            String debug = 'SOQL - ' + query;
+            debug += 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ',');
             
+            System.debug(LoggingLevel.DEBUG, debug);
+            ListViewErrorHelper.addLog('PreProcessBatch', debug);
+
             HelperSchema.checkSelectAccessible(query);
+
+            ListViewErrorHelper.processLogs(false);
 
             return Database.getQueryLocator(query);
 
         } catch (Exception e) {
-            String message = 'Exception 2 during ListViewPreProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message);
-            Database.setSavepoint();
+            String message = 'Exception during ListViewPreProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createNonFutureUsageError(message);
         }
                 
+        ListViewErrorHelper.processLogs(false);
+
         return null;
 	}
 
@@ -67,7 +73,6 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
 	global void execute(Database.BatchableContext BC, List<SObject> scope) 
 	{
         try {
-            System.debug(LoggingLevel.FINE, 'Test1');
             List<List_View__c> simpliListViews = new List<List_View__c>();
             List<List_View_Config__c> simpliListViewConfigs = new List<List_View_Config__c>();
         
@@ -76,56 +81,54 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
             //--------------------------------------------------------------------------------
             //this is to handle the issue where names do not include package names. 10-13-2021
             //--------------------------------------------------------------------------------
-            System.debug(LoggingLevel.FINE, 'Test2');
             Map<Id, ListView> tmpListViewsMap = new Map<Id, ListView>();
             for (ListView lv: listViews)
                 tmpListViewsMap.put(lv.Id, lv);
-            System.debug(LoggingLevel.FINE, 'Test3');
 
             List<List_View__c> tmpListViews = [SELECT Id, Name, Primary_Key__c, Core_ListView_Id__c FROM List_View__c WHERE Core_ListView_Id__c IN :tmpListViewsMap.keySet()];
-            System.debug(LoggingLevel.FINE, 'Test4');
 
             //get the list views set of primary keys
             Set<String> listViewPKeys = new Set<String>();
             for (List_View__c tmpListView: tmpListViews)
                 listViewPKeys.add(tmpListView.Primary_Key__c);
-            System.debug(LoggingLevel.FINE, 'Test5');
 
-            String debug1 = '\n\n----------- PRIMARY KEYS -----------------------------------------------------------\n';
+            String debug = '\n\n----------- PRIMARY KEYS -----------------------------------------------------------\n';
             for (String tmpKey: listViewPKeys)
-                debug1 += tmpKey + '\n';
-            debug1 += '----------------------------------------------------------------------\n';
-            System.debug(LoggingLevel.FINE, debug1);
+                debug += tmpKey + '\n';
+            debug += '----------------------------------------------------------------------\n';
+            System.debug(LoggingLevel.FINE, debug);
 
             //use primary keys to find the configs
             List<List_View_Config__c> tmpListViewConfigs = [SELECT Id, Name, Primary_Key__c FROM List_View_Config__c WHERE Primary_Key__c IN :listViewPKeys];
-            System.debug(LoggingLevel.FINE, 'Test6');
 
             //create map of configs based on primary keys for easy access
             Map<String, List_View_Config__c> tmpListViewsConfigMap = new Map<String, List_View_Config__c>();
             for (List_View_Config__c tmpListViewConfig: tmpListViewConfigs)
                 tmpListViewsConfigMap.put(tmpListViewConfig.Primary_Key__c, tmpListViewConfig);
 
-            System.debug(LoggingLevel.FINE, 'Test7');
-                //use primary keys to find the user configs
-            String userConfSOQL = 'SELECT Id, Name__c, Value__c, Primary_Key__c FROM List_View_User_Config__c WHERE ';
-            for (String tmpPKey: listViewPKeys)
+            //use primary keys to find the user configs
+            List<List_View_User_Config__c> tmpUserConfigs = new List<List_View_User_Config__c>();
+            if (!listViewPKeys.isEmpty())
             {
-                userConfSOQL += 'Name__c LIKE \'%' + tmpPKey + '%\' OR ';
-                userConfSOQL += 'Primary_Key__c LIKE \'%' + tmpPKey + '%\' OR ';
-                userConfSOQL += 'Value__c LIKE \'%' + tmpPKey + '%\' OR ';
+                String userConfSOQL = 'SELECT Id, Name__c, Value__c, Primary_Key__c FROM List_View_User_Config__c WHERE ';
+                for (String tmpPKey: listViewPKeys)
+                {
+                    userConfSOQL += 'Name__c LIKE \'%' + tmpPKey + '%\' OR ';
+                    userConfSOQL += 'Primary_Key__c LIKE \'%' + tmpPKey + '%\' OR ';
+                    userConfSOQL += 'Value__c LIKE \'%' + tmpPKey + '%\' OR ';
+                }
+
+                userConfSOQL = userConfSOQL.removeEnd(' OR ');
+
+                System.debug(LoggingLevel.FINE, 'CONF SOQL - ' + userConfSOQL);
+                tmpUserConfigs = Database.query(userConfSOQL);
             }
 
-            userConfSOQL = userConfSOQL.removeEnd(' OR ');
-
-            System.debug(LoggingLevel.FINE, 'CONF SOQL - ' + userConfSOQL);
-            List<List_View_User_Config__c> tmpUserConfigs = Database.query(userConfSOQL);
-            
-            debug1 = '\n\n-----------USER CONFS -----------------------------------------------------------\n';
+            debug += '\n\n-----------USER CONFS -----------------------------------------------------------\n';
             for (List_View_User_Config__c tmpUserConfig: tmpUserConfigs)
-                debug1 += tmpUserConfig.Name__c + ' - ' + tmpUserConfig.Primary_Key__c + ' - ' + tmpUserConfig.Value__c + '\n';
-            debug1 += '----------------------------------------------------------------------\n';
-            System.debug(LoggingLevel.FINE, debug1);
+                debug += tmpUserConfig.Name__c + ' - ' + tmpUserConfig.Primary_Key__c + ' - ' + tmpUserConfig.Value__c + '\n';
+            debug += '----------------------------------------------------------------------\n';
+            System.debug(LoggingLevel.FINE, debug);
 
             //create map of user configs based on primary keys for easy access
             Map<String, List<List_View_User_Config__c>> tmpUserConfigMap = new Map<String, List<List_View_User_Config__c>>();
@@ -148,9 +151,6 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
                     }
                 }
             }
-
-
-            System.debug(LoggingLevel.FINE, 'Test7');
 
             for (List_View__c tmpListView: tmpListViews)
             {
@@ -193,7 +193,7 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
 
             }
 
-            String debug = '\n\n----------------------------------------------------------------------\n';
+            debug += '\n\n----------------------------------------------------------------------\n';
             for (List_View__c tmpListView: tmpListViews)
                 debug += tmpListView.Name + ' - ' + tmpListView.Primary_Key__c + '\n';
             debug += '----------------------------------------------------------------------\n';
@@ -209,14 +209,21 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
             debug += '----------------------------------------------------------------------\n';
 
             System.debug(LoggingLevel.FINE, debug);
+            ListViewErrorHelper.addLog('ListViewPreProcessBatch', debug);
+
+            ListViewErrorHelper.processLogs(false);
+
             HelperDatabase.updateRecords(tmpUserConfigs, 'Simpli_lv__List_View_User_Config__c');
             HelperDatabase.updateRecords(tmpListViewConfigs, 'Simpli_lv__List_View_Config__c');
             HelperDatabase.updateRecords(tmpListViews, 'Simpli_lv__List_View__c');
 
         } catch (Exception e) {
             String message = 'Exception during ListViewPreProcessBatch.execute()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message); 
+
+            ListViewErrorHelper.createNonFutureUsageError(message); 
         }
+
+
 	}
 	
 	/* IMPLEMENTS DATABASE.BATCHABLE INTERFACE */ 

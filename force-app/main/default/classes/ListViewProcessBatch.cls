@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -58,17 +58,20 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
 
-            System.debug(LoggingLevel.FINE, 'SOQL - ' + query);
-            System.debug(LoggingLevel.FINE, 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ','));
+            String debug = 'SOQL - ' + query;
+            debug += 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ',');
             
+            ListViewErrorHelper.addLog('ListViewProcessBatch', debug);
+
+            ListViewErrorHelper.processLogs(false);
+
             HelperSchema.checkSelectAccessible(query);
 
             return Database.getQueryLocator(query);
 
         } catch (Exception e) {
             String message = 'Exception 2 during ListViewProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message);
-            Database.setSavepoint();
+            ListViewErrorHelper.createNonFutureUsageError(message);
         }
                 
         return null;
@@ -161,7 +164,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.execute()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageErrorNonFuture(message); 
+            ListViewErrorHelper.createNonFutureUsageError(message); 
         }
 	}
 	

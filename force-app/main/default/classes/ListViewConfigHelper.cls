@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 10-22-2021
+ * @Last Modified On   : 11-08-2021
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -206,7 +206,7 @@ public with sharing class ListViewConfigHelper {
             //if we have a parameter
             if (params.size() > 0)
             {
-                System.debug(LoggingLevel.FINE, 'Param found - ' + params[0]);
+                System.debug(LoggingLevel.FINE, 'Old param found - ' + params[0]);
 
                 params[0].Parameter_Value__c = paramValue;
             
@@ -221,10 +221,9 @@ public with sharing class ListViewConfigHelper {
                 param.Parameter_Value__c  = paramValue;
                 param.Parameter_Label__c  = paramLabel;
                 params.add(param);
-        
-                //throw new ListViewException('No parameter with provided list view name, object name and parameter name found - ' + listViewName + ', ' + objectName + ', ' + paramName);
-
             }
+
+            System.debug(LoggingLevel.FINE, 'Updated params - ' + params);
 
             HelperDatabase.upsertRecords(params, 'Simpli_lv__List_View_Config_Parameter__c');
 
@@ -565,7 +564,7 @@ public with sharing class ListViewConfigHelper {
         } catch (Exception e) {
             String message = 'Exception during ListViewController.validateFieldCondition(' + value + ',' + type + ',' + condition + ')  ' + ListViewException.getExtendedString(e);
             if (!HelperLimits.hasReachedLimit('DMLStatements'))
-                ListViewErrorHelper.createUsageError(message); 
+                ListViewErrorHelper.createFutureUsageError(message); 
         }
         return '';
     }

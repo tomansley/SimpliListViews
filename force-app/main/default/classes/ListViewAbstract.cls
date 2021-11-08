@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -887,7 +887,7 @@ public with sharing abstract class ListViewAbstract {
             if (type == ListViewHelper.TYPE_STRING && this.name.contains('.Name'))
                 this.type = ListViewHelper.TYPE_LOOKUP;
             else if (type == ListViewHelper.TYPE_STRING  && this.getValue().contains('<img src='))
-                this.type = ListViewHelper.TYPE_HTML;
+                this.type = ListViewHelper.TYPE_IMAGE;
             else if (type == ListViewHelper.TYPE_STRING  && this.getValue().contains('<a href='))
                 this.type = ListViewHelper.TYPE_HTML;
             else if (type == ListViewHelper.TYPE_COMBOBOX)
@@ -1117,6 +1117,13 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
+        public Boolean getIsImage()
+        {
+            if (this.type == ListViewHelper.TYPE_IMAGE) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
         public Boolean getIsLookup()
         {
             if (this.type == ListViewHelper.TYPE_LOOKUP) return true;
@@ -1128,6 +1135,12 @@ public with sharing abstract class ListViewAbstract {
         {
             if (this.type == ListViewHelper.TYPE_CURRENCY) return true;
             return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getCurrencyCode()
+        {
+            return UserInfo.getDefaultCurrency();
         }
         
         @AuraEnabled(cacheable=true)
@@ -1368,11 +1381,6 @@ public with sharing abstract class ListViewAbstract {
                 conditions.add(new ListViewCondition(condition));
             
         }
-
-        //public ListViewConfigWrapper(List_View_Config__c listViewConfig)
-        //{
-         //   this(listViewConfig, listViewConfig.List_View_Config_Parameters__r);
-        //}
 
         public List_View__c getListView()
         {
@@ -1685,11 +1693,19 @@ public with sharing abstract class ListViewAbstract {
     {
         public List_View_Action_Parameter__c param;
         private String paramType = null;
+        private Object defaultValue = null;
+        public String parentObjType;   //the API name of the object that this field looks up to
 
         public ActionParameterWrapper(List_View_Action_Parameter__c param)
         {
             this.param = param;
             this.paramType = param.Type__c.toLowerCase();
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getLookupType()
+        {
+            return param.Lookup_Type__c;
         }
 
         @AuraEnabled(cacheable=true)
@@ -1707,13 +1723,107 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getType()
         {
-            return param.Type__c;
+            return paramType;
         }
 
         @AuraEnabled(cacheable=true)
         public String getValue()
         {
-            return param.Default_Value__c;
+            String strValue = '';
+            
+            //No Value!
+            if (this.defaultValue == null) {
+                strValue = '';
+
+            } else if (getIsBoolean()) 
+            {
+                if (((Boolean) defaultValue) == false)
+                    strValue = 'false';        //if boolean value is FALSE then send NOTHING
+                else 
+                    strValue = 'true';
+            
+            } else if (getIsDateTime()) {
+                //in case of tooling API value is datetime but comes in as a string so we need to check
+                if (defaultValue instanceof DateTime) 
+                    strValue = String.valueOf(((DateTime) defaultValue).getTime());
+                else
+                    strValue = String.valueOf(defaultValue);
+
+            } else if (getIsDate()) {
+                //in case of tooling API value is date but comes in as a string so we need to check
+                if (defaultValue instanceof Date)
+                {
+                    DateTime dt = HelperDate.convertDateToDateTime((Date) defaultValue);
+                    strValue = String.valueOf(dt.getTime()).removeEnd(' 00:00:00');
+                } else {
+                    strValue = String.valueOf(defaultValue);
+                }
+
+            } else if (getIsTime()) {
+                //in case of tooling API value is time but comes in as a string so we need to check
+                if (defaultValue instanceof Time)
+                {
+                    Time tm = ((Time) defaultValue);
+                    //we don't care about the date...just the time.
+                    DateTime dt = DateTime.newInstance(2000, 1, 1, tm.hour(), tm.minute(), tm.second());
+                    strValue = String.valueOf(dt.getTime());
+                } else {
+                    strValue = String.valueOf(defaultValue);
+                }
+
+            //String
+            } else {
+                strValue = String.valueOf(defaultValue);
+            }
+
+            System.debug(LoggingLevel.FINE, 'Finished getValue with type - ' + this.getType() + ' - ' + strValue);
+            return strValue;
+        }
+
+        /**
+        * @description the value that is sent to the UI widgets. Sometimes that is different that what is displayed as text.
+        **/
+        @AuraEnabled(cacheable=true)
+        public String getUIValue()
+        {
+            String uiStr = '';
+            if (defaultValue != null)
+            {
+                if (getIsDateTime()) {
+                        uiStr = String.valueOf(defaultValue).replace(' ', 'T') + 'Z';
+                
+                } else if (getIsDate()) {
+                    uiStr = String.valueOf(defaultValue);
+                
+                } else if (getIsTime()) {
+                    uiStr = String.valueOf(defaultValue);
+                    
+                } else if (getIsBoolean()) 
+                {
+                    if (((Boolean) defaultValue) == false)
+                        uiStr = null;        //if boolean value is FALSE then send NOTHING
+                    else 
+                        uiStr = 'true';
+                }
+            }
+            System.debug(LoggingLevel.FINE, 'getUIValue - ' + this.getType() + ' - ' + uiStr );
+            return uiStr;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFieldObjName()
+        {
+            return parentObjType;
+        }
+
+        public void setParentObjType(String parentObjType)
+        {
+            this.parentObjType = parentObjType;
+        }
+        
+        public void setDefaultValue(Object objValue)
+        {
+            defaultValue = objValue;
         }
 
         @AuraEnabled(cacheable=true)

@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 10-27-2021
+ * @Last Modified On   : 11-03-2021
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -215,6 +215,8 @@ public with sharing class HelperSchema {
 	 * Returns the API object name based on a provided Id. Record IDs are prefixed 
 	 * with three-character codes that specify the type of the object (for example, 
 	 * accounts have a prefix of 001 and opportunities have a prefix of 006). 
+     
+       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getObjectTypeFromId('00G3h000000GElpEAG')); //Group
 	 */
 	public static String getObjectTypeFromId(Id objId)
 	{
@@ -303,7 +305,7 @@ public with sharing class HelperSchema {
                                                                     objValue = Time.newInstance(Integer.valueOf(value.substring(0, 2)), 
                                                                                                 Integer.valueOf(value.substring(3, 5)),
                                                                                                 Integer.valueOf(value.substring(6, 8)), 
-                                                                                                Integer.valueOf(value.substring(9))); //03:15:00.000
+                                                                                                Integer.valueOf(value.substring(9).removeEnd('Z'))); //03:15:00.000
                                                                  }
             else objValue = value;		 
 		}
@@ -325,8 +327,8 @@ public with sharing class HelperSchema {
 		//get the fields of the object in question
 		Map<String, Schema.SObjectField> fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
 
-		//get the field by key
-		Schema.SObjectField field = fieldsByKeyType.get(key.toLowerCase());
+        //get the field by key
+        Schema.SObjectField field = fieldsByKeyType.get(key.toLowerCase());
 
 		return field;
 		

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-02-2021
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperProfile {
@@ -23,20 +23,7 @@ public with sharing class HelperProfile {
         }
         return hasModifyAll;
     }
-
-    public static Boolean isSysAdmin()
-    {
-        String sysAdmin = System.label.System_Administrator;
-        System.debug(LoggingLevel.FINE, 'Language - ' + UserInfo.getLanguage());
-        
-        if (UserInfo.getLanguage() == 'ko') sysAdmin = '시스템 관리자'; //korean
-        else if (UserInfo.getLanguage() == 'he') sysAdmin = 'מנהל מערכת'; //hebrew
-
-        if (UserInfo.getProfileId() == getProfile(sysAdmin).Id)
-            return true;
-        return false;
-    }
-
+/*
     public static Profile getProfile(String name)
     {
         Profile profile = null;
@@ -80,4 +67,5 @@ public with sharing class HelperProfile {
 			profilesById.put(prof.Id, prof);
         }
     }
+    */
 }

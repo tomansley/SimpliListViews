@@ -60,8 +60,18 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     wiredObjectListViewsResult;
     wiredListViewObjectsResult;
 
+    @api set recordId(value)
+         { 
+             this.relatedRecordId = value; 
+             this.setJoinCriteria(value); 
+         };
+         get recordId()
+         { 
+             return this.relatedRecordId; 
+         };
+    
     @api mode                       = 'App Page'; //indicates the mode the page is in for displaying the list view. i.e. app, single etc.
-    @api pageName                   = '';                 //this is NOT the page name but the COMPONENT name
+    @api pageName                   = '';         //this is NOT the page name but the COMPONENT name
     @api hasMainTitle               = undefined;
     @api mainTitle                  = 'List Views';
     @api includedObjects            = '';
@@ -71,13 +81,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api allowRefresh               = false; //config indicating whether the auto refresh checkbox is made available.
     @api allowInlineEditing         = false; //config indicating whether inline editing is available
     @api displayRecordPopovers      = false; //config indicating whether record popovers should be displayed
-    @api allowAdmin                 = false;  //indicates whether the admin button should display to the user
+    @api allowAdmin                 = false; //indicates whether the admin button should display to the user
     @api displayActions             = false;
     @api displayReprocess           = false;
     @api displayURL                 = false;
     @api displayRowCount            = false;
     @api displaySelectedCount       = false;
-    @api displayOrigButton;             //this is not used....deprecated.
+    @api displayOrigButton;                   //this is not used....deprecated.
     @api displayModified            = false;
     @api displayExportButton        = false;
     @api displayTextSearch          = false;  //identifies whether the text search field should be displayed.
@@ -96,6 +106,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isModeSingle       = false;  //indicates whether the current mode is SINGLE LIST VIEW
     @track isModeApp          = true;   //indicates whether the current mode is APP PAGE
 
+    @track relatedRecordId;             //holds the record Id if set by the API.
     @track uniqueComponentId  = '';
     @track hasModifyAll       = false;  //indicates whether the current user is allowed to modify all data.
     @track textSearchText = '';         //holds the current value for text searching.
@@ -212,6 +223,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     async renderedCallback() {
 
         console.log('Starting simpliUIListViews.renderedCallback for ' + this.pageName);
+        console.log('Record id - ' + this.recordId);
 
         this.checkInitialized();
 
@@ -443,7 +455,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     
     
     @wire (hasModifyAll, { })
-    wiredIsSysAdmin({ error, data }) {
+    wiredHasModifyAll({ error, data }) {
         if (data) { 
             console.log('Is sys admin called successfully - ' + data + ' for ' + this.pageName);
             this.hasModifyAll = data; 
@@ -605,13 +617,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             
         })
         .catch(error => {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
+            console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace + ' for ' + this.pageName);
             this.listViewData = undefined; 
             this.spinnerOff();
             this.dataSpinnerOff();
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving Data',
-                message: 'There was an error retrieving the data - ' + error.body.message,
+                message: 'There was an error retrieving the data - ' + error.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -966,15 +978,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             //run through all the checkbox components again now that they have been set
             var recordIds = '';        
 
-            for(let i = 0; i < selectedRows.length; i++) {
-                if(selectedRows[i].checked === true && selectedRows[i].value != 'all') {
-
+            selectedRows.forEach(element => { 
+                if (element.checked === true && element.value != 'all')
+                {
                     //the value includes the row number so remove that from the end as we only want the Ids
-                    const indexOf = selectedRows[i].value.indexOf(':');
-                    var recordId = selectedRows[i].value.substring(0, indexOf);
-                    recordIds = recordIds + recordId + ',';
-                }
-            }
+                    const indexOf = element.value.indexOf(':');
+                    var recordId = element.value.substring(0, indexOf);
+                    if (recordId !== '' && recordId !== undefined) //if we clicked "All" then the first one is blank.
+                        recordIds = recordIds + recordId + ',';
+                }            
+            });
 
             //remove the last comma if there is one.
             if (recordIds.length > 0) {
@@ -1485,7 +1498,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                             if (element.checked === true && element.value != 'all')
                                             {
                                                 selectedRowId = element.value.substring(0, element.value.indexOf(':'));
-                                                this.selectedRecordIds.add(selectedRowId);
+                                                if (selectedRowId !== '')
+                                                    this.selectedRecordIds.add(selectedRowId);
                                             }            
                                         });
 
@@ -1727,11 +1741,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     processActionModal() {   
 
         //reset the selected record Ids
-        let selectedRows = this.template.querySelectorAll('lightning-input');
-        selectedRows.forEach(element => element.checked = false);
-        this.selectedRecordCount  = 0;
+        //let selectedRows = this.template.querySelectorAll('lightning-input');
+        //selectedRows.forEach(element => element.checked = false);
+        //this.selectedRecordCount  = 0;
         this.showActionModal      = false;
         this.selectedAction       = '';
+        //this.selectedRecordIdsStr = '';
+        //this.selectedRecordIds    = new Set();
 
         this.refreshAllListViewData();
     }

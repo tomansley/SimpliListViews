@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-02-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -20,7 +20,7 @@ global class ListViewControllerTest {
     }
 
     @IsTest
-    static void isSysAdminTest()
+    static void hasModifyAllTest()
     {
 
         Test.startTest();
@@ -209,6 +209,21 @@ global class ListViewControllerTest {
         String result = ListViewController.updateAllListViews();
 
         System.assertNotEquals(result, 'failed');
+    }
+
+    static testMethod void getListViewActionAndDataTest()
+    {
+        Account acct = HelperTest.insertAccount('Test Acct for getListViewActionAndDataTest');
+
+        Test.startTest();
+            ListViewAbstract.ActionWrapper action = ListViewController.getListViewActionAndData('Update:Account', '["' + acct.Id + '"]');
+        Test.stopTest();
+
+        System.assertEquals('Update', action.getLabel());
+        System.assert(action.getDisplayParameters().size() > 0);
+        ListViewAbstract.ActionParameterWrapper param = action.getDisplayParameters()[0];
+        System.debug(LoggingLevel.DEBUG, 'PARAMS - ' + action.getDisplayParameters());
+        System.assert(!String.isEmpty(param.getValue()));
     }
 
 

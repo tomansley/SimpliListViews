@@ -1,11 +1,12 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-04-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   07-20-2021   tom@ansleyllc.com   Initial Version
+ * 1.0   11-03-2021   tom@ansleyllc.com   Added getRecordName() method
 **/
 public with sharing class ListViewLookupController {
     
@@ -25,6 +26,14 @@ public with sharing class ListViewLookupController {
         List<sObject> lookUpList = database.query(soql);
 
         return lookUpList;  
+    }
+
+    @AuraEnabled
+    public static String getRecordName(String selectedId, String fieldObjName){
+        
+        String soql = 'SELECT Id, Name FROM ' + String.escapeSingleQuotes(fieldObjName) + ' WHERE Id = \'' + String.escapeSingleQuotes(selectedId) + '\'';
+
+        return (String) Database.query(soql)[0].get('Name');
     }
 
 }

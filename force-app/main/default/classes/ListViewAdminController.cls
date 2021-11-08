@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -21,6 +21,8 @@ public with sharing class ListViewAdminController {
 
         ListViewAbstract.ListViewConfigWrapper config = new ListViewAbstract.ListViewConfigWrapper(null, orgWideConfig, params);
 
+        ListViewErrorHelper.processLogs(true);
+
         return config;
     }
 
@@ -37,6 +39,8 @@ public with sharing class ListViewAdminController {
 
         String result = ListViewConfigHelper.updateOrgWideParams(mapValues);
 
+        ListViewErrorHelper.processLogs(true);
+
         return 'Ok:';
     }
 
@@ -52,6 +56,8 @@ public with sharing class ListViewAdminController {
             objNames.add(new ListViewController.SelectOption(obj, objMap.get(obj)));         
     
         objNames.sort();
+
+        ListViewErrorHelper.processLogs(true);
 
         return objNames;
     }

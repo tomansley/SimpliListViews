@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 10-22-2021
+  @last modified on  : 11-08-2021
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -55,12 +55,24 @@
         <template if:true={isInitialized}>
             <lightning-card>
                 <template if:true={hasMainTitle}>
-                    <div slot="title">
-                        {mainTitle}
-                    </div>
+                    <template if:true={isModeApp}>
+                        <div slot="title">
+                            {mainTitle}
+                        </div>
+                    </template>
                 </template>
                 
                 <lightning-layout>
+
+                    <template if:true={hasMainTitle}>
+                        <template if:false={isModeApp}>
+                            <lightning-layout-item padding="horizontal-small" style="width: 20%;">
+                                <h2 style="font-weight: bold; font-size: 1.3em; padding: 5px">
+                                    {mainTitle}
+                                </h2>
+                            </lightning-layout-item>
+                        </template>
+                    </template>
 
                     <!-- --------------------- -->
                     <!-- OBJECT PICKLIST       -->
@@ -472,7 +484,7 @@
                                                             </template>
                                                             <template if:true={fieldData.isCurrency}>
                                                                 <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                    <lightning-formatted-number value={fieldData.value} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                                                    <lightning-formatted-number value={fieldData.value} format-style="currency" currency-code={fieldData.currencyCode}></lightning-formatted-number>
                                                                 </div>
                                                             </template>
                                                             <template if:true={fieldData.isPhone}>
@@ -506,6 +518,11 @@
                                                                 </div>
                                                             </template>
                                                             <template if:true={fieldData.isHTML}>
+                                                                <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:left;">
+                                                                    <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isImage}>
                                                                 <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
                                                                     <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
                                                                 </div>
@@ -580,7 +597,7 @@
                                                         </template>
                                                         <template if:true={fieldData.isCurrency}>
                                                             <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                <lightning-formatted-number value={fieldData.value} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                                                <lightning-formatted-number value={fieldData.value} format-style="currency" currency-code={fieldData.currencyCode}></lightning-formatted-number>
                                                             </div>
                                                         </template>
                                                         <template if:true={fieldData.isPhone}>
@@ -789,7 +806,6 @@
         <!-- ---------------------------------------------------------------------------------- -->
         <c-simpli-u-i-list-views-action-modal show-modal={showActionModal}
                                               action-api-name={selectedActionKey}
-                                              record-count={selectedRecordCount}
                                               record-ids={selectedRecordIdsStr}
                                               onprocessed={processActionModal}
                                               oncancelled={cancelActionModal}>

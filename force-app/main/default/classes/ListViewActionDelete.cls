@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -53,10 +53,10 @@ public with sharing class ListViewActionDelete  extends ListViewAction {
                 returnStr += deletedObjs.size() + ' records deleted successfully.';
 
         } catch (Exception e) {
-            String message = ListViewAction.RESULT_ERROR + ':There was an error deleting the ' + HelperSchema.getObjectPluralName(objType) + '. Please see a system admin.';
+            String message = ListViewAction.RESULT_ERROR + ':There was an error deleting the ' + objType + '. Please see a system admin.';
             if (ListViewConfigHelper.isDebuggingOn())
                 message += ' Exception during ListViewActionDelete.process() ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createUsageError(message); 
+            ListViewErrorHelper.createFutureUsageError(message); 
             returnStr = message;
         }
         return returnStr;

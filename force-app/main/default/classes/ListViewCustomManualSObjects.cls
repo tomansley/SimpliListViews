@@ -1,16 +1,16 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-05-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
  * 2.0   06-18-2021   tom@ansleyllc.com   Added offset to allow for larger datasets
  * 3.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables
 **/
-public with sharing class ListViewCustomManualSObjects extends ListViewCustomManualAbstract {
-
+public with sharing class ListViewCustomManualSObjects { //extends ListViewCustomManualAbstract {
+/*
     public override List<List_View_Config_Parameter__c> getConfigParams(List_View_Config__c config)
     {
         System.debug(LoggingLevel.FINE, 'Entering getConfigParams');
@@ -70,13 +70,13 @@ public with sharing class ListViewCustomManualSObjects extends ListViewCustomMan
 
         return listViewColumns;
     }
-
+*/
 
     /*
         * Method to take a list of schema objects and convert the
         * rows into something that front end lightning components can handle.
         */
-    private static ListViewAbstract.RowsWrapper handleRowsToWrapper(Map<String,Schema.SobjectType> dataRows, List_View__c listView, 
+/*    private static ListViewAbstract.RowsWrapper handleRowsToWrapper(Map<String,Schema.SobjectType> dataRows, List_View__c listView, 
                                                                     ListViewConfigWrapper lvConfig,
                                                                     List<ListViewHelper.ColumnSortData> sortData)
     {
@@ -206,5 +206,5 @@ public with sharing class ListViewCustomManualSObjects extends ListViewCustomMan
             field = new HelperSchema.FieldData('Prefix', 'Prefix', Schema.DisplayType.STRING, row.getKeyPrefix(), null);
         return field;
     }
-
+*/
 }
