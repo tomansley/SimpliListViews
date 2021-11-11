@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-03-2021
+ * @last modified on  : 11-09-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -22,6 +22,8 @@ public with sharing class ListViewActionHelper {
     public static final String PERM_DELETE = 'Delete';
 
     public static final String PARAM_KEY_URL = 'URL';
+
+    private static String debugString = '';
 
     public static String getPrimaryKey(List_View_Action__c action)
     {
@@ -133,6 +135,8 @@ public with sharing class ListViewActionHelper {
     **/
     public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName)
     {
+        debugString += 'getListViewActions(' + objectType + ', ' + listViewName + ')';
+
         List<ListViewAbstract.ActionWrapper> actions = new List<ListViewAbstract.ActionWrapper>();
 
         //get the list views
@@ -153,6 +157,7 @@ public with sharing class ListViewActionHelper {
                 actions.add(new ListViewAbstract.ActionWrapper(action));         
         }
 
+        ListViewErrorHelper.addLog('ListViewActionHelper', debugString);
         return actions;
     }
 
@@ -172,13 +177,20 @@ public with sharing class ListViewActionHelper {
 
         Id rt = ListViewActionHelper.coreRTId;
         if (listview.RecordTypeId == ListViewHelper.customRTId)
+        {
             rt = ListViewActionHelper.customRTId;
+            debugString += 'List View RT - Custom(' + rt + '), ';
+        } else {
+            debugString += 'List View RT - Core(' + rt + '), ';
+        }
 
         Set<String> subTypes = new Set<String>();
         if (listview.RecordTypeId == ListViewHelper.customRTId)
             subTypes.add(listview.Subtype__c);
 
-        //get list view data
+        debugString += 'List View Subtypes - ' + subTypes + ', ';
+
+            //get list view data
         List<List_View_Action__c> actions = [SELECT Label__c,
                                                 Apex_Class_Name__c,
                                                 Object_Type__c,
@@ -203,7 +215,7 @@ public with sharing class ListViewActionHelper {
                                                         Lookup_Type__c
                                                 FROM List_View_Action_Parameters__r
                                                 ORDER BY Display_Order__c NULLS LAST)
-                                                    FROM List_View_Action__c
+                                            FROM List_View_Action__c
                                             WHERE RecordTypeId = :rt
                                                     AND (Object_Type__c = :listview.Object_Name__c
                                                         OR Object_Type__c = NULL)
@@ -211,6 +223,8 @@ public with sharing class ListViewActionHelper {
                                                         OR Subtype__c IN :subTypes)
                                                     AND Is_Active__c = TRUE
                                              ORDER BY Label__c];
+
+        debugString += 'List views returned - ' + actions.size() + ', ';
 
         Map<String, List_View_Action__c> actionsByName = new Map<String, List_View_Action__c>();
         for (List_View_Action__c action: actions)
@@ -233,6 +247,7 @@ public with sharing class ListViewActionHelper {
             if (action.Permissions__c.contains(PERM_READ))
                 result = HelperSchema.checkObjectAccessible(objectType, false);       
         }
+        debugString += 'canPerformAction - ' + result + ' - ' + objectType + ' - ' + action.Primary_Key__c + ', ';
         return result;
     }
 }

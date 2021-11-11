@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-03-2021
+ * @Last Modified On   : 11-09-2021
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -593,9 +593,24 @@ public with sharing class HelperSchema {
                     Boolean isSet = false;
 
                     System.debug(LoggingLevel.FINE, 'old currentObj - ' + currentObj);
-                    currentObj = currentObj.getSObject(field);
-                    System.debug(LoggingLevel.FINE, 'new currentObj - ' + currentObj);
+
+                    Map<String, Object> fieldsToValue = currentObj.getPopulatedFieldsAsMap();
+
+                    if (fieldsToValue.get(field) != null)
+                    {
+                        Object tmpObj = fieldsToValue.get(field);
+
+                        if (tmpObj instanceof List<SObject>)
+                            currentObj = ((List<SObject>) tmpObj)[0];
+                        else if (tmpObj instanceof SObject)
+                            currentObj = (SObject) tmpObj;
+    
+                    } else {
+                        System.debug(LoggingLevel.FINE, 'No field with name ' + field);
+                    }
                     
+                    System.debug(LoggingLevel.FINE, 'new currentObj - ' + currentObj);
+
                     if (currentObj != null)
                     {
                         isSet = true;

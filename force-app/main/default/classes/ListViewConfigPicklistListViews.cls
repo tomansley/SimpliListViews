@@ -1,12 +1,14 @@
-/*
- * Object which is used by the lightning app designer to allow the user to set default values on SImpli UI components.
- * This particular picklist returns ALL configs that are not batch and do not have a parent.
- */
-public class ListViewConfigPicklist extends VisualEditor.DynamicPickList{
+/**
+ * @description       : 
+ * @author            : tom@ansleyllc.com
+ * @last modified on  : 11-10-2021
+ * @last modified by  : tom@ansleyllc.com
+**/
+public class ListViewConfigPicklistListViews extends VisualEditor.DynamicPickList{
 
     VisualEditor.DesignTimePageContext context;
 
-	public ListViewConfigPicklist(VisualEditor.DesignTimePageContext context) {
+	public ListViewConfigPicklistListViews(VisualEditor.DesignTimePageContext context) {
 	    this.context = context;
         //this.context.pageType
         //this.context.entityName

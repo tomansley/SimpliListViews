@@ -3,8 +3,8 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-08-2021
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 11-10-2021
+  @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author              Modification
   1.0   08-03-2020   tom@ansleyllc.com   Initial Version
@@ -139,13 +139,15 @@
                     <!-- REFRESH BUTTON            -->
                     <!-- ------------------------- -->
                     <template if:true={displayReprocess}>
-                        <lightning-layout-item>
-                            <lightning-button-icon title={refreshTitle} 
-                                                size="medium" 
-                                                icon-name="action:new_task" 
-                                                onclick={handleProcessListViewsButtonClick}>
-                            </lightning-button-icon>
-                        </lightning-layout-item>
+                        <template if:true={isCoreListView}>
+                            <lightning-layout-item>
+                                <lightning-button-icon title={refreshTitle} 
+                                                    size="medium" 
+                                                    icon-name="action:new_task" 
+                                                    onclick={handleProcessListViewsButtonClick}>
+                                </lightning-button-icon>
+                            </lightning-layout-item>
+                        </template>
                     </template>
 
                     <!-- ------------------------- -->
@@ -271,13 +273,15 @@
                                 <!-- ADMIN BUTTON              -->
                                 <!-- ------------------------- -->
                                 <template if:true={allowAdmin}>
-                                    <lightning-layout-item>
-                                        <lightning-button-icon title={label.List_View_Admin} 
-                                                                size="medium" 
-                                                                icon-name="utility:settings" 
-                                                                onclick={handleAdminButtonClick}>
-                                        </lightning-button-icon>
-                                    </lightning-layout-item>
+                                    <template if:false={listViewData.listView.isNonEditable}>
+                                        <lightning-layout-item>
+                                            <lightning-button-icon title={label.List_View_Admin} 
+                                                                    size="medium" 
+                                                                    icon-name="utility:settings" 
+                                                                    onclick={handleAdminButtonClick}>
+                                            </lightning-button-icon>
+                                        </lightning-layout-item>
+                                    </template>
                                 </template>
                             </template>
                         </lightning-layout>
@@ -333,10 +337,20 @@
                                                             data-sortindex={field.sortIndex}>{field.label}</span>
                                                         <div if:true={field.sortIndex}>
                                                             <div if:true={field.sortDir}>
-                                                                &nbsp;(&#9660;{field.sortIndexDisplay})
+                                                                <template if:true={listViewData.isDefaultSort}>
+                                                                    &nbsp;(&#9660;)
+                                                                </template>
+                                                                <template if:false={listViewData.isDefaultSort}>
+                                                                    &nbsp;(&#9660;{field.sortIndexDisplay})
+                                                                </template>
                                                             </div>
                                                             <div if:false={field.sortDir}>
-                                                                &nbsp;(&#9650;{field.sortIndexDisplay})
+                                                                <template if:true={listViewData.isDefaultSort}>
+                                                                    &nbsp;(&#9650;)
+                                                                </template>
+                                                                <template if:false={listViewData.isDefaultSort}>
+                                                                    &nbsp;(&#9650;{field.sortIndexDisplay})
+                                                                </template>
                                                             </div>
                                                         </div>
                                                     </div>

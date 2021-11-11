@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-02-2021
+ * @last modified on  : 11-09-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -149,7 +149,7 @@ public with sharing class ListViewBL {
 
             String objType = null;
             if (listView.RecordTypeId == null || listView.RecordTypeId == ListViewHelper.coreRTId)
-                objType = 'ListViewCore';
+                objType = ListViewHelper.CORE_APEX_CLASS;
             else
                 objType = listView.Custom_Apex_Class__c;
 

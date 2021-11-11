@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-08-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-10-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -94,17 +94,13 @@ public with sharing abstract class ListViewAbstract {
     //-------------------------------------------------------------------
     public class ListViewWrapper
     {
-        public DateTime lastModifiedDate;
-        public String lastModifiedBy;
-        public String listviewType;
         public Integer offset   = -1;
         public Integer rowLimit = -1;
+        public List_View__c listView;
     
         public ListViewWrapper(List_View__c listView)
         {
-            lastModifiedDate = listView.LastModifiedDate;
-            lastModifiedBy   = listView.LastModifiedBy.Name;
-            listviewType     = listView.RecordType.Name;
+            this.listView = listView;
         }
 
         @AuraEnabled(cacheable=false)
@@ -122,25 +118,40 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getLastModifiedText()
         {
-            return  'Last Modified By: ' + lastModifiedBy + ' - ' + lastModifiedDate;
+            return  'Last Modified By: ' + getLastModifiedBy() + ' - ' + getLastModifiedDate();
         }
 
         @AuraEnabled(cacheable=true)
         public String getLastModifiedBy()
         {
-            return lastModifiedBy;
+            return listView.LastModifiedBy.Name;
         }
         
         @AuraEnabled(cacheable=true)
         public DateTime getLastModifiedDate()
         {
-            return lastModifiedDate;
+            return listView.LastModifiedDate;
         }
         
         @AuraEnabled(cacheable=true)
         public String getListViewType()
         {
-            return listviewType;
+            return listView.RecordType.Name;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsNonEditable()
+        {
+            if (ListViewController.hasModifyAll())
+                return false;
+            else
+                return listView.Is_Non_Editable__c;
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getDefaultSortOrder()
+        {
+            return listView.Default_Sort_Order__c;
         }
         
     }
@@ -161,6 +172,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean hasTotalsRow;
         public Boolean isCoreListView = false;
         public Boolean isEdited;
+        public Boolean isDefaultSort = false;
         
         public RowsWrapper(List_View__c listView)
         {
@@ -197,6 +209,17 @@ public with sharing abstract class ListViewAbstract {
         public Boolean getIsEdited()
         {
             return isEdited;
+        }
+
+        @AuraEnabled
+        public Boolean getIsDefaultSort()
+        {
+            return isDefaultSort;
+        }
+
+        public void setIsDefaultSort(Boolean isDefaultSort)
+        {
+            this.isDefaultSort = isDefaultSort;
         }
 
         @AuraEnabled(cacheable=true)

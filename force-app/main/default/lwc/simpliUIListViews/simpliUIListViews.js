@@ -102,6 +102,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         return this.joinData; 
     }
 
+    @track isCoreListView = false;
+    @track isCustomListView = false;
+
     @track isModeRelated      = false;  //indicates whether the current mode is RELATED LIST VIEW
     @track isModeSingle       = false;  //indicates whether the current mode is SINGLE LIST VIEW
     @track isModeApp          = true;   //indicates whether the current mode is APP PAGE
@@ -606,8 +609,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.modifiedText = '';
             }
 
-            if (this.listViewData.listView.listViewType !== 'Core') {
-                this.displayReprocess = false;
+            if (this.listViewData.listView.listViewType === 'Core') {
+                this.isCoreListView = true;
+                this.isCustomListView = false;
+            } else {
+                this.isCoreListView = false;
+                this.isCustomListView = true;
             }
 
             this.refreshTitle = 'Click to perform list view refresh on current list view';

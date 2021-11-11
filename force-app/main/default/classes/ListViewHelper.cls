@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-08-2021
+ * @last modified on  : 11-10-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -25,6 +25,8 @@ global with sharing class ListViewHelper {
    
     public static final Set<String> POLYMORPHIC_FIELDS = new Set<String>{ 'WhatId', 'WhoId'};
 
+    public static final String CORE_APEX_CLASS = 'ListViewCore';
+    
     public static final String TYPE_ALL    = 'All';
     public static final String TYPE_CORE   = 'Core';
     public static final String TYPE_CUSTOM = 'Custom';
@@ -53,6 +55,8 @@ global with sharing class ListViewHelper {
     public static final String TYPE_PHONE         = 'phone';
     public static final String TYPE_INTEGER       = 'integer';
     public static final String TYPE_COMBOBOX      = 'combobox';
+
+    public static final String PARAM_ADD_FIELDS   = 'AdditionalFields';
 
     public static final String SUBTYPE_MANUAL = 'Manual';
     public static final String SUBTYPE_TOOLING = 'Tooling';
@@ -282,7 +286,7 @@ global with sharing class ListViewHelper {
                 System.debug(LoggingLevel.FINE, 'Updated Simpli List View - ' + simpliListView);
 
                 //use the metadata API to try and enrich the listview data.
-                HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
+                enrichListViewFromMetadata(simpliListView);
 
             } catch (Exception e) {
                 String message = 'Exception during ListViewHelper.updateListViews(' + objectName + ')  ' + ListViewException.getExtendedString(e);
@@ -300,6 +304,8 @@ global with sharing class ListViewHelper {
      * Method to retrieve list view describe details including the SOQL statement.
      * The set passed in is the CUSTOM list view Ids. This method should not be used 
      * for more than 50 list views. If more need to be updated then use the batch job.
+     * 
+      ListViewHelper.updateListViews(new Set<Id>{'a003h00000BWOUhAAP'});
      * 
      * HANDLES CORE ONLY
      */
@@ -354,12 +360,32 @@ global with sharing class ListViewHelper {
                 simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
                 simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
 
+                //0:true:BillingState;1:true:Type
+                //set the default sort order
+                if (jsonResponse.get('orderBy') != null)
+                {
+                    String orderStr = '';
+                    List<Object> orderItems = (List<Object>) jsonResponse.get('orderBy');
+                    for (Integer index = 0; index < orderItems.size(); index++)
+                    {
+                        Map<String, Object> orderItemObj = (Map<String, Object>) orderItems.get(index);
+                        String direction = 'true';
+                        if (orderItemObj.get('sortDirection') == 'descending')
+                            direction = 'false';
+
+                        orderStr += index + ':' + direction + ':' + orderItemObj.get('fieldNameOrPath') + ';';
+                        System.debug(LoggingLevel.DEBUG, 'ORDER - ' + orderStr);
+                    }
+                    orderStr = orderStr.removeEnd(';');
+                    simpliListView.Default_Sort_Order__c = orderStr;
+                }
+
                 updatedListViews.add(simpliListView);
 
                 System.debug(LoggingLevel.FINE, 'Updated Simpli List View - ' + simpliListView);
 
                 //use the metadata API to try and enrich the listview data.
-                HelperMetadataAPI.enrichListViewFromMetadata(simpliListView);
+                enrichListViewFromMetadata(simpliListView);
 
             } catch (Exception e) {
                 String message = 'Exception during ListViewHelper.updateListViews(' + lvIds + ')  ' + ListViewException.getExtendedString(e);
@@ -371,6 +397,143 @@ global with sharing class ListViewHelper {
         HelperDatabase.upsertRecords(updatedListViews, 'simpli_lv__List_View__c', 'simpli_lv__Primary_Key__c', true);
 
         return true;
+    }
+
+    /*
+        List_View__c lv = [SELECT Object_Name__c, API_Name__c FROM List_View__c WHERE Full_Name__c = 'Account.simpli_lv__PlatinumandGoldSLACustomers'][0];
+        ListViewHelper.enrichListViewFromMetadata(lv);
+
+     */
+    public static List_View__c enrichListViewFromMetadata(List_View__c coreListView)
+    {
+        ListViewMetadataAPIService.MetadataPort service = ListViewMetadataAPIService.createService();
+
+        ListViewMetadataAPIService.ListView listView = null;
+        // Read List View information
+        if (Test.isRunningTest())
+        {
+            listView = new ListViewMetadataAPIService.ListView();
+            listView.columns = new List<String>();
+            listView.columns.add('NAME');
+            listView.label = 'Test Label';
+            listView.sharedTo = new ListViewMetadataAPIService.SharedTo();
+            
+
+        } else {
+            listView = (ListViewMetadataAPIService.ListView) service.readMetadata('ListView', new String[] { coreListView.Object_Name__c + '.' + coreListView.API_Name__c }).getRecords()[0];
+        }
+
+        System.debug(LoggingLevel.DEBUG, 'Listview Metadata - ' + listView);
+
+        ListViewMetadataAPIService.SharedTo sharedTo = null;
+        //we might have no listview returned.
+        if (listView.label != null)
+        {
+            
+            System.debug(LoggingLevel.DEBUG, 'List View - ' + listView);
+            
+            System.debug(LoggingLevel.DEBUG, 'ListView.booleanFilter - ' + listView.booleanFilter);
+            System.debug(LoggingLevel.DEBUG, 'ListView.columns - ' + listView.columns);
+            System.debug(LoggingLevel.DEBUG, 'ListView.division - ' + listView.division);
+            System.debug(LoggingLevel.DEBUG, 'ListView.filters - ' + listView.filters);
+            System.debug(LoggingLevel.DEBUG, 'ListView.filterScope - ' + listView.filterScope);
+            System.debug(LoggingLevel.DEBUG, 'ListView.fullName - ' + listView.fullName);
+            System.debug(LoggingLevel.DEBUG, 'ListView.label - ' + listView.label);
+            System.debug(LoggingLevel.DEBUG, 'ListView.language - ' + listView.language);
+            System.debug(LoggingLevel.DEBUG, 'ListView.queue - ' + listView.queue);
+            System.debug(LoggingLevel.DEBUG, 'ListView.sharedTo - ' + listView.sharedTo);
+            System.debug(LoggingLevel.DEBUG, 'ListView.type - ' + listView.type);
+            System.debug(LoggingLevel.DEBUG, 'ListView.columns - ' + listView.columns);
+            System.debug(LoggingLevel.DEBUG, 'ListView.filters - ' + listView.filters);
+
+            coreListView.Is_Private__c = false;
+            coreListView.Is_Non_Editable__c = false;
+
+            if(listView.sharedTo != null)
+            {
+                sharedTo = listView.sharedTo;
+
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.allCustomerPortalUsers - ' + sharedTo.allCustomerPortalUsers);
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.allInternalUsers - ' + sharedTo.allInternalUsers);
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.allPartnerUsers - ' + sharedTo.allPartnerUsers);
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.group_x - ' + sharedTo.group_x);
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.role - ' + sharedTo.role);
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.roleAndSubordinates - ' + sharedTo.roleAndSubordinates);
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.roleAndSubordinatesInternal - ' + sharedTo.roleAndSubordinatesInternal);
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.territory - ' + sharedTo.territory);
+                System.debug(LoggingLevel.DEBUG, 'SharedTo.territoryAndSubordinates - ' + sharedTo.territoryAndSubordinates);
+            }
+
+            coreListview.Boolean_Filter__c = listView.booleanFilter;
+            coreListview.Filter_Scope__c = listView.filterScope;
+
+            if(sharedTo != null)
+            {
+                if (sharedTo.allInternalUsers != null)
+                    coreListview.All_Internal_Users__c = true;
+                else 
+                    coreListview.All_Internal_Users__c = false;
+
+                if (sharedTo.group_x != null)
+                    coreListview.Groups__c = String.join(sharedTo.group_x, ',');
+                else
+                    coreListview.Groups__c = null;
+
+                if (sharedTo.role != null)
+                    coreListview.Roles__c = String.join(sharedTo.role, ',');
+                else
+                    coreListview.Roles__c = null;
+
+                if (sharedTo.roleAndSubordinates != null)
+                    coreListview.Roles_And_Subordinates__c = String.join(sharedTo.roleAndSubordinates, ',');
+                else
+                    coreListview.Roles_And_Subordinates__c = null;
+
+                if (sharedTo.territory != null)
+                    coreListview.Territories__c = String.join(sharedTo.territory, ',');
+                else
+                    coreListview.Territories__c = null;
+                
+                if (sharedTo.territoryAndSubordinates != null)
+                    coreListview.Territories_And_Subordinates__c = String.join(sharedTo.territoryAndSubordinates, ',');
+                else
+                    coreListview.Territories_And_Subordinates__c = null;
+        
+            } else {
+                coreListview.All_Internal_Users__c = false;
+                coreListview.Groups__c = null;
+                coreListview.Roles__c = null;
+                coreListview.Roles_And_Subordinates__c = null;
+                coreListview.Territories__c = null;
+                coreListview.Territories_And_Subordinates__c = null;
+            }
+
+        //this is a bit of a hack to allow RECENTLY VIEWED list view to not be private.
+        } else if (coreListView.Core_ListView_Query__c.contains('USING SCOPE mru') && coreListView.API_Name__c.contains('RecentlyViewed')) {
+            
+            coreListView.Is_Private__c = false;
+            coreListView.Is_Non_Editable__c = true;
+            coreListview.All_Internal_Users__c = false;
+            coreListview.Groups__c = null;
+            coreListview.Roles__c = null;
+            coreListview.Roles_And_Subordinates__c = null;
+            coreListview.Territories__c = null;
+            coreListview.Territories_And_Subordinates__c = null;
+
+        } else {
+           
+            coreListView.Is_Private__c = true;
+            coreListView.Is_Non_Editable__c = false;
+            coreListview.All_Internal_Users__c = false;
+            coreListview.Groups__c = null;
+            coreListview.Roles__c = null;
+            coreListview.Roles_And_Subordinates__c = null;
+            coreListview.Territories__c = null;
+            coreListview.Territories_And_Subordinates__c = null;
+        }
+
+        return coreListView;
+        
     }
 
     /*
@@ -554,7 +717,10 @@ global with sharing class ListViewHelper {
                                                  LastModifiedBy.Name,
                                                  RecordType.Name,
                                                  Custom_Apex_Class__c,
-                                                 Subtype__c
+                                                 Subtype__c,
+                                                 Is_Private__c,
+                                                 Is_Non_Editable__c,
+                                                 Default_Sort_Order__c
                                            FROM List_View__c
                                           WHERE RecordTypeId IN :rtIds
                                           ORDER BY Object_Name__c, Label__c]);
@@ -602,7 +768,10 @@ global with sharing class ListViewHelper {
                                                  LastModifiedBy.Name,
                                                  RecordType.Name,
                                                  Custom_Apex_Class__c,
-                                                 Subtype__c
+                                                 Subtype__c,
+                                                 Is_Private__c,
+                                                 Is_Non_Editable__c,
+                                                 Default_Sort_Order__c
                                            FROM List_View__c
                                           WHERE Id IN :lvIds
                                                 AND RecordTypeId IN :rtIds]);
@@ -647,7 +816,10 @@ global with sharing class ListViewHelper {
                                                 LastModifiedBy.Name,
                                                 RecordType.Name,
                                                 Custom_Apex_Class__c,
-                                                Subtype__c
+                                                Subtype__c,
+                                                Is_Private__c,
+                                                Is_Non_Editable__c,
+                                                Default_Sort_Order__c
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
                                         ORDER BY Label__c]);
@@ -695,7 +867,10 @@ global with sharing class ListViewHelper {
                                                 LastModifiedBy.Name,
                                                 RecordType.Name,
                                                 Custom_Apex_Class__c,
-                                                Subtype__c
+                                                Subtype__c,
+                                                Is_Private__c,
+                                                Is_Non_Editable__c,
+                                                Default_Sort_Order__c
                                         FROM List_View__c
                                         WHERE Object_Name__c = :objAPIName
                                             AND API_Name__c = :listViewAPIName]);
@@ -782,17 +957,25 @@ global with sharing class ListViewHelper {
         if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted'))
             selectStr += ', IsDeleted';
 
-        if (lvConfigParams.get('AdditionalFields') != null)
+        if (lvConfigParams.get(PARAM_ADD_FIELDS) != null)
         {
-            List<String> allFields = lvConfigParams.get('AdditionalFields').split(',');
+            Set<String> allFields = new Set<String>(lvConfigParams.get(PARAM_ADD_FIELDS).split(',')); //put it into a set to remove duplicates
             for (String field: allFields)
             {
+                Boolean valid = true;
                 //do security validation on additional fields. If the field is a lookup the security is performed later
                 if (!field.contains('.'))
-                    HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field);
+                    valid = HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field, false);
+
+                if (selectFields.contains(field))
+                    valid = false;
+
+                //if we are good then add field
+                if (valid)
+                    selectStr += ', ' + field;
+
             }
 
-            selectStr += ', ' + lvConfigParams.get('AdditionalFields');
         }
 
         //------------------------------------------------------
@@ -1374,7 +1557,7 @@ global with sharing class ListViewHelper {
       
         List_View_Config_Parameter__c param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config.Id;
-        param2.Parameter_Name__c   = 'AdditionalFields';
+        param2.Parameter_Name__c   = PARAM_ADD_FIELDS;
         param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param2.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
         param2.Parameter_Label__c  = 'Additional Fields';
@@ -1555,7 +1738,7 @@ global with sharing class ListViewHelper {
         // 
         //---------------------------------------
         param2 = new List_View_Config_Parameter__c();
-		param2.Parameter_Name__c = 'AdditionalFields';
+		param2.Parameter_Name__c = PARAM_ADD_FIELDS;
 		param2.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param2.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
 		param2.List_View_Config__c = config3.Id;
@@ -1692,25 +1875,33 @@ global with sharing class ListViewHelper {
                 {
                     visible.put(lv.Id, lv);
                     debug += 'Is Owner                 - true (' + lv.Label__c + ')\n';
-                
-                //if there are no groups, roles or territories then its visible
-                } else if (String.isEmpty(lv.Groups__c) 
-                            && String.isEmpty(lv.Roles__c)
-                            && String.isEmpty(lv.Roles_And_Subordinates__c)
-                            && String.isEmpty(lv.Territories_And_Subordinates__c)
-                            && String.isEmpty(lv.Territories__c)) 
-                {                                
-                    visible.put(lv.Id, lv);
-                    debug += 'Is Owner                 - false (' + lv.Label__c + ')\n';
-                    debug += 'NO Group/Role/Territory Data (' + lv.Label__c + ')\n';
-                
-                //if there are groups, roles or territories then add to list views to check
-                } else {
-                    debug += 'Is Owner                 - false (' + lv.Label__c + ')\n';
-                    debug += 'HAS Group/Role/Territory Data (' + lv.Label__c + ')\n';
-                    hasGroup.put(lv.Id, lv);
-                    if (!String.isEmpty(lv.Groups__c))
-                        allGroupNames.addAll(lv.Groups__c.split(','));
+                }
+
+                debug += 'Is Private               - ' + lv.Is_Private__c + '\n';
+
+                //only check roles/groups etc if the lv is NOT private
+                if (!lv.Is_Private__c)
+                {
+
+                    //if there are no groups, roles or territories then its visible
+                    if (String.isEmpty(lv.Groups__c) 
+                                && String.isEmpty(lv.Roles__c)
+                                && String.isEmpty(lv.Roles_And_Subordinates__c)
+                                && String.isEmpty(lv.Territories_And_Subordinates__c)
+                                && String.isEmpty(lv.Territories__c)) 
+                    {                                
+                        visible.put(lv.Id, lv);
+                        debug += 'Is Owner                 - false (' + lv.Label__c + ')\n';
+                        debug += 'NO Group/Role/Territory Data (' + lv.Label__c + ')\n';
+                    
+                    //if there are groups, roles or territories then add to list views to check
+                    } else {
+                        debug += 'Is Owner                 - false (' + lv.Label__c + ')\n';
+                        debug += 'HAS Group/Role/Territory Data (' + lv.Label__c + ')\n';
+                        hasGroup.put(lv.Id, lv);
+                        if (!String.isEmpty(lv.Groups__c))
+                            allGroupNames.addAll(lv.Groups__c.split(','));
+                    }
                 }
             }
 

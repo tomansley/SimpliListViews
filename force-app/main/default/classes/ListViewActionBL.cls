@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-04-2021
+ * @last modified on  : 11-09-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -37,8 +37,12 @@ public with sharing class ListViewActionBL {
             if (action.RecordTypeId == ListViewActionHelper.coreRTId && action.Subtype__c != null)
                 action.addError('Core actions cannot have a subtype.');
 
-            if (action.RecordTypeId == ListViewActionHelper.customRTId && action.Subtype__c == 'Manual' && action.Object_Type__c == null)
-                action.addError('Custom actions of subtype "Manual" must have an object type.');
+            if (action.RecordTypeId == ListViewActionHelper.customRTId 
+                    && action.Subtype__c == 'Manual' 
+                    && action.Object_Type__c == null 
+                    && action.Is_Hyperlink__c == false 
+                    && action.Is_Flow__c == false)
+                action.addError('Custom actions of subtype "Manual" must have an object type if they are not of type hyperlink or flow.');
 
         }
 

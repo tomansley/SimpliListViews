@@ -13,6 +13,11 @@ import Thursday from '@salesforce/label/c.Thursday';
 import Friday from '@salesforce/label/c.Friday';
 import Saturday from '@salesforce/label/c.Saturday';
 import Sunday from '@salesforce/label/c.Sunday';
+import Schedule from '@salesforce/label/c.Schedule';
+import Scheduled from '@salesforce/label/c.Scheduled';
+import Unschedule from '@salesforce/label/c.Unschedule';
+import Schedule_Core_List_View_Refreshes from '@salesforce/label/c.Schedule_Core_List_View_Refreshes';
+import Schedule_Core_List_View_Refreshes_Verbage from '@salesforce/label/c.Schedule_Core_List_View_Refreshes_Verbage';
 
 export default class SimpliUIListViewsScheduleJob extends LightningElement {
 
@@ -35,6 +40,7 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
     @track displayHours = false;
     @track displayDays = false;
     @track displayMonths = false;
+    @track scheduleText = 'Click to schedule automatic core list view refreshes';
 
     @track timePeriodsList = [
         { label: 'Hourly', value: 'hourly' },
@@ -74,15 +80,15 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
         { label: 'Last Day Of Month', value: 'Last Day Of Month' },
     ];   
 
-    label = { List_View_Refresh_Scheduled, Select_Time_Period, Select_Minute, Select_Hour, Select_Day, 
-              Select_Month, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday };
+    label = { List_View_Refresh_Scheduled, Select_Time_Period, Select_Minute, Select_Hour, Select_Day, Select_Month, Monday, Tuesday, Wednesday, Thursday, 
+              Friday, Saturday, Sunday, Schedule_Core_List_View_Refreshes, Schedule_Core_List_View_Refreshes_Verbage, Schedule, Scheduled, Unschedule };
 
     handleIsTurnedOnChange(event) {
-        if (event.target.checked === true) {
-            this.isTurnedOn = true;
-        } else {
-            this.isTurnedOn = undefined;
-        }
+        this.isTurnedOn = !this.isTurnedOn;
+        if (!this.isTurnedOn)
+            this.scheduleText = 'Click to schedule automatic core list view refreshes';
+        else
+            this.scheduleText = 'Click to unschedule refreshes';
     }
 
     handleTimePeriodChange(event) {

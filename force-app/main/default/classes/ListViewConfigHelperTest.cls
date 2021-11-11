@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-10-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -825,11 +825,11 @@ private class ListViewConfigHelperTest {
 
         System.assert(params.size() > 0);
 
-        String result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Name', 'Additional Fields', ListViewHelper.TYPE_STRING);
+        String result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', ListViewHelper.PARAM_ADD_FIELDS, 'CreatedBy.Name, Owner.Profile.Name', 'Additional Fields', ListViewHelper.TYPE_STRING);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'AdditionalFields', 'CreatedBy.Name, Owner.Profile.Na', 'Additional Fields', ListViewHelper.TYPE_STRING);
+        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', ListViewHelper.PARAM_ADD_FIELDS, 'CreatedBy.Name, Owner.Profile.Na', 'Additional Fields', ListViewHelper.TYPE_STRING);
 
         System.assert(result != '');
 

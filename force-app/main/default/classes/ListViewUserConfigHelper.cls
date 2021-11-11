@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-09-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -192,11 +192,12 @@ public with sharing class ListViewUserConfigHelper {
             }
         }
 
-        String debug = '\n\n----------------- USER CONFIG ---------------------------------------\n';
+        String debug = '\n\n----------------- USER CONFIG FOR ' + compName + ' -----------------\n';
         for (String config: userConfigs.keySet())
             debug += config + ' - ' + userConfigs.get(config) + '\n';
         debug += '---------------------------------------------------------------------\n';
         System.debug(LoggingLevel.DEBUG, debug);
+        ListViewErrorHelper.addLog('ListViewUserConfigHelper', debug);
         return userConfigs;
     }
 

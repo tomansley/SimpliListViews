@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-10-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -41,17 +41,17 @@ public with sharing class ListViewCore extends ListViewAbstract {
             }
         }
         
-        if (paramsByName.get('AdditionalFields') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_ADD_FIELDS) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'AdditionalFields';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_ADD_FIELDS;
             param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
             param.Parameter_Value__c  = '';
             param.Parameter_Label__c  = 'Additional Fields';
             params.add(param);
         } else {
-            params.add(paramsByName.get('AdditionalFields'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_ADD_FIELDS));
         }
 
         if (paramsByName.get('TotalColumns') == null)
@@ -168,12 +168,12 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
         //set the CUSTOM COLUMN meta data into the rows wrapper
         if (lvConfig != null 
-            && lvConfig.getParameter('AdditionalFields') != null 
-            && lvConfig.getParameter('AdditionalFields').getValue() != null
-            && lvConfig.getParameter('AdditionalFields').getValue() != '')
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS) != null 
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue() != null
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue() != '')
         {
             //get the field names in a list
-            List<String> fields = lvConfig.getParameter('AdditionalFields').getValue().deleteWhitespace().split(',');
+            List<String> fields = lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue().deleteWhitespace().split(',');
 
             System.debug(LoggingLevel.FINE, 'Additional Fields - ' + fields);
 
@@ -246,13 +246,13 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
         //set the CUSTOM COLUMN meta data into the rows wrapper
         if (lvConfig != null
-            && lvConfig.getParameter('AdditionalFields') != null 
-            && lvConfig.getParameter('AdditionalFields').getValue() != null 
-            && lvConfig.getParameter('AdditionalFields').getValue() != '' 
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS) != null 
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue() != null 
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue() != '' 
             && dataRows.size() > 0)
         {
             //get the field names in a list
-            List<String> fields = lvConfig.getParameter('AdditionalFields').getValue().deleteWhitespace().split(',');
+            List<String> fields = lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue().deleteWhitespace().split(',');
 
             System.debug(LoggingLevel.FINE, 'FIELDS - ' + fields);
 

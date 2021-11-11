@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-08-2021
+ * @Last Modified On   : 11-10-2021
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -410,7 +410,7 @@ public with sharing class ListViewConfigHelper {
 
         } else if (paramName == 'TotalColumns')
         {
-        } else if (paramName == 'AdditionalFields')
+        } else if (paramName == ListViewHelper.PARAM_ADD_FIELDS)
         {
             if (paramValue != '')
             {

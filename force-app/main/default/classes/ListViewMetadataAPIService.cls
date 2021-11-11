@@ -32,6 +32,19 @@ public class ListViewMetadataAPIService {
 
     public static String SOAP_M_URI = 'http://soap.sforce.com/2006/04/metadata';
 
+    /*
+     * Private method to create the metadata API service that is used to make all SOAP calls
+     */
+    public static ListViewMetadataAPIService.MetadataPort createService()
+    {
+        MetadataPort service = new MetadataPort();
+        service.SessionHeader = new SessionHeader_element();
+        if (!Test.isRunningTest())
+            service.SessionHeader.sessionId = HelperREST.getSessionIdFromVFPage(Page.SessionId);
+        return service;
+    }    
+
+
     public class SessionHeader_element {
         public String sessionId;
         private String[] sessionId_type_info = new String[]{'sessionId',SOAP_M_URI,null,'1','1','false'};

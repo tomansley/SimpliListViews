@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-10-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -150,12 +150,12 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
         //set the CUSTOM COLUMN meta data into the rows wrapper
         if (lvConfig != null 
-            && lvConfig.getParameter('AdditionalFields') != null 
-            && lvConfig.getParameter('AdditionalFields').getValue() != null
-            && lvConfig.getParameter('AdditionalFields').getValue() != '')
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS) != null 
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue() != null
+            && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue() != '')
         {
             //get the field names in a list
-            List<String> fields = lvConfig.getParameter('AdditionalFields').getValue().deleteWhitespace().split(',');
+            List<String> fields = lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue().deleteWhitespace().split(',');
 
             System.debug(LoggingLevel.FINE, 'Additional Fields - ' + fields);
 

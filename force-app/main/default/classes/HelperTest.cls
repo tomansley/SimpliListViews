@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-02-2021
+ * @last modified on  : 11-10-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -121,7 +121,7 @@ public with sharing class HelperTest {
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
 
 		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'AdditionalFields';
+		param.Parameter_Name__c = ListViewHelper.PARAM_ADD_FIELDS;
 		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
 		param.List_View_Config__c = config.Id;

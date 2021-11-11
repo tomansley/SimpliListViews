@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-08-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-11-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -67,14 +67,11 @@ public without sharing class ListViewController
                 result = '0';
                 status = jobs[0].Status + ' ' + jobs[0].ApexClass.Name;
 
-            } else if (jobs[0].Status == 'Completed') { 
-            
-                result = '100';
-                status = jobs[0].Status;
-
             } else { 
 
                 Decimal percentComp = (Decimal.valueOf(jobs[0].JobItemsProcessed)/Decimal.valueOf(jobs[0].TotalJobItems)) * 100;
+                if (percentComp == 100) 
+                    percentComp = 99; //make it 99 if done as 100 is considered completely finished!
                 result = String.valueOf(percentComp);
                 status = jobs[0].Status + ' ' + jobs[0].ApexClass.Name;
                 
@@ -172,7 +169,7 @@ public without sharing class ListViewController
 
         String objType = null;
         if (listView.RecordTypeId == null || listView.RecordTypeId == ListViewHelper.coreRTId)
-            objType = 'ListViewCore';
+            objType = ListViewHelper.CORE_APEX_CLASS;
         else
             objType = listView.Custom_Apex_Class__c;
 
@@ -377,9 +374,11 @@ public without sharing class ListViewController
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewActions(' + objectType + ', ' + listViewName + ')');
         
+        List<ListViewAbstract.ActionWrapper> actions = ListViewActionHelper.getListViewActions(objectType, listViewName);
+
         ListViewErrorHelper.processLogs(true);
 
-        return ListViewActionHelper.getListViewActions(objectType, listViewName);
+        return actions;
     }
 
     @AuraEnabled
@@ -569,7 +568,7 @@ public without sharing class ListViewController
         //------------------------------------------------------------------------------------------
         Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectName, listViewName);
 
-        if (listviews.size() > 0)
+        if (listviews.size() > 0) 
         {
 
             List_View__c listview = listviews.values()[0];
@@ -579,7 +578,10 @@ public without sharing class ListViewController
             //------------------------------------------------------------------------------------------
             List<ListViewHelper.ColumnSortData> columnSortData = new List<ListViewHelper.ColumnSortData>();
             String sortStr = '';
-            if (sortData.length() > 0)
+            Boolean isDefaultSort = false;
+
+            //if sorting is provided from the UI then use it first
+            if (sortData != null && sortData.length() > 2) //the value when empty can be "[]"
             {
                 //below is a bit of a mess at the moment because Map objects cannot be stringified
                 //in Javascript. So we end up with a list of list!!
@@ -602,6 +604,24 @@ public without sharing class ListViewController
                 columnSortData.sort();
                 sortStr = sortStr.removeEnd(';');
 
+            //if no sort order provided from UI then check if there is a default sort order
+            } else if (!String.isEmpty(listview.Default_Sort_Order__c))
+            {
+                List<String> sortValues = listview.Default_Sort_Order__c.split(';');
+                System.debug(LoggingLevel.DEBUG, 'SORT VALUES 1 - ' + sortValues);
+                for (String values: sortValues)
+                {
+                    ListViewHelper.ColumnSortData columnData = new ListViewHelper.ColumnSortData();
+                    columnData.sortIndex     = Integer.valueOf(values.split(':')[0]);
+                    columnData.fieldName     = values.split(':')[2];
+                    columnData.sortDirection = Boolean.valueOf(values.split(':')[1]);
+
+                    columnSortData.add(columnData);
+                    sortStr += columnData.getUserConfigString() + ';';
+                }
+
+                columnSortData.sort();
+                isDefaultSort = true;
             }
 
             //------------------------------------------------------------------------------------------
@@ -610,7 +630,7 @@ public without sharing class ListViewController
             String objType = null;
             if (listView.RecordTypeId == null || listView.RecordTypeId == ListViewHelper.coreRTId)
             {
-                objType = 'ListViewCore';
+                objType = ListViewHelper.CORE_APEX_CLASS;
 
             } else {
                 
@@ -627,6 +647,7 @@ public without sharing class ListViewController
             lvlogic.setRequestData(listview, columnSortData, joinFieldName, joinRecordIds, offset);
 
             rowData = lvLogic.getData();
+            rowData.setIsDefaultSort(isDefaultSort);
 
             String debug = '\n\n=======================================================================================\n';
             for (ListViewAbstract.RowWrapper row: rowData.rows)
@@ -644,7 +665,8 @@ public without sharing class ListViewController
             System.debug(LoggingLevel.FINE, debug);
             
             //update the sorting for this user for this list view for this component. This MUST be done at the end!
-            ListViewUserConfigHelper.updateSortConfigValue(pageName, sortStr, objectName, listviewName);
+            if (!isDefaultSort)
+                ListViewUserConfigHelper.updateSortConfigValue(pageName, sortStr, objectName, listviewName);
 
         } else {
             throw new ListViewException('The list view configuration can not be found for object ' + objectName + ' and list view name - ' + listViewName + ')');
@@ -826,7 +848,7 @@ public without sharing class ListViewController
         //-------------------------------------------------------------------
         String objType = null;
         if (listView.RecordTypeId == null || listView.RecordTypeId == ListViewHelper.coreRTId)
-            objType = 'ListViewCore';
+            objType = ListViewHelper.CORE_APEX_CLASS;
         else
             objType = listView.Custom_Apex_Class__c;
 

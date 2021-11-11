@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-08-2021
+ * @last modified on  : 11-10-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -72,10 +72,7 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
 	/* IMPLEMENTS DATABASE.BATCHABLE INTERFACE */
 	global void execute(Database.BatchableContext BC, List<SObject> scope) 
 	{
-        try {
-            List<List_View__c> simpliListViews = new List<List_View__c>();
-            List<List_View_Config__c> simpliListViewConfigs = new List<List_View_Config__c>();
-        
+        try {        
             List<ListView> listViews = (List<ListView>) scope;
 
             //--------------------------------------------------------------------------------
