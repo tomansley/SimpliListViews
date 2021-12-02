@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-08-2021
+ * @last modified on  : 12-01-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -47,10 +47,13 @@ global with sharing class ScriptInstall implements InstallHandler {
             List<List_View__c> listviews = [SELECT Id, Primary_Key__c, RecordTypeId FROM List_View__c WHERE RecordType.Name = 'Custom' LIMIT 2000];
             List<List_View__c> newListViews = new List<List_View__c>();
             Boolean hasCampMem = false;
+            Boolean hasPricebook = false;
             for (List_View__c lv: listviews)
             {
                 if (lv.Primary_Key__c == 'CampaignMember:CampaignMembers')
                     hasCampMem = true;
+                else if (lv.Primary_Key__c == 'Pricebook2:PricebookStandard')
+                hasPricebook = true;
             }
 
             if (!hasCampMem)
@@ -67,7 +70,23 @@ global with sharing class ScriptInstall implements InstallHandler {
                 newListViews.add(lv);
             }
 
-            HelperDatabase.insertRecords(newListViews, 'simpli_lv__List_View__c');
+            if (!hasPricebook)
+            {
+                List_View__c lv                          = new List_View__c();
+                lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+                lv.Label__c                 = 'Pricebook Standard';
+                lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"CreatedDate","type":"date","label":"Created Date"},{"fieldNameOrPath":"IsActive","type":"boolean","label":"Is Active"},{"fieldNameOrPath":"IsStandard","type":"boolean","label":"Is Standard"},{"fieldNameOrPath":"LastModifiedDate","type":"datetime","label":"Last Modified Date"}]';
+                lv.Core_ListView_Query__c   = 'SELECT CreatedDate,IsActive,IsStandard,LastModifiedDate,Name FROM Pricebook2';
+                lv.Object_Name__c           = 'Pricebook2';
+                lv.RecordTypeId             = ListViewHelper.customRTId;
+                lv.Subtype__c               = 'Manual';        
+        
+                newListViews.add(lv);
+            }
+
+
+
+            HelperDatabase.insertRecords(newListViews);
 
             //------------------------------------------------------------------------------------
             // Fix issue where some list view actions might not have record types - through v1.60
@@ -83,7 +102,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 }
             }
 
-            HelperDatabase.updateRecords(updatedActions, 'simpli_lv__List_View_Action__c');
+            HelperDatabase.updateRecords(updatedActions);
 
             //---------------------------------------------------------------------------------
             // Fix issue where config parameter names had spaces. Doh! - through v1.60
@@ -303,7 +322,19 @@ global with sharing class ScriptInstall implements InstallHandler {
         
             }
 
-            HelperDatabase.upsertRecords(orgParams.values(), 'simpli_lv__List_View_Config_Parameter__c');
+            if (orgParams.get('RefreshJob') == null)
+            {
+                List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                param.List_View_Config__c = orgWideConfig.Id;
+                param.Parameter_Name__c   = 'RefreshJob';
+                param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+                param.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
+                param.Parameter_Label__c  = 'Scheduled Refresh Job';
+                orgParams.put(param.Parameter_Name__c, param);
+        
+            }
+
+             HelperDatabase.upsertRecords(orgParams.values());
 
             //------------------------------------------------------------------------------------
             // Add New, Edit, Clone actions - through v1.63
@@ -434,8 +465,10 @@ global with sharing class ScriptInstall implements InstallHandler {
                 newActions.add(orgEditAllAction);
             }
 
-            HelperDatabase.updateRecords(actions, 'simpli_lv__List_View_Action__c');
-            HelperDatabase.insertRecords(newActions, 'simpli_lv__List_View_Action__c');
+            HelperDatabase.updateRecords(actions);
+            newActions = HelperDatabase.insertRecords(newActions);
+            
+            Map<String, SObject> actionsByLabel = HelperCollection.getStringMappedObjects(newActions, 'Label__c');
 
             //Now add parameters
             if (!hasHyper)
@@ -444,7 +477,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 param.Field_API_Name__c   = 'URL';
                 param.Label__c            = 'URL';
                 param.Display_Order__c    = -1;
-                param.List_View_Action__c = hyperAction.Id;
+                param.List_View_Action__c = actionsByLabel.get('Go To A Cool App').Id;
                 param.Type__c             = ListViewHelper.TYPE_URL;
                 param.Default_Value__c    = 'https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000FZ7BDUA1';
         
@@ -457,7 +490,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 param.Field_API_Name__c   = 'Subject';
                 param.Label__c            = 'Email Subject';
                 param.Display_Order__c    = 1;
-                param.List_View_Action__c = mailAction.Id;
+                param.List_View_Action__c = actionsByLabel.get('Send Email').Id;
                 param.Type__c             = ListViewHelper.TYPE_STRING;
                 param.Default_Value__c    = '';
         
@@ -467,14 +500,14 @@ global with sharing class ScriptInstall implements InstallHandler {
                 param.Field_API_Name__c   = 'Body';
                 param.Label__c            = 'Email Body';
                 param.Display_Order__c    = 2;
-                param.List_View_Action__c = mailAction.Id;
+                param.List_View_Action__c = actionsByLabel.get('Send Email').Id;
                 param.Type__c             = ListViewHelper.TYPE_RICH_TEXTAREA;
                 param.Default_Value__c    = '';
         
                 newActionParams.add(param);
             }
 
-            HelperDatabase.insertRecords(newActionParams, 'simpli_lv__List_View_Action_Parameter__c');
+            HelperDatabase.insertRecords(newActionParams);
 
             //send email notifying of the upgrade
             HelperEmail.sendInstallEmail('Upgraded');

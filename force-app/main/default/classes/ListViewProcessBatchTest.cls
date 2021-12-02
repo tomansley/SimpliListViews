@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-08-2021
+ * @last modified on  : 11-11-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -31,7 +31,7 @@ global class ListViewProcessBatchTest {
 
         Test.stopTest();
 
-        System.assertEquals(5, [SELECT Id FROM List_View__c].size());
+        System.assertEquals(6, [SELECT Id FROM List_View__c].size());
 
     }
 

@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-10-2021
+ * @last modified on  : 12-01-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -26,6 +26,9 @@ global with sharing class ListViewHelper {
     public static final Set<String> POLYMORPHIC_FIELDS = new Set<String>{ 'WhatId', 'WhoId'};
 
     public static final String CORE_APEX_CLASS = 'ListViewCore';
+
+    public static final String PROC_TYPE_CREATE = 'create';
+    public static final String PROC_TYPE_UPDATE = 'update';
     
     public static final String TYPE_ALL    = 'All';
     public static final String TYPE_CORE   = 'Core';
@@ -121,28 +124,39 @@ global with sharing class ListViewHelper {
 	}
 
     /**
-    * @description Method to update MANY records given their record Ids and a map of field updates
+    * @description Method to update/create MANY records given their record Ids (for updates) and a map of field updates
     * @author tom@ansleyllc.com | 07-29-2021 
-    * @param fieldValues map of field values with the record Id as key to return map of field values and the API field name being the key of the field values.
-    * @return String blank string = success. Anything else is failure.    **/
-    public static Map<Id, SObject>  updateRecords(Map<String, Map<String, String>> rowValues)
+    * @param rowValues map of field values with the record Id as key to return map of field values and the API field name being the key of the field values.
+    * @param objType this is NOT required. If rows are passed in with Ids then those can be used to identify the type.
+    * @return Map<Id, SObject> objects updated/created with the record Id as key
+    **/
+    public static Map<String, SObject> updateRecords(String processType, String objType, Map<String, Map<String, String>> rowValues)
     {
-        Map<Id, SObject> updatedObjs = new Map<Id, SObject>(); //use map to ensure no duplicates
+        System.debug(LoggingLevel.DEBUG, 'Starting updateRecords(' + processType + ', ' + objType + ', ' + rowValues + ')');
+        Map<String, SObject> updatedObjs = new Map<String, SObject>(); //use map to ensure no duplicates
 
         if (rowValues.size() == 0) return updatedObjs;
 
-        //get object type from id
-        String objType = HelperSchema.getSObjectTypeFromId(new List<String>(rowValues.keySet())[0]); //get the first record Id to determine object type. ALL types must be the same!!
+        //use the provided object type
+        String objectType = objType;
 
+        //if the provided type is NULL then we are upserting 
+        if (String.isEmpty(objectType))
+            objectType = HelperSchema.getSObjectTypeFromId(new List<String>(rowValues.keySet())[0]); //get the first record Id to determine object type. ALL types must be the same!!
+
+        
         //instantiate object
-        Type t = Type.forName(objType);
+        Type t = Type.forName(objectType);
 
         for (String rowId: rowValues.keySet())
         {
             SObject rec = (SObject) t.newInstance();
 
+            System.debug(LoggingLevel.DEBUG, 'Test 2 - ' + rowId);
+
             //add record Id to object
-            rec.put('Id', rowId);
+            if (processType == PROC_TYPE_UPDATE)
+                rec.put('Id', rowId);
 
             Map<String, String> fieldValues = rowValues.get(rowId);
             for (String fieldName: fieldValues.keySet())
@@ -161,7 +175,7 @@ global with sharing class ListViewHelper {
 
                     rec.put(fixedFieldName, fieldValue);
                 } else {
-                    fieldValue = HelperSchema.getValueForField(objType, fieldName, fieldValues.get(fieldName));
+                    fieldValue = HelperSchema.getValueForField(objectType, fieldName, fieldValues.get(fieldName));
                     rec.put(fieldName, fieldValue);
                 }
 
@@ -171,13 +185,13 @@ global with sharing class ListViewHelper {
             System.debug(LoggingLevel.FINE, 'Saving record - ' + rec);
         }
 
-        HelperDatabase.updateRecords(updatedObjs.values(), objType);
+        HelperDatabase.upsertRecords(updatedObjs.values());
 
         return updatedObjs;
     }
 
     /**
-    * @description Method to update a SINGLE record given its record Id and a map of field updates
+    * @description Method to UPDATE a SINGLE record given its record Id and a map of field updates
     * @author tom@ansleyllc.com | 07-22-2021 
     * @param rowId the record Id of the record to be updated
     * @param fieldValues map of field values with the field name being the key
@@ -189,7 +203,7 @@ global with sharing class ListViewHelper {
 
         fieldsByRowId.put(rowId, fieldValues);
 
-        return updateRecords(fieldsByRowId).values()[0];
+        return updateRecords(PROC_TYPE_UPDATE, null, fieldsByRowId).values()[0];
     }
     
 
@@ -210,32 +224,53 @@ global with sharing class ListViewHelper {
 
     }
 
+    public static Map<Id, ListView> getChangedListViews(Integer lapsedMinutes)
+    {
+        return getChangedListViews(null, null, lapsedMinutes);
+    }
+
     /*
      * Method to return all CORE list views that have been altered by the running user
      * within the past 2 weeks.
      */
-    public static Map<Id, ListView> getChangedListViews(Integer recLimit)
+    public static Map<Id, ListView> getLastChangedListViewForUser(Id userId)
     {
+        return getChangedListViews(1, userId, null);
+    }
 
-        HelperSchema.checkListViewAccessible();
-
+    private static Map<Id, ListView> getChangedListViews(Integer recLimit, Id modifiedById, Integer minutesBack)
+    {
         Integer soqlLimit = 5000;
         if (recLimit != null)
             soqlLimit = recLimit;
 
-        Map<Id, ListView> listViews = new Map<Id, ListView>([SELECT Id, 
-                                                                    Name, 
-                                                                    SObjectType, 
-                                                                    DeveloperName, 
-                                                                    LastModifiedById,
-                                                                    NamespacePrefix
-                                                            FROM ListView 
-                                                            WHERE LastModifiedById = :UserInfo.getUserId()
-                                                                    AND LastModifiedDate > :System.today().addDays(-1)
-                                                            ORDER BY LastModifiedDate DESC
-                                                            LIMIT :soqlLimit]);
+        String soql = 'SELECT Id, ' + 
+                             'Name, ' + 
+                             'SObjectType, ' + 
+                             'DeveloperName, ' + 
+                             'LastModifiedById, ' +
+                             'NamespacePrefix ' + 
+                        'FROM ListView ' + 
+                        'WHERE ';
 
-        return listViews;
+        if (modifiedById != null)
+            soql += 'LastModifiedById = \'' + modifiedById + '\' AND ';
+
+        if (minutesBack != null)
+            soql += 'LastModifiedDate > ' + System.now().addMinutes(minutesBack) + ' AND ';
+
+        soql = soql.removeEnd('AND ');
+
+        soql += 'ORDER BY LastModifiedDate DESC ';
+
+        soql += 'LIMIT ' + soqlLimit;
+
+        List<SObject> listViews = Database.query(soql);
+
+        SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, listViews);
+        Map<Id, ListView> listViewsById = new Map<Id, ListView>( (List<ListView>) dec.getRecords());
+        return listViewsById;
+
     }
 
     /*
@@ -295,7 +330,7 @@ global with sharing class ListViewHelper {
     
         }
 
-        HelperDatabase.upsertRecords(updatedListViews, 'Simpli_lv__List_View__c', 'simpli_lv__Primary_Key__c', true);
+        HelperDatabase.upsertRecords(updatedListViews, 'simpli_lv__Primary_Key__c', true);
 
         return true;
     }
@@ -394,7 +429,7 @@ global with sharing class ListViewHelper {
 
         }
 
-        HelperDatabase.upsertRecords(updatedListViews, 'simpli_lv__List_View__c', 'simpli_lv__Primary_Key__c', true);
+        HelperDatabase.upsertRecords(updatedListViews, 'simpli_lv__Primary_Key__c', true);
 
         return true;
     }
@@ -694,36 +729,38 @@ global with sharing class ListViewHelper {
         if (type == TYPE_ALL || type == TYPE_CORE)
             rtIds.add(ListViewHelper.coreRTId);
 
-        HelperSchema.checkListViewAccessible();
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
+                        Describe__c,
+                        Core_ListView_Id__c,
+                        Object_Name__c,
+                        Primary_Key__c,
+                        API_Name__c,
+                        Core_ListView_Columns__c,
+                        Core_ListView_Query__c,
+                        OwnerId,
+                        All_Internal_Users__c,
+                        Boolean_Filter__c,
+                        Filter_Scope__c,
+                        Groups__c,
+                        Roles__c,
+                        Roles_And_Subordinates__c,
+                        Territories__c,
+                        Territories_And_Subordinates__c,
+                        LastModifiedDate,
+                        LastModifiedBy.Name,
+                        RecordType.Name,
+                        Custom_Apex_Class__c,
+                        Subtype__c,
+                        Is_Private__c,
+                        Is_Non_Editable__c,
+                        Default_Sort_Order__c
+                FROM List_View__c
+                WHERE RecordTypeId IN :rtIds
+                ORDER BY Object_Name__c, Label__c]);
 
-        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>([SELECT Label__c,
-                                                 Describe__c,
-                                                 Core_ListView_Id__c,
-                                                 Object_Name__c,
-                                                 Primary_Key__c,
-                                                 API_Name__c,
-                                                 Core_ListView_Columns__c,
-                                                 Core_ListView_Query__c,
-                                                 OwnerId,
-                                                 All_Internal_Users__c,
-                                                 Boolean_Filter__c,
-                                                 Filter_Scope__c,
-                                                 Groups__c,
-                                                 Roles__c,
-                                                 Roles_And_Subordinates__c,
-                                                 Territories__c,
-                                                 Territories_And_Subordinates__c,
-                                                 LastModifiedDate,
-                                                 LastModifiedBy.Name,
-                                                 RecordType.Name,
-                                                 Custom_Apex_Class__c,
-                                                 Subtype__c,
-                                                 Is_Private__c,
-                                                 Is_Non_Editable__c,
-                                                 Default_Sort_Order__c
-                                           FROM List_View__c
-                                          WHERE RecordTypeId IN :rtIds
-                                          ORDER BY Object_Name__c, Label__c]);
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>( (List<List_View__c>) dec.getRecords());
 
         Map<Id, List_View__c> listviewsById = listviews;
         
@@ -745,36 +782,38 @@ global with sharing class ListViewHelper {
         if (!onlyCore)
             rtIds.add(ListViewHelper.customRTId);
 
-        HelperSchema.checkListViewAccessible();
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
+                        Describe__c,
+                        Core_ListView_Id__c,
+                        Object_Name__c,
+                        Primary_Key__c,
+                        API_Name__c,
+                        Core_ListView_Columns__c,
+                        Core_ListView_Query__c,
+                        OwnerId,
+                        All_Internal_Users__c,
+                        Boolean_Filter__c,
+                        Filter_Scope__c,
+                        Groups__c,
+                        Roles__c,
+                        Roles_And_Subordinates__c,
+                        Territories__c,
+                        Territories_And_Subordinates__c,
+                        LastModifiedDate,
+                        LastModifiedBy.Name,
+                        RecordType.Name,
+                        Custom_Apex_Class__c,
+                        Subtype__c,
+                        Is_Private__c,
+                        Is_Non_Editable__c,
+                        Default_Sort_Order__c
+                FROM List_View__c
+                WHERE Id IN :lvIds
+                    AND RecordTypeId IN :rtIds]);
 
-        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>([SELECT Label__c,
-                                                 Describe__c,
-                                                 Core_ListView_Id__c,
-                                                 Object_Name__c,
-                                                 Primary_Key__c,
-                                                 API_Name__c,
-                                                 Core_ListView_Columns__c,
-                                                 Core_ListView_Query__c,
-                                                 OwnerId,
-                                                 All_Internal_Users__c,
-                                                 Boolean_Filter__c,
-                                                 Filter_Scope__c,
-                                                 Groups__c,
-                                                 Roles__c,
-                                                 Roles_And_Subordinates__c,
-                                                 Territories__c,
-                                                 Territories_And_Subordinates__c,
-                                                 LastModifiedDate,
-                                                 LastModifiedBy.Name,
-                                                 RecordType.Name,
-                                                 Custom_Apex_Class__c,
-                                                 Subtype__c,
-                                                 Is_Private__c,
-                                                 Is_Non_Editable__c,
-                                                 Default_Sort_Order__c
-                                           FROM List_View__c
-                                          WHERE Id IN :lvIds
-                                                AND RecordTypeId IN :rtIds]);
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>( (List<List_View__c>) dec.getRecords());
 
         Map<Id, List_View__c> listviewsById = getVisibleListViews(listviews, 'getListViewsById(' + lvIds + ', ' + onlyCore + ')');
         return listviewsById;
@@ -794,35 +833,38 @@ global with sharing class ListViewHelper {
             throw new ListViewException('Object ' + objAPIName + ' is not accessible to the current user');
 
         //get list view data
-        HelperSchema.checkListViewAccessible();
-        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>([SELECT Label__c,
-                                                Describe__c,
-                                                Core_ListView_Id__c,
-                                                Object_Name__c,
-                                                Primary_Key__c,
-                                                API_Name__c,
-                                                Core_ListView_Columns__c,
-                                                Core_ListView_Query__c,
-                                                OwnerId,
-                                                All_Internal_Users__c,
-                                                Boolean_Filter__c,
-                                                Filter_Scope__c,
-                                                Groups__c,
-                                                Roles__c,
-                                                Roles_And_Subordinates__c,
-                                                Territories__c,
-                                                Territories_And_Subordinates__c,
-                                                LastModifiedDate,
-                                                LastModifiedBy.Name,
-                                                RecordType.Name,
-                                                Custom_Apex_Class__c,
-                                                Subtype__c,
-                                                Is_Private__c,
-                                                Is_Non_Editable__c,
-                                                Default_Sort_Order__c
-                                        FROM List_View__c
-                                        WHERE Object_Name__c = :objAPIName
-                                        ORDER BY Label__c]);
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
+                        Describe__c,
+                        Core_ListView_Id__c,
+                        Object_Name__c,
+                        Primary_Key__c,
+                        API_Name__c,
+                        Core_ListView_Columns__c,
+                        Core_ListView_Query__c,
+                        OwnerId,
+                        All_Internal_Users__c,
+                        Boolean_Filter__c,
+                        Filter_Scope__c,
+                        Groups__c,
+                        Roles__c,
+                        Roles_And_Subordinates__c,
+                        Territories__c,
+                        Territories_And_Subordinates__c,
+                        LastModifiedDate,
+                        LastModifiedBy.Name,
+                        RecordType.Name,
+                        Custom_Apex_Class__c,
+                        Subtype__c,
+                        Is_Private__c,
+                        Is_Non_Editable__c,
+                        Default_Sort_Order__c
+                FROM List_View__c
+                WHERE Object_Name__c = :objAPIName
+                ORDER BY Label__c]);
+
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>( (List<List_View__c>) dec.getRecords());
 
         //now check security
         Map<Id, List_View__c> listviewsById = getVisibleListViews(listviews, 'getListViewsByObject(' + objAPIName + ')');
@@ -843,37 +885,39 @@ global with sharing class ListViewHelper {
         System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
         System.debug(LoggingLevel.FINE, 'listViewAPIName - ' + listViewAPIName);
 
-        HelperSchema.checkListViewAccessible();
-
         //get list view data
-        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>([SELECT Label__c,
-                                                Describe__c,
-                                                Core_ListView_Id__c,
-                                                Object_Name__c,
-                                                Primary_Key__c,
-                                                API_Name__c,
-                                                Core_ListView_Columns__c,
-                                                Core_ListView_Query__c,
-                                                OwnerId,
-                                                All_Internal_Users__c,
-                                                Boolean_Filter__c,
-                                                Filter_Scope__c,
-                                                Groups__c,
-                                                Roles__c,
-                                                Roles_And_Subordinates__c,
-                                                Territories__c,
-                                                Territories_And_Subordinates__c,
-                                                LastModifiedDate,
-                                                LastModifiedBy.Name,
-                                                RecordType.Name,
-                                                Custom_Apex_Class__c,
-                                                Subtype__c,
-                                                Is_Private__c,
-                                                Is_Non_Editable__c,
-                                                Default_Sort_Order__c
-                                        FROM List_View__c
-                                        WHERE Object_Name__c = :objAPIName
-                                            AND API_Name__c = :listViewAPIName]);
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
+                        Describe__c,
+                        Core_ListView_Id__c,
+                        Object_Name__c,
+                        Primary_Key__c,
+                        API_Name__c,
+                        Core_ListView_Columns__c,
+                        Core_ListView_Query__c,
+                        OwnerId,
+                        All_Internal_Users__c,
+                        Boolean_Filter__c,
+                        Filter_Scope__c,
+                        Groups__c,
+                        Roles__c,
+                        Roles_And_Subordinates__c,
+                        Territories__c,
+                        Territories_And_Subordinates__c,
+                        LastModifiedDate,
+                        LastModifiedBy.Name,
+                        RecordType.Name,
+                        Custom_Apex_Class__c,
+                        Subtype__c,
+                        Is_Private__c,
+                        Is_Non_Editable__c,
+                        Default_Sort_Order__c
+                FROM List_View__c
+                WHERE Object_Name__c = :objAPIName
+                    AND API_Name__c = :listViewAPIName]);
+
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>( (List<List_View__c>) dec.getRecords());
 
         if (listviews.isEmpty() && !simpliLVsGetRetry)
         {
@@ -943,7 +987,8 @@ global with sharing class ListViewHelper {
             Boolean isAccessible = false;
             if (!field.contains('.'))
             {
-                if (field.contains('toLabel(')) field = field.substringBetween('toLabel(', ')');
+
+                field = HelperSchema.scrubFieldName(field); //remove weird stuff like toLabel() etc.
                 isAccessible = HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field, false);
             } else {
                 isAccessible = true;
@@ -1457,7 +1502,9 @@ global with sharing class ListViewHelper {
         mailAction.Is_Active__c        = true;
 
         actions.add(mailAction);
-        HelperDatabase.insertRecords(actions, 'Simpli_lv__List_View_Action__c');
+
+        actions = HelperDatabase.insertRecords(actions);
+        Map<String, SObject> actionsByLabel = HelperCollection.getStringMappedObjects(actions, 'Label__c');
 
         List<List_View_Action_Parameter__c> params = new List<List_View_Action_Parameter__c>();
 
@@ -1465,7 +1512,7 @@ global with sharing class ListViewHelper {
         param.Field_API_Name__c   = 'Name';
         param.Label__c            = 'Account Name';
         param.Display_Order__c    = 1;
-        param.List_View_Action__c = acctUpdateAction.Id;
+        param.List_View_Action__c = actionsByLabel.get('Update').Id;
         param.Placeholder_Text__c = 'Account name goes here...';
         param.Type__c             = ListViewHelper.TYPE_STRING;
 
@@ -1475,7 +1522,7 @@ global with sharing class ListViewHelper {
         param.Field_API_Name__c   = 'Industry';
         param.Label__c            = 'Industry';
         param.Display_Order__c    = 2;
-        param.List_View_Action__c = acctUpdateAction.Id;
+        param.List_View_Action__c = actionsByLabel.get('Update').Id;
         param.Placeholder_Text__c = 'Industry goes here...';
         param.Type__c             = ListViewHelper.TYPE_PICKLIST;
 
@@ -1485,7 +1532,7 @@ global with sharing class ListViewHelper {
         param.Field_API_Name__c   = 'CloseDate';
         param.Label__c            = 'Close Date';
         param.Display_Order__c    = 1;
-        param.List_View_Action__c = oppsCloseUpdateAction.Id;
+        param.List_View_Action__c = actionsByLabel.get('Set Close Lost').Id;
         param.Placeholder_Text__c = '';
         param.Type__c             = ListViewHelper.TYPE_DATE;
 
@@ -1495,7 +1542,7 @@ global with sharing class ListViewHelper {
         param.Field_API_Name__c   = 'URL';
         param.Label__c            = 'URL';
         param.Display_Order__c    = -1;
-        param.List_View_Action__c = hyperAction.Id;
+        param.List_View_Action__c = actionsByLabel.get('Go To A Cool App').Id;
         param.Type__c             = ListViewHelper.TYPE_URL;
         param.Default_Value__c    = 'https://appexchange.salesforce.com/appxListingDetail?listingId=a0N3A00000FZ7BDUA1';
 
@@ -1505,7 +1552,7 @@ global with sharing class ListViewHelper {
         param.Field_API_Name__c   = 'Subject';
         param.Label__c            = 'Email Subject';
         param.Display_Order__c    = 1;
-        param.List_View_Action__c = mailAction.Id;
+        param.List_View_Action__c = actionsByLabel.get('Send Email').Id;
         param.Type__c             = ListViewHelper.TYPE_STRING;
         param.Default_Value__c    = '';
 
@@ -1515,13 +1562,13 @@ global with sharing class ListViewHelper {
         param.Field_API_Name__c   = 'Body';
         param.Label__c            = 'Email Body';
         param.Display_Order__c    = 2;
-        param.List_View_Action__c = mailAction.Id;
+        param.List_View_Action__c = actionsByLabel.get('Send Email').Id;
         param.Type__c             = ListViewHelper.TYPE_RICH_TEXTAREA;
         param.Default_Value__c    = '';
 
         params.add(param);
 
-        HelperDatabase.insertRecords(params, 'Simpli_lv__List_View_Action_Parameter__c');
+        params = HelperDatabase.insertRecords(params);
 
         return actions;
     }
@@ -1551,7 +1598,11 @@ global with sharing class ListViewHelper {
         config3.Primary_Key__c      = config3.List_View_Object__c + ':' + config3.Name;
         configs.add(config3);
 
-        HelperDatabase.insertRecords(configs, 'Simpli_lv__List_View_Config__c');
+        configs = HelperDatabase.insertRecords(configs);
+        Map<String, SObject> configsByName = HelperCollection.getStringMappedObjects(configs, 'Name');
+        config = (simpli_lv__List_View_Config__c) configsByName.get('simpli_lv__PlatinumandGoldSLACustomers');
+        config2 = (simpli_lv__List_View_Config__c) configsByName.get('All');
+        config3 = (simpli_lv__List_View_Config__c) configsByName.get('simpli_lv__AllAccounts');
 
         List<List_View_Config_Parameter__c> params2 = new List<List_View_Config_Parameter__c>();
       
@@ -1734,6 +1785,15 @@ global with sharing class ListViewHelper {
         param2.Parameter_Label__c  = 'Debug';
         params2.add(param2);
 
+        param2 = new List_View_Config_Parameter__c();
+        param2.List_View_Config__c = config2.Id;
+        param2.Parameter_Name__c   = 'RefreshJob';
+        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param2.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
+        param2.Parameter_Label__c  = 'Scheduled Refresh Job';
+        params2.add(param2);
+
+
         //---------------------------------------
         // 
         //---------------------------------------
@@ -1761,7 +1821,7 @@ global with sharing class ListViewHelper {
         param2.Parameter_Label__c  = 'Total Row Color';
         params2.add(param2);
         
-        HelperDatabase.insertRecords(params2, 'Simpli_lv__List_View_Config_Parameter__c');
+        params2 = HelperDatabase.insertRecords(params2);
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
 
@@ -1774,7 +1834,7 @@ global with sharing class ListViewHelper {
         condition.Highlight_Color__c  = '#c59e9e';
         conditions.add(condition);
 
-        HelperDatabase.insertRecords(conditions, 'Simpli_lv__List_View_Config_Condition__c');
+        conditions = HelperDatabase.insertRecords(conditions);
 
         return configs;
     }
@@ -1827,7 +1887,18 @@ global with sharing class ListViewHelper {
 
         listViews.add(lv);
 
-        HelperDatabase.insertRecords(listViews, 'Simpli_lv__List_View__c');
+        lv                          = new List_View__c();
+        lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+        lv.Label__c                 = 'Pricebook Standard';
+        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"CreatedDate","type":"date","label":"Created Date"},{"fieldNameOrPath":"IsActive","type":"boolean","label":"Is Active"},{"fieldNameOrPath":"IsStandard","type":"boolean","label":"Is Standard"},{"fieldNameOrPath":"LastModifiedDate","type":"datetime","label":"Last Modified Date"}]';
+        lv.Core_ListView_Query__c   = 'SELECT CreatedDate,IsActive,IsStandard,LastModifiedDate,Name FROM Pricebook2';
+        lv.Object_Name__c           = 'Pricebook2';
+        lv.RecordTypeId             = ListViewHelper.customRTId;
+        lv.Subtype__c               = 'Manual';
+
+        listViews.add(lv);
+
+        listViews = HelperDatabase.insertRecords(listViews);
 
         return listViews;
     }

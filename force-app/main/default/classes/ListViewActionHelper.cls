@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-09-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-17-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -32,7 +32,9 @@ public with sharing class ListViewActionHelper {
 
     public static List<List_View_Action__c> getListViewActions()
     {
-        return [SELECT Label__c,
+        SObjectAccessDecision dec = 
+         Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
                         Apex_Class_Name__c,
                         Object_Type__c,
                         Primary_Key__c,
@@ -47,6 +49,7 @@ public with sharing class ListViewActionHelper {
                         Flow_Frame_Height__c,
                         Flow_Frame_Width__c,
                         Flow_Type__c,
+                        Mass_Create_List_View_Name__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -57,40 +60,45 @@ public with sharing class ListViewActionHelper {
                         FROM List_View_Action_Parameters__r
                         ORDER BY Display_Order__c NULLS LAST)
                 FROM List_View_Action__c
-                LIMIT 2000];
+                LIMIT 2000]);
+
+        return dec.getRecords();
     }
 
     public static Map<Id, List_View_Action__c> getListViewActions(Set<Id> actionIds) 
     {
-        HelperSchema.checkListViewActionsAccessible();
+        SObjectAccessDecision dec = 
+         Security.stripInaccessible(AccessType.READABLE,
+            [SELECT Label__c,
+                    Apex_Class_Name__c,
+                    Object_Type__c,
+                    Primary_Key__c,
+                    Subtype__c,
+                    RecordTypeId,
+                    RecordType.Name,
+                    Permissions__c,
+                    Is_Hyperlink__c,
+                    Is_Active__c,
+                    Is_Flow__c,
+                    Flow_API_Name__c,
+                    Flow_Frame_Height__c,
+                    Flow_Frame_Width__c,
+                    Flow_Type__c,
+                    Mass_Create_List_View_Name__c,
+                    (SELECT Field_API_Name__c,
+                            Label__c,
+                            Display_Order__c,
+                            Type__c,
+                            Default_Value__c,
+                            Placeholder_Text__c,
+                            Lookup_Type__c
+                    FROM List_View_Action_Parameters__r
+                    ORDER BY Display_Order__c NULLS LAST)
+            FROM List_View_Action__c
+            WHERE Id IN :actionIds
+                AND Is_Active__c = TRUE]);
 
-        return new Map<Id, List_View_Action__c>([SELECT Label__c,
-                                                        Apex_Class_Name__c,
-                                                        Object_Type__c,
-                                                        Primary_Key__c,
-                                                        Subtype__c,
-                                                        RecordTypeId,
-                                                        RecordType.Name,
-                                                        Permissions__c,
-                                                        Is_Hyperlink__c,
-                                                        Is_Active__c,
-                                                        Is_Flow__c,
-                                                        Flow_API_Name__c,
-                                                        Flow_Frame_Height__c,
-                                                        Flow_Frame_Width__c,
-                                                        Flow_Type__c,
-                                                        (SELECT Field_API_Name__c,
-                                                                Label__c,
-                                                                Display_Order__c,
-                                                                Type__c,
-                                                                Default_Value__c,
-                                                                Placeholder_Text__c,
-                                                                Lookup_Type__c
-                                                        FROM List_View_Action_Parameters__r
-                                                        ORDER BY Display_Order__c NULLS LAST)
-                                                FROM List_View_Action__c
-                                                WHERE Id IN :actionIds
-                                                    AND Is_Active__c = TRUE]);
+        return new Map<Id, List_View_Action__c>((List<List_View_Action__c>) dec.getRecords());
     }
 
     /*
@@ -98,9 +106,9 @@ public with sharing class ListViewActionHelper {
      */
     public static List_View_Action__c getListViewActionByKey(String primaryKey)
     {
-        HelperSchema.checkListViewActionsAccessible();
-
-        return [SELECT Label__c,
+        SObjectAccessDecision dec = 
+         Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
                         Apex_Class_Name__c,
                         Object_Type__c,
                         Primary_Key__c,
@@ -115,6 +123,7 @@ public with sharing class ListViewActionHelper {
                         Flow_API_Name__c,
                         Flow_Frame_Height__c,
                         Flow_Frame_Width__c,
+                        Mass_Create_List_View_Name__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -125,7 +134,9 @@ public with sharing class ListViewActionHelper {
                          FROM List_View_Action_Parameters__r
                          ORDER BY Display_Order__c NULLS LAST)
                 FROM List_View_Action__c
-                WHERE Primary_Key__c = :primaryKey];
+                WHERE Primary_Key__c = :primaryKey]);
+
+        return (List_View_Action__c) dec.getRecords()[0];
     }
 
     /**
@@ -173,7 +184,6 @@ public with sharing class ListViewActionHelper {
     public static Map<String, List_View_Action__c> getListViewActionsByListView(List_View__c listview)
     {
         System.debug(LoggingLevel.FINE, 'Starting getListViewActionsByListView(' + listview + ')');
-        HelperSchema.checkListViewActionsAccessible();
 
         Id rt = ListViewActionHelper.coreRTId;
         if (listview.RecordTypeId == ListViewHelper.customRTId)
@@ -191,38 +201,43 @@ public with sharing class ListViewActionHelper {
         debugString += 'List View Subtypes - ' + subTypes + ', ';
 
             //get list view data
-        List<List_View_Action__c> actions = [SELECT Label__c,
-                                                Apex_Class_Name__c,
-                                                Object_Type__c,
-                                                Primary_Key__c,
-                                                Subtype__c,
-                                                RecordTypeId,
-                                                RecordType.Name,
-                                                Permissions__c,
-                                                Is_Hyperlink__c,
-                                                Is_Active__c,
-                                                Is_Flow__c,
-                                                Flow_Type__c,
-                                                Flow_API_Name__c,
-                                                Flow_Frame_Height__c,
-                                                Flow_Frame_Width__c,
-                                                (SELECT Field_API_Name__c,
-                                                        Label__c,
-                                                        Display_Order__c,
-                                                        Type__c,
-                                                        Default_Value__c,
-                                                        Placeholder_Text__c,
-                                                        Lookup_Type__c
-                                                FROM List_View_Action_Parameters__r
-                                                ORDER BY Display_Order__c NULLS LAST)
-                                            FROM List_View_Action__c
-                                            WHERE RecordTypeId = :rt
-                                                    AND (Object_Type__c = :listview.Object_Name__c
-                                                        OR Object_Type__c = NULL)
-                                                    AND (Subtype__c = NULL
-                                                        OR Subtype__c IN :subTypes)
-                                                    AND Is_Active__c = TRUE
-                                             ORDER BY Label__c];
+            SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
+                        Apex_Class_Name__c,
+                        Object_Type__c,
+                        Primary_Key__c,
+                        Subtype__c,
+                        RecordTypeId,
+                        RecordType.Name,
+                        Permissions__c,
+                        Is_Hyperlink__c,
+                        Is_Active__c,
+                        Is_Flow__c,
+                        Flow_Type__c,
+                        Flow_API_Name__c,
+                        Flow_Frame_Height__c,
+                        Flow_Frame_Width__c,
+                        Mass_Create_List_View_Name__c,
+                        (SELECT Field_API_Name__c,
+                                Label__c,
+                                Display_Order__c,
+                                Type__c,
+                                Default_Value__c,
+                                Placeholder_Text__c,
+                                Lookup_Type__c
+                        FROM List_View_Action_Parameters__r
+                        ORDER BY Display_Order__c NULLS LAST)
+                    FROM List_View_Action__c
+                    WHERE RecordTypeId = :rt
+                            AND (Object_Type__c = :listview.Object_Name__c
+                                OR Object_Type__c = NULL)
+                            AND (Subtype__c = NULL
+                                OR Subtype__c IN :subTypes)
+                            AND Is_Active__c = TRUE
+                        ORDER BY Label__c]);
+
+        List<List_View_Action__c> actions = (List<List_View_Action__c>) dec.getRecords();
 
         debugString += 'List views returned - ' + actions.size() + ', ';
 

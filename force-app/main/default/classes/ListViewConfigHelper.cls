@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-10-2021
+ * @Last Modified By   : tom.h.ansley@medtronic.com
+ * @Last Modified On   : 11-21-2021
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -26,6 +26,8 @@ public with sharing class ListViewConfigHelper {
     public static final String OPER_GREATER = 'Greater Than';
     public static final String OPER_LESS = 'Less Than';
     public static final String OPER_CONTAINS = 'Contains';
+
+    public static final Set<String> READ_ONLY_PARAMS = new Set<String>{'ListViewObjects', 'IsInitialized', 'RefreshJob'};
 
     //=======================================================================
     // ORG WIDE PARAM METHODS
@@ -82,7 +84,7 @@ public with sharing class ListViewConfigHelper {
                 if (param.Parameter_Label__c == null)
                     param.Parameter_Label__c = param.Parameter_Name__c;
 
-                HelperDatabase.updateRecord(param, 'Simpli_lv__List_View_Config_Parameter__c');
+                HelperDatabase.updateRecord(param);
 
                 //update cache
                 orgWideConfigParams.put(settingName, value);
@@ -106,7 +108,24 @@ public with sharing class ListViewConfigHelper {
     }
 
     /*
-     * Method to get all config for the org.
+     * Method to get a specific config setting for the org. Note that for this method if
+     * the setting is not found the provided value is returned.
+     */
+    public static String getOrgWideConfigParam(String settingName, String defaultValue)
+    {
+        populateOrgWideConfig();
+
+        String value = defaultValue;
+        if (orgWideConfigParams.get(settingName) != null)
+            value = (String) orgWideConfigParams.get(settingName);
+
+        return value;
+    }
+
+
+    /*
+     * Method to get a specific config setting for the org. Note that for this method if
+     * the setting is not found an exception is thrown.
      */
     public static String getOrgWideConfigParam(String settingName)
     {
@@ -193,15 +212,17 @@ public with sharing class ListViewConfigHelper {
         if (errorStr == '')
         {
 
-            HelperSchema.checkListViewConfigsAccessible();
+            SObjectAccessDecision dec = 
+                Security.stripInaccessible(AccessType.READABLE,
+                    [SELECT Parameter_Name__c,
+                            Parameter_Type__c,
+                            Parameter_Value__c
+                    FROM List_View_Config_Parameter__c
+                    WHERE List_View_Config__r.Name = :listViewName
+                        AND List_View_Config__r.List_View_Object__c = :objectName
+                        AND Parameter_Name__c = :paramName]);
 
-            List<List_View_Config_Parameter__c> params = [SELECT Parameter_Name__c,
-                                                            Parameter_Type__c,
-                                                            Parameter_Value__c
-                                                    FROM List_View_Config_Parameter__c
-                                                    WHERE List_View_Config__r.Name = :listViewName
-                                                        AND List_View_Config__r.List_View_Object__c = :objectName
-                                                        AND Parameter_Name__c = :paramName];
+            List<List_View_Config_Parameter__c> params = (List<List_View_Config_Parameter__c>) dec.getRecords();
 
             //if we have a parameter
             if (params.size() > 0)
@@ -225,7 +246,7 @@ public with sharing class ListViewConfigHelper {
 
             System.debug(LoggingLevel.FINE, 'Updated params - ' + params);
 
-            HelperDatabase.upsertRecords(params, 'Simpli_lv__List_View_Config_Parameter__c');
+            HelperDatabase.upsertRecords(params);
 
             System.debug(LoggingLevel.FINE, 'Finished upserting param!');
 
@@ -249,18 +270,21 @@ public with sharing class ListViewConfigHelper {
         condition.Value__c            = fieldValue;
         condition.List_View_Config__c = lvConfig.Id;
 
-        HelperDatabase.insertRecord(condition, 'simpli_lv__List_View_Config_Condition__c');
+        System.debug(LoggingLevel.DEBUG, 'ADDING CONDITION - ' + condition);
+        HelperDatabase.insertRecord(condition);
     }
 
     public static void deleteListViewCondition(String id)
     {
         System.debug(LoggingLevel.FINE, 'Deleting list view condition - ' + id);
 
-        HelperSchema.checkListViewConfigsAccessible();
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Id 
+                 FROM List_View_Config_Condition__c
+                 WHERE Id = :id]);
 
-        List<List_View_Config_Condition__c> conditions = [SELECT Id 
-                                                          FROM List_View_Config_Condition__c
-                                                          WHERE Id = :id];
+        List<List_View_Config_Condition__c> conditions = (List<List_View_Config_Condition__c>) dec.getRecords();
 
         HelperDatabase.deleteRecords(conditions, 'simpli_lv__List_View_Config_Condition__c');
 
@@ -292,32 +316,32 @@ public with sharing class ListViewConfigHelper {
     {
         System.debug(LoggingLEvel.FINE, 'Starting getListViewConfig(' + objectName + ', ' + listViewName + ')');
 
-        List<List_View_Config__c> configs = new List<List_View_Config__c>();
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Name,
+                        List_View_Object__c,
+                        List_View_Label__c,
+                        LastModifiedDate,
+                        LastModifiedBy.Name,
+                        Primary_Key__c,
+                        (SELECT Parameter_Name__c,
+                                Parameter_Type__c,
+                                Parameter_Label__c,
+                                Parameter_Value__c
+                        FROM List_View_Config_Parameters__r
+                        ORDER BY Parameter_Label__c),
+                        (SELECT Field_Name__c,
+                                    Highlight_Color__c,
+                                    Operator__c,
+                                    Order__c,
+                                    Value__c
+                        FROM List_View_Config_Conditions__r
+                        ORDER BY Order__c ASC)
+            FROM List_View_Config__c
+                    WHERE Name = :listViewName
+                        AND List_View_Object__c = :objectName]);
 
-        HelperSchema.checkListViewConfigsAccessible();
-
-        configs = [SELECT Name,
-                            List_View_Object__c,
-                            List_View_Label__c,
-                            LastModifiedDate,
-                            LastModifiedBy.Name,
-                            Primary_Key__c,
-                            (SELECT Parameter_Name__c,
-                                    Parameter_Type__c,
-                                    Parameter_Label__c,
-                                    Parameter_Value__c
-                            FROM List_View_Config_Parameters__r
-                            ORDER BY Parameter_Label__c),
-                            (SELECT Field_Name__c,
-                                        Highlight_Color__c,
-                                        Operator__c,
-                                        Order__c,
-                                        Value__c
-                            FROM List_View_Config_Conditions__r
-                            ORDER BY Order__c ASC)
-                FROM List_View_Config__c
-                        WHERE Name = :listViewName
-                            AND List_View_Object__c = :objectName];
+        List<List_View_Config__c> configs = (List<List_View_Config__c>) dec.getRecords();
 
         if (configs.size() > 1)
             throw new ListViewException('Found more than one list view config with name - ' + listViewName + ' and object - ' + objectName);

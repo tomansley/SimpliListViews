@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-09-2021
+ * @last modified on  : 11-30-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -19,15 +19,17 @@ public with sharing class ListViewUserConfigHelper {
      */
     public static Map<String, Map<String, List_View_User_Config__c>> getCurrentUserConfigs() 
     {
-        HelperSchema.checkListViewUserConfigsAccessible();
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Ltn_Component_Name__c,
+                        Name__c,
+                        Primary_Key__c,
+                        User__c,
+                        Value__c
+                 FROM List_View_User_Config__c
+                 WHERE User__c = :UserInfo.getUserId()]);
 
-        List<List_View_User_Config__c> configs = [SELECT Ltn_Component_Name__c,
-                                                         Name__c,
-                                                         Primary_Key__c,
-                                                         User__c,
-                                                         Value__c
-                                                  FROM List_View_User_Config__c
-                                                  WHERE User__c = :UserInfo.getUserId()];
+        List<List_View_User_Config__c> configs = (List<List_View_User_Config__c>) dec.getRecords();
 
         currentUsersConfigs = new Map<String, Map<String, List_View_User_Config__c>>();
         for (List_View_User_Config__c config: configs)
@@ -131,7 +133,7 @@ public with sharing class ListViewUserConfigHelper {
             }
 
             System.debug(LoggingLevel.DEBUG, 'Updating user config - ' + config);
-            HelperDatabase.upsertRecord(config, 'simpli_lv__List_View_User_Config__c', 'simpli_lv__Primary_Key__c');
+            HelperDatabase.upsertRecord(config, 'simpli_lv__Primary_Key__c');
 
             //update the current users config
             Map<String, List_View_User_Config__c> compConfigs = currentUsersConfigs.get(config.Ltn_Component_Name__c);
@@ -172,23 +174,7 @@ public with sharing class ListViewUserConfigHelper {
             {
                 String paramValue = (String) orgWideParams.get(paramName);
 
-                //if (userConfigs.get(paramName) != null)
-                //{
-
-                    //only set if we are not to display, otherwise user wins.
-                    //    || (paramName == 'DisplayActionsButton' && paramValue == 'false')
-                    //    || (paramName == 'DisplayListViewReprocessingButton' && paramValue == 'false')
-                    //    || (paramName == 'DisplayOriginalListViewButton' && paramValue == 'false')
-                    //    || (paramName == 'DisplayRowCount' && paramValue == 'false')
-                    //    || (paramName == 'DisplaySelectedCount' && paramValue == 'false')
-                    //    || (paramName == 'DisplayTextSearch' && paramValue == 'false'))
-                    //{
-                    //    userConfigs.put(paramName, paramValue);  
-                    //}  
-
-                //} else {
-                    userConfigs.put(paramName, paramValue);
-               // }
+                userConfigs.put(paramName, paramValue);
             }
         }
 

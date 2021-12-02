@@ -1,0 +1,198 @@
+<!-- sldsValidatorIgnore -->
+<!--
+  @description       : 
+  @author            : tom@ansleyllc.com
+  @group             : 
+  @last modified on  : 11-19-2021
+  @last modified by  : tom.h.ansley@medtronic.com
+  Modifications Log 
+  Ver   Date         Author                 Modification
+  1.0   11-13-2021   tom@ansleyllc.com      Initial Version
+-->
+<template>
+    <template if:true={showModal}>
+        <div>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <template if:true={spinner}>
+                    <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
+                </template>
+                <div class="slds-modal__container" style="align-items: center; overflow: initial;">
+                
+                    <header class="slds-modal__header" style="min-width: 1100px;">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title={label.Close} onclick={handleClose}>
+                            <lightning-icon icon-name="utility:close" alternative-text={label.Close} variant="warning"></lightning-icon>
+                            <span class="slds-assistive-text">{label.Close}</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_small slds-hyphenate">{objectName} Mass Create</h2>
+                    </header>
+
+                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1100px;">
+                        <template if:true={listViewData}>
+                            <table aria-multiselectable="true" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" style="table-layout:fixed" role="grid">
+
+                                <!-- ------------------------- -->
+                                <!-- HEADER DATA               -->
+                                <!-- ------------------------- -->
+                                <thead>
+                                    <tr class="slds-line-height_reset">
+                                        <template for:each={listViewData.fieldMetaData} for:item="field">
+                                            <template if:true={field.isEditable}>
+                                                <th key={field.label} aria-label={field.label} class="slds-is-resizable slds-text-title_caps" scope="col">
+                                                    <div onmouseup={setNewWidth}>
+                                                        <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                            <span class="slds-truncate" title={field.label}>
+                                                                {field.label}
+                                                            </span>
+                                                        </div>
+                                                        <div class="slds-resizable">
+                                                            <input type="range" min="20" max="1000" class="slds-assistive-text" id={field.label} tabindex="0" />
+                                                            <span class="slds-resizable__handle" onmousedown={calculateWidth}>
+                                                                <span class="slds-resizable__divider"></span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </th>
+                                            </template>
+                                        </template>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={listViewDataRows} for:item="rowData">
+                                        <template if:true={rowData.isDisplayed}>
+                                            <tr key={rowData.rowId} style="height: 30px;" bgcolor={rowData.highlightColor}>
+                                                
+                                                <!-- -------------------- -->
+                                                <!-- EDITED ROW LOGIC     -->
+                                                <!-- -------------------- -->
+                                                <template for:each={rowData.fields} for:item="field">
+                                                    <template if:true={field.isEditable}>
+                                                        <td key={field.key} data-label={field.label}>
+                                                            <template if:true={field.isString}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="text" name="input0" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isTextArea}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="text" name="input01" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isDate}>
+                                                                <div id={rowData.rowId} title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} date-style="short" data-field={field.name} variant=label-hidden type="date" name="input1" value={field.uIValue} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isDateTime}>
+                                                                <div id={rowData.rowId} title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} date-style="short" data-field={field.name} variant=label-hidden type="datetime" name="input2" value={field.uIValue} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isTime}>
+                                                                <div id={rowData.rowId} title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} date-style="short" data-field={field.name} variant=label-hidden type="time" name="input21" value={field.uIValue} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isInteger}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="number" name="input3" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isDecimal}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="number" name="input4" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isBoolean}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="checkbox" name="input5" checked={field.uIValue} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isCurrency}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="number" name="input6" formatter="currency" step="0.01" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isPhone}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="tel" name="input7" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isEmail}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="email" name="input8" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isDouble}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="number" name="input9" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isPercent}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="number" step="0.01" formatter="percent-fixed" name="input10" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isURL}>
+                                                                <div id={rowData.rowId} class="slds-truncate" title={field.value}>
+                                                                    <lightning-input data-type={field.type} data-row-id={rowData.rowId} data-field={field.name} variant=label-hidden type="url" name="input11" value={field.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isPicklist}>
+                                                                <div id={rowData.rowId} title={field.value}>
+                                                                    <c-simpli-u-i-list-views-picklist type="picklist"
+                                                                                                    row-id={rowData.rowId} 
+                                                                                                    sfdc-id={rowData.salesforceId}
+                                                                                                    object-api-name={listViewData.objectName} 
+                                                                                                    selected-value={field.value}  
+                                                                                                    pick-list-field-api-name={field.name}
+                                                                                                    onpicklistchange={handleFieldDataChange}
+                                                                                                    variant=label-hidden>
+                                                                    </c-simpli-u-i-list-views-picklist>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={field.isMultiPicklist}>
+                                                                    <c-simpli-u-i-list-views-picklist type="multipicklist"
+                                                                                                    size=2
+                                                                                                    row-id={rowData.rowId} 
+                                                                                                    sfdc-id={rowData.salesforceId}
+                                                                                                    object-api-name={listViewData.objectName} 
+                                                                                                    selected-value={field.uIMultiPicklistValues}  
+                                                                                                    pick-list-field-api-name={field.name}
+                                                                                                    onpicklistchange={handleFieldDataChange}
+                                                                                                    variant=label-hidden>
+                                                                    </c-simpli-u-i-list-views-picklist>
+                                                            </template>
+                                                            <template if:true={field.isLookup}>
+                                                                <div id={rowData.rowId} title={field.value}>
+                                                                    <c-simpli-u-i-list-views-lookup field-name={field.name} 
+                                                                                                    row-id={rowData.rowId} 
+                                                                                                    initial-name={field.value}
+                                                                                                    initial-id={field.objValueId}
+                                                                                                    field-obj-name={field.fieldObjName}
+                                                                                                    onlookupchange={handleFieldDataChange}>
+                                                                    </c-simpli-u-i-list-views-lookup>
+                                                                </div>
+                                                            </template>
+                                                        </td>
+                                                    </template>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                    </template>            
+                                </tbody>
+                            </table>
+                        </template>
+                    </div>        
+
+                    <footer class="slds-modal__footer" style="min-width: 1100px;">
+                        <button class="slds-button slds-button_brand" onclick={handleCreateClick}>{label.Create}</button>
+                        <button class="slds-button slds-button_brand" onclick={handleCancelClick}>{label.Cancel}</button>
+                    </footer>
+                    
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+</template>

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-10-2021
+ * @last modified on  : 11-12-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -23,7 +23,7 @@ public with sharing class HelperTest {
         acc.BillingCountry = 'USA';
         acc.AnnualRevenue = 125000;
         acc.Industry = 'Telecommunications';
-        HelperDatabase.insertRecord(acc, 'Account');
+        acc = (Account) HelperDatabase.insertRecord(acc);
 		
 		return acc;
     }
@@ -35,7 +35,7 @@ public with sharing class HelperTest {
         cont.LastName  = 'Testerson';
         cont.Email     = 'testy@testerson.com';
         cont.AccountId = acct.Id;
-        HelperDatabase.insertRecord(cont, 'Contact');
+        cont = (Contact) HelperDatabase.insertRecord(cont);
 		
 		return cont;
     }
@@ -47,7 +47,7 @@ public with sharing class HelperTest {
         opp.StageName = 'Needs Analysis';
         opp.CloseDate = System.today().addDays(-5);
         
-        HelperDatabase.insertRecord(opp, 'Opportunity');
+        opp = (Opportunity) HelperDatabase.insertRecord(opp);
 		
 		return opp;
     }
@@ -113,9 +113,8 @@ public with sharing class HelperTest {
 
 		simpliListViews.add(simpliListView);
 
-        HelperDatabase.insertRecords(simpliListViews, 'Simpli_lv__List_View__c');
+        HelperDatabase.insertRecords(simpliListViews);
 
-        HelperSchema.checkListViewConfigsAccessible();
 		List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'Account:simpli_lv__AllAccounts'];
 
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
@@ -144,7 +143,7 @@ public with sharing class HelperTest {
         param.Parameter_Label__c  = 'Total Column Color';
         params.add(param);
         
-        HelperDatabase.insertRecords(params, 'Simpli_lv__List_View_Config_Parameter__c');
+        HelperDatabase.insertRecords(params);
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
         
@@ -158,12 +157,11 @@ public with sharing class HelperTest {
 
         conditions.add(condition);
 
-        HelperDatabase.insertRecords(conditions, 'Simpli_lv__List_View_Config_Condition__c');
+        HelperDatabase.insertRecords(conditions);
 
-        HelperSchema.checkListViewConfigsAccessible();
 		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'ListViewObjects'];
 		orgWideConfig.Parameter_Value__c = '{"Account":"Account"}';
-		HelperDatabase.updateRecord(orgWideConfig, 'simpli_lv__List_View_Config_Parameter__c');
+		HelperDatabase.updateRecord(orgWideConfig);
 
 		return simpliListViews;
 	}
@@ -184,9 +182,8 @@ public with sharing class HelperTest {
 
 		simpliListViews.add(simpliListView);
 
-        HelperDatabase.insertRecords(simpliListViews, 'Simpli_lv__List_View__c');
+        HelperDatabase.insertRecords(simpliListViews);
 
-        HelperSchema.checkListViewConfigsAccessible();
 		List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'simpli_lv__List_View_Config__c:ManualListView'];
 
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
@@ -231,7 +228,7 @@ public with sharing class HelperTest {
         param.Parameter_Label__c  = 'All Rows';
         params.add(param);
         
-        HelperDatabase.insertRecords(params, 'Simpli_lv__List_View_Config_Parameter__c');
+        HelperDatabase.insertRecords(params);
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
         
@@ -245,12 +242,11 @@ public with sharing class HelperTest {
 
         conditions.add(condition);
 
-        HelperDatabase.insertRecords(conditions, 'Simpli_lv__List_View_Config_Condition__c');
+        HelperDatabase.insertRecords(conditions);
 
-        HelperSchema.checkListViewConfigsAccessible();
 		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'ListViewObjects'];
 		orgWideConfig.Parameter_Value__c = '{"simpli_lv__List_View_Config__c":"Manual List View"}';
-		HelperDatabase.updateRecord(orgWideConfig, 'simpli_lv__List_View_Config_Parameter__c');
+		HelperDatabase.updateRecord(orgWideConfig);
 
 		return simpliListViews;
 	}

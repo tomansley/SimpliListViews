@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-08-2021
+ * @Last Modified On   : 11-12-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -31,7 +31,7 @@ public with sharing class ListViewErrorHelper {
         {
             if (!isFuture)
             {
-                HelperDatabase.insertRecords(logs, 'Simpli_lv__List_View_Error__c');
+                HelperDatabase.insertRecords(logs);
                 logs = new List<List_View_Error__c>();
             } else {
                 processFutureLogs(JSON.serialize(logs));
@@ -43,7 +43,7 @@ public with sharing class ListViewErrorHelper {
     public static void processFutureLogs(String jsonString)
     {
         List<List_View_Error__c> logs = (List<List_View_Error__c>) JSON.deserialize(jsonString, List<List_View_Error__c>.class);
-        HelperDatabase.insertRecords(logs, 'Simpli_lv__List_View_Error__c');
+        HelperDatabase.insertRecords(logs);
     }
 
     /*
@@ -59,7 +59,7 @@ public with sharing class ListViewErrorHelper {
             error.Running_User__c  = UserInfo.getUserId();
             error.Message__c       = message.replaceAll('\n', ' '); //JSON parser does not like \n
     
-            HelperDatabase.insertRecord(error, 'Simpli_lv__List_View_Error__c');
+            error = (List_View_Error__c) HelperDatabase.insertRecord(error);
     
             System.debug(LoggingLevel.ERROR, 'Error record created - ' + error);
         }
@@ -71,7 +71,7 @@ public with sharing class ListViewErrorHelper {
         error.Running_User__c  = UserInfo.getUserId();
         error.Message__c       = message.replaceAll('\n', ' '); //JSON parser does not like \n
 
-        HelperDatabase.insertRecord(error, 'Simpli_lv__List_View_Error__c');
+        error = (List_View_Error__c) HelperDatabase.insertRecord(error);
 
         System.debug(LoggingLevel.ERROR, 'Error record created - ' + error);
 

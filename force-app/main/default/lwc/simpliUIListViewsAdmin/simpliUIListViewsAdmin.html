@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-10-2021
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 11-21-2021
+  @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom@ansleyllc.com   Initial Version
@@ -52,14 +52,15 @@
             </c-simpli-u-i-list-views-init-progress-bar>
         </template>
     </lightning-card>
-<!--
+
     <br/>
 
     <lightning-card>
-        <c-simpli-u-i-list-views-schedule-job time-period="hourly">
+        <c-simpli-u-i-list-views-schedule-job time-period="minutely"
+                                              onupdated={handleScheduleJobRefreshed}>
         </c-simpli-u-i-list-views-schedule-job>
     </lightning-card>
--->
+
     <br/>
 
     <!-- ------------------------------------------------------------------------------- -->

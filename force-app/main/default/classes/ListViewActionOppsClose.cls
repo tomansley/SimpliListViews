@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-08-2021
+ * @last modified on  : 11-12-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -44,7 +44,7 @@ public with sharing class ListViewActionOppsClose extends ListViewAction {
             }
 
             //security review
-            HelperDatabase.upsertRecords(closedOpps.values(), 'Opportunity');
+            HelperDatabase.upsertRecords(closedOpps.values());
 
             if (closedOpps.size() == 1)
                 returnStr += '1 opportunity updated successfully.';

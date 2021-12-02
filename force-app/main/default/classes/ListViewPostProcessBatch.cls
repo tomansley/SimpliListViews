@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-08-2021
+ * @Last Modified By   : tom.h.ansley@medtronic.com
+ * @Last Modified On   : 11-22-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -62,8 +62,6 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
 
             ListViewErrorHelper.processLogs(false);
 
-            HelperSchema.checkListViewAccessible();
-
             return Database.getQueryLocator(query);
 
         } catch (Exception e) {
@@ -80,7 +78,9 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
     {
         try {
 
-            HelperDatabase.deleteRecords(scope, 'List_View__c');
+            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
+
+            HelperDatabase.deleteRecords(dec.getRecords(), 'List_View__c');
             
         } catch (Exception e) {
             String message = 'Exception during ListViewPostProcessBatch.execute()  ' + ListViewException.getExtendedString(e);

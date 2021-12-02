@@ -118,6 +118,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track userSortConfigs;             //holds all user sort configuration for this named component.
     @track componentConfig;                 //holds all user and org wide configuration for this named component.
     @track selectedListView;            //holds the selected list view name
+    @track massCreateListView;          //holds the list view to display in the mass create if an alternate list view is provided than the currently displayed list view.
     @track selectedListViewExportName;  //holds the selected list view name + .csv
     @track selectedObject;              //holds the selected object name
     @track objectList;                  //holds the list of objects from which a user can choose one.
@@ -131,6 +132,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track selectedActionLabel;         //holds the selected action label if one is chosen.
     @track objectActionList;            //holds the (Complex Object) list of available actions for the selected object
     //@track listViewConfigParams;       //holds the config parameters for the chosen list view (if one exists)
+    @track showMassCreateModal;         //indicates whether the mass create action modal form should be displayed.
     @track showActionModal;             //indicates whether the action modal form should be displayed.
     @track showFlowModal;               //indicates whether the flow modal form should be displayed.
     @track showAdminModal;              //indicates whether the admin modal form should be displayed.
@@ -1614,6 +1616,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     objectApiName: this.selectedObject,
                     actionName: 'new',
                 },
+                state: {
+                    useRecordTypeCheck: 1
+                }
             });
             
 
@@ -1693,6 +1698,20 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
 
         //------------------------------------------------------
+        //MASS CREATE
+        //------------------------------------------------------
+        } else if (this.selectedAction.className === 'ListViewActionMassCreate')
+        {
+
+            console.log('We are mass creating records for ' + this.pageName);
+            if (this.selectedAction.massCreateListViewName !== undefined)
+                this.massCreateListView = this.selectedAction.massCreateListViewName
+            else
+                this.massCreateListView = this.selectedListView;
+
+            this.showMassCreateModal = true;
+
+        //------------------------------------------------------
         //CUSTOM
         //------------------------------------------------------
         } else {
@@ -1738,6 +1757,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         {
             this.outputStr = this.action;
         }
+    }
+
+    handleMassCreateModalClose() {
+        this.showMassCreateModal = false;
     }
  
     cancelActionModal() {    

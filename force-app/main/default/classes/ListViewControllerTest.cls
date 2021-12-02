@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-02-2021
+ * @last modified on  : 12-01-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -66,7 +66,7 @@ global class ListViewControllerTest {
 
         Map<String, String> configs = ListViewController.getComponentConfig('CompName 1');
 
-        System.assertEquals(20, configs.size());
+        System.assertEquals(21, configs.size());
         System.assertEquals('Account:simpli_lv__AllAccounts', configs.get('pinnedListView'));
 
         //update user config
@@ -75,7 +75,7 @@ global class ListViewControllerTest {
 
         configs = ListViewController.getComponentConfig('CompName 1');
 
-        System.assertEquals(20, configs.size());
+        System.assertEquals(21, configs.size());
         System.assertEquals('Contact:simpli_lv__AllContacts', configs.get('pinnedListView'));
 
 
@@ -132,7 +132,6 @@ global class ListViewControllerTest {
 
         System.assertEquals(result, 'Ok:');
 
-        HelperSchema.checkListViewConfigsAccessible();
         List_View_Config_Condition__c condition = [SELECT ID FROM List_View_Config_Condition__c WHERE Value__c = 'Dickenson plc'];
 
         result = ListViewController.processConditionChange('Account', 'simpli_lv__AllAccounts', 'remove', condition.Id);

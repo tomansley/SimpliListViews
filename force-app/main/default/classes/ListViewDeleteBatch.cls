@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-08-2021
+ * @Last Modified On   : 11-12-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -53,8 +53,6 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
 
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
-
-            HelperSchema.checkListViewAccessible();
 
             return Database.getQueryLocator(query);
 

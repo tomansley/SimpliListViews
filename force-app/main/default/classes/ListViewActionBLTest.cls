@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-12-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -29,7 +29,7 @@ private class ListViewActionBLTest {
 
         lvAction.Label__c = 'Changed Name';
 
-		HelperDatabase.updateRecord(lvAction, 'simpli_lv__List_View_Action__c');
+		HelperDatabase.updateRecord(lvAction);
 
     }
 

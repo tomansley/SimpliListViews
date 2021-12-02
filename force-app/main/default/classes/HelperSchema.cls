@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-09-2021
+ * @Last Modified On   : 11-30-2021
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -1019,7 +1019,7 @@ public with sharing class HelperSchema {
 		
 	}
 
-	private static String scrubFieldName(String fieldName)
+	public static String scrubFieldName(String fieldName)
     {
         if (fieldName == null) return fieldName;
         //remove whitespace
@@ -1027,6 +1027,7 @@ public with sharing class HelperSchema {
 
         //remove toLabel keyword
         if (fieldName.contains('toLabel(')) fieldName = fieldName.substringBetween('(', ')');
+        else if (fieldName.contains('convertCurrency(')) fieldName = fieldName.substringBetween('(', ')');
         
         return fieldName;
     }
@@ -1282,6 +1283,23 @@ public with sharing class HelperSchema {
 	{
 		checkObjectDeletable(objName, true);
 	}
+
+    public static String getDMLDecisionDebug(String objAPIName, SObjectAccessDecision dec)
+    {
+        String log = '\n\n--------------- Decision ---------------\n';
+        log += 'Object - ' + objAPIName + '\n';
+        for (Integer index: dec.getModifiedIndexes())
+            log += index + ', ';
+        log.removeEnd(', ');
+
+        for (String field: dec.getRemovedFields().keySet())
+            log += field + dec.getRemovedFields().get(field) + '\n';
+
+        log += '----------------------------------------\n';
+
+        return log;
+
+    }
 
 	//------------------------------------------------
 	// INNER CLASSES

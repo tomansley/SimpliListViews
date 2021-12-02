@@ -1,8 +1,8 @@
 /**
  * @description       : Helper class to aid in the handling of DML transactions
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-11-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 11-12-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
@@ -55,60 +55,70 @@ public with sharing class HelperDatabase {
         soql = soql.removeEnd(',') + ')';
 
         System.debug(Logginglevel.DEBUG, 'SOQL - ' + soql);
+        HelperSchema.checkSelectAccessible(soql);
 
         List<SObject> results = Database.query(soql);
 
-        SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, results);
-        return dec.getRecords();
+        return results;
     }
 
     //--------------------------------------------------------------------------------------------------------------------------
     // INSERT
     //--------------------------------------------------------------------------------------------------------------------------
 
-    public static void insertRecord(SObject data, String objAPIName) 
+    public static List<SObject> insertRecords(List<SObject> data) 
+    {
+        return insertRecords(data, true); 
+    }
+
+    public static SObject insertRecord(SObject data) 
     {
         List<SObject> records = new List<SObject>();
         records.add(data);
 
-        insertRecords(records, objAPIName);
+        records = insertRecords(records);
+
+        return records[0];
     }
 
-    public static void insertRecords(List<SObject> data, String objAPIName) 
-    {
-        insertRecords(data, objAPIName, true); 
-    }
-
-    public static void insertRecords(List<SObject> data, String objAPIName, Boolean allOrNone) 
+    public static List<SObject> insertRecords(List<SObject> data, Boolean allOrNone) 
     {
         SObjectAccessDecision dec = Security.stripInaccessible(AccessType.CREATABLE, data);
 
         Database.insert(dec.getRecords(), allOrNone);
+
+        data = dec.getRecords();
+        
+        return data;
     }
+
 
     //--------------------------------------------------------------------------------------------------------------------------
     // UPDATE
     //--------------------------------------------------------------------------------------------------------------------------
 
-    public static void updateRecord(SObject data, String objAPIName) 
+    public static void updateRecord(SObject data) 
     {
         List<SObject> records = new List<SObject>();
         records.add(data);
 
-        updateRecords(records, objAPIName);
+        updateRecords(records);
         
     }
 
-    public static void updateRecords(List<SObject> data, String objAPIName) 
+    public static void updateRecords(List<SObject> data) 
     {
-        updateRecords(data, objAPIName, true); 
+        updateRecords(data, true); 
     }
 
-    public static void updateRecords(List<SObject> data, String objAPIName, Boolean allOrNone) 
+    public static void updateRecords(List<SObject> data, Boolean allOrNone) 
     {
         SObjectAccessDecision dec = Security.stripInaccessible(AccessType.UPDATABLE, data);
 
         Database.update(dec.getRecords(), allOrNone);
+        
+        data = dec.getRecords();
+
     }
 
 
@@ -116,40 +126,46 @@ public with sharing class HelperDatabase {
     // UPSERT
     //--------------------------------------------------------------------------------------------------------------------------
 
-    public static void upsertRecord(SObject data, String objAPIName) 
+    public static SObject upsertRecord(SObject data) 
     {
         List<SObject> records = new List<SObject>();
         records.add(data);
 
-        upsertRecords(records, objAPIName);
+        records = upsertRecords(records);
+
+        return records[0];
     }
 
-    public static void upsertRecord(SObject data, String objAPIName, String externalIdField) 
+    public static SObject upsertRecord(SObject data, String externalIdField) 
     {
         List<SObject> records = new List<SObject>();
         records.add(data);
 
-        upsertRecords(records, objAPIName, externalIdField, true);
+        records = upsertRecords(records, externalIdField, true);
         
+        return records[0];
+   }
+
+    public static List<SObject> upsertRecords(List<SObject> data) 
+    {
+        return upsertRecords(data, null, true); 
     }
 
-    public static void upsertRecords(List<SObject> data, String objAPIName) 
-    {
-        upsertRecords(data, objAPIName, null, true); 
-    }
-
-    public static void upsertRecords(List<SObject> data, String objAPIName, String externalIdField, Boolean allOrNone) 
+    public static List<SObject> upsertRecords(List<SObject> data, String externalIdField, Boolean allOrNone) 
     {
 
-        SObjectAccessDecision dec = Security.stripInaccessible(AccessType.UPSERTABLE, data);
+        SObjectAccessDecision dec = Security.stripInaccessible(AccessType.UPSERTABLE, data);        
 
         if (externalIdField != null)
         {
-            Schema.SObjectField field = HelperSchema.getFieldSchema(objAPIName, externalIdField);
+            Schema.SObjectField field = HelperSchema.getFieldSchema(HelperSchema.getObjectType(data[0]), externalIdField);
             Database.upsert(dec.getRecords(), field, allOrNone);
         } else 
             Database.upsert(dec.getRecords(), allOrNone);
         
+        data = dec.getRecords();
+
+        return data;
     }
 
     //--------------------------------------------------------------------------------------------------------------------------

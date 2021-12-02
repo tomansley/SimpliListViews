@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-11-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-01-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -16,6 +16,9 @@
  **/
 public without sharing class ListViewController
 {
+
+    public static final String SUCCESS = 'success';
+    public static final String FAILED = 'failed';
 
     @AuraEnabled(cacheable=true)
     public static Boolean hasModifyAll()
@@ -37,19 +40,8 @@ public without sharing class ListViewController
         
         if (batchId != '')
         {
-            //Query the Batch apex jobs
-            HelperSchema.checkSelectAccessible('SELECT TotalJobItems, Status, NumberOfErrors, MethodName, JobType, JobItemsProcessed, Id FROM AsyncApexJob');
-            List<AsyncApexJob> jobs = [SELECT TotalJobItems, 
-                                              Status, 
-                                              NumberOfErrors, 
-                                              MethodName, 
-                                              JobType, 
-                                              JobItemsProcessed,
-                                              ApexClass.Name,
-                                              Id 
-                                       FROM AsyncApexJob 
-                                       WHERE ApexClass.Name IN ('ListViewPostProcessBatch', 'ListViewProcessBatch', 'ListViewPreProcessBatch')
-                                                AND Status != 'Completed'];
+            //Query the Batch apex jobs            
+            List<AsyncApexJob> jobs = HelperScheduler.getCurrentlyRunningJobs();
 
             if (jobs.size() == 0) { 
                 
@@ -273,7 +265,7 @@ public without sharing class ListViewController
 
         ListViewErrorHelper.processLogs(true);
 
-        return 'success';
+        return SUCCESS;
     }
 
     @AuraEnabled
@@ -285,7 +277,7 @@ public without sharing class ListViewController
 
         ListViewErrorHelper.processLogs(true);
 
-        return 'success';
+        return SUCCESS;
     }
 
     @AuraEnabled
@@ -296,7 +288,7 @@ public without sharing class ListViewController
         Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectType, listViewName);
 
         //if no listviews return failed
-        if (listviews.size() == 0) return 'failed';
+        if (listviews.size() == 0) return FAILED;
 
         //get the list views Id
         Set<Id> lvId = new Set<Id>();
@@ -308,7 +300,7 @@ public without sharing class ListViewController
 
         ListViewErrorHelper.processLogs(true);
 
-        return 'success';
+        return SUCCESS;
     }
 
 	@AuraEnabled
@@ -317,7 +309,7 @@ public without sharing class ListViewController
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateChangedListViews()');
 
         //try get the last changed CORE list view
-        Map<Id, ListView> changedListViews = ListViewHelper.getChangedListViews(1);
+        Map<Id, ListView> changedListViews = ListViewHelper.getLastChangedListViewForUser(UserInfo.getUserId());
 
         if (changedListViews.size() > 0)
         {
@@ -343,7 +335,7 @@ public without sharing class ListViewController
 
         ListViewErrorHelper.processLogs(true);
 
-        return 'success';
+        return SUCCESS;
 	}
 
 	//SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
@@ -359,7 +351,7 @@ public without sharing class ListViewController
         try {
             jobId = Database.executebatch(b, 40);
         } catch (Exception e) {
-            jobId = 'failed';
+            jobId = FAILED;
             String message = 'Exception during ListViewController.updateAllListViews()  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createFutureUsageError(message); 
         }
@@ -464,7 +456,7 @@ public without sharing class ListViewController
     public static String isValidListViewDataRequest(String objectName, String joinFieldName, String joinData)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.isValidListViewDataRequest(' + objectName + ', ' + joinFieldName + ',' + joinData + ')');
-        String result = 'success';
+        String result = SUCCESS;
 
         //if we have join information then get the record Ids
         Set<String> joinRecordIds = null;
@@ -507,6 +499,45 @@ public without sharing class ListViewController
         return result;
     }
 
+    @AuraEnabled
+    public static ListViewAbstract.RowsWrapper getListViewDataShell(String objectName, String listViewName, String joinFieldName, String joinData)
+    {
+        ListViewAbstract.RowsWrapper rows = getListViewData(null, objectName, listViewName, null, joinFieldName, joinData, -1, true);
+        
+        //clone the only returned row and change its rowId
+        ListViewAbstract.RowWrapper rowWrapper = rows.getRows()[0];
+        rowWrapper.rowId = '1';
+        rowWrapper.sfdcId = '1';
+
+        String debug = '\n\n------------------------------------\n';
+        for(ListViewAbstract.FieldWrapper field: rowWrapper.getFields())
+        {
+            field.setFieldObj(null);
+            field.setObjValueId(null);
+            field.setValue(null);
+            debug += field.getName() + ' - ' + field.getIsEditable() + ' - ' + field.getType() + '\n';
+        }
+        debug += '------------------------------------\n';
+        System.debug(LoggingLevel.DEBUG, debug);
+
+        Integer rowCount = Integer.valueOf(ListViewConfigHelper.getOrgWideConfigParam('MassCreateRowCount', '10'));
+
+
+        for (Integer count = 2; count < rowCount + 1; count++)
+        {
+            ListViewAbstract.RowWrapper row = rowWrapper.cloneWrapper(false);
+            row.rowId = String.valueOf(count);
+            rows.addRow(row);
+        }
+        return rows;
+    }
+
+    @AuraEnabled
+    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset)
+    {
+        return getListViewData(pageName, objectName, listViewName, sortData, joinFieldName, joinData, offset, false);
+    }
+
     /**
     * @description Method to retrieve list view data based on user provided criteria.
     * @author tom@ansleyllc.com | 06-28-2021 
@@ -517,12 +548,12 @@ public without sharing class ListViewController
     * @param joinFieldName used by a list view component listening on the same page. Indicates the field name used to join the data between the two list views.
     * @param joinData the joined field data to use when performing the query.
     * @param offset indicates the offset if the data is being paged.
+    * @param isShell indicates whether the request should only retrieve the rowwrapper without data or all the data
     * @return ListViewAbstract.RowsWrapper 
     **/
-    @AuraEnabled
-    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset)
+    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, Boolean isShell)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ', ' + isShell + ')');
         
         ListViewAbstract.RowsWrapper rowData                   = null;
 
@@ -642,6 +673,7 @@ public without sharing class ListViewController
 
             //create a new instance
             ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
+            lvLogic.setIsShell(isShell);
     
             //set all request information into the apex processing class.
             lvlogic.setRequestData(listview, columnSortData, joinFieldName, joinRecordIds, offset);
@@ -665,7 +697,7 @@ public without sharing class ListViewController
             System.debug(LoggingLevel.FINE, debug);
             
             //update the sorting for this user for this list view for this component. This MUST be done at the end!
-            if (!isDefaultSort)
+            if (!isDefaultSort && !isShell)
                 ListViewUserConfigHelper.updateSortConfigValue(pageName, sortStr, objectName, listviewName);
 
         } else {
@@ -774,10 +806,12 @@ public without sharing class ListViewController
             return responseStr;
         }
 
+        System.debug(LoggingLevel.DEBUG, 'Action - ' + action);
         // Get the Type corresponding to the class name
         Type t = null;
 
 		Integer index = action.Apex_Class_Name__c.indexOf('.');
+        System.debug(LoggingLevel.DEBUG, 'Index - ' + index);
     	if (index != -1) {
         	// With namespace "ns.Type"
         	t = Type.forName(action.Apex_Class_Name__c.substring(index), action.Apex_Class_Name__c.substring(index + 1, action.Apex_Class_Name__c.length()));
@@ -917,9 +951,67 @@ public without sharing class ListViewController
     {
         System.debug(LoggingLevel.FINE, 'Starting updateRecords - ' + rowData);
 
-        //add all field data - remember that Map objects cannot be stringified in Javascript so we need to turn
-        //everything into an array before sending so here we turn it back again. AND, this is a map of maps so its trickier
-        Map<String, Object> rowMap = (Map<String, Object>) JSON.deserializeUntyped(rowData);
+        Map<String, Map<String, String>> dataMap = getRowDataFromJSON(rowData);
+
+        System.debug(LoggingLevel.FINE, 'dataMap - ' + dataMap);
+        String result = '';
+        try {
+            ListViewHelper.updateRecords(ListViewHelper.PROC_TYPE_UPDATE, null, dataMap);
+
+        } catch (Exception e) {
+            String message = 'Exception during ListViewController.updateRecords(' + rowData + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createNonFutureUsageError(message);
+            result = 'There was an error saving the records - ' + e.getMessage();
+        }
+
+        ListViewErrorHelper.processLogs(true);
+
+        return result;
+
+    }
+
+    /**
+    * @description Method which accepts a record Id and a JSON string containing field data to use for creating new records.
+    * @author tom@ansleyllc.com | 11-13-2021 
+    **/
+    @AuraEnabled
+    public static String createRecords(String objType, String rowData)
+    {
+        System.debug(LoggingLevel.FINE, 'Starting createRecords(' + objType + ', ' + rowData + ')');
+
+        Map<String, Map<String, String>> dataMap = getRowDataFromJSON(rowData);
+
+        String result = '';
+        try {
+            Map<String, SObject> results = ListViewHelper.updateRecords(ListViewHelper.PROC_TYPE_CREATE, objType, dataMap);
+
+            result = results.size() + ':' + SUCCESS;
+        } catch (Exception e) {
+            String message = 'Exception during ListViewController.createRecords(' + rowData + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createNonFutureUsageError(message);
+            result = 'There was an error saving the records - ' + e.getMessage();
+        }
+
+        ListViewErrorHelper.processLogs(true);
+
+        return result;
+
+    }
+
+    //=============================
+    // INTERNAL CLASSES
+    //=============================
+
+    /**
+      * @description Method which takes a JSON string and converts it back into row data for processing
+      * @author tom.h.ansley@medtronic.com | 11-13-2021 
+      **/
+    private static Map<String, Map<String, String>> getRowDataFromJSON(String jsonString)
+    {
+        //remember that Map objects cannot be stringified in Javascript so we need to turn
+        //everything into an array before sending so here we turn it back again. AND, this 
+        //is a map of maps so its trickier
+        Map<String, Object> rowMap = (Map<String, Object>) JSON.deserializeUntyped(jsonString);
         Map<String, Map<String, String>> dataMap = new Map<String, Map<String, String>>();
         System.debug(LoggingLevel.FINE, 'rowMap - ' + rowMap);
         for (String rowId: rowMap.keySet())
@@ -944,20 +1036,8 @@ public without sharing class ListViewController
 
         }
         System.debug(LoggingLevel.FINE, 'dataMap - ' + dataMap);
-        String result = '';
-        try {
-            ListViewHelper.updateRecords(dataMap);
 
-        } catch (Exception e) {
-            String message = 'Exception during ListViewController.updateRecords(' + rowData + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createNonFutureUsageError(message);
-            result = 'There was an error saving the records - ' + e.getMessage();
-        }
-
-        ListViewErrorHelper.processLogs(true);
-
-        return result;
-
+        return dataMap;
     }
 
     //=============================

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-10-2021
+ * @last modified on  : 11-12-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -797,7 +797,6 @@ private class ListViewConfigHelperTest {
         try {
             ListViewConfigHelper.addListViewCondition('Account', 'simpli_lv__AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '1', '#000000');
 
-            HelperSchema.checkListViewConfigsAccessible();
             List_View_Config_Condition__c condition = [SELECT Id FROM List_View_Config_Condition__c WHERE Value__c = 'Testerson'];
 
             ListViewConfigHelper.deleteListViewCondition(condition.Id);
@@ -815,7 +814,6 @@ private class ListViewConfigHelperTest {
         //create a list view
         List<List_View__c> listViews = HelperTest.createCoreListViews();
 
-        HelperSchema.checkListViewConfigsAccessible();
         List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'Account:simpli_lv__AllAccounts'];
 
         //get the parameters of the created list view

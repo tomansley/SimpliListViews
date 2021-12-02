@@ -1,10 +1,13 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 11-10-2021
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 11-22-2021
+  @last modified by  : tom.h.ansley@medtronic.com
 -->
 <template>
+    <template if:true={spinner}>
+        <lightning-spinner alternative-text="Loading" class="pageSpinnerHolder"></lightning-spinner>
+    </template>
 
     <lightning-layout>
         <lightning-layout-item style="width: 30%" padding="horizontal-small">
@@ -22,17 +25,19 @@
                                 onchange={handleTimePeriodChange} 
                                 options={timePeriodsList}
                                 label={label.Select_Time_Period}
+                                disabled={isTurnedOn}
                                 variant="label-inline">
             </lightning-combobox>
         </lightning-layout-item>
 
         <template if:true={displayMonths}>
             <lightning-layout-item padding="horizontal-small">
-                <lightning-combobox name="Months List"
+                <lightning-combobox name="Month List"
                                     value={selectedMonth}
-                                    onchange={handleMonthChange} 
+                                    onchange={periodValueChange} 
                                     options={monthPeriodsList}
                                     label={label.Select_Month}
+                                    disabled={isTurnedOn}
                                     variant="label-inline">
                 </lightning-combobox>
             </lightning-layout-item>    
@@ -42,9 +47,10 @@
             <lightning-layout-item padding="horizontal-small">
                 <lightning-combobox name="Day List"
                                     value={selectedDay}
-                                    onchange={handleDayChange} 
+                                    onchange={periodValueChange} 
                                     options={dayPeriodsList}
                                     label={label.Select_Day}
+                                    disabled={isTurnedOn}
                                     variant="label-inline">
                 </lightning-combobox>
             </lightning-layout-item>    
@@ -54,9 +60,10 @@
             <lightning-layout-item padding="horizontal-small">
                 <lightning-combobox name="Hour List"
                                     value={selectedHour}
-                                    onchange={handleHourChange} 
+                                    onchange={periodValueChange} 
                                     options={hourPeriodsList}
                                     label={label.Select_Hour}
+                                    disabled={isTurnedOn}
                                     variant="label-inline">
                 </lightning-combobox>
             </lightning-layout-item>    
@@ -66,9 +73,23 @@
             <lightning-layout-item padding="horizontal-small">
                 <lightning-combobox name="Minute List"
                                     value={selectedMinute}
-                                    onchange={handleMinuteChange} 
+                                    onchange={periodValueChange} 
                                     options={minutePeriodsList}
                                     label={label.Select_Minute}
+                                    disabled={isTurnedOn}
+                                    variant="label-inline">
+                </lightning-combobox>
+            </lightning-layout-item>    
+        </template>
+
+        <template if:true={displayXMinutes}>
+            <lightning-layout-item padding="horizontal-small" size="3">
+                <lightning-combobox name="X Minute List"
+                                    value={selectedXMinutes}
+                                    onchange={periodValueChange} 
+                                    options={xMinutePeriodsList}
+                                    label={label.Select_X_Minute}
+                                    disabled={isTurnedOn}
                                     variant="label-inline">
                 </lightning-combobox>
             </lightning-layout-item>    

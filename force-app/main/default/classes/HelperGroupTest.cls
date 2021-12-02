@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-02-2021
+ * @last modified on  : 11-12-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -77,7 +77,7 @@ private class HelperGroupTest {
             listViews.add(lv);
         }
 
-        HelperDatabase.insertRecords(listViews, 'Simpli_lv__List_View__c');
+        HelperDatabase.insertRecords(listViews);
 
     }
 

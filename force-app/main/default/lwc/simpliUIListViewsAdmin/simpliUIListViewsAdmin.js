@@ -244,6 +244,10 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         this.parameters.set(name, value);
     }
 
+    handleScheduleJobRefreshed(event) {
+        this.getConfig();
+    }
+
     spinnerOn() {
         this.spinner = true;
         console.log('Spinner ON');

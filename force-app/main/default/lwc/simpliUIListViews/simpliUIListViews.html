@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-10-2021
+  @last modified on  : 11-18-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -295,13 +295,13 @@
         <!-- ---------------------------------------------------------------------------------- -->
         <template if:true={isInitialized}>
             <template if:true={listViewData}>
-                <lightning-card>
-                    <table aria-multiselectable="true" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" style="table-layout:fixed" role="grid">
+                <div class="listscrollwrapper">
+                    <table class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" style="table-layout:fixed" role="grid">
 
                         <!-- ------------------------- -->
                         <!-- HEADER DATA               -->
                         <!-- ------------------------- -->
-                        <thead>
+                        <thead style="position:relative">
                             <tr class="slds-line-height_reset">
                                 <th class="slds-text-align_right" scope="col" style="width:3.25rem">
                                     <div class="slds-th__action slds-th__action_form">
@@ -316,8 +316,6 @@
                                 </th>
                                 <template for:each={listViewData.fieldMetaData} for:item="field">
                                     <th key={field.label} 
-                                        aria-label={field.label} 
-                                        aria-sort="ascending" 
                                         class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc" 
                                         scope="col">
 
@@ -378,9 +376,7 @@
                                 <!-- ACTION BUTTONS       -->
                                 <!-- -------------------- -->
                                 <template if:true={isEdited}>
-                                    <th aria-label="Editing Action" 
-                                        aria-sort="ascending" 
-                                        class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc slds-text-align_center" 
+                                    <th class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc slds-text-align_center" 
                                         style="width:3.75rem"
                                         scope="col">
                                         <div>
@@ -436,8 +432,8 @@
                                                     <td id={rowData.rowId} key={fieldData.key} data-label={fieldData.label} ondblclick={setRowEdited}>
                                                         <template if:true={fieldData.hasURL}>
                                                             <div id={rowData.rowId} 
-                                                                 class="slds-truncate" 
-                                                                 title={fieldData.value}>
+                                                                class="slds-truncate" 
+                                                                title={fieldData.value}>
                                                                 <a href={fieldData.uRL} onmouseover={displayHoverDetails} 
                                                                                         data-sfdc-id={fieldData.objValueId} 
                                                                                         data-api-name={fieldData.fieldObjName}
@@ -788,7 +784,7 @@
                             </template>            
                         </tbody>
                     </table>
-                </lightning-card>
+                </div>
             </template>
         </template>
 
@@ -833,5 +829,16 @@
                                              list-view-name={selectedListView}
                                              onclose={processAdminModal}>
         </c-simpli-u-i-list-views-admin-modal>
+
+        <!-- ---------------------------------------------------------------------------------- -->
+        <!-- The modal view if the MASS CREATE action is selected                               -->
+        <!-- ---------------------------------------------------------------------------------- -->
+        <c-simpli-u-i-list-views-mass-create-modal show-modal={showMassCreateModal}
+                                                   object-name={selectedObject}
+                                                   list-view-name={massCreateListView}
+                                                   master-obj-id={relatedRecordId}
+                                                   master-obj-field={joinFieldName}
+                                                   onclose={handleMassCreateModalClose}>
+        </c-simpli-u-i-list-views-mass-create-modal>
     </div>
 </template>

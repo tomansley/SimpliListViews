@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-10-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-12-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public class ListViewConfigPicklistListViews extends VisualEditor.DynamicPickList{
 
@@ -21,15 +21,21 @@ public class ListViewConfigPicklistListViews extends VisualEditor.DynamicPickLis
     
     public override VisualEditor.DynamicPickListRows getValues() {
 
+        //Set<String> apiNames = new Set<String>();
+
         VisualEditor.DynamicPickListRows  configPicklist = new VisualEditor.DynamicPickListRows();
-
-        //only get NON-batch configs
-
+        //we need to add example list views that might not exist yet during install.
+        //configPicklist.addRow(new VisualEditor.DataRow('Campaign Member - CampaignMember', 'CampaignMembers'));
+        //apiNames.add('CampaignMembers');
+        //configPicklist.addRow(new VisualEditor.DataRow('PriceBookEntry - Standard', 'PricebookStandard'));       
+        //apiNames.add('PricebookStandard');
+        
         Map<Id, List_View__c> listViews = ListViewHelper.getListViewsByType(ListViewHelper.TYPE_ALL);
 
         for (List_View__c listView: listViews.values())
         {
-            configPicklist.addRow(new VisualEditor.DataRow(listView.Object_Name__c + ' - ' + listView.Label__c, listView.API_Name__c));
+            //if (!apiNames.contains(listView.API_Name__c))
+                configPicklist.addRow(new VisualEditor.DataRow(listView.Object_Name__c + ' - ' + listView.Label__c, listView.API_Name__c));
         }
         return configPicklist;
     }

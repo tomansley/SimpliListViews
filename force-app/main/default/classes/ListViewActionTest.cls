@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-04-2021
+ * @last modified on  : 11-12-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -31,12 +31,14 @@ private class ListViewActionTest {
             //change param field to AccountNumber
             param.Field_API_Name__c   = 'AccountNumber';
 
-            HelperDatabase.updateRecord(param, 'simpli_lv__List_View_Action_Parameter__c');
+            HelperDatabase.updateRecord(param);
 
         Test.stopTest();
 
-        HelperSchema.checkListViewActionsAccessible();
-        List_View_Action_Parameter__c paramUpdate = [SELECT Field_API_Name__c FROM List_View_Action_Parameter__c WHERE Id = :param.Id];
+        SObjectAccessDecision dec = 
+         Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Field_API_Name__c FROM List_View_Action_Parameter__c WHERE Id = :param.Id]);
+        List_View_Action_Parameter__c paramUpdate = (List_View_Action_Parameter__c) dec.getRecords()[0];
         System.assert(paramUpdate.Field_API_Name__c == 'AccountNumber');
 
     }
@@ -51,7 +53,7 @@ private class ListViewActionTest {
 
             deleteAction.Label__c = 'Changed Name';
 
-            HelperDatabase.updateRecord(deleteAction, 'simpli_lv__List_View_Action__c');
+            HelperDatabase.updateRecord(deleteAction);
 
             deleteAction = ListViewActionHelper.getListViewActionByKey('ChangedName:null');
 

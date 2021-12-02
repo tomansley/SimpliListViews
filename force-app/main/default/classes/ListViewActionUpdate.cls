@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-08-2021
+ * @last modified on  : 12-01-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -48,7 +48,7 @@ public with sharing class ListViewActionUpdate  extends ListViewAction {
             for (String recordId: recordIds)
                 rowValues.put(recordId, strFieldValues);
 
-            Map<Id,SObject> updatedObjs = ListViewHelper.updateRecords(rowValues);
+            Map<String,SObject> updatedObjs = ListViewHelper.updateRecords(ListViewHelper.PROC_TYPE_UPDATE, objType, rowValues);
             
             if (updatedObjs.size() == 1)
                 returnStr += '1 record updated successfully.';

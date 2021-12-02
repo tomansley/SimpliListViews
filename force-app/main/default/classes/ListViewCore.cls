@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-10-2021
+ * @last modified on  : 11-30-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -14,9 +14,9 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
     public override RowsWrapper getData()
     {
-        List<SObject> dataRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, offset);
+        List<SObject> dataRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, this.isShell, offset);
 
-        RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData, ListViewHelper.offset);
+        RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData, ListViewHelper.offset, isShell);
         if (lvConfig.getParameter('ReturnSize') != null && !String.isEmpty(lvConfig.getParameter('ReturnSize').getValue()))
             rowData.listView.rowLimit = Integer.valueOf(lvConfig.getParameter('ReturnSize').getValue());
         else
@@ -104,6 +104,19 @@ public with sharing class ListViewCore extends ListViewAbstract {
             params.add(param);
         } else {
             params.add(paramsByName.get('RefreshRate'));
+        }
+
+        if (paramsByName.get('ExportHeaderType') == null)
+        {      
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'ExportHeaderType';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = 'false';
+            param.Parameter_Label__c  = 'Use API Names For File Export Headers';
+            params.add(param);
+        } else {
+            params.add(paramsByName.get('ExportHeaderType'));
         }
 
         if (paramsByName.get('AllRows') == null)
@@ -197,7 +210,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
                                                                     List_View__c listView, 
                                                                     ListViewConfigWrapper lvConfig,
                                                                     List<ListViewHelper.ColumnSortData> sortData,
-                                                                    Integer offset)
+                                                                    Integer offset,
+                                                                    Boolean isShell)
     {
         Long startTime = System.now().getTime();
         System.debug(LoggingLevel.FINE, 'Starting ListViewCore.handleRowsToWrapper - ' + startTime);
@@ -206,7 +220,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
         for (ListViewHelper.ColumnSortData columnData: sortData)
             sortDataByFieldName.put(columnData.fieldName, columnData);
 
-        ListViewAbstract.RowsWrapper rows = new ListViewAbstract.RowsWrapper(listView);
+        ListViewAbstract.RowsWrapper rows = new ListViewAbstract.RowsWrapper(listView, lvConfig);
         rows.listView.offset = offset;
         
         //get all columns from the list view
@@ -267,9 +281,9 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 String parentObjType = fieldData.parentObjType;
 
                 FieldWrapper field = new FieldWrapper(label, 
-                                                      fieldData.type.name(),
-                                                      fieldName,
-                                                      columnIndex);
+                                                    fieldData.type.name(),
+                                                    fieldName,
+                                                    columnIndex);
                 field.setParentObjType(parentObjType);
 
                 if (sortDataByFieldName.containsKey(fieldName))
@@ -289,7 +303,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 columns.add(newColumn);
 
                 columnIndex++;
-
+                
             }
         }
 
@@ -341,6 +355,10 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 field.setIsEditable(fieldData.isEditable);
 
+                //also set the editable state into the column data
+                if (rows.getFieldMetaData(field.getName()) != null)
+                    rows.getFieldMetaData(field.getName()).setIsEditable(fieldData.isEditable);
+
                 System.debug(LoggingLevel.FINE, 'Field - ' + field);
 
                 if (ListViewAbstract.validNameColumnNames.contains(fieldData.name)             //if we have the name of the object
@@ -362,7 +380,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             }
 
-            if (lvConfig != null)
+            if (lvConfig != null && !isShell)
             rowWrapper.calculateHighlighting(lvConfig.conditions);
         }
 
@@ -370,7 +388,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
         if (lvConfig != null
             && lvConfig.getParameter('TotalColumns') != null 
             && !String.isEmpty(lvConfig.getParameter('TotalColumns').getValue())
-            && offset == -1)
+            && offset == -1
+            && !isShell)
         {
 
             rows.hasTotalsRow = true;

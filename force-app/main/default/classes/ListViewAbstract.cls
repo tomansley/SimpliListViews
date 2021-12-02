@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-10-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 11-30-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -24,6 +24,7 @@ public with sharing abstract class ListViewAbstract {
     public Set<String> joinRecordIds = null;                          //holds any join Ids that might be used to identify records.
     public String joinField = null;                                   //if getting data based on join Ids this field describes the join field to use.
     public Integer offset = -1;                                       //holds the offset value if we need to page data into the list view.
+    public Boolean isShell = false;                                   //indicates whether the request should only retrieve the rowwrapper without data or all the data
 
     //----------------------------------------------------------------------------------
     // Method to be overridden
@@ -64,7 +65,11 @@ public with sharing abstract class ListViewAbstract {
     //----------------------------------------------------------------------------------
     // Concrete methods
     //----------------------------------------------------------------------------------
-    
+    public void setIsShell(Boolean isShell)
+    {
+        this.isShell = isShell;
+    }
+
     public void setRequestData(List_View__c listview)
     {
         setRequestData(listview, null, null, null, -1);
@@ -168,17 +173,21 @@ public with sharing abstract class ListViewAbstract {
         public ListViewWrapper listView;
         public List<RowWrapper> rows;
         public List<FieldWrapper> fieldMetaData;
+        public Map<String, FieldWrapper> fieldMetaDataByName;
         public String csvData;
         public Boolean hasTotalsRow;
         public Boolean isCoreListView = false;
         public Boolean isEdited;
         public Boolean isDefaultSort = false;
+        private ListViewConfigWrapper lvConfig = null;
         
-        public RowsWrapper(List_View__c listView)
+        public RowsWrapper(List_View__c listView, ListViewConfigWrapper lvConfig)
         {
+            this.lvConfig = lvConfig;
             this.listView = new ListViewWrapper(listView);
             rows = new List<RowWrapper>();
             fieldMetaData = new List<FieldWrapper>();
+            fieldMetaDataByName = new Map<String, FieldWrapper>();
             hasTotalsRow = false;
             objName    = listview.Object_Name__c;
             coreListId = listview.Core_ListView_Id__c;
@@ -260,6 +269,12 @@ public with sharing abstract class ListViewAbstract {
         public void addFieldMetaData(FieldWrapper field)
         {
             fieldMetaData.add(field);
+            fieldMetaDataByName.put(field.getName(), field);
+        }
+
+        public FieldWrapper getFieldMetaData(String fieldName)
+        {
+            return fieldMetaDataByName.get(fieldName);
         }
 
         @AuraEnabled(cacheable=true)
@@ -298,9 +313,14 @@ public with sharing abstract class ListViewAbstract {
         {
             String dataStr = '';
 
+            ListViewParam useAPINames = lvConfig.getParameter('ExportHeaderType');
+
             for (FieldWrapper column: fieldMetaData)
             {
-                dataStr += '"' + column.name.replaceAll('"', '""') + '"' + ',';
+                if (useAPINames == null || useAPINames.getValue() == 'false')
+                    dataStr += '"' + column.label.replaceAll('"', '""') + '"' + ',';
+                else
+                    dataStr += '"' + column.name.replaceAll('"', '""') + '"' + ',';
             }
 
             dataStr = dataStr.removeEnd(',') + '\n';
@@ -879,6 +899,8 @@ public with sharing abstract class ListViewAbstract {
             //only editable if its a field that is on the main object or a lookup.
             if (this.name.countMatches('.') > 1 || (this.name.countMatches('.') == 1 && !this.name.contains('.Name'))) return false;
             
+            System.debug(LoggingLevel.DEBUG, 'IS EDITABLE - ' + isEditable + ' - ' + this.label);
+
             return isEditable;    
         }
 
@@ -1386,8 +1408,8 @@ public with sharing abstract class ListViewAbstract {
             for (List_View_Config_Parameter__c param: params)
             {
                 Boolean readonly = false;
-                //these params are read only and are created/updated by automated process on refresh
-                if (param.Parameter_Name__c == 'ListViewObjects' || param.Parameter_Name__c == 'IsInitialized')
+                //these params are read only and are created/updated by other processes
+                if (ListViewConfigHelper.READ_ONLY_PARAMS.contains(param.Parameter_Name__c))
                     readonly = true;
 
                 parameters.put(param.Parameter_Name__c, new ListViewParam(param.Parameter_Label__c,
@@ -1655,6 +1677,12 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
+        public String getClassName()
+        {
+            return action.Apex_Class_Name__c;
+        }
+
+        @AuraEnabled(cacheable=true)
         public String getObjectType()
         {
             return action.Object_Type__c;
@@ -1694,6 +1722,12 @@ public with sharing abstract class ListViewAbstract {
         public String getFlowFrameWidth()
         {
             return action.Flow_Frame_Width__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getMassCreateListViewName()
+        {
+            return action.Mass_Create_List_View_Name__c;
         }
 
         @AuraEnabled(cacheable=true)

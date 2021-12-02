@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-01-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 11-12-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-22-2021   tom@ansleyllc.com   Initial Version
@@ -60,7 +60,7 @@ private class HelperRoleTest {
 
         listViews.add(lv);
 
-        HelperDatabase.insertRecords(listViews, 'Simpli_lv__List_View__c');
+        HelperDatabase.insertRecords(listViews);
 
     }
 

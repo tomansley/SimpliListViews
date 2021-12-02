@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-10-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-22-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -11,9 +11,13 @@
 **/
 global with sharing class ListViewProcessBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
     
+    public static final String TYPE_ALL = 'all';
+    public static final String TYPE_PERIOD = 'period';
+
     private String query = 'SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView WHERE SObjectType != null';
     private final Integer batchSize = 40;
     private Set<Id> listViewIds = null;
+    private String processType = TYPE_ALL;
 
     /*
         Simpli_lv.ListViewProcessBatch b = new Simpli_lv.ListViewProcessBatch();
@@ -31,6 +35,11 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
     global ListViewProcessBatch(Set<Id> listViewIds)
     {
         this.listViewIds = listViewIds;
+    }
+
+    global ListViewProcessBatch(String processType)
+    {
+        this.processType = processType;
     }
 
 	/* IMPLEMENTS SCHEDULABLE INTERFACE */
@@ -65,8 +74,6 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 
             ListViewErrorHelper.processLogs(false);
 
-            HelperSchema.checkSelectAccessible(query);
-
             return Database.getQueryLocator(query);
 
         } catch (Exception e) {
@@ -84,7 +91,8 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             Map<String, List_View__c> simpliListViews = new Map<String, List_View__c>();
             Map<String, List_View_Config__c> simpliListViewConfigs = new Map<String, List_View_Config__c>();
         
-            List<ListView> listViews = (List<ListView>) scope;
+            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
+            List<ListView> listViews = (List<ListView>) dec.getRecords();
 
             Set<String> sObjectSet = new Set<String>();
             for (ListView listView: listViews)
@@ -181,8 +189,8 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             System.debug(LoggingLevel.FINE, 'SObjects - ' + HelperString.getStringFromSet(sObjectSet, ','));
 
 
-            HelperDatabase.upsertRecords(simpliListViews.values(), 'Simpli_lv__List_View__c', 'simpli_lv__Primary_Key__c', true);
-            HelperDatabase.upsertRecords(simpliListViewConfigs.values(), 'Simpli_lv__List_View_Config__c', 'simpli_lv__Primary_Key__c', true);           
+            HelperDatabase.upsertRecords(simpliListViews.values(), 'simpli_lv__Primary_Key__c', true);
+            HelperDatabase.upsertRecords(simpliListViewConfigs.values(), 'simpli_lv__Primary_Key__c', true);           
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.execute()  ' + ListViewException.getExtendedString(e);

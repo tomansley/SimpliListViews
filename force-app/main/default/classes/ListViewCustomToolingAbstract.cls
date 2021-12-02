@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 11-30-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -108,6 +108,19 @@ public with sharing abstract class ListViewCustomToolingAbstract extends ListVie
             params.add(param);
         } else {
             params.add(paramsByName.get('RefreshRate'));
+        }
+
+        if (paramsByName.get('ExportHeaderType') == null)
+        {      
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'ExportHeaderType';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = 'false';
+            param.Parameter_Label__c  = 'Use API Names For File Export Headers';
+            params.add(param);
+        } else {
+            params.add(paramsByName.get('ExportHeaderType'));
         }
 
         return params;

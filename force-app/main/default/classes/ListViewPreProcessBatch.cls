@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-10-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-22-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -53,8 +53,6 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
             System.debug(LoggingLevel.DEBUG, debug);
             ListViewErrorHelper.addLog('PreProcessBatch', debug);
 
-            HelperSchema.checkSelectAccessible(query);
-
             ListViewErrorHelper.processLogs(false);
 
             return Database.getQueryLocator(query);
@@ -73,7 +71,8 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
 	global void execute(Database.BatchableContext BC, List<SObject> scope) 
 	{
         try {        
-            List<ListView> listViews = (List<ListView>) scope;
+            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
+            List<ListView> listViews = (List<ListView>) dec.getRecords();
 
             //--------------------------------------------------------------------------------
             //this is to handle the issue where names do not include package names. 10-13-2021
@@ -210,9 +209,9 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
 
             ListViewErrorHelper.processLogs(false);
 
-            HelperDatabase.updateRecords(tmpUserConfigs, 'Simpli_lv__List_View_User_Config__c');
-            HelperDatabase.updateRecords(tmpListViewConfigs, 'Simpli_lv__List_View_Config__c');
-            HelperDatabase.updateRecords(tmpListViews, 'Simpli_lv__List_View__c');
+            HelperDatabase.updateRecords(tmpUserConfigs);
+            HelperDatabase.updateRecords(tmpListViewConfigs);
+            HelperDatabase.updateRecords(tmpListViews);
 
         } catch (Exception e) {
             String message = 'Exception during ListViewPreProcessBatch.execute()  ' + ListViewException.getExtendedString(e);

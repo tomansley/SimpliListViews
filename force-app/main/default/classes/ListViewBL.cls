@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-09-2021
+ * @last modified on  : 11-12-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -94,7 +94,7 @@ public with sharing class ListViewBL {
             }
         }
 
-        HelperDatabase.updateRecords(updatedNewRecords, 'simpli_lv__List_View__c');
+        HelperDatabase.updateRecords(updatedNewRecords);
     }
 
     /**
@@ -137,9 +137,15 @@ public with sharing class ListViewBL {
         
         }
 
-        HelperDatabase.upsertRecords(newConfigs.values(), 'Simpli_lv__List_View_Config__c');
+        List<SObject> upsertedConfigs = HelperDatabase.upsertRecords(newConfigs.values());
+        Map<String, List_View_Config__c> configsByKey = new Map<String, List_View_Config__c>();
+        for (SObject config: upsertedConfigs)
+        {
+            List_View_Config__c conf = (List_View_Config__c) config;
+            configsByKey.put(conf.Primary_Key__c, conf);
+        }
 
-        configs.putAll(newConfigs);
+        configs.putAll(configsByKey);
 
         Map<String, List_View_Config_Parameter__c> newParams = new Map<String, List_View_Config_Parameter__c>();
         //now that we have all configs we need to add all parameters
@@ -169,7 +175,7 @@ public with sharing class ListViewBL {
 
         }
 
-        HelperDatabase.upsertRecords(newParams.values(), 'Simpli_lv__List_View_Config_Parameter__c');
+        HelperDatabase.upsertRecords(newParams.values());
         
     }
 

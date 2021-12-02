@@ -1,14 +1,49 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-08-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 11-28-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   07-07-2021   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class ListViewAdminController {
     
+    public static final String SUCCESS = 'success';
+    public static final String FAILED = 'failed';
+
+    @AuraEnabled
+    public static String scheduleRefreshJob()
+    {
+        String response = SUCCESS;
+
+        try {
+
+            Boolean result = HelperScheduler.scheduleRefreshJob();
+
+            if (!result)
+                response = FAILED;
+
+        } catch (Exception e) {
+            response = FAILED;
+        }
+
+        return response;
+    }
+
+    @AuraEnabled
+    public static ListViewAbstract.ListViewParam getOrgWideConfigParam(String paramName)
+    {
+        //get the org wide config
+        ListViewAbstract.ListViewConfigWrapper config = getOrgWideConfig();
+
+        ListViewAbstract.ListViewParam param = config.getParameter(paramName);
+
+        ListViewErrorHelper.processLogs(true);
+
+        return param;
+    }
+
     @AuraEnabled
     public static ListViewAbstract.ListViewConfigWrapper getOrgWideConfig()
     {
