@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-30-2021
+ * @last modified on  : 12-03-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -96,7 +96,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
     private ListViewAbstract.RowsWrapper handleJSONToWrapper(String responseStr)
     {
         System.debug(LoggingLevel.FINE, 'Starting ListViewCustomToolingQuery.handleJSONToWrapper - ' + System.now().getTime());
-        ListViewAbstract.RowsWrapper rows = new ListViewAbstract.RowsWrapper(listView, null);
+        ListViewAbstract.RowsWrapper rows = new ListViewAbstract.RowsWrapper(listView, lvConfig);
         
         //------------------------------------------------------
         //Handle JSON String into list of individual records
