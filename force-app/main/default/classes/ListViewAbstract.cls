@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-30-2021
+ * @last modified on  : 12-03-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -312,8 +312,10 @@ public with sharing abstract class ListViewAbstract {
         public String getHeadersAsCSVString()
         {
             String dataStr = '';
-
-            ListViewParam useAPINames = lvConfig.getParameter('ExportHeaderType');
+            ListViewParam useAPINames = null;
+            
+            if (lvConfig != null)
+                useAPINames = lvConfig.getParameter('ExportHeaderType');
 
             for (FieldWrapper column: fieldMetaData)
             {
