@@ -9,6 +9,7 @@
     <testClassName>simpli_lv.ListViewAdminControllerTest</testClassName>
     <testClassName>simpli_lv.ListViewConfigControllerTest</testClassName>
     <testClassName>simpli_lv.ListViewConfigHelperTest</testClassName>
+    <testClassName>simpli_lv.ListViewConfigPicklistTest</testClassName>
     <testClassName>simpli_lv.ListViewControllerTest</testClassName>
     <testClassName>simpli_lv.ListViewCustomManualTest</testClassName>
     <testClassName>simpli_lv.ListViewCustomToolingQueryTest</testClassName>

@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-30-2021
+ * @Last Modified By   : tom.h.ansley@medtronic.com
+ * @Last Modified On   : 12-06-2021
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -596,6 +596,7 @@ public with sharing class HelperSchema {
 
                     Map<String, Object> fieldsToValue = currentObj.getPopulatedFieldsAsMap();
 
+                    //if there is a value for the field
                     if (fieldsToValue.get(field) != null)
                     {
                         Object tmpObj = fieldsToValue.get(field);
@@ -605,8 +606,14 @@ public with sharing class HelperSchema {
                         else if (tmpObj instanceof SObject)
                             currentObj = (SObject) tmpObj;
     
+                    //if there is no value
                     } else {
-                        System.debug(LoggingLevel.FINE, 'No field with name ' + field);
+                        System.debug(LoggingLevel.FINE, 'No field value for name ' + field);
+                        //if we are trying to retrieve column data we need to get the label....so we get the label if we can.
+                        if (label == '')
+                            label = getSFDCFieldLabel(objType, fieldName);
+                        data = new FieldData(field, label, Schema.DisplayType.STRING, '', currentObj);
+                        return data;
                     }
                     
                     System.debug(LoggingLevel.FINE, 'new currentObj - ' + currentObj);
@@ -723,90 +730,44 @@ public with sharing class HelperSchema {
     {
         if (objAPIName == 'Simpli_lv__List_View__c')
         { 
-            if (action == CREATABLE) checkListViewCreatable();
-            else if (action == UPDATEABLE) HelperSchema.checkListViewUpdateable();
-            else if (action == ACCESSIBLE) HelperSchema.checkObjectAccessible(objAPIName);
-            else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View__c');
+            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View__c');
             else throw new ListViewException('No permission check for Simpli_lv__List_View__c with action - ' + action);
 
         } else if (objAPIName == 'Simpli_lv__List_View_Config__c')
         {
-            if (action == CREATABLE) checkListViewConfigsCreatable();
-            else if (action == UPDATEABLE) checkListViewConfigsUpdateable();
-            else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Config__c');
+            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Config__c');
             else throw new ListViewException('No permission check for Simpli_lv__List_View_Config__c with action - ' + action);
         
         }  else if (objAPIName == 'Simpli_lv__List_View_Config_Parameter__c')
         {
-            if (action == CREATABLE) checkListViewConfigsCreatable();
-            else if (action == UPDATEABLE) checkListViewConfigsUpdateable();
-            else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Config_Parameter__c');
+            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Config_Parameter__c');
             else throw new ListViewException('No permission check for Simpli_lv__List_View_Config_Parameter__c with action - ' + action);
         
         }  else if (objAPIName == 'simpli_lv__List_View_Config_Condition__c')
         {
-            if (action == CREATABLE) checkListViewConfigsCreatable();
-            else if (action == UPDATEABLE) checkListViewConfigsUpdateable();
-            else if (action == DELETABLE) checkObjectDeletable('simpli_lv__List_View_Config_Condition__c');
+            if (action == DELETABLE) checkObjectDeletable('simpli_lv__List_View_Config_Condition__c');
             else throw new ListViewException('No permission check for simpli_lv__List_View_Config_Condition__c with action - ' + action);
         
         } else if (objAPIName == 'Simpli_lv__List_View_Action__c')
         {
-            if (action == CREATABLE) checkListViewActionsCreatable();
-            else if (action == UPDATEABLE) checkListViewActionsCreatable();
-            else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Action__c');
+            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Action__c');
             else throw new ListViewException('No permission check for Simpli_lv__List_View_Action__c with action - ' + action);
         
         } else if (objAPIName == 'Simpli_lv__List_View_Action_Parameter__c')
         {
-            if (action == CREATABLE) checkListViewConfigsCreatable();
-            else if (action == UPDATEABLE) checkListViewConfigsUpdateable();
-            else if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Action_Parameter__c');
+            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Action_Parameter__c');
             else throw new ListViewException('No permission check for Simpli_lv__List_View_Action_Parameter__c with action - ' + action);
         
         }  else if (objAPIName == 'simpli_lv__List_View_User_Config__c')
         {
-            if (action == CREATABLE) checkListViewUserConfigsCreatable();
-            else if (action == UPDATEABLE) checkListViewUserConfigsUpdateable();
-            else if (action == DELETABLE) checkObjectDeletable('simpli_lv__List_View_User_Config__c');
+            if (action == DELETABLE) checkObjectDeletable('simpli_lv__List_View_User_Config__c');
             else throw new ListViewException('No permission check for simpli_lv__List_View_User_Config__c with action - ' + action);
         
         }else {
-            if (action == CREATABLE) HelperSchema.checkObjectCreateable(objAPIName);
-            else if (action == UPDATEABLE) HelperSchema.checkObjectUpdateable(objAPIName);
-            else if (action == DELETABLE) HelperSchema.checkObjectDeletable(objAPIName);
-            else if (action == ACCESSIBLE) HelperSchema.checkObjectAccessible(objAPIName);
+            if (action == DELETABLE) HelperSchema.checkObjectDeletable(objAPIName);
             else throw new ListViewException('No permission check for ' + objAPIName + ' with action - ' + action);
             
         }
-    }
-
-	private static void checkListViewCreatable()
-    {
-        HelperSchema.checkObjectCreateable('Simpli_lv__List_View__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__API_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Object_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Describe__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'OwnerId');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Columns__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Query__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Id__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
-    }
-
-	private static void checkListViewUpdateable()
-    {
-        HelperSchema.checkObjectUpdateable('Simpli_lv__List_View__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__API_Name__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Object_Name__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Describe__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'OwnerId');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Columns__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Query__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Id__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
     }
 
 	public static void checkListViewAccessible()
@@ -823,135 +784,6 @@ public with sharing class HelperSchema {
         HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
     }
 
-    private static void checkListViewActionsCreatable()
-    {
-        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_Action__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Apex_Class_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action__c', 'Simpli_lv__Object_Type__c');
-
-        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_Action_Parameter__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Field_API_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__List_View_Action__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Placeholder_Text__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Type__c');
-    }
-
-    public static void checkListViewActionsAccessible()
-    {
-        HelperSchema.checkObjectAccessible('Simpli_lv__List_View_Action__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action__c', 'Simpli_lv__Apex_Class_Name__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action__c', 'Simpli_lv__Object_Type__c');
-
-        HelperSchema.checkObjectAccessible('Simpli_lv__List_View_Action_Parameter__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Field_API_Name__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__List_View_Action__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Placeholder_Text__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Action_Parameter__c', 'Simpli_lv__Type__c');
-    }
-
-    private static void checkListViewConfigsCreatable()
-    {
-        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Name');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config__c', 'Simpli_lv__List_View_Object__c');
-
-        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_Config_Parameter__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
-
-        HelperSchema.checkObjectCreateable('simpli_lv__List_View_Config_Condition__c');
-        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Field_Name__c');
-        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
-        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Operator__c');
-        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Order__c');
-        HelperSchema.checkObjectFieldCreateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Value__c');
-
-    }
-
-    private static void checkListViewConfigsUpdateable()
-    {
-        HelperSchema.checkObjectUpdateable('Simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config__c', 'Name');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config__c', 'Simpli_lv__List_View_Object__c');
-
-        HelperSchema.checkObjectUpdateable('Simpli_lv__List_View_Config_Parameter__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
-
-        HelperSchema.checkObjectUpdateable('simpli_lv__List_View_Config_Condition__c');
-        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Field_Name__c');
-        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
-        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Operator__c');
-        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Order__c');
-        HelperSchema.checkObjectFieldUpdateable('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Value__c');
-
-    }
-
-    public static void checkListViewConfigsAccessible()
-    {
-        HelperSchema.checkObjectAccessible('Simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Config__c', 'Name');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Config__c', 'Simpli_lv__List_View_Object__c');
-
-        HelperSchema.checkObjectAccessible('Simpli_lv__List_View_Config_Parameter__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Name__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Type__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_Config_Parameter__c', 'Simpli_lv__Parameter_Value__c');
-
-        HelperSchema.checkObjectAccessible('simpli_lv__List_View_Config_Condition__c');
-        HelperSchema.checkObjectFieldAccessible('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Field_Name__c');
-        HelperSchema.checkObjectFieldAccessible('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
-        HelperSchema.checkObjectFieldAccessible('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__List_View_Config__c');
-        HelperSchema.checkObjectFieldAccessible('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Operator__c');
-        HelperSchema.checkObjectFieldAccessible('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Order__c');
-        HelperSchema.checkObjectFieldAccessible('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Value__c');
-
-    }
-
-    public static void checkListViewUserConfigsAccessible()
-    {
-        HelperSchema.checkObjectAccessible('Simpli_lv__List_View_User_Config__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Ltn_Component_Name__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Name__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Primary_Key__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_User_Config__c', 'simpli_lv__User__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Value__c');
-
-    }
-
-    private static void checkListViewUserConfigsUpdateable()
-    {
-        HelperSchema.checkObjectUpdateable('Simpli_lv__List_View_User_Config__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Ltn_Component_Name__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Name__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Primary_Key__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__User__c');
-        HelperSchema.checkObjectFieldUpdateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Value__c');
-
-    }
-    
-    private static void checkListViewUserConfigsCreatable()
-    {
-        HelperSchema.checkObjectCreateable('Simpli_lv__List_View_User_Config__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Ltn_Component_Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Name__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Primary_Key__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__User__c');
-        HelperSchema.checkObjectFieldCreateable('Simpli_lv__List_View_User_Config__c', 'simpli_lv__Value__c');
-
-    }
-    
 	//------------------------------------------------
 	// PRIVATE METHODS BELOW
 	//------------------------------------------------
@@ -1018,6 +850,18 @@ public with sharing class HelperSchema {
 		}
 		
 	}
+
+	public static String scrubFieldNameForSOQL(String fieldName)
+    {
+        if (fieldName == null) return fieldName;
+        //remove whitespace
+        fieldName = fieldName.deleteWhitespace();
+
+        //remove toLabel keyword
+        if (fieldName.contains('toLabel(')) fieldName = fieldName.substringBetween('(', ')');
+        
+        return fieldName;
+    }
 
 	public static String scrubFieldName(String fieldName)
     {

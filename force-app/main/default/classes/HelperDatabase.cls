@@ -1,8 +1,8 @@
 /**
  * @description       : Helper class to aid in the handling of DML transactions
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-12-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-03-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
@@ -153,7 +153,8 @@ public with sharing class HelperDatabase {
 
     public static List<SObject> upsertRecords(List<SObject> data, String externalIdField, Boolean allOrNone) 
     {
-
+        if (data.size() == 0) return data;
+        
         SObjectAccessDecision dec = Security.stripInaccessible(AccessType.UPSERTABLE, data);        
 
         if (externalIdField != null)

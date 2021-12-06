@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 12-01-2021
+ * @last modified on  : 12-06-2021
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperScheduler {
@@ -28,7 +28,7 @@ public with sharing class HelperScheduler {
         return (List<AsyncApexJob>) dec.getRecords();
     }
 
-    public static void unscheduleRefreshJobs()
+    private static void unscheduleRefreshJobs()
     {
         SObjectAccessDecision dec = 
             Security.stripInaccessible(AccessType.READABLE,
@@ -119,6 +119,7 @@ public with sharing class HelperScheduler {
                 else if (timePeriod == 'monthly')
                     cronStr = '0 ' + jobValues[1] + ' ' + jobValues[2] + ' ' + jobValues[3] + ' * ? *';
 
+                System.debug(LoggingLevel.DEBUG, 'Cron Str - ' + cronStr);
                 System.schedule(SCHED_NAME_PREFIX, cronStr, new ListViewProcessScheduled());
             }
         }

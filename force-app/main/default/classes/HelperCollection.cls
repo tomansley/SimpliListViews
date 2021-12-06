@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-12-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-05-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperCollection {
 
@@ -27,4 +27,48 @@ public with sharing class HelperCollection {
         return mappedObjs;
         
     }
+
+    /*
+     * Method which takes a list of SObjects and a field name and returns a set
+     * of ID's which corresponds to the field name.  If the field that the name
+     * refers to is not of type Id then an exception is thrown.
+     * @param objects the list of SObjects which holds the field to create the set from.
+     * @param fieldName the name of the field that the set should be created from.
+     */
+    public static Set<Id> getIdFieldSet(List<SObject> objects, String fieldName) 
+    {
+
+        List<Id> values = HelperCollection.getIdFieldList(objects, fieldName);
+
+        Set<Id> setValues = new Set<Id>();
+
+        setValues.addAll(values);
+
+        return setValues;
+
+    }
+
+    /*
+     * Method which takes a list of SObjects and a field name and returns a list
+     * of ID's which corresponds to the field name.  If the field that the name
+     * refers to is not of type Id then an exception is thrown.
+     * @param objects the list of SObjects which holds the field to create the set from.
+     * @param fieldName the name of the field that the set should be created from.
+     */
+    public static List<Id> getIdFieldList(List<SObject> objects, String fieldName) 
+    {
+
+        List<Id> values = new List<Id>();
+
+        if (objects != null && objects.size() != 0) 
+        {
+
+            for (SObject obj: objects)
+                values.add((Id) obj.get(fieldName));
+        }
+
+        return values;
+
+    }
+
 }

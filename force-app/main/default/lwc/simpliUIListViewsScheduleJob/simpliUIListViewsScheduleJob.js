@@ -42,7 +42,7 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
     @track selectedMinute = '00';
     @track selectedHour = '00';
     @track selectedDay = Monday;
-    @track selectedMonth = 'First Day Of Month';
+    @track selectedMonth = '1';
     @track selectedTimePeriod = 'hourly';
     @track displayXMinutes = false;
     @track displayMinutes = false;
@@ -304,7 +304,7 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
         } else if (event.target.name === 'Day List') {
             this.selectedDay = event.target.value;
         } else if (event.target.name === 'Month List') {
-            this.selectedXMinutes = event.target.value;
+            this.selectedMonth = event.target.value;
         }
     }
 
