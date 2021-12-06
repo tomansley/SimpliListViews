@@ -1,8 +1,8 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-12-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-03-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -108,7 +108,7 @@ public with sharing class ListViewBL {
         //get all primary keys for list views
         Set<String> primaryKeys = new Set<String>();
         for (List_View__c listView: newRecords.values())
-            primaryKeys.add(ListViewConfigHelper.getPrimaryKey(listView.Object_Name__c, listView.API_Name__c));
+            primaryKeys.add(ListViewHelper.getPrimaryKey(listView));
 
         //get all configs for list views
         Map<String, List_View_Config__c> configs = ListViewConfigHelper.getListViewConfigs(primaryKeys); 
@@ -129,7 +129,7 @@ public with sharing class ListViewBL {
                 newConfig.Name                = listview.API_Name__c;
                 newConfig.List_View_Label__c  = listview.Label__c;
                 newConfig.List_View_Object__c = listview.Object_Name__c;
-                newConfig.Primary_Key__c      = ListViewConfigHelper.getPrimaryKey(listView.Object_Name__c, listView.API_Name__c);
+                newConfig.Primary_Key__c      = ListViewHelper.getPrimaryKey(listView);
 
                 newConfigs.put(primaryKey, newConfig);
 
@@ -137,7 +137,7 @@ public with sharing class ListViewBL {
         
         }
 
-        List<SObject> upsertedConfigs = HelperDatabase.upsertRecords(newConfigs.values());
+        List<SObject> upsertedConfigs = HelperDatabase.upsertRecords(newConfigs.values() , 'simpli_lv__Primary_Key__c', true);
         Map<String, List_View_Config__c> configsByKey = new Map<String, List_View_Config__c>();
         for (SObject config: upsertedConfigs)
         {
