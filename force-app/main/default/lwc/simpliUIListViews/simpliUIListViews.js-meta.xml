@@ -17,8 +17,8 @@
             <property name="mode" type="String" datasource="App Page,Single List View, Related List View" required="true" default="App Page" label="Component Mode" description="Indicates the mode the component should be displayed in."/>
             <property name="singleListViewObject" type="String" default="" required="false" label="Single List View Object" datasource="apex://simpli_lv.ListViewConfigPicklistObjectTypes" description="The list view object to use if displaying the component in SINGLE list view mode."/>        
             <property name="singleListViewApiName" type="String" default="" required="false" label="Single List View API Name" datasource="apex://simpli_lv.ListViewConfigPicklistListViews" description="The standard list view API name to use if displaying the component in SINGLE list view mode."/>
-            <property name="hasMainTitle" type="Boolean" default="true" label="Show Title" description="Indicates whether the name should be displayed or not."/>
             <property name="mainTitle" type="String" default="My List View Title" label="Title" description="String used if the title is displayed. Names should be distinct within a lightning page."/>
+            <property name="hasMainTitle" type="Boolean" default="true" label="Display Title" description="Indicates whether the name should be displayed or not."/>
             <property name="displayActions" type="Boolean" default="true" label="Display Actions" description="Indicates whether the actions dropdown should be displayed."/>
             <property name="allowAdmin" type="Boolean" default="true" label="Display Admin Button" description="Indicates whether the admin button should be displayed."/>
             <property name="displayTextSearch" type="Boolean" default="true" label="Display Text Search" description="Indicates whether text search of the returned data should be available."/>
@@ -37,6 +37,8 @@
             <property name="joinFieldName" type="String" default="" label="Joined Field Name" description="The API field name of the field that should be used by this component if it receives ids from another component. If blank, no joining takes place."/>
             <property name="useMessageChannel" type="Boolean" default="true" label="Use Message Channel" description="Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!"/>
             <property name="joinCriteria" type="String" default="" label="Join Criteria Data" description="Only used for LWC development. Holds the external Id criteria used to filter the list view. (comma delimited)"/>
+            <property name="singleListViewObject2" type="String" default="" required="false" label="Single List View Object (Large Orgs)" description="The list view object to use if displaying the component in SINGLE list view mode. Use this value in large orgs where the other single list view object field does not get populated."/>        
+            <property name="singleListViewApiName2" type="String" default="" required="false" label="Single List View API Name (Large Orgs)" description="The standard list view API name to use if displaying the component in SINGLE list view mode. Use this value in large orgs where the other single list view object field does not get populated."/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

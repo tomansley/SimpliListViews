@@ -6,6 +6,8 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import  LISTVIEW_MC  from '@salesforce/messageChannel/SimpliListViewMessageChannel__c';
 import { refreshApex } from '@salesforce/apex';
 import { subscribe, unsubscribe, publish, APPLICATION_SCOPE, MessageContext } from 'lightning/messageService';
+import { loadScript } from "lightning/platformResourceLoader";
+//import JSPDF from '@salesforce/resourceUrl/simpli_lv__jspdf';
 
 //------------------------ LABELS ------------------------
 import Rows from '@salesforce/label/c.Rows';
@@ -94,6 +96,19 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api singleListViewObject       = '';     //if in SINGLE mode holds the list view object to use.
     @api singleListViewApiName      = '';     //if in SINGLE mode holds the list view API name to use.
     @api excludedRecordPopoverTypes = '';     //Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name.
+    @api set singleListViewObject2(value) {   //used where orgs are HUGE and singleListViewObject needs to be entered manually.
+        this.singleListViewObject = value;
+    }
+    get singleListViewObject2() { 
+        return this.singleListViewObject; 
+    }
+
+    @api set singleListViewApiName2(value) {  //used where orgs are HUGE and singleListViewApiName needs to be entered manually.
+        this.singleListViewApiName = value;
+    }
+    get singleListViewApiName2() { 
+        return this.singleListViewApiName; 
+    }
 
     @api set joinCriteria(value) {
         this.setJoinCriteria(value);
@@ -240,6 +255,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.isInitialized === true)
             {
                 console.log('User config is undefined for ' + this.pageName);
+
+                //load the JSPDF library for data exporting to PDF
+                //Promise.all([
+                //    loadScript(this, JSPDF)
+                //]);
 
                 //this is for sending messages to other components. Ensures uniqueness.
                 let num = Math.floor(Math.random() * 1000000);
@@ -1711,6 +1731,18 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             this.showMassCreateModal = true;
 
+        //------------------------------------------------------
+        //GENERATE PDF
+        //------------------------------------------------------
+        } else if (this.selectedAction.className === 'ListViewActionPDF')
+        {
+
+            console.log('We are generating a PDF for ' + this.pageName);
+
+            //const doc = new jsPDF();
+            //doc.text("This is test pdf", 20, 20);
+            //doc.table(30, 30, "", "", { autosize:true });
+            //doc.save("demo.pdf");
         //------------------------------------------------------
         //CUSTOM
         //------------------------------------------------------
