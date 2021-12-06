@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-01-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-06-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-06-2020   tom@ansleyllc.com   Initial Version
@@ -431,6 +431,16 @@ global class ListViewControllerTest {
         System.assertEquals('', result);
     }
 
+    static testMethod void getListViewDataShellTest() {
+
+        HelperTest.createCoreListViews();
+        Account acct = HelperTest.insertAccount('List View Account');
+
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewDataShell('Account', 'simpli_lv__AllAccounts', '', '');
+
+        System.assertNotEquals(rows, null);
+        System.assert(rows.getRowCount() > 0);
+    }
 
     static testMethod void stupidMetadataAPITest()
     {

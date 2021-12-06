@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-01-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-06-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   07-18-2021   tom@ansleyllc.com   Initial Version
@@ -79,4 +79,123 @@ global class ListViewAdminControllerTest {
         
     }
 
+    @IsTest
+    static void unScheduleRefreshTest()
+    {
+    
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'Not Scheduled');
+
+        Test.startTest();
+            
+            String result = ListViewAdminController.scheduleRefreshJob();
+
+        Test.stopTest();
+        
+        System.assert(result == ListViewAdminController.SUCCESS);
+
+    }
+
+    @IsTest
+    static void scheduleMinutelyRefreshTest()
+    {
+        //unschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'Not Scheduled');
+        ListViewAdminController.scheduleRefreshJob();
+
+        //reschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'minutely:5');
+
+        Test.startTest();
+
+            String result = ListViewAdminController.scheduleRefreshJob();
+
+        Test.stopTest();
+        
+        System.assert(result == ListViewAdminController.SUCCESS);
+
+    }
+
+    @IsTest
+    static void scheduleHourlyRefreshTest()
+    {
+    
+        //unschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'Not Scheduled');
+        ListViewAdminController.scheduleRefreshJob();
+
+        //reschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'hourly:20');
+
+        Test.startTest();
+
+            String result = ListViewAdminController.scheduleRefreshJob();
+
+        Test.stopTest();
+        
+        System.assert(result == ListViewAdminController.SUCCESS);
+
+    }
+
+    @IsTest
+    static void scheduleDailyRefreshTest()
+    {
+    
+        //unschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'Not Scheduled');
+        ListViewAdminController.scheduleRefreshJob();
+
+        //reschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'daily:20:5');
+
+        Test.startTest();
+
+            String result = ListViewAdminController.scheduleRefreshJob();
+
+        Test.stopTest();
+        
+        System.assert(result == ListViewAdminController.SUCCESS);
+
+    }
+
+    @IsTest
+    static void scheduleWeeklyRefreshTest()
+    {
+    
+        //unschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'Not Scheduled');
+        ListViewAdminController.scheduleRefreshJob();
+
+        //reschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'weekly:20:5:WED');
+
+        Test.startTest();
+
+            String result = ListViewAdminController.scheduleRefreshJob();
+
+        Test.stopTest();
+        
+        System.assert(result == ListViewAdminController.SUCCESS);
+
+    }
+
+    @IsTest
+    static void scheduleMonthlyRefreshTest()
+    {
+    
+        //unschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'Not Scheduled');
+        ListViewAdminController.scheduleRefreshJob();
+
+        //reschedule
+        ListViewConfigHelper.setOrgWideConfigParam('RefreshJob', 'monthly:20:5:15');
+
+        Test.startTest();
+
+            String result = ListViewAdminController.scheduleRefreshJob();
+
+        Test.stopTest();
+        
+        System.assert(result == ListViewAdminController.SUCCESS);
+
+    }
 }
