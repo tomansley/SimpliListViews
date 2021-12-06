@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 11-22-2021
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 12-06-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -58,7 +58,7 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
             debug += ' Exc Objs - ' + exclObjs;
 
             System.debug(LoggingLevel.FINE, debug);
-            ListViewErrorHelper.addLog('ListViewPostProcessBatch', debug);
+            ListViewErrorHelper.addLog('ListViewPostProcessBatch(start)', debug);
 
             ListViewErrorHelper.processLogs(false);
 

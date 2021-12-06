@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-17-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-06-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -168,7 +168,7 @@ public with sharing class ListViewActionHelper {
                 actions.add(new ListViewAbstract.ActionWrapper(action));         
         }
 
-        ListViewErrorHelper.addLog('ListViewActionHelper', debugString);
+        ListViewErrorHelper.addLog('ListViewActionHelper(getListViewActions)', debugString);
         return actions;
     }
 

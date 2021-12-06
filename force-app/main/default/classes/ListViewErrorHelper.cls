@@ -4,23 +4,37 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-12-2021
+ * @Last Modified On   : 12-06-2021
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
 **/
 public with sharing class ListViewErrorHelper {
 
+    public static final String TYPE_EXCEPTION = 'Exception';
+    public static final String TYPE_LOG = 'Log';
+
     public static List<List_View_Error__c> logs = new List<List_View_Error__c>(); //holds all debugging logs that we might log before finishing the transaction.
 
     public static void addLog(String className, String message)
+    {
+        addLog(TYPE_LOG, className, message);
+    }
+
+    public static void addException(String className, String message)
+    {
+        addLog(TYPE_EXCEPTION, className, message);
+    }
+
+    private static void addLog(String type, String className, String message)
     {
         if (Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam('Debug')))
         {
             List_View_Error__c log   = new List_View_Error__c();
             log.Running_User__c  = UserInfo.getUserId();
-            log.Message__c       = '----- ' + className + ' -----' + message.replaceAll('\n', ' '); //JSON parser does not like \n
-
+            log.Message__c       = message;
+            log.Type__c          = type;
+            log.Subtype__c       = className;
             logs.add(log);
         }
     }
@@ -57,8 +71,8 @@ public with sharing class ListViewErrorHelper {
         {
             List_View_Error__c error   = new List_View_Error__c();
             error.Running_User__c  = UserInfo.getUserId();
-            error.Message__c       = message.replaceAll('\n', ' '); //JSON parser does not like \n
-    
+            error.Message__c       = message;
+            error.Type__c          = TYPE_EXCEPTION;
             error = (List_View_Error__c) HelperDatabase.insertRecord(error);
     
             System.debug(LoggingLevel.ERROR, 'Error record created - ' + error);
@@ -69,7 +83,8 @@ public with sharing class ListViewErrorHelper {
     {
         List_View_Error__c error   = new List_View_Error__c();
         error.Running_User__c  = UserInfo.getUserId();
-        error.Message__c       = message.replaceAll('\n', ' '); //JSON parser does not like \n
+        error.Message__c       = message;
+        error.Type__c          = TYPE_EXCEPTION;
 
         error = (List_View_Error__c) HelperDatabase.insertRecord(error);
 
