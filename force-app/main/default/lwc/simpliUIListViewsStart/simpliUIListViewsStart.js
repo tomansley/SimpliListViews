@@ -35,23 +35,44 @@ export default class SimpliUIListViewsStart extends LightningElement {
     label = { List_Views_Initialized, List_Views_Need_Initialized, Refresh, Refresh_List_Views, Feature_Overview, Quick_Start,
               Issues_And_Questions, Configuration, Processing_Status, List_View_Processing_Complete }
 
-    @wire (getIsInitialized, { })
-    wiredIsInitialized({ error, data }) {
-        if (data) { 
-            console.log('Is Initialized called successfully - ' + data); 
-            this.isInitialized = data; 
-        } else if (error) { 
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.objectActionList = undefined; 
+    /*
+     * Method which gets called after the class has been instantiated
+     * but before it is rendered. We do have access to variables in this method.
+     */
+    async renderedCallback() {
+
+        console.log('Starting simpliUIListViewsStart.renderedCallback for ' + this.pageName);
+
+        this.checkInitialized();
+
+    }
+        
+    /*
+     * Method called when a row is edited and the SAVE button on the row is clicked.
+     */
+    checkInitialized() {
+
+        getIsInitialized({})
+        .then(result => {
+            console.log('Is Initialized called successfully - ' + result + ' for ' + this.pageName);
+            this.isInitialized = result; 
+            if (this.isInitialized === false)
+            {
+                this.spinner = false; //a special case where we set it directly.
+            }
+        })
+        .catch(error => {
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Checking Initialization',
                 message: 'There was an error checking for Simpli List Views initialization. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
-        }
-    }
-    
+        });
+
+    }     
+
     @wire (getOrgWideDescriptions, { })
     wiredOrgWideDescriptions({ error, data }) {
         if (data) { 

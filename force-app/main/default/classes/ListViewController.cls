@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-01-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-05-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -109,7 +109,7 @@ public without sharing class ListViewController
         return configListOptions;
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static Boolean getIsInitialized()
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getIsInitialized()');
@@ -273,7 +273,7 @@ public without sharing class ListViewController
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateObjectListViews(' + objectType + ')');
         //update the list view
-        Boolean result = ListViewHelper.updateListViews(objectType);
+        Boolean result = ListViewHelper.updateListViewsFromObj(objectType);
 
         ListViewErrorHelper.processLogs(true);
 
@@ -296,7 +296,7 @@ public without sharing class ListViewController
 
         //update the list view
         System.debug(LoggingLevel.FINE, 'A - ' + HelperLimits.getLimitsString());
-        Boolean result = ListViewHelper.updateListViews(lvId);
+        Boolean result = ListViewHelper.updateListViewsFromSLVIds(lvId);
 
         ListViewErrorHelper.processLogs(true);
 
@@ -328,7 +328,7 @@ public without sharing class ListViewController
                 lvId.add(listviews.values()[0].Id);
 
                 //update the list view
-                ListViewHelper.updateListViews(lvId);
+                ListViewHelper.updateListViewsFromSLVIds(lvId);
 
             }
         }

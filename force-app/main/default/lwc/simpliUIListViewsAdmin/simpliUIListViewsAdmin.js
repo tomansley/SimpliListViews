@@ -44,6 +44,7 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
 
     renderedCallback() {
         console.log('SimpliUIListViewsAdmin.renderedCallback started');
+        this.checkInitialized();
         if (this.config === undefined)
         {
             console.log('Starting getConfig()');
@@ -52,22 +53,31 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
 
     }
 
-    @wire (getIsInitialized, { })
-    wiredIsInitialized({ error, data }) {
-        if (data) { 
-            console.log('Is Initialized called successfully - ' + data); 
-            this.isInitialized = data; 
-        } else if (error) { 
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.objectActionList = undefined; 
+    /*
+     * Method called when a row is edited and the SAVE button on the row is clicked.
+     */
+    checkInitialized() {
+
+        getIsInitialized({})
+        .then(result => {
+            console.log('Is Initialized called successfully - ' + result + ' for ' + this.pageName);
+            this.isInitialized = result; 
+            if (this.isInitialized === false)
+            {
+                this.spinner = false; //a special case where we set it directly.
+            }
+        })
+        .catch(error => {
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Checking Initialization',
                 message: 'There was an error checking for Simpli List Views initialization. Please see an administrator - ' + error.body.message,
                 variant: 'error',
                 mode: 'sticky'
             }));
-        }
-    }
+        });
+
+    }     
 
     @wire (getObjectNames, {})
     wiredObjectListViews(wiredObjectListViewsResult) {
