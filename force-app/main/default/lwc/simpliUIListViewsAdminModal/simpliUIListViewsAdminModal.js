@@ -50,6 +50,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track newConditionColor;
     @track configChanged;               //identifies if a change has been made which needs to force a data refresh
     @track lvName;                      //the name of the list view.
+    @track closeDisabled = undefined;
 
     get booleanList() {
         return [
@@ -182,16 +183,15 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
         console.log('Param loaded - ' + this.paramNameLoad + ' - ' + this.paramValueLoad);
 
-        this.handleParamIsUpdated(event);
-    }
-
-    handleParamIsUpdated(event) {
+        this.closeDisabled = true;
         this.configChanged = true;
     }
 
     //called when a value is changed.
     handleParamUpdate(event) {
 
+        this.closeDisabled = true;
+        
         var name = event.target.name;
         var value = event.target.value;
         var type = event.target.type;
@@ -202,6 +202,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         }
         
         console.log('Inside handleParamChange - ' + name + '/' + value);
+
+        console.log('Starting value - ' + this.paramValueLoad);
 
         //if we are leaving the param with no value change then do nothing.
         if (value === this.paramValueLoad) {
@@ -380,6 +382,19 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         this.configChanged = false;
         this.resetNewCondition();
     }
+
+    handleUpdateClick(event) {
+       setTimeout(function(){
+            console.log('after');
+        },500); //give the parameter time to be saved before sending message to parent
+        this.closeDisabled = undefined;
+        this.dispatchEvent(new ShowToastEvent({
+            title: 'Config Updated Successfully!',
+            message: message,
+            variant: 'success',
+            mode: 'dismissable'
+        }));
+}
 
     handleCloseClick(event) {
         setTimeout(function(){

@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 10-22-2021
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 12-05-2021
+  @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom@ansleyllc.com   Initial Version
@@ -58,7 +58,7 @@
                                                                 <template if:true={param.isBoolean}>
                                                                     <lightning-combobox placeholder={label.Select_A_Value}
                                                                                         onblur={handleParamUpdate}
-                                                                                        onfocus={handleParamIsUpdated}
+                                                                                        onfocus={handleParamLoad}
                                                                                         options={booleanList}
                                                                                         variant=label-hidden
                                                                                         value={param.value}
@@ -71,7 +71,6 @@
                                                                                         variant="label-hidden" 
                                                                                         name={param.name} 
                                                                                         onchange={handleParamUpdate}
-                                                                                        onfocus={handleParamIsUpdated}
                                                                                         placeholder={param.placeHolder}
                                                                                         value={param.value}
                                                                                         label={param.label}>
@@ -295,7 +294,8 @@
                     </lightning-tabset>
 
                     <footer class="slds-modal__footer" style="min-width: 1100px;">
-                        <button class="slds-button slds-button_brand" onclick={handleCloseClick}>{label.Close}</button>
+                        <button class="slds-button slds-button_brand" onclick={handleUpdateClick}>Update</button>
+                        <button class="slds-button slds-button_brand" disabled={closeDisabled} onclick={handleCloseClick}>{label.Close}</button>
                     </footer>
                     
                 </div>
