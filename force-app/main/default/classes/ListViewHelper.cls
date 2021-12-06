@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-01-2021
+ * @last modified on  : 12-06-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -18,7 +18,8 @@
  * 8.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables, added hyperlink action config
  * 9.0   08-18-2021   tom@ansleyllc.com   Added TYPE_COMBOBOX. Added CampaignMember config
  **/
-global with sharing class ListViewHelper {
+global with sharing class ListViewHelper 
+{
     
     public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
@@ -65,6 +66,9 @@ global with sharing class ListViewHelper {
     public static final String SUBTYPE_TOOLING = 'Tooling';
     public static final String SUBTYPE_METADATA = 'Metadata';
 
+    public static final String ID_TYPE_CORE = 'Core';
+    public static final String ID_TYPE_SLV  = 'SLV';
+
     private static Boolean simpliLVsGetRetry = false;             //used to identify whether we are trying to perform a list view get retry with the "simpli_lv__" attached.
 
     public static Integer offset           = -1;                  //used to hold the offset that is set when performing a query.
@@ -72,6 +76,11 @@ global with sharing class ListViewHelper {
     public static String getPrimaryKey(List_View__c listView)
     {
         return listView.Object_Name__c.replace(' ', '_') + ':' + listView.API_Name__c;
+    }
+
+    public static String getPrimaryKey(String objectName, String listViewName)
+    {
+        return objectName.replace(' ', '_') + ':' + listViewName;
     }
 
  	/*
@@ -273,83 +282,87 @@ global with sharing class ListViewHelper {
 
     }
 
+    private static List<ListView> getCoreListViews(Set<Id> lvIds)
+    {
+        //get the CORE list views.
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Id, 
+                        Name, 
+                        SObjectType, 
+                        DeveloperName, 
+                        NamespacePrefix, 
+                        CreatedById 
+                 FROM ListView 
+                 WHERE Id IN :lvIds]);
+        
+        return (List<ListView>) dec.getRecords();
+    }
+
+    private static List<ListView> getCoreListViews(String objectName)
+    {
+        //get the CORE list views.
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Id, 
+                        Name, 
+                        SObjectType, 
+                        DeveloperName, 
+                        NamespacePrefix, 
+                        CreatedById 
+                 FROM ListView 
+                 WHERE SObjectType = :objectName]);
+        
+        return (List<ListView>) dec.getRecords();
+    }
+
+    /*
+     * Method to update list view describe details including the SOQL statement.
+     * The object type of the list views to be updated is provided. This method should not be used 
+     * for more than 50 list views. If more need to be updated then use the batch job.
+     * HANDLES CORE ONLY
+     */
+    public static Boolean updateListViewsFromObj(String objectName)
+    {
+        List<ListView> coreListViews = getCoreListViews(objectName);
+
+        if (coreListViews.size() > 50)
+            return false;
+
+        return updateListViews(coreListViews);
+    }
+
+    /*
+     * Method to update list view describe details including the SOQL statement.
+     * The set passed in is the CORE list view Ids. This method should not be used 
+     * for more than 50 list views. If more need to be updated then use the batch job.
+     * HANDLES CORE ONLY
+     */
+    public static Boolean updateListViewsFromCoreIds(Set<Id> coreIds)
+    {
+        List<ListView> coreListViews = getCoreListViews(coreIds);
+
+        if (coreIds.size() > 50)
+            return false;
+            
+        return updateListViews(coreListViews);
+    }
+
     /*
      * Method to update list view describe details including the SOQL statement.
      * The set passed in is the CUSTOM list view Ids. This method should not be used 
      * for more than 50 list views. If more need to be updated then use the batch job.
-     */
-    public static Boolean updateListViews(String objectName)
-    {
-        List<List_View__c> updatedListViews = new List<List_View__c>();
-
-        //get the CORE list views.
-        HelperSchema.checkSelectAccessible('SELECT Id, Name, SObjectType, DeveloperName, CreatedById, NamespacePrefix FROM ListView');
-        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, CreatedById, NamespacePrefix FROM ListView WHERE SObjectType = :objectName];
-        
-        for (ListView listView: coreListViews)
-        {
-
-            //create URL to find the list view query
-            String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v52.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
-            
-            //get list view describe
-            String callResponse = HelperREST.performInternalCallout(endPoint, null);
-
-            //turn JSON string into map
-            try {
-                Map<String,Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(callResponse);
-
-                List_View__c simpliListView = new List_View__c();
-                String apiName = listView.DeveloperName;
-                System.debug(LoggingLevel.DEBUG, 'PREFIX - ' + listView.NamespacePrefix);
-                if (!String.isEmpty(listView.NamespacePrefix))
-                    apiName = listView.NamespacePrefix + '__' + apiName;
-                System.debug(LoggingLevel.DEBUG, 'API NAME - ' + apiName);
-                simpliListView.Object_Name__c           = listview.SObjectType;
-                simpliListView.Describe__c              = callResponse;
-                simpliListView.Label__c                 = listView.Name;
-                simpliListView.Core_ListView_Id__c      = listView.Id;
-                simpliListView.Primary_Key__c           = listview.SObjectType + ':' + apiName;
-                System.debug(LoggingLevel.DEBUG, 'PRIMARY KEY - ' + simpliListView.Primary_Key__c);
-                simpliListView.OwnerId                  = listView.CreatedById;
-                simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
-                simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
-                simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
-
-                updatedListViews.add(simpliListView);
-
-                System.debug(LoggingLevel.FINE, 'Updated Simpli List View - ' + simpliListView);
-
-                //use the metadata API to try and enrich the listview data.
-                enrichListViewFromMetadata(simpliListView);
-
-            } catch (Exception e) {
-                String message = 'Exception during ListViewHelper.updateListViews(' + objectName + ')  ' + ListViewException.getExtendedString(e);
-                ListViewErrorHelper.createFutureUsageError(message); 
-            }
-    
-        }
-
-        HelperDatabase.upsertRecords(updatedListViews, 'simpli_lv__Primary_Key__c', true);
-
-        return true;
-    }
-
-    /*
-     * Method to retrieve list view describe details including the SOQL statement.
-     * The set passed in is the CUSTOM list view Ids. This method should not be used 
-     * for more than 50 list views. If more need to be updated then use the batch job.
-     * 
-      ListViewHelper.updateListViews(new Set<Id>{'a003h00000BWOUhAAP'});
-     * 
      * HANDLES CORE ONLY
      */
-    public static Boolean updateListViews(Set<Id> lvIds)
+    public static Boolean updateListViewsFromSLVIds(Set<Id> slvIds)
     {
-        List<List_View__c> updatedListViews = new List<List_View__c>();
+        if (slvIds.size() > 50)
+            return false;
+            
+        Set<Id> coreLVIds = new Set<Id>();
 
         //get the CUSTOM list views.
-        List<List_View__c> listViews = getListViewsById(lvIds, true).values();
+        List<List_View__c> listViews = getListViewsById(slvIds, true).values();
         Map<Id, List_View__c> listViewsByCoreId = new Map<Id, List_View__c>();
 
         //get the CORE list view Ids from the CUSTOM list views.
@@ -357,15 +370,31 @@ global with sharing class ListViewHelper {
         for (List_View__c listView: listViews)
         {
             if (isUpdateable(listView))
-                listViewsByCoreId.put(listView.Core_ListView_Id__c, listView);
+                coreLVIds.add(listView.Core_ListView_Id__c);
         }
 
-        //get the CORE list views.
-        HelperSchema.checkSelectAccessible('SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView');
-        List<ListView> coreListViews = [SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView WHERE Id IN :listViewsByCoreId.keySet()];
-        
-        for (ListView listView: coreListViews)
+        List<ListView> coreListViews = getCoreListViews(coreLVIds);
+
+        return updateListViews(coreListViews);
+    }
+
+    /*
+     * Method to update CUSTOM list views based on the CORE list views provided.
+     * 
+      ListViewHelper.updateListViews(ListViewHelper.ID_TYPE_SLV, new Set<Id>{'a003h00000BWOUhAAP'});
+     * 
+     * HANDLES CORE ONLY
+     */
+    public static Boolean updateListViews(List<ListView> listviews)
+    {
+        System.debug(LoggingLEvel.DEBUG, 'Starting updateListViews(' + listviews + ')');
+        Map<String, List_View__c> updatedListViews = new Map<String, List_View__c>();
+        Map<String, List_View_Config__c> simpliListViewConfigs = new Map<String, List_View_Config__c>(); 
+
+        for (ListView listView: listviews)
         {
+
+            if (String.isEmpty(listView.SObjectType) || String.isEmpty(listView.Id)) continue;
 
             //create URL to find the list view query
             String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v52.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
@@ -375,6 +404,12 @@ global with sharing class ListViewHelper {
 
             //turn JSON string into map
             try {
+                Object response = JSON.deserializeUntyped(callResponse);
+                if (response instanceof List<Object>) 
+                {
+                    ListViewErrorHelper.addLog('ListViewHelper(updateListViews)', String.valueOf(response));
+                    continue; //if we get a list we cannot process it.
+                }
                 Map<String,Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(callResponse);
 
                 List_View__c simpliListView = new List_View__c();
@@ -384,16 +419,22 @@ global with sharing class ListViewHelper {
                     apiName = listView.NamespacePrefix + '__' + apiName;
                 System.debug(LoggingLevel.DEBUG, 'API NAME - ' + apiName);
                     
+                simpliListView.Custom_Apex_Class__c     = ListViewHelper.CORE_APEX_CLASS;
                 simpliListView.API_Name__c              = apiName;
                 simpliListView.Object_Name__c           = listview.SObjectType;
                 simpliListView.Describe__c              = callResponse;
                 simpliListView.Label__c                 = listView.Name;
                 simpliListView.Core_ListView_Id__c      = listView.Id;
                 simpliListView.Primary_Key__c           = listview.SObjectType + ':' + apiName;
-                simpliListView.OwnerId                  = listView.CreatedById;
                 simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
                 simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
                 simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
+
+                User usr = UserHelper.getUserDetails(listView.CreatedById);
+                if (usr == null || !usr.IsActive || (usr.FirstName == 'Automated' && usr.LastName == 'Process'))
+                    simpliListView.OwnerId              = UserInfo.getUserId();
+                else
+                    simpliListView.OwnerId              = listView.CreatedById;
 
                 //0:true:BillingState;1:true:Type
                 //set the default sort order
@@ -415,31 +456,37 @@ global with sharing class ListViewHelper {
                     simpliListView.Default_Sort_Order__c = orderStr;
                 }
 
-                updatedListViews.add(simpliListView);
+                updatedListViews.put(simpliListView.Primary_Key__c, simpliListView);
 
                 System.debug(LoggingLevel.FINE, 'Updated Simpli List View - ' + simpliListView);
 
                 //use the metadata API to try and enrich the listview data.
                 enrichListViewFromMetadata(simpliListView);
 
+                List_View_Config__c config = new List_View_Config__c();
+                config.Name                = simpliListView.API_Name__c;
+                config.List_View_Label__c  = simpliListView.Label__c;
+                config.List_View_Object__c = simpliListView.Object_Name__c;
+                config.Primary_Key__c      = ListViewConfigHelper.getPrimaryKey(config.List_View_Object__c, config.Name);
+
+                simpliListViewConfigs.put(config.Primary_Key__c, config);
+
             } catch (Exception e) {
-                String message = 'Exception during ListViewHelper.updateListViews(' + lvIds + ')  ' + ListViewException.getExtendedString(e);
-                ListViewErrorHelper.createFutureUsageError(message); 
+                String message = 'Exception during ListViewHelper.updateListViews()\n';
+                message += listView + '\n';
+                message += ListViewException.getExtendedString(e);
+                ListViewErrorHelper.addException('ListViewHelper(updateListViews)', message);
             }
 
         }
 
-        HelperDatabase.upsertRecords(updatedListViews, 'simpli_lv__Primary_Key__c', true);
+        HelperDatabase.upsertRecords(updatedListViews.values(), 'simpli_lv__Primary_Key__c', true);
+        HelperDatabase.upsertRecords(simpliListViewConfigs.values(), 'simpli_lv__Primary_Key__c', true);           
 
         return true;
     }
 
-    /*
-        List_View__c lv = [SELECT Object_Name__c, API_Name__c FROM List_View__c WHERE Full_Name__c = 'Account.simpli_lv__PlatinumandGoldSLACustomers'][0];
-        ListViewHelper.enrichListViewFromMetadata(lv);
-
-     */
-    public static List_View__c enrichListViewFromMetadata(List_View__c coreListView)
+    private static List_View__c enrichListViewFromMetadata(List_View__c coreListView)
     {
         ListViewMetadataAPIService.MetadataPort service = ListViewMetadataAPIService.createService();
 
@@ -600,16 +647,16 @@ global with sharing class ListViewHelper {
     public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs, Boolean isInit)
     {
         System.debug(LoggingLevel.FINE, 'ListViewHelper.getListViewObjects(' + pageWideIncObjs + ', ' + pageWideExcObjs + ', ' + isInit + ')');
-
+        String debug = '';
         Map<String, String> mappedListviewObjects = new Map<String, String>();
         Map<String, String> listViewObjects =  null;
 
         listViewObjects =  new Map<String, String>();
 
         String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
-        System.debug(LoggingLevel.FINE, 'Org Wide Excluded Object Types - ' + exclObjs);
+        debug += 'Org Wide Excluded Object Types - ' + exclObjs + '\n';
         Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
-        System.debug(LoggingLevel.FINE, 'orgWideExcObjs size - ' + orgWideExcObjs.size());
+        debug += 'orgWideExcObjs size - ' + orgWideExcObjs.size() + '\n';
 
         HelperSchema.checkListViewAccessible();
 
@@ -685,8 +732,8 @@ global with sharing class ListViewHelper {
         String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
         Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
 
-        System.debug(LoggingLevel.FINE, 'pageWideIncObjs ' + pageWideIncObjs);
-        System.debug(LoggingLevel.FINE, 'orgWideIncObjs ' + orgWideIncObjs);
+        debug += 'pageWideIncObjs ' + pageWideIncObjs + '\n';
+        debug += 'orgWideIncObjs ' + orgWideIncObjs + '\n';
     
         for (String objAPIName: listViewObjects.keySet())
         {
@@ -705,12 +752,13 @@ global with sharing class ListViewHelper {
             }
         }
 
-        String resultStr = '\n\n-------------------------------------------------\n';
+        debug += '\n\n----------------------- RESULT --------------------------\n';
         for (String objectName: mappedListviewObjects.keySet())
-            resultStr += 'Object ' + objectName + ' - ' + mappedListviewObjects.get(objectName) + '\n';
-        resultStr += '-------------------------------------------------\n\n';
+            debug += 'Object ' + objectName + ' - ' + mappedListviewObjects.get(objectName) + '\n';
+        debug += '---------------------------------------------------------\n\n';
 
-        System.debug(LoggingLevel.FINE, resultStr);
+        System.debug(LoggingLevel.FINE, debug);
+        ListViewErrorHelper.addLog('ListViewHelper(getListViewObjects)', debug);
         return mappedListviewObjects;
     }
 
@@ -979,49 +1027,23 @@ global with sharing class ListViewHelper {
         //------------------------------------------------------
         // Update all additional fields on the SELECT statement
         //------------------------------------------------------
-        List<String> selectFields = selectStr.split(',');
+        Set<String> selectFields = new Set<String>(selectStr.split(',')); //use set to remove duplicates
+
+        //Additional Fields
+        if (lvConfigParams.get(PARAM_ADD_FIELDS) != null)
+            selectFields.addAll(lvConfigParams.get(PARAM_ADD_FIELDS).split(','));
+
+        //IsDeleted
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted'))
+            selectFields.add('IsDeleted');
+
         selectStr = '';
         for (String field: selectFields)
         {
-            //do security validation on regular fields. If the field is a lookup the security is performed later
-            Boolean isAccessible = false;
-            if (!field.contains('.'))
-            {
-
-                field = HelperSchema.scrubFieldName(field); //remove weird stuff like toLabel() etc.
-                isAccessible = HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field, false);
-            } else {
-                isAccessible = true;
-            }
-            if (isAccessible)
-                selectStr += field + ', ';
+            field = HelperSchema.scrubFieldNameForSOQL(field); //remove weird stuff like toLabel() etc.
+            selectStr += field + ', ';
         }
         selectStr = selectStr.removeEnd(', ');
-
-
-        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted'))
-            selectStr += ', IsDeleted';
-
-        if (lvConfigParams.get(PARAM_ADD_FIELDS) != null)
-        {
-            Set<String> allFields = new Set<String>(lvConfigParams.get(PARAM_ADD_FIELDS).split(',')); //put it into a set to remove duplicates
-            for (String field: allFields)
-            {
-                Boolean valid = true;
-                //do security validation on additional fields. If the field is a lookup the security is performed later
-                if (!field.contains('.'))
-                    valid = HelperSchema.checkObjectFieldAccessible(listview.Object_Name__c, field, false);
-
-                if (selectFields.contains(field))
-                    valid = false;
-
-                //if we are good then add field
-                if (valid)
-                    selectStr += ', ' + field;
-
-            }
-
-        }
 
         //------------------------------------------------------
         // Handle all changes to the WHERE statement
@@ -1155,6 +1177,7 @@ global with sharing class ListViewHelper {
         query = 'SELECT ' + selectStr + ' FROM ' + objectName + ' ' + scopeStr + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
 
         System.debug(LoggingLevel.FINE, 'Final SOQL - ' + query);
+        ListViewErrorHelper.addLog('ListViewHelper(getListViewData)', query + '\n\n' + debug);
 
         //get rows of data from query
         List<SObject> objectRows = null;
@@ -2047,7 +2070,7 @@ global with sharing class ListViewHelper {
         debug += '---------------------------------------\n\n';
 
         System.debug(LoggingLevel.FINE, debug);
-        ListViewErrorHelper.addLog('ListViewHelper', debug);
+        ListViewErrorHelper.addLog('ListViewHelper(getVisibleListViews)', debug);
         
 
         return visible;

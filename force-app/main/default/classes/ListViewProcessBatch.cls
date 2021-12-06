@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-22-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-06-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -64,13 +64,41 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             if (listViewIds != null && listViewIds.size() > 0)
                 query += ' AND Id IN :listViewIds';
 
+            if (processType == TYPE_PERIOD) {
+                
+                String refreshJobConfig = ListViewConfigHelper.getOrgWideConfigParam('RefreshJob');
+
+                if (!String.isEmpty(refreshJobConfig) && refreshJobConfig == HelperScheduler.NOT_SCHEDULED)
+                {
+                    List<String> jobValues = refreshJobConfig.split(':');
+
+                    String timePeriod = jobValues[0];
+                    DateTime dte = null;
+
+                    if (timePeriod == 'minutely')
+                        dte = System.now().addMinutes(-Integer.valueOf(jobValues[1]));
+                    else if (timePeriod == 'hourly')
+                        dte = System.now().addHours(-1);
+                    else if (timePeriod == 'daily') 
+                        dte = System.now().addDays(-1);
+                    else if (timePeriod == 'weekly') 
+                        dte = System.now().addHours(-7);
+                    else
+                        dte = System.now().addHours(-30);
+                
+                    query += ' AND LastModifiedDate > ' + HelperDate.getSOQLDateTime(dte);
+
+                }
+        
+            }
+
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
 
             String debug = 'SOQL - ' + query;
             debug += 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ',');
             
-            ListViewErrorHelper.addLog('ListViewProcessBatch', debug);
+            ListViewErrorHelper.addLog('ListViewProcessBatch(start)', debug);
 
             ListViewErrorHelper.processLogs(false);
 
@@ -88,109 +116,9 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	global void execute(Database.BatchableContext BC, List<SObject> scope) 
 	{
         try {
-            Map<String, List_View__c> simpliListViews = new Map<String, List_View__c>();
-            Map<String, List_View_Config__c> simpliListViewConfigs = new Map<String, List_View_Config__c>();
-        
-            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
-            List<ListView> listViews = (List<ListView>) dec.getRecords();
+            ListViewHelper.updateListViews((List<ListView>) scope);
 
-            Set<String> sObjectSet = new Set<String>();
-            for (ListView listView: listViews)
-            {
-
-                System.debug(LoggingLevel.DEBUG, 'Getting ListView - ' + listView);
-
-                if (String.isEmpty(listView.SObjectType) || String.isEmpty(listView.Id)) continue;
-
-                //create URL to find the list view query
-                String endPoint = URL.getOrgDomainUrl().toExternalForm() + '/services/data/v52.0/sobjects/' + listView.SObjectType + '/listviews/' + listView.Id + '/describe';
-                
-                //get list view describe
-                String callResponse = HelperREST.performInternalCallout(endPoint, null);
-
-                //turn JSON string into map
-                try {
-                    Map<String,Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(callResponse);
-
-                    List_View__c simpliListView = new List_View__c();
-                    String apiName = listView.DeveloperName;
-                    if (!String.isEmpty(listView.NamespacePrefix))
-                        apiName = listView.NamespacePrefix + '__' + apiName;
-
-                    simpliListView.Custom_Apex_Class__c     = ListViewHelper.CORE_APEX_CLASS;
-                    simpliListView.API_Name__c              = apiName;
-                    simpliListView.Object_Name__c           = listview.SObjectType;
-                    simpliListView.Describe__c              = callResponse;
-                    simpliListView.Label__c                 = listView.Name;
-                    simpliListView.Core_ListView_Id__c      = listView.Id;
-                    simpliListView.Primary_Key__c           = listview.SObjectType + ':' + apiName;
-                    System.debug(LoggingLevel.DEBUG, 'PRIMARY KEY - ' + simpliListView.Primary_Key__c);
-                    simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
-                    
-                    User usr = UserHelper.getUserDetails(listView.CreatedById);
-
-
-                    if (usr == null 
-                        || !usr.IsActive
-                        || (usr.FirstName == 'Automated' 
-                            && usr.LastName == 'Process'))
-                    {
-                        simpliListView.OwnerId              = UserInfo.getUserId();
-                    } else {
-                        simpliListView.OwnerId              = listView.CreatedById;
-                    }
-
-                    simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
-                    simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
-        
-                    //0:true:BillingState;1:true:Type
-                    //set the default sort order
-                    if (jsonResponse.get('orderBy') != null)
-                    {
-                        String orderStr = '';
-                        List<Object> orderItems = (List<Object>) jsonResponse.get('orderBy');
-                        for (Integer index = 0; index < orderItems.size(); index++)
-                        {
-                            Map<String, Object> orderItemObj = (Map<String, Object>) orderItems.get(index);
-                            String direction = 'true';
-                            if (orderItemObj.get('sortDirection') == 'descending')
-                                direction = 'false';
-
-                            orderStr += index + ':' + direction + ':' + orderItemObj.get('fieldNameOrPath') + ';';
-                            System.debug(LoggingLevel.DEBUG, 'ORDER - ' + orderStr);
-                        }
-                        orderStr = orderStr.removeEnd(';');
-                        simpliListView.Default_Sort_Order__c = orderStr;
-                    }
-
-                    simpliListViews.put(simpliListView.Primary_Key__c, simpliListView);
-
-                    System.debug(LoggingLevel.DEBUG, 'Added Simpli List View - ' + simpliListView);
-
-                    //use the metadata API to try and enrich the listview data.
-                    ListViewHelper.enrichListViewFromMetadata(simpliListView);
-
-                    List_View_Config__c config = new List_View_Config__c();
-                    config.Name                = simpliListView.API_Name__c;
-                    config.List_View_Label__c  = simpliListView.Label__c;
-                    config.List_View_Object__c = simpliListView.Object_Name__c;
-                    config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
-
-                    simpliListViewConfigs.put(config.Primary_Key__c, config);
-
-                    sObjectSet.add(listView.SobjectType);
-
-                } catch (Exception e) {
-                    System.debug(LoggingLevel.FINE, 'Exception thrown - ' + e.getMessage() + ' - ' + e.getStackTraceString());
-                    //we don't care about exceptions here because it means the listview is not one that can be handled.
-                }
-            }
-            
-            System.debug(LoggingLevel.FINE, 'SObjects - ' + HelperString.getStringFromSet(sObjectSet, ','));
-
-
-            HelperDatabase.upsertRecords(simpliListViews.values(), 'simpli_lv__Primary_Key__c', true);
-            HelperDatabase.upsertRecords(simpliListViewConfigs.values(), 'simpli_lv__Primary_Key__c', true);           
+            ListViewErrorHelper.processLogs(false);
 
         } catch (Exception e) {
             String message = 'Exception during ListViewProcessBatch.execute()  ' + ListViewException.getExtendedString(e);
