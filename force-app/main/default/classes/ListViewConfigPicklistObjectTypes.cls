@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-10-2021
+ * @last modified on  : 12-03-2021
  * @last modified by  : tom@ansleyllc.com
 **/
 public class ListViewConfigPicklistObjectTypes extends VisualEditor.DynamicPickList{
@@ -32,6 +32,7 @@ public class ListViewConfigPicklistObjectTypes extends VisualEditor.DynamicPickL
         {
             configPicklist.addRow(new VisualEditor.DataRow(objectNamesByAPI.get(apiName) + ' - ' + apiName, apiName));
         }
+        configPicklist.addRow(new VisualEditor.DataRow('', ''));
         return configPicklist;
     }
 }

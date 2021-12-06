@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-12-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-03-2021
+ * @last modified by  : tom@ansleyllc.com
 **/
 public class ListViewConfigPicklistListViews extends VisualEditor.DynamicPickList{
 
@@ -30,13 +30,15 @@ public class ListViewConfigPicklistListViews extends VisualEditor.DynamicPickLis
         //configPicklist.addRow(new VisualEditor.DataRow('PriceBookEntry - Standard', 'PricebookStandard'));       
         //apiNames.add('PricebookStandard');
         
-        Map<Id, List_View__c> listViews = ListViewHelper.getListViewsByType(ListViewHelper.TYPE_ALL);
+        Map<Id, List_View__c> listViews = ListViewHelper.getListViewsByType(ListViewHelper.TYPE_ALL, false);
 
         for (List_View__c listView: listViews.values())
         {
             //if (!apiNames.contains(listView.API_Name__c))
                 configPicklist.addRow(new VisualEditor.DataRow(listView.Object_Name__c + ' - ' + listView.Label__c, listView.API_Name__c));
         }
+        configPicklist.addRow(new VisualEditor.DataRow('', ''));
+
         return configPicklist;
     }
 }
