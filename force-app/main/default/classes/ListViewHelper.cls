@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
  * @last modified on  : 12-06-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -282,7 +282,7 @@ global with sharing class ListViewHelper
 
     }
 
-    private static List<ListView> getCoreListViews(Set<Id> lvIds)
+    public static List<ListView> getCoreListViews(Set<Id> lvIds)
     {
         //get the CORE list views.
         SObjectAccessDecision dec = 

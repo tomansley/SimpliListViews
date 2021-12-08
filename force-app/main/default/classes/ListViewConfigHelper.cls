@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 11-21-2021
+ * @Last Modified On   : 12-06-2021
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -384,7 +384,7 @@ public with sharing class ListViewConfigHelper {
         Map<String, List_View_Config__c> mappedConfigs = new Map<String, List_View_Config__c>();
         for (List_View_Config__c config: configs)
         {
-            mappedConfigs.put(getPrimaryKey(config.List_View_Object__c, config.Name), config);
+            mappedConfigs.put(config.Primary_Key__c, config);
         }
 
         return mappedConfigs;

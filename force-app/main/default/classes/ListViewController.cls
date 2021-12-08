@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-05-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-07-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -338,7 +338,6 @@ public without sharing class ListViewController
         return SUCCESS;
 	}
 
-	//SimpliUIBatchController.getListViewData('Contact', 'AllContacts');
 	@AuraEnabled
 	public static String updateAllListViews()
 	{
