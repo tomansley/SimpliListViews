@@ -24,3 +24,7 @@
     overflow-x: scroll;
     overflow-y: scroll;
 }
+
+thead th { position: sticky; top: 0; }
+
+th { z-index: 1 }
