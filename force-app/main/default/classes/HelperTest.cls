@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-12-2021
+ * @last modified on  : 12-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -165,6 +165,55 @@ public with sharing class HelperTest {
 
 		return simpliListViews;
 	}
+
+    public static List<List_View__c> createDeletedCoreListViews()
+	{
+
+        List<List_View__c> simpliListViews = new List<List_View__c>();
+
+		List_View__c simpliListView             = new List_View__c();
+		simpliListView.API_Name__c              =  'simpli_lv__AllAccountsDeleted';
+		simpliListView.Object_Name__c           = 'Account';
+        simpliListView.Label__c                 = 'All Accounts';
+        simpliListView.Primary_Key__c           = 'Account.simpli_lv__AllAccountsDeleted';
+        simpliListView.Core_ListView_Id__c      = '00B3h000005ZfMKEA0';
+        simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
+
+		simpliListViews.add(simpliListView);
+
+        HelperDatabase.insertRecords(simpliListViews);
+
+		List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'Account:simpli_lv__AllAccountsDeleted'];
+
+        List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
+
+		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = ListViewHelper.PARAM_ADD_FIELDS;
+		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
+		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
+		param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = 'Additional Fields';
+        params.add(param);
+        
+        HelperDatabase.insertRecords(params);
+
+        List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
+        
+        List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
+        condition.Field_Name__c       = 'AnnualRevenue';
+        condition.Highlight_Color__c  = '#000000';
+        condition.Operator__c         = 'Equals';
+        condition.Order__c            = '1';
+        condition.Value__c            = '1000';
+        condition.List_View_Config__c = config.Id;
+
+        conditions.add(condition);
+
+        HelperDatabase.insertRecords(conditions);
+
+		return simpliListViews;
+	}
+
 
 	public static List<List_View__c> createManualListViews()
 	{

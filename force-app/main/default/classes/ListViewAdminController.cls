@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-28-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-07-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   07-07-2021   tom@ansleyllc.com   Initial Version
@@ -30,6 +30,28 @@ public with sharing class ListViewAdminController {
 
         return response;
     }
+
+	@AuraEnabled
+	public static String cleanListViews()
+	{
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewAdminController.cleanListViews()');
+
+        Simpli_lv.ListViewCleanBatch b = new Simpli_lv.ListViewCleanBatch();
+        
+        Id jobId = null;
+        
+        try {
+            jobId = Database.executebatch(b, 40);
+        } catch (Exception e) {
+            jobId = FAILED;
+            String message = 'Exception during ListViewAdminController.cleanListViews()  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createFutureUsageError(message); 
+        }
+
+        ListViewErrorHelper.processLogs(true);
+
+        return jobId;
+	}
 
     @AuraEnabled
     public static ListViewAbstract.ListViewParam getOrgWideConfigParam(String paramName)

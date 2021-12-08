@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-21-2021
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 12-07-2021
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom@ansleyllc.com   Initial Version
@@ -22,33 +22,89 @@
     <lightning-card>
         <template if:false={showProgress}>
             <lightning-layout>
-                <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small">
-                    <div style="padding-left: 10px;">
-                        <template if:false={isInitialized}>
+                <template if:false={isInitialized}>
+                    <lightning-layout-item padding="horizontal-small"> 
+                        <div style="padding-left: 10px;">
                             <lightning-icon icon-name="standard:first_non_empty" 
                                             alternative-text={label.Not_Initialized} 
                                             title={label.Not_Initialized}>
-                            </lightning-icon>&nbsp;&nbsp;
+                            </lightning-icon>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
+                        <div>
                             {label.List_Views_Need_Initialized}  
-                        </template>
-                        <template if:true={isInitialized}>    
+                            <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
+                                {label.List_Views_Need_Initialized_Verbage}  
+                            </div>
+                        </div>
+                    </lightning-layout-item>
+                </template>
+
+                <template if:true={isInitialized}>    
+                    <lightning-layout-item padding="horizontal-small">
+                        <div style="padding-left: 10px;">
                             <lightning-icon icon-name="standard:task2" 
                                             alternative-text={label.List_Views_Initialized} 
                                             title={label.List_Views_Initialized} >
-                            </lightning-icon>&nbsp;&nbsp;
-                            {label.List_Views_Initialized}  
-                        </template>
+                            </lightning-icon>
                         </div>
                     </lightning-layout-item>
-                    <lightning-layout-item padding="horizontal-small" >
-                        <lightning-button variant="brand" label={label.Refresh} title={label.Refresh_List_Views} icon-name="action:new_task" class="slds-m-left_x-small" onclick={handleProcessListViewsButtonClick}></lightning-button>
+                    <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
+                        <div>
+                            {label.List_Views_Initialized}  
+                            <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
+                                {label.List_Views_Initialized_Verbage}
+                            </div>
+                        </div>
                     </lightning-layout-item>
+                </template>
+                <lightning-layout-item padding="horizontal-small" >
+                    <lightning-button variant="brand" label={label.Refresh} title={label.Refresh_List_Views} icon-name="action:new_task" class="slds-m-left_x-small" onclick={handleProcessListViewsButtonClick}></lightning-button>
+                </lightning-layout-item>
             </lightning-layout>
         </template>
         <template if:true={showProgress}>
             <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
                                                         working-text={label.Processing_Status}
                                                         complete-text={label.List_View_Processing_Complete}>
+            </c-simpli-u-i-list-views-init-progress-bar>
+        </template>
+
+        <br/>
+
+        <!-- ------------------------------------------------------------------------ -->
+        <!-- Section which handles the cleaning of the list views                     -->
+        <!-- ------------------------------------------------------------------------ -->
+        <template if:false={showCleanProgress}>
+            <template if:true={isInitialized}>    
+                <lightning-layout>
+                    <lightning-layout-item padding="horizontal-small">
+                        <div style="padding-left: 10px;">   
+                            <lightning-icon icon-name="standard:maintenance_plan" 
+                                            alternative-text={label.List_Views_Cleaned} 
+                                            title={label.List_Views_Cleaned} >
+                            </lightning-icon>&nbsp;&nbsp;
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
+                        <div>
+                            {label.List_Views_Click_For_Cleaning}  
+                            <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
+                                {label.List_Views_Click_For_Cleaning_Verbage}
+                            </div>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item padding="horizontal-small" >
+                        <lightning-button variant="brand" label={label.Clean} title={label.Clean_List_Views} icon-name="utility:custom_apps" class="slds-m-left_x-small" onclick={handleCleanListViewsButtonClick}></lightning-button>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+        </template>
+        <template if:true={showCleanProgress}>
+            <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
+                                                        working-text={label.Cleaning_Status}
+                                                        complete-text={label.List_View_Cleaning_Complete}>
             </c-simpli-u-i-list-views-init-progress-bar>
         </template>
     </lightning-card>
