@@ -10,6 +10,9 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
+**Simpli List View Version**
+What version of SLV is currently being used?
+
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
