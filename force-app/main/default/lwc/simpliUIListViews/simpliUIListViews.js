@@ -124,6 +124,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isModeSingle       = false;  //indicates whether the current mode is SINGLE LIST VIEW
     @track isModeApp          = true;   //indicates whether the current mode is APP PAGE
 
+    @track listwrapperstyle = 'applistscrollwrapper';
     @track relatedRecordId;             //holds the record Id if set by the API.
     @track uniqueComponentId  = '';
     @track hasModifyAll       = false;  //indicates whether the current user is allowed to modify all data.
@@ -306,6 +307,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     } else {
 
                         this.isModeRelated    = true;
+                        this.listwrapperstyle = 'relatedlistscrollwrapper';
                         this.isModeApp        = false;
                         this.selectedObject   = this.singleListViewObject;
                         this.selectedListView = this.singleListViewApiName;

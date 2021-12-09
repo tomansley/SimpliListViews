@@ -18,9 +18,16 @@
     position: relative;
 }
 
-.listscrollwrapper {
+.applistscrollwrapper {
     width: 100%;
     max-height: 67vh;
+    overflow-x: scroll;
+    overflow-y: scroll;
+}
+
+.relatedlistscrollwrapper {
+    width: 100%;
+    max-height: 300px;
     overflow-x: scroll;
     overflow-y: scroll;
 }

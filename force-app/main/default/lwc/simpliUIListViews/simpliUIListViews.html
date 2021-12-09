@@ -3,8 +3,8 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 12-06-2021
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 12-09-2021
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
   1.0   08-03-2020   tom@ansleyllc.com   Initial Version
@@ -295,7 +295,7 @@
         <!-- ---------------------------------------------------------------------------------- -->
         <template if:true={isInitialized}>
             <template if:true={listViewData}>
-                <div class="listscrollwrapper">
+                <div class={listwrapperstyle}>
                     <table class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" style="table-layout:fixed" role="grid">
 
                         <!-- ------------------------- -->
