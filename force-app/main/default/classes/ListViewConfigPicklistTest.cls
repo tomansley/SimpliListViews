@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 12-06-2021
+ * @last modified on  : 12-11-2021
  * @last modified by  : tom.h.ansley@medtronic.com
 **/
 @isTest
@@ -29,8 +29,8 @@ public with sharing class ListViewConfigPicklistTest {
 
         Test.stopTest();
 
-        System.assertEquals(defRow.getLabel(), '');
-        System.assertEquals(defRow.getValue(), '');
+        System.assertEquals(defRow.getLabel(), null);
+        System.assertEquals(defRow.getValue(), null);
 
         System.assert(values.size() > 0);
 
@@ -50,8 +50,8 @@ public with sharing class ListViewConfigPicklistTest {
 
         Test.stopTest();
 
-        System.assertEquals(defRow.getLabel(), '');
-        System.assertEquals(defRow.getValue(), '');
+        System.assertEquals(defRow.getLabel(), 'Account');
+        System.assertEquals(defRow.getValue(), 'Account');
 
         System.assert(values.size() > 0);
 

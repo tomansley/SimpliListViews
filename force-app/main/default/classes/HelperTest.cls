@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-08-2021
+ * @last modified on  : 12-14-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -277,6 +277,22 @@ public with sharing class HelperTest {
         param.Parameter_Label__c  = 'All Rows';
         params.add(param);
         
+        param = new List_View_Config_Parameter__c();
+        param.Parameter_Name__c   = 'PDFOrientationPortrait';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = 'PDF Print Uses Portrait Orientation';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.Parameter_Name__c   = 'PDFTheme';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = 'striped';
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = 'PDF Print Theme';
+        params.add(param);
+
         HelperDatabase.insertRecords(params);
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
