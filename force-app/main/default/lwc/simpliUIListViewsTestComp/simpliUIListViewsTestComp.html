@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 11-19-2021
+  @last modified on  : 12-11-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -118,6 +118,8 @@
                             <pre>
                                 &lt;c-simpli-u-i-list-views<br/>
                                 &#9;&#9;mode="Single List View"<br/>
+                                &#9;&#9;has-main-title=true<br/>
+                                &#9;&#9;main-title="Special Platinum/Gold Customers!"<br/>
                                 &#9;&#9;<b>single-list-view-object="Account"</b><br/>
                                 &#9;&#9;<b>single-list-view-api-name="PlatinumandGoldSLACustomers"</b><br/>
                                 &#9;&#9;page-name="testPage3"<br/>
@@ -134,6 +136,8 @@
                     <!-- WORKING EXAMPLE -->
                     <div class="examplebox">
                         <c-simpli-u-i-list-views mode="Single List View"
+                                                has-main-title=true
+                                                main-title="Special Platinum/Gold Customers!"
                                                 single-list-view-object="Account"
                                                 single-list-view-api-name="PlatinumandGoldSLACustomers"
                                                 page-name="testPage3"
@@ -162,6 +166,8 @@
                             <pre>
                                 &lt;c-simpli-u-i-list-views<br/>
                                 &#9;&#9;mode="Related List View"<br/>
+                                &#9;&#9;has-main-title=true<br/>
+                                &#9;&#9;main-title="Contact"<br/>
                                 &#9;&#9;single-list-view-object="Contact"<br/>
                                 &#9;&#9;single-list-view-api-name="AllContacts"<br/>
                                 &#9;&#9;page-name="testPage4"<br/>
@@ -193,6 +199,8 @@
                         </c-simpli-u-i-list-views-lookup>                        
 
                         <c-simpli-u-i-list-views mode="Related List View"
+                                                has-main-title=true
+                                                main-title="Contacts"
                                                 single-list-view-object="Contact"
                                                 single-list-view-api-name="AllContacts"
                                                 page-name="testPage4"
