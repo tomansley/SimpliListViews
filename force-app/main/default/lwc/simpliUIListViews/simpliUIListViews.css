@@ -14,22 +14,20 @@
     position: absolute;
 }
 
-.outerDiv{
-    position: relative;
-}
-
 .applistscrollwrapper {
     width: 100%;
+    min-height: 80px;
     max-height: 67vh;
-    overflow-x: scroll;
-    overflow-y: scroll;
+    overflow: auto;
 }
 
 .relatedlistscrollwrapper {
     width: 100%;
+    min-height: 80px;
     max-height: 300px;
-    overflow-x: scroll;
-    overflow-y: scroll;
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    overflow: auto;
 }
 
 thead th { position: sticky; top: 0; }
