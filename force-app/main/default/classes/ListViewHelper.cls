@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-06-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-14-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -1447,6 +1447,7 @@ global with sharing class ListViewHelper
         orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgNewAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
         orgNewAction.Is_Active__c        = true;
+        orgNewAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
 
         actions.add(orgNewAction);
 
@@ -1456,6 +1457,7 @@ global with sharing class ListViewHelper
         orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgCloneAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
         orgCloneAction.Is_Active__c        = true;
+        orgCloneAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
 
         actions.add(orgCloneAction);
 
@@ -1465,6 +1467,7 @@ global with sharing class ListViewHelper
         orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgEditAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
         orgEditAction.Is_Active__c        = true;
+        orgEditAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
 
         actions.add(orgEditAction);
 
@@ -1474,6 +1477,7 @@ global with sharing class ListViewHelper
         orgEditAllAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgEditAllAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
         orgEditAllAction.Is_Active__c        = true;
+        orgEditAllAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
 
         actions.add(orgEditAllAction);
 
@@ -1483,6 +1487,7 @@ global with sharing class ListViewHelper
         orgDeleteAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgDeleteAction.Permissions__c      = ListViewActionHelper.PERM_DELETE;
         orgDeleteAction.Is_Active__c        = true;
+        orgDeleteAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
         actions.add(orgDeleteAction);
 
@@ -1493,6 +1498,7 @@ global with sharing class ListViewHelper
         acctUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		acctUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
         acctUpdateAction.Is_Active__c        = true;
+        acctUpdateAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
         actions.add(acctUpdateAction);
 
@@ -1503,6 +1509,7 @@ global with sharing class ListViewHelper
         oppsCloseUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		oppsCloseUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
         oppsCloseUpdateAction.Is_Active__c        = true;
+        oppsCloseUpdateAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
         actions.add(oppsCloseUpdateAction);
 
@@ -1513,6 +1520,7 @@ global with sharing class ListViewHelper
         hyperAction.Is_Hyperlink__c     = true;
         hyperAction.RecordTypeId        = ListViewActionHelper.coreRTId;
         hyperAction.Is_Active__c        = true;
+        hyperAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
 
         actions.add(hyperAction);
 
@@ -1523,9 +1531,33 @@ global with sharing class ListViewHelper
         mailAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		mailAction.Permissions__c      = ListViewActionHelper.PERM_READ;
         mailAction.Is_Active__c        = true;
+        mailAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
         actions.add(mailAction);
 
+        List_View_Action__c savePDFCoreAction = new List_View_Action__c();
+        savePDFCoreAction.Apex_Class_Name__c  = 'ListViewActionPDF';
+        savePDFCoreAction.Label__c            = 'Save To PDF';
+        savePDFCoreAction.Object_Type__c      = '';
+        savePDFCoreAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+		savePDFCoreAction.Permissions__c      = ListViewActionHelper.PERM_READ;
+        savePDFCoreAction.Is_Active__c        = true;
+        savePDFCoreAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
+
+        actions.add(savePDFCoreAction);
+
+        List_View_Action__c savePDFCustomAction = new List_View_Action__c();
+        savePDFCustomAction.Apex_Class_Name__c  = 'ListViewActionPDF';
+        savePDFCustomAction.Label__c            = 'Save To PDF';
+        savePDFCustomAction.Object_Type__c      = 'Opportunity';
+        savePDFCustomAction.SubType__c          = 'Manual';
+        savePDFCustomAction.RecordTypeId        = ListViewActionHelper.customRTId;
+		savePDFCustomAction.Permissions__c      = ListViewActionHelper.PERM_READ;
+        savePDFCustomAction.Is_Active__c        = true;
+        savePDFCustomAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
+
+        actions.add(savePDFCustomAction);
+        
         actions = HelperDatabase.insertRecords(actions);
         Map<String, SObject> actionsByLabel = HelperCollection.getStringMappedObjects(actions, 'Label__c');
 

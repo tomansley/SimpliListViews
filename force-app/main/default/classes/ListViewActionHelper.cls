@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-06-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-12-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -20,6 +20,10 @@ public with sharing class ListViewActionHelper {
     public static final String PERM_READ   = 'Read';
     public static final String PERM_EDIT   = 'Edit';
     public static final String PERM_DELETE = 'Delete';
+
+    public static final String VIS_ALWAYS = 'Always displayed';
+    public static final String VIS_ONLY_ONE = 'Displayed if one record is selected';
+    public static final String VIS_AT_LEAST_ONE = 'Displayed if one or more records are selected';
 
     public static final String PARAM_KEY_URL = 'URL';
 
@@ -50,6 +54,7 @@ public with sharing class ListViewActionHelper {
                         Flow_Frame_Width__c,
                         Flow_Type__c,
                         Mass_Create_List_View_Name__c,
+                        Selected_Record_Visibility__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -85,6 +90,7 @@ public with sharing class ListViewActionHelper {
                     Flow_Frame_Width__c,
                     Flow_Type__c,
                     Mass_Create_List_View_Name__c,
+                    Selected_Record_Visibility__c,
                     (SELECT Field_API_Name__c,
                             Label__c,
                             Display_Order__c,
@@ -124,6 +130,7 @@ public with sharing class ListViewActionHelper {
                         Flow_Frame_Height__c,
                         Flow_Frame_Width__c,
                         Mass_Create_List_View_Name__c,
+                        Selected_Record_Visibility__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -219,6 +226,7 @@ public with sharing class ListViewActionHelper {
                         Flow_Frame_Height__c,
                         Flow_Frame_Width__c,
                         Mass_Create_List_View_Name__c,
+                        Selected_Record_Visibility__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,

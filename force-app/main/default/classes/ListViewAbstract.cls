@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-03-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-11-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -282,6 +282,16 @@ public with sharing abstract class ListViewAbstract {
         {
             fieldMetaData.sort();
             return fieldMetaData;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Integer getColumnCount(){
+            return fieldMetaData.size();
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Integer getUIColumnCount(){
+            return fieldMetaData.size() + 1; //includes extra column for checkbox column
         }
 
         @AuraEnabled(cacheable=true)
@@ -1730,6 +1740,12 @@ public with sharing abstract class ListViewAbstract {
         public String getMassCreateListViewName()
         {
             return action.Mass_Create_List_View_Name__c;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getSelectedRecVisibility()
+        {
+            return action.Selected_Record_Visibility__c;
         }
 
         @AuraEnabled(cacheable=true)
