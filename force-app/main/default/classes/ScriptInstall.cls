@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-01-2021
+ * @last modified on  : 12-14-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -339,80 +339,132 @@ global with sharing class ScriptInstall implements InstallHandler {
             //------------------------------------------------------------------------------------
             // Add New, Edit, Clone actions - through v1.63
             //------------------------------------------------------------------------------------
-            Boolean hasNew     = false;
-            Boolean hasClone   = false;
-            Boolean hasEdit    = false;
-            Boolean hasDelete  = false;
-            Boolean hasEditAll = false;
-            Boolean hasHyper   = false;
-            Boolean hasMail    = false;
-            List_View_Action__c hyperAction = null;
-            List_View_Action__c mailAction   = null;
+            Boolean hasNew       = false;
+            Boolean hasClone     = false;
+            Boolean hasEdit      = false;
+            Boolean hasDelete    = false;
+            Boolean hasEditAll   = false;
+            Boolean hasHyper     = false;
+            Boolean hasMail      = false;
+            Boolean hasPDFCustom = false;
+            Boolean hasPDFCore   = false;
+
             List<List_View_Action__c> newActions = new List<List_View_Action__c>();
             List<List_View_Action_Parameter__c> newActionParams = new List<List_View_Action_Parameter__c>();
+
             for (List_View_Action__c action: actions)
             {
                 if (action.Label__c == 'New' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_CREATE;
                     action.Is_Active__c   = true;
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
                     hasNew = true;
                 } else if (action.Label__c == 'Clone' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_CREATE;
                     action.Is_Active__c   = true;
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
                     hasClone = true;
                 } else if (action.Label__c == 'Edit' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_EDIT;
                     action.Is_Active__c   = true;
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
                     hasEdit = true;
                 } else if (action.Label__c == 'Edit All' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_EDIT;
                     action.Is_Active__c   = true;
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
                     hasEditAll = true;
                 } else if (action.Label__c == 'Delete' && action.Apex_Class_Name__c == 'ListViewActionDelete')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_EDIT;
                     action.Is_Active__c   = true;
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
+
                 } else if (action.Label__c == 'Update' && action.Apex_Class_Name__c == 'ListViewActionUpdate')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_EDIT;
                     action.Is_Active__c   = true;
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
                 } else if (action.Label__c == 'Set Close Lost' && action.Apex_Class_Name__c == 'ListViewActionOppsClose')
                 {
                     action.Permissions__c = ListViewActionHelper.PERM_EDIT;
                     action.Is_Active__c   = true;
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
                 } else if (action.Label__c == 'Go To A Cool App' && action.Apex_Class_Name__c == 'ListViewActionNull')
                 {
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
                     hasHyper = true;
                 } else if (action.Label__c == 'Send Email' && action.Apex_Class_Name__c == 'ListViewActionEmail')
                 {
+                    action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
                     hasMail = true;
+                } else if (action.Label__c == 'Save To PDF' && action.Apex_Class_Name__c == 'ListViewActionPDF' && action.RecordTypeId == ListViewActionHelper.coreRTId)
+                {
+                    hasPDFCore = true;
+                } else if (action.Label__c == 'Save To PDF' && action.Apex_Class_Name__c == 'ListViewActionPDF' && action.RecordTypeId == ListViewActionHelper.customRTId)
+                {
+                    hasPDFCustom = true;
+                } else {
+                    if (String.isEmpty(action.Selected_Record_Visibility__c))
+                        action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;                    
                 }
             }
+
+            if (!hasPDFCore)
+            {
+                List_View_Action__c savePDFCoreAction = new List_View_Action__c();
+                savePDFCoreAction.Apex_Class_Name__c  = 'ListViewActionPDF';
+                savePDFCoreAction.Label__c            = 'Save To PDF';
+                savePDFCoreAction.Object_Type__c      = '';
+                savePDFCoreAction.RecordTypeId        = ListViewActionHelper.coreRTId;
+                savePDFCoreAction.Permissions__c      = ListViewActionHelper.PERM_READ;
+                savePDFCoreAction.Is_Active__c        = true;
+                savePDFCoreAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
+        
+                newActions.add(savePDFCoreAction);
+            }
+
+            if (!hasPDFCustom)
+            {
+                List_View_Action__c savePDFCustomAction = new List_View_Action__c();
+                savePDFCustomAction.Apex_Class_Name__c  = 'ListViewActionPDF';
+                savePDFCustomAction.Label__c            = 'Save To PDF';
+                savePDFCustomAction.Object_Type__c      = 'Opportunity';
+                savePDFCustomAction.SubType__c          = 'Manual';
+                savePDFCustomAction.RecordTypeId        = ListViewActionHelper.customRTId;
+                savePDFCustomAction.Permissions__c      = ListViewActionHelper.PERM_READ;
+                savePDFCustomAction.Is_Active__c        = true;
+                savePDFCustomAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
+        
+                newActions.add(savePDFCustomAction);
+            }    
             
             if (!hasHyper)
             {
-                hyperAction                     = new List_View_Action__c();
+                List_View_Action__c hyperAction = new List_View_Action__c();
                 hyperAction.Apex_Class_Name__c  = 'ListViewActionNull';
                 hyperAction.Label__c            = 'Go To A Cool App';
                 hyperAction.Object_Type__c      = 'simpli_lv__List_View__c';
                 hyperAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 hyperAction.Is_Active__c        = true;
+                hyperAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
 
                 newActions.add(hyperAction);
             }
 
             if (!hasMail)
             {
-                mailAction                     = new List_View_Action__c();
+                List_View_Action__c mailAction = new List_View_Action__c();
                 mailAction.Apex_Class_Name__c  = 'ListViewActionEmail';
                 mailAction.Label__c            = 'Send Email';
                 mailAction.Object_Type__c      = 'Contact';
                 mailAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 mailAction.Is_Active__c        = true;
+                mailAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
                 newActions.add(mailAction);
             }
@@ -425,6 +477,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 orgNewAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
                 orgNewAction.Is_Active__c        = true;
+                orgNewAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
         
                 newActions.add(orgNewAction);
             }
@@ -437,6 +490,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 orgCloneAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
                 orgCloneAction.Is_Active__c        = true;
+                orgCloneAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
         
                 newActions.add(orgCloneAction);
             }
@@ -449,6 +503,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 orgEditAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
                 orgEditAction.Is_Active__c        = true;
+                orgEditAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
                     
                 newActions.add(orgEditAction);
             }
@@ -461,6 +516,7 @@ global with sharing class ScriptInstall implements InstallHandler {
                 orgEditAllAction.RecordTypeId        = ListViewActionHelper.coreRTId;
                 orgEditAllAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
                 orgEditAllAction.Is_Active__c        = true;
+                orgEditAllAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
                             
                 newActions.add(orgEditAllAction);
             }
