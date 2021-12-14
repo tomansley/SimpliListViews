@@ -3,34 +3,24 @@ import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 //------------------------ LABELS ------------------------
-import List_Views_Initialized from '@salesforce/label/c.List_Views_Initialized';
-import List_Views_Need_Initialized from '@salesforce/label/c.List_Views_Need_Initialized';
-import Refresh from '@salesforce/label/c.Refresh';
-import Refresh_List_Views from '@salesforce/label/c.Refresh_List_Views';
 import Parameter_Name from '@salesforce/label/c.Parameter_Name';
 import Value from '@salesforce/label/c.Value';
 import Select_A_Value from '@salesforce/label/c.Select_A_Value';
 import Available from '@salesforce/label/c.Available';
 import Selected from '@salesforce/label/c.Selected';
 import Save from '@salesforce/label/c.Save';
-import Processing_Status from '@salesforce/label/c.Processing_Status';
-import List_View_Processing_Complete from '@salesforce/label/c.List_View_Processing_Complete';
 import List_Views_Cleaned from '@salesforce/label/c.List_Views_Cleaned';
 import List_Views_Click_For_Cleaning from '@salesforce/label/c.List_Views_Click_For_Cleaning';
 import Clean from '@salesforce/label/c.Clean';
 import Clean_List_Views from '@salesforce/label/c.Clean_List_Views';
 import Cleaning_Status from '@salesforce/label/c.Cleaning_Status';
 import List_View_Cleaning_Complete from '@salesforce/label/c.List_View_Cleaning_Complete';
-import List_Views_Need_Initialized_Verbage from '@salesforce/label/c.List_Views_Need_Initialized_Verbage';
-import List_Views_Initialized_Verbage from '@salesforce/label/c.List_Views_Initialized_Verbage';
 import List_Views_Click_For_Cleaning_Verbage from '@salesforce/label/c.List_Views_Click_For_Cleaning_Verbage';
 
 import getOrgWideConfig from '@salesforce/apex/ListViewAdminController.getOrgWideConfig';
 import saveOrgWideConfig from '@salesforce/apex/ListViewAdminController.saveOrgWideConfig';
 import getObjectNames from '@salesforce/apex/ListViewAdminController.getObjectNames';
-import updateAllListViews from '@salesforce/apex/ListViewController.updateAllListViews';
 import cleanListViews from '@salesforce/apex/ListViewAdminController.cleanListViews';
-import getIsInitialized from '@salesforce/apex/ListViewController.getIsInitialized';
 
 export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningElement) {
 
@@ -50,14 +40,12 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         ];
     }
 
-    label = { List_Views_Initialized, List_Views_Need_Initialized, Refresh, Refresh_List_Views, Parameter_Name, Value, Select_A_Value,
-              Available, Selected, Save, Processing_Status, List_View_Processing_Complete, List_Views_Cleaned, List_Views_Click_For_Cleaning,
-              Clean, Clean_List_Views, Cleaning_Status, List_View_Cleaning_Complete, List_Views_Need_Initialized_Verbage, List_Views_Initialized_Verbage,
-              List_Views_Click_For_Cleaning_Verbage }
+    label = { Parameter_Name, Value, Select_A_Value, Available, Selected, Save, List_Views_Cleaned, List_Views_Click_For_Cleaning,
+              Clean, Clean_List_Views, Cleaning_Status, List_View_Cleaning_Complete, List_Views_Click_For_Cleaning_Verbage }
 
     renderedCallback() {
         console.log('SimpliUIListViewsAdmin.renderedCallback started');
-        this.checkInitialized();
+
         if (this.config === undefined)
         {
             console.log('Starting getConfig()');
@@ -66,31 +54,9 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
 
     }
 
-    /*
-     * Method called when a row is edited and the SAVE button on the row is clicked.
-     */
-    checkInitialized() {
-
-        getIsInitialized({})
-        .then(result => {
-            console.log('Is Initialized called successfully - ' + result + ' for ' + this.pageName);
-            this.isInitialized = result; 
-            if (this.isInitialized === false)
-            {
-                this.spinner = false; //a special case where we set it directly.
-            }
-        })
-        .catch(error => {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error Checking Initialization',
-                message: 'There was an error checking for Simpli List Views initialization - ' + error.body.message,
-                variant: 'error',
-                mode: 'sticky'
-            }));
-        });
-
-    }     
+    handleInitializedCheck(event) {
+        this.isInitialized = event.detail;
+    }
 
     @wire (getObjectNames, {})
     wiredObjectListViews(wiredObjectListViewsResult) {
@@ -206,56 +172,6 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         });
 
         this.spinnerOff();
-    }
-
-    //called when a user clicks the button to refresh the list views.
-    handleProcessListViewsButtonClick() {
-
-        this.spinnerOn();
-        console.log('Listview process button clicked and updating all list views');
-
-        updateAllListViews({ })
-        .then(result => {
-
-            //if we have an error then send an ERROR toast.
-            if (result === 'failed')
-            {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Processing Error',
-                    message: 'There was an error processing the list views - ' + error.body.message,
-                    variant: 'error',
-                    mode: 'sticky'
-                }));
-                this.spinnerOff();
-
-            //else send a SUCCESS toast.
-            } else {
-
-                this.batchId = result;
-
-                this.showProgress = true;
-
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'List View Processing',
-                    message: 'List view processing has started for all list views. You must do a full page refresh after completion to see changes.',
-                    variant: 'success',
-                    mode: 'dismissable'
-                }));
-                this.dispatchEvent(new CustomEvent('processlistviewclick'));
-                this.spinnerOff();
-            }
-        })
-        .catch(error => {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Processing Error',
-                message: 'There was an error processing the list views - ' + error.body.message,
-                variant: 'error',
-                mode: 'sticky'
-            }));
-            this.spinnerOff();
-        });
-
     }
 
     //called when a user clicks the button to refresh the list views.

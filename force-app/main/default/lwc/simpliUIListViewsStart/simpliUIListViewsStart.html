@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 10-26-2021
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 12-13-2021
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-18-2020   tom@ansleyllc.com   Initial Version
@@ -20,66 +20,41 @@
     <!-- ------------------------------------------------------------------------ -->
     <!-- Section which handles the initialization of the list views if its needed -->
     <!-- ------------------------------------------------------------------------ -->
-    <lightning-card>
-        <template if:false={showProgress}>
-            <lightning-layout>
-                <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small">
-                    <div style="padding-left: 10px;">
-                        <template if:false={isInitialized}>
-                            <lightning-icon icon-name="standard:first_non_empty" 
-                                            alternative-text={label.Not_Initialized} 
-                                            title={label.Not_Initialized}>
-                            </lightning-icon>&nbsp;&nbsp;
-                            {label.List_Views_Need_Initialized}  
-                        </template>
-                        <template if:true={isInitialized}>    
-                            <lightning-icon icon-name="standard:task2" 
-                                            alternative-text={label.List_Views_Initialized} 
-                                            title={label.List_Views_Initialized} >
-                            </lightning-icon>&nbsp;&nbsp;
-                            {label.List_Views_Initialized}  
-                        </template>
-                        </div>
-                    </lightning-layout-item>
-                    <lightning-layout-item padding="horizontal-small" >
-                        <lightning-button variant="brand" label={label.Refresh} title={label.Refresh_List_Views} icon-name="action:new_task" class="slds-m-left_x-small" onclick={handleProcessListViewsButtonClick}></lightning-button>
-                    </lightning-layout-item>
-            </lightning-layout>
-        </template>
-        <template if:true={showProgress}>
-            <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
-                                                        working-text={label.Processing_Status}
-                                                        complete-text={label.List_View_Processing_Complete}>
-            </c-simpli-u-i-list-views-init-progress-bar>
-        </template>
-    </lightning-card>
-    
-    <br/>
+    <c-simpli-u-i-list-views-init-card></c-simpli-u-i-list-views-init-card>
 
     <lightning-card title={label.Feature_Overview} icon-name="standard:announcement">
         <div class="slds-var-m-around_medium">
             <div style="padding-left: 20px;">
                 <ol style="list-style-type:circle; list-style-position: inside;">
-                    <li style="padding-bottom: 5px;">List views for all objects on one page</li>
-                    <li style="padding-bottom: 5px;">Lists up to 2500 records allowed</li>
-                    <li style="padding-bottom: 5px;">Include fields from lookup objects in list view (and fields of lookups of lookups!)</li>
-                    <li style="padding-bottom: 5px;">Create list views based on complex SOQL query's</li>
-                    <li style="padding-bottom: 5px;">Create actions to process multiple records in list view using batch apex, atuomated or screen flows</li>
+                    <li style="padding-bottom: 5px;">Three list view modes -</li>
+                    <div style="padding-left: 20px;">
+                        <ol style="list-style-type:lower-roman; list-style-position: inside;">
+                            <li style="padding-bottom: 5px;"><b>App Page</b> - all org list views available in one component</li>
+                            <li style="padding-bottom: 5px;"><b>Single List View</b> - single list view displayed in one component</li>
+                            <li style="padding-bottom: 5px;"><b>Related List View</b> - related list view displayed on single record page</li>
+                        </ol>
+                    </div>
+                    <li style="padding-bottom: 5px;">Lists up to 2500 records allowed (depends on number of columns)</li>
+                    <li style="padding-bottom: 5px;">Include fields from lookup objects (up to 5 levels deep)</li>
+                    <li style="padding-bottom: 5px;">Create custom list views based on complex SOQL query's</li>
+                    <li style="padding-bottom: 5px;">Create actions to process multiple records using apex or flows (automated or screen)</li>
                     <li style="padding-bottom: 5px;">Inline editing</li>
                     <li style="padding-bottom: 5px;">Pin your favorite list view</li>
                     <li style="padding-bottom: 5px;">Multiple column sorting</li>
                     <li style="padding-bottom: 5px;">Footer calculations</li>
-                    <li style="padding-bottom: 5px;">Row highlighting based on criteria</li>
-                    <li style="padding-bottom: 5px;">Auto-refresh at configured intervals</li>
-                    <li style="padding-bottom: 5px;">Export list view data with the click of a button</li>
-                    <li style="padding-bottom: 5px;">Include deleted records in list view (records show in red)</li>
-                    <li style="padding-bottom: 5px;">Configure the list view page at the org, component and list view level</li>
+                    <li style="padding-bottom: 5px;">Criteria based row highlighting</li>
+                    <li style="padding-bottom: 5px;">Auto-refresh</li>
+                    <li style="padding-bottom: 5px;">Export list view data with single click</li>
+                    <li style="padding-bottom: 5px;">Include deleted records in list view</li>
+                    <li style="padding-bottom: 5px;">Configure list views at the org, component and list view level</li>
                     <li style="padding-bottom: 5px;">Create list views from Tooling API</li>
                 </ol>
             </div>
         </div>
     </lightning-card>
+
     <br/>
+    
     <lightning-card title={label.Quick_Start} icon-name="standard:custom_notification">
         <div class="slds-var-m-around_medium">
             <div style="padding-left: 20px;">
@@ -90,31 +65,101 @@
             </div>
         </div>
     </lightning-card>
+
     <br/>
+    
     <lightning-card title={label.Issues_And_Questions} icon-name="standard:custom_notification">
         <div style="padding-left: 20px;" class="slds-var-m-around_medium">
             <p>FAQs - <a target="_blank" href="https://github.com/tomansley/SimpliListViews/wiki/FAQ">go here</a></p>
             <br/>
-            <p>If you have any issues, questions or ideas please go to the <a target="_blank" href="https://github.com/tomansley/SimpliListViews">github repository</a> to log them - </p>
+            <p>If you have any issues, questions or ideas please go to the <a target="_blank" href="https://github.com/tomansley/SimpliListViews/issues">github repository</a> to log them.</p>
             <br/>
-            <p>Other resources - </p>
+            <p>The following videos are available for guidance - </p>
             <br/>
-            <div style="padding-left: 20px;">
-                <ol style="list-style-type:circle; list-style-position: inside;">
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=deoNfudkpEw">Features Overview (Video)</a></li>
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=PIzyrWuc1YA">Install Guide (Video)</a></li>
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=bJQchWEK34I">Starting Out (Video)</a></li>
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=Uqur5RiKwU0">Sizing and Sorting (Video)</a></li>
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=nJyTWEPCUac">Using Multiple Components On One Page (Video)</a></li>
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=OLLpIvXqfWc">Creating Custom List View (Video)</a></li>
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=9eHD7ntFFs0">Large Datasets and Paging (Video)</a></li>
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=SNDSkBCQR8Y">Page Modes (Video)</a></li>
-                    <li style="padding-bottom: 5px;"><a target="_blank" href="https://www.youtube.com/watch?v=n29zVvM6Xtk">Actions (Video)</a></li>
-                </ol>
-            </div>
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="width: 33%;"><b>Starting Out</b></td>
+                        <td style="width: 33%;"></td>
+                        <td style="width: 33%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=deoNfudkpEw">Features Overview</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=PIzyrWuc1YA">Install Guide</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=bJQchWEK34I">Starting Out</a></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=Uqur5RiKwU0">Sizing and Sorting</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=nr4i6cgfqqk">Default Sorting</a></td>
+                        <td style="width: 33%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;">&nbsp;</td>
+                        <td style="width: 33%;">&nbsp;</td>
+                        <td style="width: 33%;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><b>Basic Functionality</b></td>
+                        <td style="width: 33%;"></td>
+                        <td style="width: 33%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=SNDSkBCQR8Y">Page Modes</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=9eHD7ntFFs0">Large Datasets and Paging</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=nzetCuPl8Ks">Hover Functionality</a></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=rvZ8pE2lS6Q">Record Editing Options</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=ycxeu8W3in0">Changing Export Column Headers</a></td>
+                        <td style="width: 33%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;">&nbsp;</td>
+                        <td style="width: 33%;">&nbsp;</td>
+                        <td style="width: 33%;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><b>Actions</b></td>
+                        <td style="width: 33%;"></td>
+                        <td style="width: 33%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=n29zVvM6Xtk">Actions Overview</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=IE8vqSPw3Qw">Flow Actions</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=w0bW4M_-sBk">Screen Flow Actions</a></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=KsIy-1J7iHw">Mass Create</a></td>
+                        <td style="width: 33%;"></td>
+                        <td style="width: 33%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;">&nbsp;</td>
+                        <td style="width: 33%;">&nbsp;</td>
+                        <td style="width: 33%;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><b>Advanced Topics</b></td>
+                        <td style="width: 33%;"></td>
+                        <td style="width: 33%;"></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=d5WjNk0l3-4">Creating Custom List Views</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=nJyTWEPCUac">Using Multiple Components On One Page</a></td>
+                        <td style="width: 33%;"><a target="_blank" href="https://www.youtube.com/watch?v=4geKs0cqqoE">Creating Related Lists</a></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 33%;">&nbsp;</td>
+                        <td style="width: 33%;">&nbsp;</td>
+                        <td style="width: 33%;">&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </lightning-card>
+
     <br/>
+    
     <lightning-card title={label.Configuration} icon-name="standard:settings">
         <div class="slds-var-m-around_medium">
 
@@ -176,7 +221,7 @@
             <div>
                <b>User Settings</b>
                <br/><br/>
-                <p>These settings are maintained per user, for each user that has access to a page or component. The settings are configured based on the action performed by the user. For example, if the user pins a given list view for the page that information will be saved for that user, for that page.</p>
+                <p>These settings are maintained for each user that has access to a page or component. The settings are configured based on the action performed by the user. For example, if the user pins a given list view for the page that information will be saved for that user, for that page.</p>
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:decimal; list-style-position: inside;">
@@ -189,7 +234,9 @@
             </div>
         </div>
     </lightning-card>
+
     <br>
+    
     <lightning-card title="Actions" icon-name="standard:invocable_action">
         <div class="slds-var-m-around_medium">
             <p>Actions can be performed against a set of selected records in a list view. Actions can be specific to a type of object or available for all list views. Deleting a record is an example of an action that is available to all list views. There are currently 8 actions that have been implemented and made available in the app exchange package.</p>
@@ -212,16 +259,13 @@
                     <li style="padding-bottom: 5px;"><b>Update - </b>an example action which accepts two user entered fields and updates all selected records based on the input. (Account object only)</li>
                     <li style="padding-bottom: 5px;"><b>Set Close Lost - </b>an example action which marks all selected records as Close - Lost. (Opportunity object only)</li>
                     <li style="padding-bottom: 5px;"><b>Go To A Cool App - </b>an example hyperlink which opens a new browser window/tab and takes the user to the configured URL. (List View object only)</li>
+                    <li style="padding-bottom: 5px;"><b>Mass Create - </b>allows for the mass creation of records using a list view. (see the following video for more details - <a target="_blank" href="https://www.youtube.com/watch?v=KsIy-1J7iHw">Mass Create</a>)</li>
                 </ol>
             </div>
             <br/>
-            <p>If an action is needed that is not currently available it can be implemented and then configured. It is highly encouraged to submit actions back to the app exchange package developer for addition in later releases.</p>
+            <p>If an action is needed that is not currently available it can be implemented and then configured. It is highly encouraged to submit actions back to the app exchange package developer for addition in later releases. Below is example code showing a basic implementation of the ListViewAction interface.</p>
             <br/><br/>
             <div>
-                <b>Hello World ListViewAction Example</b>
-                <br/><br/>
-                <p>The following is code which implements the ListViewAction interface -</p>
-                <br/><br/>
                 <p><code>global with sharing class ListViewActionHelloWorld extends simpli_lv.ListViewAction &#123; <br/>
                     <br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;/*<br/>
@@ -230,7 +274,7 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* processing has failed and the returned string is used as the error message displayed.<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* @param recordIds a list of recordIds that have been sent for processing.<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* @param fieldValues a list of key/value parameters. These parameters are configured.<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* @param fieldValues a list of key/value parameters. These parameters are configured in the List_View_Action__c object.<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;public override String process(List&lt;String&gt; recordIds, Map&lt;String, Object&gt; fieldValues)<br/>
                     &nbsp;&nbsp;&nbsp;&nbsp;&#123;<br/>
