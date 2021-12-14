@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-03-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-11-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public class ListViewConfigPicklistObjectTypes extends VisualEditor.DynamicPickList{
 
@@ -15,7 +15,7 @@ public class ListViewConfigPicklistObjectTypes extends VisualEditor.DynamicPickL
     }
     
     public override VisualEditor.DataRow getDefaultValue(){
-        VisualEditor.DataRow defaultValue = new VisualEditor.DataRow('', '');
+        VisualEditor.DataRow defaultValue = new VisualEditor.DataRow('Account', 'Account');
         return defaultValue;
     }
     
@@ -29,10 +29,9 @@ public class ListViewConfigPicklistObjectTypes extends VisualEditor.DynamicPickL
         objectAPINames.sort();
 
         for (String apiName: objectAPINames)
-        {
-            configPicklist.addRow(new VisualEditor.DataRow(objectNamesByAPI.get(apiName) + ' - ' + apiName, apiName));
-        }
-        configPicklist.addRow(new VisualEditor.DataRow('', ''));
+            configPicklist.addRow(new VisualEditor.DataRow(apiName, apiName));
+
         return configPicklist;
     }
+
 }

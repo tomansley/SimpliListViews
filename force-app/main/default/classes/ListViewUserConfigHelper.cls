@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-06-2021
+ * @last modified on  : 12-08-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -118,7 +118,7 @@ public with sharing class ListViewUserConfigHelper {
 
         List_View_User_Config__c config = getCurrentUserConfig(compName, configName);
 
-        if (value != null && value != '')
+        if (!String.isEmpty(value))
         {
             if (config == null)
             {
