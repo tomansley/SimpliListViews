@@ -20,6 +20,7 @@ import Remove_Condition from '@salesforce/label/c.Remove_Condition';
 import Select_A_Column from '@salesforce/label/c.Select_A_Column';
 import Enter_A_Value from '@salesforce/label/c.Enter_A_Value';
 import Add_Condition from '@salesforce/label/c.Add_Condition';
+import Update from '@salesforce/label/c.Update';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
 import getListViewColumns from '@salesforce/apex/ListViewController.getListViewColumns';
@@ -98,6 +99,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
     label = { Close, List_View_Config, Settings, Parameter_Name, Value, Select_A_Value, Highlighting, Add_Remove, Field,
               Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition,
+              Update
             }
 
     constructor() {
@@ -389,8 +391,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         },500); //give the parameter time to be saved before sending message to parent
         this.closeDisabled = undefined;
         this.dispatchEvent(new ShowToastEvent({
-            title: 'Config Updated Successfully!',
-            message: message,
+            title: 'Config Updated',
+            message: 'Config updated successfully!',
             variant: 'success',
             mode: 'dismissable'
         }));

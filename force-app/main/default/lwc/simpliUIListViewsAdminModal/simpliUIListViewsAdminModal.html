@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 12-05-2021
+  @last modified on  : 12-12-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -214,43 +214,43 @@
                                                                     </lightning-combobox>                        
                                                             </template>
                                                             <template if:true={newConditionColumn.isString}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input0" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input1" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                             <template if:true={newConditionColumn.isPicklist}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input0" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input2" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                             <template if:true={newConditionColumn.isMultiPicklist}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input0" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input3" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                             <template if:true={newConditionColumn.isPhone}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input0" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input4" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                             <template if:true={newConditionColumn.isEmail}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input0" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input5" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                             <template if:true={newConditionColumn.isTextArea}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input0" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input6" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                             <template if:true={newConditionColumn.isURL}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input0" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input7" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                             <template if:true={newConditionColumn.isDateTime}>
-                                                                <lightning-input data-type={newConditionColumn.type} date-style="short" variant=label-hidden type="datetime" name="input2" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} date-style="short" variant=label-hidden type="datetime" name="input8" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                             <template if:true={newConditionColumn.isInteger}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" name="input3" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
-                                                            </template>
-                                                            <template if:true={newConditionColumn.isDecimal}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" name="input4" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
-                                                            </template>
-                                                            <template if:true={newConditionColumn.isCurrency}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" name="input6" formatter="currency" step="0.01" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
-                                                            </template>
-                                                            <template if:true={newConditionColumn.isDouble}>
                                                                 <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" name="input9" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
+                                                            <template if:true={newConditionColumn.isDecimal}>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" name="input10" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            </template>
+                                                            <template if:true={newConditionColumn.isCurrency}>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" name="input11" formatter="currency" step="0.01" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            </template>
+                                                            <template if:true={newConditionColumn.isDouble}>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" name="input12" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            </template>
                                                             <template if:true={newConditionColumn.isPercent}>
-                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" formatter="percent" step="0.01" name="input10" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                                <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="number" formatter="percent" step="0.01" name="input13" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                             </template>
                                                         </template>
                                                     </div>
@@ -294,7 +294,7 @@
                     </lightning-tabset>
 
                     <footer class="slds-modal__footer" style="min-width: 1100px;">
-                        <button class="slds-button slds-button_brand" onclick={handleUpdateClick}>Update</button>
+                        <button class="slds-button slds-button_brand" onclick={handleUpdateClick}>{label.Update}</button>
                         <button class="slds-button slds-button_brand" disabled={closeDisabled} onclick={handleCloseClick}>{label.Close}</button>
                     </footer>
                     
