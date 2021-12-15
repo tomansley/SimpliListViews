@@ -6,6 +6,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import  LISTVIEW_MC  from '@salesforce/messageChannel/SimpliListViewMessageChannel__c';
 import { refreshApex } from '@salesforce/apex';
 import { subscribe, unsubscribe, publish, APPLICATION_SCOPE, MessageContext } from 'lightning/messageService';
+import { encodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
 
 //------------------------ LABELS ------------------------
 import Rows from '@salesforce/label/c.Rows';
@@ -1619,6 +1620,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         } else if (this.selectedAction.label === 'New')
         {
+            var defaultValues = {};
+            if (this.isModeRelated)
+            {
+                defaultValues[this.joinFieldName] = this.recordId;
+                defaultValues = encodeDefaultFieldValues(defaultValues);
+            } else {
+                defaultValues = encodeDefaultFieldValues({});
+            }
             this[NavigationMixin.Navigate]({
                 type: 'standard__objectPage',
                 attributes: {
@@ -1626,7 +1635,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     actionName: 'new',
                 },
                 state: {
-                    useRecordTypeCheck: 1
+                    useRecordTypeCheck: 1,
+                    defaultFieldValues: defaultValues,
                 }
             });
             
