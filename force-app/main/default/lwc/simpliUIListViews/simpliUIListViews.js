@@ -7,6 +7,7 @@ import  LISTVIEW_MC  from '@salesforce/messageChannel/SimpliListViewMessageChann
 import { refreshApex } from '@salesforce/apex';
 import { subscribe, unsubscribe, publish, APPLICATION_SCOPE, MessageContext } from 'lightning/messageService';
 import { encodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
+import currentUserId from '@salesforce/user/Id';
 
 //------------------------ LABELS ------------------------
 import Rows from '@salesforce/label/c.Rows';
@@ -1624,10 +1625,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.isModeRelated)
             {
                 defaultValues[this.joinFieldName] = this.recordId;
-                defaultValues = encodeDefaultFieldValues(defaultValues);
-            } else {
-                defaultValues = encodeDefaultFieldValues({});
             }
+
+            //go through the action parameters checking for field substitutions
+            this.selectedAction.allParameters.forEach(param => {
+                if (param.aPIName === 'UserField')
+                    defaultValues[param.value] = currentUserId;
+            });
+
+            defaultValues = encodeDefaultFieldValues(defaultValues);
+
             this[NavigationMixin.Navigate]({
                 type: 'standard__objectPage',
                 attributes: {
