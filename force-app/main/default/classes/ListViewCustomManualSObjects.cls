@@ -1,13 +1,14 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-05-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-16-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
  * 2.0   06-18-2021   tom@ansleyllc.com   Added offset to allow for larger datasets
  * 3.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables
+ * 4.0   12-16-2021   tom@ansleyllc.com   Fixed issue where field data type being returned in ALL CAPS!
 **/
 public with sharing class ListViewCustomManualSObjects { //extends ListViewCustomManualAbstract {
 /*
@@ -135,7 +136,7 @@ public with sharing class ListViewCustomManualSObjects { //extends ListViewCusto
 
                 FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                         fieldData.value, 
-                                                        fieldData.type.name(),
+                                                        fieldData.getType(),
                                                         columnMetaData.name,
                                                         columnMetaData.columnIndex,
                                                         fieldData.parentObjType);

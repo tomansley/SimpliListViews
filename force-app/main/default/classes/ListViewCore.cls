@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-14-2021
+ * @last modified on  : 12-16-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -9,6 +9,7 @@
  * 2.0   06-18-2021   tom@ansleyllc.com   Added offset to allow for larger datasets
  * 3.0   07-27-2021   tom@ansleyllc.com   Minor changes to allow fields/rows to handle inline-editing
  * 4.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables
+ * 5.0   12-16-2021   tom@ansleyllc.com   Fixed issue where field data type being returned in ALL CAPS!
 **/
 public with sharing class ListViewCore extends ListViewAbstract {
 
@@ -307,7 +308,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 String parentObjType = fieldData.parentObjType;
 
                 FieldWrapper field = new FieldWrapper(label, 
-                                                    fieldData.type.name(),
+                                                    fieldData.getType(),
                                                     fieldName,
                                                     columnIndex);
                 field.setParentObjType(parentObjType);
@@ -321,7 +322,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 rows.addFieldMetaData(field);
 
                 Map<String, Object> newColumn = new Map<String, Object>();
-                newColumn.put('type', fieldData.type.name());
+                newColumn.put('type', fieldData.getType());
                 newColumn.put('fieldNameOrPath', fieldName);
                 newColumn.put('hidden', false);
                 newColumn.put('label', label);
@@ -365,7 +366,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 System.debug(LoggingLevel.FINE, 'Field Data - ' + fieldData);
 
-                String fieldDataType = fieldData.type.name();
+                String fieldDataType = fieldData.getType();
                 String parentObjType = fieldData.parentObjType;
 
                 System.debug(LoggingLevel.FINE, 'Parent Obj Type - ' + parentObjType + ', Field Data Type - ' + fieldDataType + ', Value - ' + fieldData.value);
