@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 12-06-2021
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 12-16-2021
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -12,6 +12,7 @@
  * 3.0   07-27-2021   tom@ansleyllc.com     Added logic for new admin page.
  * 4.0   08-18-2021   tom@ansleyllc.com     Updated strings to static final variables
  * 4.0   08-25-2021   tom@ansleyllc.com     Major enhancement to condition validation for more types
+ * 4.0   12-15-2021   tom@ansleyllc.com     Removed old methods for checking object accessibility
 **/
 public with sharing class ListViewConfigHelper {
 
@@ -441,9 +442,6 @@ public with sharing class ListViewConfigHelper {
 
                 try {
 
-                    //check security on object
-                    HelperSchema.checkObjectAccessible(objectName);
-
                     //get the list view
                     List_View__c listview = ListViewHelper.getListViews(objectName, listViewName).values()[0];
             
@@ -452,15 +450,6 @@ public with sharing class ListViewConfigHelper {
 
                     //get the fields on the SELECT
                     String selectStr = query.substringBetween('SELECT ', ' FROM ');
-
-                    //check all added fields for security
-                    List<String> allFields = paramValue.split(',');
-                    for (String field: allFields)
-                    {
-                        //do security validation on additional fields. If the field is a lookup the security is performed later
-                        if (!field.contains('.'))
-                            HelperSchema.checkObjectFieldAccessible(objectName, field);
-                    }
         
                     selectStr += ', ' + paramValue;
             

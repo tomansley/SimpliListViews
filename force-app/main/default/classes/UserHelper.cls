@@ -2,11 +2,12 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 12-16-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   09-09-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
 **/
 public with sharing class UserHelper {
 
@@ -44,21 +45,22 @@ public with sharing class UserHelper {
      */
     public static Map<ID,User> getUserDetails(List<Id> userIds)
     {    
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Id, 
+                        User.Name, 
+                        UserRole.Name, 
+                        FirstName, 
+                        LastName, 
+                        Profile.Name, 
+                        IsActive,
+                        UserRole.ParentRoleId, 
+                        Email
+                FROM User 
+                WHERE Id IN :userIds]);
         
-        HelperSchema.checkSelectAccessible('SELECT Id, User.Name, UserRole.Name, FirstName, LastName, IsActive, Profile.Name, UserRole.ParentRoleId, Email FROM User');
-        
-        Map<ID,User> userMap = new Map<ID,User>([SELECT Id, 
-                                                        User.Name, 
-                                                        UserRole.Name, 
-                                                        FirstName, 
-                                                        LastName, 
-                                                        Profile.Name, 
-                                                        IsActive,
-                                                        UserRole.ParentRoleId, 
-                                                        Email
-                                                FROM User 
-                                                WHERE Id IN :userIds]);
-        
+        Map<Id, User> userMap = new Map<Id, User>( (List<User>) dec.getRecords());
+
         return userMap;
     }
 

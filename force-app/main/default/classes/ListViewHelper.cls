@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-14-2021
+ * @last modified on  : 12-16-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -17,6 +17,7 @@
  * 7.0   08-16-2021   tom@ansleyllc.com   Added permission check for each action before display
  * 8.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables, added hyperlink action config
  * 9.0   08-18-2021   tom@ansleyllc.com   Added TYPE_COMBOBOX. Added CampaignMember config
+ * 10    12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
  **/
 global with sharing class ListViewHelper 
 {
@@ -658,7 +659,7 @@ global with sharing class ListViewHelper
         Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
         debug += 'orgWideExcObjs size - ' + orgWideExcObjs.size() + '\n';
 
-        HelperSchema.checkListViewAccessible();
+        //HelperSchema.checkListViewAccessible();
 
         if (isInit)
         {
@@ -876,10 +877,6 @@ global with sharing class ListViewHelper
 
         System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
 
-        //if we have a core list view object make sure that the user has access to the object itself if its
-        if (HelperSchema.isObject(objAPIName) && !HelperSchema.checkObjectAccessible(objAPIName, false))
-            throw new ListViewException('Object ' + objAPIName + ' is not accessible to the current user');
-
         //get list view data
         SObjectAccessDecision dec = 
             Security.stripInaccessible(AccessType.READABLE,
@@ -1000,9 +997,6 @@ global with sharing class ListViewHelper
                 lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
         }
         
-        //check the object is accessible by this user
-        HelperSchema.checkObjectAccessible(listview.Object_Name__c);
-
         //---------------------------------------------------
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
@@ -1301,9 +1295,6 @@ global with sharing class ListViewHelper
         if (soql.containsIgnoreCase(' LIMIT '))
             limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
         System.debug(LoggingLevel.FINE, 'limitStr - ' + limitStr);
-
-        //check the object is accessible by this user
-        HelperSchema.checkObjectAccessible(objectName);
 
         //------------------------------------------------------
         // Handle all changes to the WHERE statement

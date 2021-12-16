@@ -1,12 +1,13 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-04-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-16-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   07-20-2021   tom@ansleyllc.com   Initial Version
- * 1.0   11-03-2021   tom@ansleyllc.com   Added getRecordName() method
+ * 2.0   11-03-2021   tom@ansleyllc.com   Added getRecordName() method
+ * 3.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
 **/
 public with sharing class ListViewLookupController {
     
@@ -21,9 +22,9 @@ public with sharing class ListViewLookupController {
             soql = 'SELECT Id, Name FROM ' + String.escapeSingleQuotes(obj) + ' WHERE Name Like  \'%' + String.escapeSingleQuotes(searchTerm) + '%\' LIMIT 5';
         }
         
-        HelperSchema.checkSelectAccessible(soql);
+        SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, database.query(soql));
         
-        List<sObject> lookUpList = database.query(soql);
+        List<sObject> lookUpList = dec.getRecords();
 
         return lookUpList;  
     }

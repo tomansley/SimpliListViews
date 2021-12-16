@@ -1,12 +1,14 @@
 /**
  * @description       : Helper class to aid in the handling of DML transactions
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-03-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-16-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
  * 2.0   10-31-2021   tom@ansleyllc.com   Added query() methods.
+ * 3.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+
 **/
 public with sharing class HelperDatabase {
 
@@ -55,9 +57,10 @@ public with sharing class HelperDatabase {
         soql = soql.removeEnd(',') + ')';
 
         System.debug(Logginglevel.DEBUG, 'SOQL - ' + soql);
-        HelperSchema.checkSelectAccessible(soql);
 
-        List<SObject> results = Database.query(soql);
+        SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, database.query(soql));
+        
+        List<SObject> results = dec.getRecords();
 
         return results;
     }

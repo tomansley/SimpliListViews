@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-22-2021
+ * @last modified on  : 12-15-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -55,31 +55,31 @@ public with sharing class HelperSchemaTest {
         System.assertEquals('User', typeName);
 
         Boolean isValid = HelperSchema.isValidSFDCFieldName('Account', 'Name');
-        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
         isValid = HelperSchema.isValidSFDCFieldName('Account', 'LastModifiedBy.Name');
-        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
         isValid = HelperSchema.isValidSFDCFieldName('Account', 'LastModifiedBy.Profile.Name');
-        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
         isValid = HelperSchema.isValidSFDCFieldName('List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
-        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
         isValid = HelperSchema.isValidSFDCFieldName('simpli_lv__List_View_Config_Condition__c', 'simpli_lv__Highlight_Color__c');
-        System.debug(LoggingLevel.FINE, 'RESULT - ' + isValid);
         System.assertEquals(true, isValid);
-
-        HelperSchema.checkObjectFieldAccessible('Account', 'Name');
 
         HelperSchema.checkObjectDeletable('Account', false);
 
         HelperSchema.getObjectTypeForField('Account', 'Name');
 
         HelperTest.insertAccount('Test Account');
-        HelperSchema.checkSelectAccessible('SELECT Id FROM Account');
         Account acc = [SELECT Id FROM Account LIMIT 1];
         HelperSchema.checkObjectDeletable(acc);
+
+        System.assertEquals('coreid', HelperSchema.getFieldRelationshipType('Account','LastModifiedBy'));  
+        System.assertEquals('field', HelperSchema.getFieldRelationshipType('Account','Name'));
+        System.assertEquals('childrel', HelperSchema.getFieldRelationshipType('Opportunity','OpportunityLineItems'));
+        System.assertEquals('coreid', HelperSchema.getFieldRelationshipType('OpportunityLineItem','Product2'));
+        System.assertEquals('field', HelperSchema.getFieldRelationshipType('Product2','ProductCode'));
+
+        System.assertEquals('Product Code', HelperSchema.getSFDCFieldLabel('Opportunity','OpportunityLineItems.Product2.ProductCode'));
 
     }
 }

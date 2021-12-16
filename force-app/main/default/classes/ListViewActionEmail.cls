@@ -1,10 +1,12 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-08-2021
+ * @last modified on  : 12-16-2021
  * @last modified by  : tom@ansleyllc.com
  * Ver   Date         Author                       Modification
  * 1.0   08-19-2021   tom@ansleyllc.com   Initial Version
+ * 2.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+
 **/
 public with sharing class ListViewActionEmail  extends ListViewAction {
     
@@ -58,10 +60,9 @@ public with sharing class ListViewActionEmail  extends ListViewAction {
                 //1. Create SOQL statement
                 String soql = 'SELECT ' + String.escapeSingleQuotes(fieldName) + ' FROM ' + String.escapeSingleQuotes(objType) + ' WHERE Id IN :recordIds';
 
-                HelperSchema.checkSelectAccessible(soql);
-
-                //get data
-                List<SObject> objs = Database.query(soql);
+                SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, database.query(soql));
+        
+                List<sObject> objs = dec.getRecords();
 
                 //loop through data getting emails
                 List<String> toAddresses = new List<String>();

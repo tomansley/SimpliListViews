@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 12-06-2021
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 12-16-2021
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -13,25 +13,31 @@
  * 4.0    08-19-2021   tom@ansleyllc.com     Added getObjectPluralName(String) method, added getFieldLabel(String, String)
  * 5.0    10-19-2021   tom@ansleyllc.com     Added getAllObjectsByName() method, resolved null pointer exception with getObjectLabel(String)
  * 5.0    10-27-2021   tom@ansleyllc.com     Added getSFDCFieldLabel() method, resolved issue where getting column labels from first row and no data returns empty column name
- **/
+ * 6.0    12-15-2021   tom@ansleyllc.com     Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+**/
 public with sharing class HelperSchema {
 
 	public static Map<String, Schema.SObjectType> objectDescribeByName = new Map<String, Schema.SObjectType>();
 	public static Map<String, Schema.SObjectType> objectDescribeByPrefix = new Map<String, Schema.SObjectType>();
 	public static Map<String, Map<String, Schema.SObjectField>> objectDescribeFieldsByObjectNameAndKey = new Map<String, Map<String, Schema.SObjectField>>();
 
-	public static final String LABEL = 'label';
-    public static final String NAME = 'name';
+	public static final String LABEL       = 'label';
+    public static final String NAME        = 'name';
     public static final String DOMAIN_NAME = 'simpli_lv__';
 
-    public static final String ACCESSIBLE = 'accessible';
-    public static final String CREATABLE  = 'creatable';
-    public static final String DELETABLE  = 'deletable';
-    public static final String MERGEABLE  = 'mergeable';
-    public static final String QUERYABLE = 'queryable';
-    public static final String SEARCHABLE = 'searchable';
+    public static final String ACCESSIBLE  = 'accessible';
+    public static final String CREATABLE   = 'creatable';
+    public static final String DELETABLE   = 'deletable';
+    public static final String MERGEABLE   = 'mergeable';
+    public static final String QUERYABLE   = 'queryable';
+    public static final String SEARCHABLE  = 'searchable';
     public static final String UNDELETABLE = 'undeletable';
-    public static final String UPDATEABLE = 'updateable';
+    public static final String UPDATEABLE  = 'updateable';
+
+    public static final String REL_TYPE_FIELD     = 'field';
+    public static final String REL_TYPE_CORE_ID   = 'coreid';
+    public static final String REL_TYPE_LOOKUP    = 'lookup';
+    public static final String REL_TYPE_CHILD_REL = 'childrel';
 
     public static Map<String, Schema.SObjectType> getAllObjectsByName() 
     {
@@ -79,13 +85,54 @@ public with sharing class HelperSchema {
 
 	}
 
+    public static Schema.ChildRelationship getFieldRelationship(String obj, String field)
+    {
+        return null;
+    }
+
+    public static String getFieldRelationshipType(String obj, String field)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting getFieldRelationshipType(' + obj + ',' + field + ')');
+
+        //see if there is a regular field name
+        Schema.SObjectField sField = getFieldByKey(obj, field, NAME);
+
+        if (sField != null)
+            return REL_TYPE_FIELD;
+
+        //see if there is a field with an Id at the end. i.e. ContactId
+        sField = getFieldByKey(obj, field + 'Id', NAME);
+
+        if (sField != null)
+            return REL_TYPE_CORE_ID;
+
+        //see if there is a lookup field name
+        sField = getFieldByKey(obj, field.replace('__r', '__c'), NAME);
+
+        if (sField != null)
+            return REL_TYPE_LOOKUP;
+
+        List<Schema.ChildRelationship> relationships = getObjectSchema(obj).getChildRelationships();
+
+        for (Schema.ChildRelationship relationship: relationships)
+        {
+            if (relationship.getRelationshipName() == field)
+            {
+                return REL_TYPE_CHILD_REL;
+            }
+        }
+
+        return null;
+
+    }
+
 	/*
 	 * Method to return a describe result for a given object and field.
        System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getFieldDescribeResult('Account','LastModifiedBy'));  
 	 */
 	public static Schema.DescribeFieldResult getFieldDescribeResult(String obj, String field)
 	{
-        System.debug(LoggingLevel.FINE, 'getFieldDescribeResult(' + obj + ', ' + field + ')');
+        System.debug(LoggingLevel.FINE, 'Starting getFieldDescribeResult(' + obj + ', ' + field + ')');
         Schema.DescribeFieldResult result = null;
         
         initSObjectSchema(obj);
@@ -104,7 +151,7 @@ public with sharing class HelperSchema {
         if (sField != null)
              result = sField.getDescribe();
 
-            //see if we are working with a relationship field
+        //see if we are working with a relationship field
         if (result == null)
         {
             List<Schema.ChildRelationship> relationships = getObjectSchema(obj).getChildRelationships();
@@ -113,12 +160,15 @@ public with sharing class HelperSchema {
             {
                 if (relationship.getRelationshipName() == field)
                 {
-                    result = getFieldDescribeResult(relationship.getChildSObject().getDescribe().getName(), field);
+                    result = relationship.getField().getDescribe();
+                    break;
                 }
             }
         }
 
-		return result;
+        System.debug(LoggingLevel.FINE, 'Ending getFieldDescribeResult(' + result + ')');
+
+        return result;
 	}
 
     /**
@@ -370,7 +420,7 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method to determine if a given object and field name is valid.
-       System.debug(LoggingLevel.FINE, 'Result ' + HelperSchema.isValidSFDCFieldName('Contact', 'Email'));
+       System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.getSFDCFieldLabel('simpli_lv__List_View_Action_Parameter__c','List_View_Action__r.LastModifiedBy.Name)'));
 	 */
 	public static String getSFDCFieldLabel(String objName, String sfdcFieldName)
 	{
@@ -386,49 +436,60 @@ public with sharing class HelperSchema {
 
             //split field into parts.
 			List<String> fieldHierarchy = sfdcFieldName.split('\\.');
-            System.debug(LoggingLevel.FINE, 'Field Hierarchy - ' + fieldHierarchy);
+            System.debug(LoggingLevel.DEBUG, 'Field Hierarchy - ' + objName + '/' + fieldHierarchy);
 
             String objType = objName;
             Schema.DescribeSObjectResult objDescribe = HelperSchema.getObjectSchema(objType);
 
-			for (String field: fieldHierarchy)
-			{
-                System.debug(LoggingLevel.FINE, 'Current Field - ' + field);
-                System.debug(LoggingLevel.FINE, 'Current Object - ' + objType);
-                
-				//if we are at the last field then get the value and return
-				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
-				{
-					//get the object type                    
-                    System.debug(LoggingLevel.FINE, 'Last Field!');
-                    
-                    Schema.SObjectField objField = HelperSchema.getFieldByKey(objType, field, NAME);
-                    if (objField != null)
+            while (fieldHierarchy.size() > 1) {
+
+                String currentField = fieldHierarchy.remove(0);
+                System.debug(LoggingLevel.DEBUG, 'Current objType/field - ' + objType + '/' + currentField);
+                String relType = getFieldRelationshipType(objType, currentField);
+                System.debug(LoggingLevel.DEBUG, 'Relationship type - ' + relType);
+
+                if (relType == REL_TYPE_CHILD_REL)
+                {
+                    List<Schema.ChildRelationship> relationships = getObjectSchema(objType).getChildRelationships();
+        
+                    for (Schema.ChildRelationship relationship: relationships)
                     {
-                        label = objField.getDescribe().getLabel();
-                        break;
+                        if (relationship.getRelationshipName() == currentField)
+                        {
+                            objType = relationship.getChildSObject().getDescribe().getName();
+                            break;
+                        }
                     }
         
+                } else if (relType == REL_TYPE_CORE_ID)
+                { 
+                    objType = getFieldLookupObject(objType, currentField + 'Id');
 
-				//if we are not at the last field then get the fields object
-				} else {
-                    
-                    //get all field metadata
-                    Schema.DescribeFieldResult fieldDesc = HelperSchema.getFieldDescribeResult(objType,field);
-                    
-                    //use the REAL name to determine fields lookup object
-                    objType = HelperSchema.getFieldLookupObject(objType, fieldDesc.getName());
-				}
-			}
+                } else if (relType == REL_TYPE_LOOKUP)
+                {
+                    objType = getFieldLookupObject(objType, currentField.removeEnd('__r') + '__c');
+  
+                } else {
+                    objType = currentField;
+                }
 
+            }
+
+            String currentField = fieldHierarchy.remove(0);
+            System.debug(LoggingLevel.DEBUG, 'Final objType/field - ' + objType + '/' + currentField);
+
+            Schema.SObjectField objField = HelperSchema.getFieldByKey(objType, currentField, NAME);
+            if (objField != null)
+                label = objField.getDescribe().getLabel();
+        
         } catch (Exception e) {
+            System.debug(LoggingLevel.DEBUG, ListViewException.getExtendedString(e));
             ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getSFDCFieldLabel(' + objName + ',' + sfdcFieldName + ') ' + ListViewException.getExtendedString(e));
             label = '';
         }
 
-        System.debug(LoggingLevel.FINE, 'Field label result for ' + objName + '/' + sfdcFieldName + ' is ' + label);
+        System.debug(LoggingLevel.DEBUG, 'Field label result for ' + objName + '/' + sfdcFieldName + ' is ' + label);
 		return label;
-		
 	}
 
     /*
@@ -454,35 +515,47 @@ public with sharing class HelperSchema {
             String objType = objName;
             Schema.DescribeSObjectResult objDescribe = HelperSchema.getObjectSchema(objType);
 
-			for (String field: fieldHierarchy)
-			{
-                System.debug(LoggingLevel.FINE, 'Current Field - ' + field);
-                System.debug(LoggingLevel.FINE, 'Current Object - ' + objType);
-                
-				//if we are at the last field then get the value and return
-				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
-				{
-					//get the object type                    
-                    System.debug(LoggingLevel.FINE, 'Last Field!');
-                    
-                    Schema.SObjectField objField = HelperSchema.getFieldByKey(objType, field, NAME);
-                    if (objField != null)
+            while (fieldHierarchy.size() > 1) {
+
+                String currentField = fieldHierarchy.remove(0);
+                System.debug(LoggingLevel.DEBUG, 'Current objType/field - ' + objType + '/' + currentField);
+                String relType = getFieldRelationshipType(objType, currentField);
+                System.debug(LoggingLevel.DEBUG, 'Relationship type - ' + relType);
+
+                if (relType == REL_TYPE_CHILD_REL)
+                {
+                    List<Schema.ChildRelationship> relationships = getObjectSchema(objType).getChildRelationships();
+        
+                    for (Schema.ChildRelationship relationship: relationships)
                     {
-                        isValid = true;
-                        break;
+                        if (relationship.getRelationshipName() == currentField)
+                        {
+                            objType = relationship.getChildSObject().getDescribe().getName();
+                            break;
+                        }
                     }
         
+                } else if (relType == REL_TYPE_CORE_ID)
+                { 
+                    objType = getFieldLookupObject(objType, currentField + 'Id');
 
-				//if we are not at the last field then get the fields object
-				} else {
-                    
-                    //get all field metadata
-                    Schema.DescribeFieldResult fieldDesc = HelperSchema.getFieldDescribeResult(objType,field);
-                    
-                    //use the REAL name to determine fields lookup object
-                    objType = HelperSchema.getFieldLookupObject(objType, fieldDesc.getName());
-				}
-			}
+                } else if (relType == REL_TYPE_LOOKUP)
+                {
+                    objType = getFieldLookupObject(objType, currentField.removeEnd('__r') + '__c');
+  
+                } else {
+                    objType = currentField;
+                }
+
+            }
+
+            String currentField = fieldHierarchy.remove(0);
+            System.debug(LoggingLevel.DEBUG, 'Final objType/field - ' + objType + '/' + currentField);
+
+            Schema.SObjectField objField = HelperSchema.getFieldByKey(objType, currentField, NAME);
+            if (objField != null)
+                isValid = true;
+        
 
         } catch (Exception e) {
             ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.isValidSFDCFieldName(' + objName + ',' + sfdcFieldName + ') ' + ListViewException.getExtendedString(e));
@@ -770,87 +843,6 @@ public with sharing class HelperSchema {
         }
     }
 
-	public static void checkListViewAccessible()
-    {
-        HelperSchema.checkObjectAccessible('Simpli_lv__List_View__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__API_Name__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__Object_Name__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__Describe__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'OwnerId');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__Label__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Columns__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Query__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__Core_ListView_Id__c');
-        HelperSchema.checkObjectFieldAccessible('Simpli_lv__List_View__c', 'Simpli_lv__Primary_Key__c');
-    }
-
-	//------------------------------------------------
-	// PRIVATE METHODS BELOW
-	//------------------------------------------------
-
-	private static void initObjectDescribeByPrefix()
-	{
-		objectDescribeByPrefix = new Map<String, Schema.SobjectType>();
-		Map<String,Schema.SobjectType> describe = Schema.getGlobalDescribe();
-		for(String s:describe.keyset())
-			objectDescribeByPrefix.put(describe.get(s).getDescribe().getKeyPrefix(), describe.get(s));
-	}
-    
-    private static void initSObjectSchema(String obj)
-    {
-        initSObjectSchema(obj, true);
-    }
-
-	/*
-	 * Method to initialize an sobject schema if it hasn't already been initialized. This has a small hack
-	 * in it to detect if an object name being requested needs a domain prefix. If it does then it rerequests
-	 * the schema. Once the schema is returned it places the schema into the map with both the domain prefix
-	 * and without it. This hack ensures that tests will run in both the package dev org and other orgs.
-     * HelperSchema.initSObjectSchema('simpli_lv__List_View__c');
-     * HelperSchema.initSObjectSchema('');
-	 */
-	private static void initSObjectSchema(String obj, Boolean allowRecurring)
-	{
-		//if this object has not been described yet get the data
-		if (objectDescribeByName.get(obj) == null)
-		{
-			System.debug(LoggingLevel.FINE, 'Trying to initialize schema with name - ' + obj);
-			Schema.SObjectType objSchema = Schema.getGlobalDescribe().get(obj);
-			if (objSchema != null)
-			{
-				System.debug(LoggingLevel.FINE, 'Found schema with name - ' + obj);
-                objectDescribeByName.put(obj, objSchema);
-                
-                List<Schema.SObjectField> fields = objSchema.getDescribe().fields.getMap().values();
-
-                Map<String,Schema.SObjectField> fieldsByLabel = new Map<String,Schema.SObjectField>();
-                Map<String,Schema.SObjectField> fieldsByName = new Map<String,Schema.SObjectField>();
-
-                for (Schema.SObjectField objField: fields)
-                {
-                    fieldsByName.put(objField.getDescribe().getName().toLowerCase(), objField);
-                    fieldsByLabel.put(objField.getDescribe().getLabel().toLowerCase(), objField);
-                }
-				objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + LABEL, fieldsByLabel);
-				objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + NAME, fieldsByName);
-
-				//if schema contain "simpli_lv" then remove and try again (this is the hack)
-				if (obj.contains(DOMAIN_NAME))
-				{
-					objectDescribeByName.put(obj.removeStart(DOMAIN_NAME), objSchema);
-    
-                    objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + LABEL, fieldsByLabel);
-                    objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + NAME, fieldsByName);
-				}
-
-			} else if (allowRecurring) {
-				System.debug(LoggingLevel.FINE, 'NO schema with name - ' + obj);
-				initSObjectSchema(DOMAIN_NAME + obj, false);
-			}
-		}
-		
-	}
-
 	public static String scrubFieldNameForSOQL(String fieldName)
     {
         if (fieldName == null) return fieldName;
@@ -875,117 +867,6 @@ public with sharing class HelperSchema {
         
         return fieldName;
     }
-
-
-    //---------------------------------------------------------------------------------
-    // ACCESSIBILITY METHODS
-    //---------------------------------------------------------------------------------
-    public static void checkSelectAccessible(String selectStr) 
-    {
-
-        List<String> fields = selectStr.substringBetween('SELECT', 'FROM').split(',');
-        
-        String objAPIName = null;
-        if (!selectStr.containsIgnoreCase('WHERE'))
-            objAPIName = selectStr.substringAfter('FROM ');
-        else
-            objAPIName = selectStr.substringBetween('FROM ', ' WHERE');
-        
-        HelperSchema.checkObjectAccessible(objAPIName);
-
-        for (String field: fields)
-        {
-            //do security validation on additional fields. If the field is a lookup the security is performed later
-            if (!field.contains('.'))
-                HelperSchema.checkObjectFieldAccessible(objAPIName, field);
-        }
- 
-    }
-
-	/*
-	 * Method to determine if an SObject field is accessible. This is used
-	 * for security to ensure user is allowed to see a field for the given object.
-	 */
-	public static Boolean checkObjectFieldAccessible(String objName, String fieldName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.FINE, 'checkObjectFieldAccessible called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
-
-        fieldName = scrubFieldName(fieldName);
-
-        Schema.DescribeFieldResult fieldDesc = getFieldDescribeResult(objName, fieldName);
-		if (fieldDesc != null && fieldDesc.isAccessible()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new ListViewException('Field with name ' + objName + '.' + fieldName + ' is not accessible or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject field is accessible. This is used
-	 * for security to ensure user is allowed to see a field for the given object.
-	 */
-	public static void checkObjectFieldAccessible(String objName, String fieldName)
-	{
-		checkObjectFieldAccessible(objName, fieldName, true);
-	}
-
-    /*
-	 * Method to determine if an SObject field is createable. This is used
-	 * for security to ensure user is allowed to set a field for the given object.
-	 */
-	public static Boolean checkObjectFieldCreateable(String objName, String fieldName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.FINE, 'checkObjectFieldCreateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
-
-        fieldName = scrubFieldName(fieldName);
-
-		if (getFieldDescribeResult(objName, fieldName).isCreateable()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new ListViewException('Field with name ' + objName + '.' + fieldName.deleteWhitespace() + ' is not creatable or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject field is createable. This is used
-	 * for security to ensure user is allowed to set a field for the given object.
-	 */
-	public static void checkObjectFieldCreateable(String objName, String fieldName)
-	{
-		checkObjectFieldCreateable(objName, fieldName, true);
-	}
-
-	/*
-	 * Method to determine if an SObject field is createable. This is used
-	 * for security to ensure user is allowed to set a field for the given object.
-	 */
-	public static Boolean checkObjectFieldUpdateable(String objName, String fieldName, Boolean throwExc)
-	{
-		System.debug(LoggingLevel.FINE, 'checkObjectFieldUpdateable called with objName - ' + objName + '.' + fieldName.deleteWhitespace());
-
-        fieldName = scrubFieldName(fieldName);
-
-		if (getFieldDescribeResult(objName, fieldName).isUpdateable()) {
-			return true;
-		} else {
-			if (throwExc)
-				throw new ListViewException('Field with name ' + objName + '.' + fieldName + ' is not updateable or does not exist. Please check user permissions');
-			return false;
-		}
-	}
-
-	/*
-	 * Method to determine if an SObject field is createable. This is used
-	 * for security to ensure user is allowed to set a field for the given object.
-	 */
-	public static void checkObjectFieldUpdateable(String objName, String fieldName)
-	{
-		checkObjectFieldUpdateable(objName, fieldName, true);
-	}
 
 	/*
 	 * Method to determine if an SObject is createable. This is used
@@ -1012,7 +893,7 @@ public with sharing class HelperSchema {
 	{
 		checkObjectCreateable(objName, true);
 	}
-
+    
 	/*
 	 * Method to determine if an SObject is accessible. This is used
 	 * for security to ensure user is allowed to create records for the given object.
@@ -1146,6 +1027,73 @@ public with sharing class HelperSchema {
     }
 
 	//------------------------------------------------
+	// PRIVATE METHODS BELOW
+	//------------------------------------------------
+
+	private static void initObjectDescribeByPrefix()
+	{
+		objectDescribeByPrefix = new Map<String, Schema.SobjectType>();
+		Map<String,Schema.SobjectType> describe = Schema.getGlobalDescribe();
+		for(String s:describe.keyset())
+			objectDescribeByPrefix.put(describe.get(s).getDescribe().getKeyPrefix(), describe.get(s));
+	}
+    
+    private static void initSObjectSchema(String obj)
+    {
+        initSObjectSchema(obj, true);
+    }
+
+	/*
+	 * Method to initialize an sobject schema if it hasn't already been initialized. This has a small hack
+	 * in it to detect if an object name being requested needs a domain prefix. If it does then it rerequests
+	 * the schema. Once the schema is returned it places the schema into the map with both the domain prefix
+	 * and without it. This hack ensures that tests will run in both the package dev org and other orgs.
+     * HelperSchema.initSObjectSchema('simpli_lv__List_View__c');
+     * HelperSchema.initSObjectSchema('');
+	 */
+	private static void initSObjectSchema(String obj, Boolean allowRecurring)
+	{
+		//if this object has not been described yet get the data
+		if (objectDescribeByName.get(obj) == null)
+		{
+			System.debug(LoggingLevel.FINE, 'Trying to initialize schema with name - ' + obj);
+			Schema.SObjectType objSchema = Schema.getGlobalDescribe().get(obj);
+			if (objSchema != null)
+			{
+				System.debug(LoggingLevel.FINE, 'Found schema with name - ' + obj);
+                objectDescribeByName.put(obj, objSchema);
+                
+                List<Schema.SObjectField> fields = objSchema.getDescribe().fields.getMap().values();
+
+                Map<String,Schema.SObjectField> fieldsByLabel = new Map<String,Schema.SObjectField>();
+                Map<String,Schema.SObjectField> fieldsByName = new Map<String,Schema.SObjectField>();
+
+                for (Schema.SObjectField objField: fields)
+                {
+                    fieldsByName.put(objField.getDescribe().getName().toLowerCase(), objField);
+                    fieldsByLabel.put(objField.getDescribe().getLabel().toLowerCase(), objField);
+                }
+				objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + LABEL, fieldsByLabel);
+				objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + NAME, fieldsByName);
+
+				//if schema contain "simpli_lv" then remove and try again (this is the hack)
+				if (obj.contains(DOMAIN_NAME))
+				{
+					objectDescribeByName.put(obj.removeStart(DOMAIN_NAME), objSchema);
+    
+                    objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + LABEL, fieldsByLabel);
+                    objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + NAME, fieldsByName);
+				}
+
+			} else if (allowRecurring) {
+				System.debug(LoggingLevel.FINE, 'NO schema with name - ' + obj);
+				initSObjectSchema(DOMAIN_NAME + obj, false);
+			}
+		}
+		
+	}
+
+	//------------------------------------------------
 	// INNER CLASSES
 	//------------------------------------------------
 
@@ -1181,6 +1129,10 @@ public with sharing class HelperSchema {
             this.isChildRel    = false;
             this.isEditable    = false;
             this.parentObjType = '';
+        }
+
+        public String getType() {
+            return type.name().toLowerCase();
         }
 
         public String getDebugString()
