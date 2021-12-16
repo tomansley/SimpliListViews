@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-11-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-16-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -11,6 +11,7 @@
  * 4.0   08-20-2021   tom@ansleyllc.com   Updated all strings to static final variables, Added display vs. non-display action params and added hyperlink action type 
  * 5.0   08-20-2021   tom@ansleyllc.com   Added SalesforceId to row to differentiate between rowId which includes row number 
  * 6.0   08-25-2021   tom@ansleyllc.com   Updated column logic to return type of column, added flag for total column identification on fields,  
+ * 7.0   12-16-2021   tom@ansleyllc.com   Default value for action parameter not being set. Fixed.  
 **/
 public with sharing abstract class ListViewAbstract {
     
@@ -1774,6 +1775,7 @@ public with sharing abstract class ListViewAbstract {
         public ActionParameterWrapper(List_View_Action_Parameter__c param)
         {
             this.param = param;
+            this.defaultValue = param.Default_Value__c;
             this.paramType = param.Type__c.toLowerCase();
         }
 
