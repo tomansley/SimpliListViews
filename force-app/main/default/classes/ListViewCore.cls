@@ -10,6 +10,7 @@
  * 3.0   07-27-2021   tom@ansleyllc.com   Minor changes to allow fields/rows to handle inline-editing
  * 4.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables
  * 5.0   12-16-2021   tom@ansleyllc.com   Fixed issue where field data type being returned in ALL CAPS!
+ * 6.0   12-15-2021   tom@ansleyllc.com   Pulled out creating types due to different methods for handling types with package names etc.
 **/
 public with sharing class ListViewCore extends ListViewAbstract {
 
@@ -179,7 +180,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             exampleRow = objectRows[0];
         //if no row then use object type (which will not work if there are weird additional fields.)
         } else {
-            Type t = Type.forName(listview.Object_Name__c);
+            Type t = HelperSchema.getClassType(listview.Object_Name__c);
             exampleRow = (SObject) t.newInstance();
         }
 

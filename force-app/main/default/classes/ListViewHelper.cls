@@ -18,6 +18,7 @@
  * 8.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables, added hyperlink action config
  * 9.0   08-18-2021   tom@ansleyllc.com   Added TYPE_COMBOBOX. Added CampaignMember config
  * 10    12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+ * 11    12-15-2021   tom@ansleyllc.com   Pulled out creating types due to different methods for handling types with package names etc.
  **/
 global with sharing class ListViewHelper 
 {
@@ -156,7 +157,7 @@ global with sharing class ListViewHelper
 
         
         //instantiate object
-        Type t = Type.forName(objectType);
+        Type t = HelperSchema.getClassType(objectType);
 
         for (String rowId: rowValues.keySet())
         {

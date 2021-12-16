@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-07-2021
+ * @last modified on  : 12-16-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -12,7 +12,8 @@
  * 4.0   07-30-2021   tom@ansleyllc.com   Added updateRecords() method
  * 5.0   08-16-2021   tom@ansleyllc.com   Updated getListViewsActions() and added permission check for each action before display
  * 6.0   08-20-2021   tom@ansleyllc.com   renamed getListViewsActions() to getListViewActions()
- * 6.0   08-25-2021   tom@ansleyllc.com   renamed getListViewColumnLabels() to getListViewColumns()
+ * 7.0   08-25-2021   tom@ansleyllc.com   renamed getListViewColumnLabels() to getListViewColumns()
+ * 8.0   12-15-2021   tom@ansleyllc.com   Pulled out creating types due to different methods for handling types with package names etc.
  **/
 public without sharing class ListViewController
 {
@@ -166,7 +167,7 @@ public without sharing class ListViewController
             objType = listView.Custom_Apex_Class__c;
 
         //get an apex Type of the object type
-        Type t = Type.forName(objType);
+        Type t = HelperSchema.getClassType(objType);
 
         //create a new instance
         ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
@@ -668,7 +669,7 @@ public without sharing class ListViewController
             }
 
             //get an apex Type of the object type
-            Type t = Type.forName(objType);
+            Type t = HelperSchema.getClassType(objType);
 
             //create a new instance
             ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
@@ -806,20 +807,12 @@ public without sharing class ListViewController
         }
 
         System.debug(LoggingLevel.DEBUG, 'Action - ' + action);
-        // Get the Type corresponding to the class name
+        
         Type t = null;
-
-		Integer index = action.Apex_Class_Name__c.indexOf('.');
-        System.debug(LoggingLevel.DEBUG, 'Index - ' + index);
-    	if (index != -1) {
-        	// With namespace "ns.Type"
-        	t = Type.forName(action.Apex_Class_Name__c.substring(index), action.Apex_Class_Name__c.substring(index + 1, action.Apex_Class_Name__c.length()));
-    	} else {
-        	// Just "Type"
-        	t = Type.forName(null, action.Apex_Class_Name__c);
-    	}
-
-        if (t == null) {
+        try {
+            // Get the Type corresponding to the class name
+            t = HelperSchema.getClassType(action.Apex_Class_Name__c);
+        } catch (Exception e) {
             responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find apex class "' + action.Apex_Class_Name__c + '" for config with name ' + action.Label__c;
             return responseStr; 
         }
@@ -886,7 +879,7 @@ public without sharing class ListViewController
             objType = listView.Custom_Apex_Class__c;
 
         //get an apex Type of the object type
-        Type t = Type.forName(objType);
+        Type t = HelperSchema.getClassType(objType);
 
         //create a new instance
         ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();

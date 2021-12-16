@@ -14,6 +14,7 @@
  * 5.0    10-19-2021   tom@ansleyllc.com     Added getAllObjectsByName() method, resolved null pointer exception with getObjectLabel(String)
  * 5.0    10-27-2021   tom@ansleyllc.com     Added getSFDCFieldLabel() method, resolved issue where getting column labels from first row and no data returns empty column name
  * 6.0    12-15-2021   tom@ansleyllc.com     Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+ * 7.0    12-15-2021   tom@ansleyllc.com     Added getClassType() method.
 **/
 public with sharing class HelperSchema {
 
@@ -1092,6 +1093,23 @@ public with sharing class HelperSchema {
 		}
 		
 	}
+
+    public static Type getClassType(String typeStr)
+    {
+        Type t = null;
+		Integer index = typeStr.indexOf('.');
+    	if (index != -1) {
+        	// With namespace "ns.Type"
+        	t = Type.forName(typeStr.substring(index), typeStr.substring(index + 1, typeStr.length()));
+    	} else {
+        	// Just "Type"
+        	t = Type.forName(null, typeStr);
+    	}
+
+        if (t == null)
+            throw new ListViewException('Provided type not found - ' + typeStr);
+        return t;
+    }
 
 	//------------------------------------------------
 	// INNER CLASSES

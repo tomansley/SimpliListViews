@@ -1,11 +1,12 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-03-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-16-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
+ * 2.0   12-15-2021   tom@ansleyllc.com   Pulled out creating types due to different methods for handling types with package names etc.
 **/
 public with sharing class ListViewBL {
 
@@ -21,8 +22,31 @@ public with sharing class ListViewBL {
             if (lv.RecordTypeId == ListViewHelper.coreRTId)
             {
                 if (String.isEmpty(lv.Object_Name__c))
-                    throw new ListViewException('Core list views must have an object name');
+                    lv.addError('Core list views must have an object name');
+            
+            } else if (lv.RecordTypeId == ListViewHelper.customRTId)
+            {
+                if (lv.Subtype__c == ListViewHelper.SUBTYPE_MANUAL)
+                {
+                    Boolean isValid = HelperSchema.isValidSFDCObjectName(lv.Object_Name__c);
+                    if (!isValid)
+                        lv.addError('The object name provided is not valid. Provide a valid object API name.');
+                }
             }
+
+            if (String.isEmpty(lv.Custom_Apex_Class__c))
+            {
+                lv.addError('A custom apex class is required and must extend ListViewAbstract');
+            } else {
+                try {
+                    Type t = HelperSchema.getClassType(lv.Custom_Apex_Class__c);
+                    ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
+                } catch (Exception e) {
+                    lv.addError('The custom apex class does not exist or extend ListViewAbstract');
+                }
+
+            }
+
         }
     }
 
@@ -160,7 +184,7 @@ public with sharing class ListViewBL {
                 objType = listView.Custom_Apex_Class__c;
 
             //get an apex Type of the object type
-            Type t = Type.forName(objType);
+            Type t = HelperSchema.getClassType(objType);
 
             //create a new instance
             ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
