@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-16-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-19-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -588,8 +588,12 @@ public without sharing class ListViewController
                         break;
                     }
 
-                    if (objType != objType2)
-                        return null;
+                    if (objType != objType2) //if we have join data that doesn't match return an empty shell. This can happen if we have multiple components that all have different join id types
+                    {      
+                        rowData = getListViewData(pageName, objectName, listViewName, sortData, joinFieldName, '{"recordIds":""}', offset, true);
+                        rowData.clearRows();
+                        return rowData;
+                    }
                 }
             }
         }
