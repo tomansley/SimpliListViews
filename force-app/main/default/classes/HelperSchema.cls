@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 12-16-2021
+ * @Last Modified By   : tom.h.ansley@medtronic.com
+ * @Last Modified On   : 12-19-2021
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -259,6 +259,7 @@ public with sharing class HelperSchema {
 		if (!sObjTypes.isEmpty())
 			objType = sObjTypes[0].getDescribe().getName();
 
+        System.debug(LoggingLevel.DEBUG, 'Type from field - ' + obj + '/' + field + ' - ' + objType);
 		return objType;
 	}
 
@@ -274,7 +275,9 @@ public with sharing class HelperSchema {
 		if (objectDescribeByPrefix.isEmpty())
 			initObjectDescribeByPrefix();
 
-		return objectDescribeByPrefix.get(String.valueOf(objId).substring(0,3)).getDescribe().getName();
+        String objType = objectDescribeByPrefix.get(String.valueOf(objId).substring(0,3)).getDescribe().getName();
+        System.debug(LoggingLevel.DEBUG, 'Type from id result - ' + objId + '/' + objType);
+		return objType;
 	}
 
 	public static String getObjectType(SObject obj)
