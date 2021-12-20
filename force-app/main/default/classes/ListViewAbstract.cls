@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-16-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-19-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -251,6 +251,11 @@ public with sharing abstract class ListViewAbstract {
                 return rows.size()-1;
             else
                 return rows.size();
+        }
+
+        public void clearRows()
+        {
+            rows.clear();
         }
 
         public void addRow(RowWrapper row)
