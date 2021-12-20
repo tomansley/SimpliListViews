@@ -85,7 +85,9 @@ public with sharing class HelperSchemaTest {
 
     @IsTest
     static void HelperSchemaGetClassTests() {
-        HelperSchema.getClassType('ListViewCore');          
+        Type cType = HelperSchema.getClassType('ListViewCore');          
+
+        System.assert(cType != null);
     }
     
 }
