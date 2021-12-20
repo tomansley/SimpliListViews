@@ -87,7 +87,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
          { 
              this.relatedRecordId = value; 
              this.setJoinCriteria(value);
-             this.isModeRelatedRecord = true;
+             if (this.mode === 'Related List View') //we could have other moded components inside a record page
+                 this.isModeRelatedRecord = true;
          };
          get recordId()
          { 
@@ -551,9 +552,17 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         this.spinnerOn('getListViewDataPage');
 
-        let listViewDataResult = await getListViewData({pageName: this.pageName, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset });
-
-        this.handleListViewDataPage(listViewDataResult);
+        try {
+            let listViewDataResult = await getListViewData({pageName: this.pageName, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset });
+            this.handleListViewDataPage(listViewDataResult);
+        } catch(error) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error Retrieving List View Data',
+                message: 'There was an error retrieving the list view data. Please see an administrator - ' + error.message,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+        }
 
         this.spinnerOff('getListViewDataPage');
 
@@ -572,8 +581,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('this.listViewData            - ' + this.listViewData + ' for ' + this.pageName);
             console.log('this.listViewData.coreListId - ' + this.listViewData.coreListId + ' for ' + this.pageName);
         }
-        console.log('listViewDataResult.coreListId - ' + listViewDataResult.coreListId + ' for ' + this.pageName);
-        
+
         //if this is the first time we are initializing the list view data OR we are refreshing the data.
         if (this.listViewData === undefined || this.listViewData.coreListId !== listViewDataResult.coreListId || this.offset === -1 || (this.offset === this.listViewData.listView.offset && this.offset === -1))
         {
@@ -761,8 +769,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * allows the components to send messages to each other.
      */
     subscribeMC() {
-        if (this.isModeRelatedRecord !== true) //only disregard if we are on a RECORD PAGE related list view
-        {
+        //if (this.isModeRelatedRecord !== true) //only disregard if we are on a RECORD PAGE related list view
+        //{
             if (this.subscription) {
                 return;
             }
@@ -773,7 +781,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                           },
                                           {scope: APPLICATION_SCOPE}
             );
-        }
+        //}
     }
 
     /*
@@ -794,15 +802,30 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.receivedMessage = message;
         console.log(this.pageName + ' received a message from ' + this.receivedMessage.uniqueComponentId + ' for ' + this.pageName);
 
+        if (this.receivedMessage.uniqueComponentId == this.uniqueComponentId)
+        {
+            return;
+        }
+
         //if we have no record Id and its a NON-RECORD page RELATED LIST then set rows to 0
-        if (this.receivedMessage.recordIds === '' && this.isModeRelated === true && this.isModeRelatedRecord === false)
+        if (this.receivedMessage.recordIds === '' 
+            && this.isModeRelated === true 
+            && this.isModeRelatedRecord === false)
+        {
+            this.hasListViewDataRows = false;
+            return;
+        } else if (this.receivedMessage.recordIds === '' 
+            && this.isModeSingle === true)
         {
             this.hasListViewDataRows = false;
             return;
         }
 
         //if we have a list view selected AND if we have selected a specific list view to update
-        if (this.selectedObject != undefined && this.receivedMessage.uniqueComponentId != this.uniqueComponentId && this.joinFieldName != undefined && this.joinFieldName != '')
+        if (this.selectedObject != undefined 
+                && this.joinFieldName != undefined 
+                && this.joinFieldName != ''
+                && this.isModeRelatedRecord === false)
         {
             console.log('We have a joined field name - ' + this.joinFieldName + ' for ' + this.pageName);
             console.log('Record ids from message - ' + this.receivedMessage.recordIds + ' for ' + this.pageName);
