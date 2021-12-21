@@ -480,7 +480,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
    /*
      * Wiring to get the (Complex Object) list of actions available for the provided object type
      */
-    @wire (getListViewActions, { objectType: '$selectedObject', listViewName: '$selectedListView' })
+    @wire (getListViewActions, { objectType: '$selectedObject', listViewName: '$selectedListView', componentName: '$pageName' })
     wiredListViewActions({ error, data }) {
         if (data) { 
             console.log('List view actions retrieval successful for ' + this.pageName);

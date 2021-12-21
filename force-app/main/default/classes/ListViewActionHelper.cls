@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-12-2021
+ * @last modified on  : 12-21-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -55,6 +55,7 @@ public with sharing class ListViewActionHelper {
                         Flow_Type__c,
                         Mass_Create_List_View_Name__c,
                         Selected_Record_Visibility__c,
+                        Component_Name__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -91,6 +92,7 @@ public with sharing class ListViewActionHelper {
                     Flow_Type__c,
                     Mass_Create_List_View_Name__c,
                     Selected_Record_Visibility__c,
+                    Component_Name__c,
                     (SELECT Field_API_Name__c,
                             Label__c,
                             Display_Order__c,
@@ -131,6 +133,7 @@ public with sharing class ListViewActionHelper {
                         Flow_Frame_Width__c,
                         Mass_Create_List_View_Name__c,
                         Selected_Record_Visibility__c,
+                        Component_Name__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -151,7 +154,7 @@ public with sharing class ListViewActionHelper {
     * @author tom@ansleyllc.com | 08-15-2021 
     * @return Map<String, String> the primary key of the action and the action name
     **/
-    public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName)
+    public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName, String componentName)
     {
         debugString += 'getListViewActions(' + objectType + ', ' + listViewName + ')';
 
@@ -171,10 +174,11 @@ public with sharing class ListViewActionHelper {
         for (String actionName: lvActions.keySet())
         {
             List_View_Action__c action = lvActions.get(actionName);
-            if (canPerformAction(objectType, action))
+            if (canPerformAction(objectType, componentName, action))
                 actions.add(new ListViewAbstract.ActionWrapper(action));         
         }
 
+        System.debug(LoggingLevel.DEBUG, debugString);
         ListViewErrorHelper.addLog('ListViewActionHelper(getListViewActions)', debugString);
         return actions;
     }
@@ -227,6 +231,7 @@ public with sharing class ListViewActionHelper {
                         Flow_Frame_Width__c,
                         Mass_Create_List_View_Name__c,
                         Selected_Record_Visibility__c,
+                        Component_Name__c,
                         (SELECT Field_API_Name__c,
                                 Label__c,
                                 Display_Order__c,
@@ -256,7 +261,7 @@ public with sharing class ListViewActionHelper {
         return actionsByName;
     }
 
-    private static Boolean canPerformAction(String objectType, List_View_Action__c action)
+    private static Boolean canPerformAction(String objectType, String componentName, List_View_Action__c action)
     {
         Boolean result = true;
         if (!String.isEmpty(action.Permissions__c))
@@ -268,9 +273,14 @@ public with sharing class ListViewActionHelper {
             if (action.Permissions__c.contains(PERM_DELETE))
                 result = HelperSchema.checkObjectDeletable(objectType, false);       
             if (action.Permissions__c.contains(PERM_READ))
-                result = HelperSchema.checkObjectAccessible(objectType, false);       
+                result = HelperSchema.checkObjectAccessible(objectType, false);
         }
-        debugString += 'canPerformAction - ' + result + ' - ' + objectType + ' - ' + action.Primary_Key__c + ', ';
+
+        //if the action is specific to a component.
+        if (!String.isEmpty(action.Component_Name__c) && action.Component_Name__c != componentName)
+            result = false;
+
+        debugString += 'canPerformAction - ' + result + ' - ' + objectType + ' - ' + componentName + ' - ' + action.Primary_Key__c + ', ';
         return result;
     }
 }

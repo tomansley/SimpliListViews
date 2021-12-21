@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-19-2021
+ * @last modified on  : 12-21-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -362,11 +362,11 @@ public without sharing class ListViewController
 	}
 
     @AuraEnabled(cacheable=true)
-    public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName)
+    public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName, String componentName)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewActions(' + objectType + ', ' + listViewName + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewActions(' + objectType + ', ' + listViewName + ', ' + componentName + ')');
         
-        List<ListViewAbstract.ActionWrapper> actions = ListViewActionHelper.getListViewActions(objectType, listViewName);
+        List<ListViewAbstract.ActionWrapper> actions = ListViewActionHelper.getListViewActions(objectType, listViewName, componentName);
 
         ListViewErrorHelper.processLogs(true);
 
