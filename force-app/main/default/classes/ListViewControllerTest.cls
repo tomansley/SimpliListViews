@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-06-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-22-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-06-2020   tom@ansleyllc.com   Initial Version
@@ -346,7 +346,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(column.getType(), null);
         System.assertNotEquals(column.getValue(), null);
         
-        List<ListViewAbstract.ActionWrapper> actions = ListViewController.getListViewActions('Account', 'simpli_lv__AllAccounts');
+        List<ListViewAbstract.ActionWrapper> actions = ListViewController.getListViewActions('Account', 'simpli_lv__AllAccounts', '');
 
         System.assertNotEquals(actions, null);
         System.assert(actions.size() > 0);
