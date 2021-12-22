@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 12-22-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -42,6 +42,8 @@ public with sharing class ListViewTriggerHandler {
         public static void onBeforeUpdate(Map<Id, List_View__c> newRecords, Map<Id, List_View__c> oldRecords)
         {
             ListViewBL.updateFields(newRecords, oldRecords);
+
+            ListViewBL.validate(newRecords.values()); //validate at end so that we can set all fields before hand.
         }
     
         /*
