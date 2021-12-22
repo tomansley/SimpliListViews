@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 12-22-2021
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperEmail {
@@ -29,6 +29,13 @@ public with sharing class HelperEmail {
             System.debug(LoggingLevel.ERROR, 'Error creating emails');
         }
 	}
+
+    public static Boolean sendEmail(String toAddress, String emailBody, String emailSubject)
+    {
+        List<String> toAddresses = new List<String>{toAddress};
+
+        return sendEmails(toAddresses, emailBody, emailSubject);
+    }
 
     /*
      * Method which sends an email to a list of addresses with the given body and subject.
