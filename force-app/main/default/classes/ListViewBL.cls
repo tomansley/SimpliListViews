@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-16-2021
+ * @last modified on  : 12-22-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -29,8 +29,8 @@ public with sharing class ListViewBL {
                 if (lv.Subtype__c == ListViewHelper.SUBTYPE_MANUAL)
                 {
                     Boolean isValid = HelperSchema.isValidSFDCObjectName(lv.Object_Name__c);
-                    if (!isValid)
-                        lv.addError('The object name provided is not valid. Provide a valid object API name.');
+                    //if (!isValid)
+                        //lv.addError('The object name provided is not valid(' + lv.Object_Name__c + '). Provide a valid object API name.');
                 }
             }
 
@@ -42,7 +42,7 @@ public with sharing class ListViewBL {
                     Type t = HelperSchema.getClassType(lv.Custom_Apex_Class__c);
                     ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
                 } catch (Exception e) {
-                    lv.addError('The custom apex class does not exist or extend ListViewAbstract');
+                    lv.addError('The custom apex class does not exist or extend ListViewAbstract (' + lv.Custom_Apex_Class__c + ')');
                 }
 
             }
