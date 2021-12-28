@@ -36,7 +36,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     //have to use get/set methods as we are not using the wired approach
     @api get listViewName() { return this.lvName; }                  
          set listViewName(value) { this.lvName = value; this.getListViewConfig(); }
-    @api recordCount;                   //the number of record Ids passed in.
+    @api listViewMode;                  //indicates the mode of the list view calling the admin page.
+
     @track listViewConfig               //holds all configuration for the list view
     @track listViewColumns              //holds all column label information
     @track error                        //holds any error details.
@@ -133,11 +134,14 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     }
 
     getListViewConfig() {
-        console.log('Starting getListViewConfig - ' + this.listViewObject + ' - ' + this.listViewName);
+        console.log('Starting getListViewConfig - ' + this.listViewObject + ' - ' + this.listViewName + ' - ' + this.listViewMode);
 
-        if (this.listViewObject !== undefined && this.listViewName !== undefined && this.listViewObject !== null && this.listViewName !== null)
+        if (this.listViewObject !== undefined && this.listViewObject !== null 
+                && this.listViewName !== undefined && this.listViewName !== null 
+                && this.listViewMode !== undefined && this.listViewMode !== null)
         {
-            getListViewConfig({objectName: this.listViewObject, listViewName: this.listViewName})
+            console.log('Getting ListViewConfigs - ' + this.listViewObject + ' - ' + this.listViewName + ' - ' + this.listViewMode);
+            getListViewConfig({objectName: this.listViewObject, listViewName: this.listViewName, listViewMode: this.listViewMode })
             .then(result => {
                 console.log('List view config retrieval successful'); 
                 this.listViewConfig = result;    
