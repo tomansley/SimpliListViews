@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-16-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-25-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -19,8 +19,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
         List<SObject> dataRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, this.isShell, offset);
 
         RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData, ListViewHelper.offset, isShell);
-        if (lvConfig.getParameter('ReturnSize') != null && !String.isEmpty(lvConfig.getParameter('ReturnSize').getValue()))
-            rowData.listView.rowLimit = Integer.valueOf(lvConfig.getParameter('ReturnSize').getValue());
+        if (lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE) != null && !String.isEmpty(lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE).getValue()))
+            rowData.listView.rowLimit = Integer.valueOf(lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE).getValue());
         else
             rowData.listView.rowLimit = 250;
 
@@ -56,108 +56,121 @@ public with sharing class ListViewCore extends ListViewAbstract {
             params.add(paramsByName.get(ListViewHelper.PARAM_ADD_FIELDS));
         }
 
-        if (paramsByName.get('TotalColumns') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMNS) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'TotalColumns';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMNS;
             param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
             param.Parameter_Value__c  = '';
             param.Parameter_Label__c  = 'Total Columns';
             params.add(param);
         } else {
-            params.add(paramsByName.get('TotalColumns'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMNS));
         }
 
-        if (paramsByName.get('TotalColumnsColor') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'TotalColumnsColor';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
             param.Parameter_Type__c   = 'Color';
             param.Parameter_Value__c  = '';
             param.Parameter_Label__c  = 'Total Column Color';
             params.add(param);
         } else {
-            params.add(paramsByName.get('TotalColumnsColor'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR));
         }
 
-        if (paramsByName.get('ReturnSize') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_RETURN_SIZE) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'ReturnSize';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_RETURN_SIZE;
             param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
             param.Parameter_Value__c  = '100';
             param.Parameter_Label__c  = 'Return Size';
             params.add(param);
         } else {
-            params.add(paramsByName.get('ReturnSize'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_RETURN_SIZE));
         }
 
-        if (paramsByName.get('RefreshRate') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_REFRESH_RATE) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'RefreshRate';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_REFRESH_RATE;
             param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
             param.Parameter_Value__c  = '45';
             param.Parameter_Label__c  = 'Refresh Rate';
             params.add(param);
         } else {
-            params.add(paramsByName.get('RefreshRate'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_REFRESH_RATE));
         }
 
-        if (paramsByName.get('ExportHeaderType') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_EXPORT_HEADER_TYPE) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'ExportHeaderType';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_EXPORT_HEADER_TYPE;
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
             param.Parameter_Value__c  = 'false';
             param.Parameter_Label__c  = 'Use API Names For File Export Headers';
             params.add(param);
         } else {
-            params.add(paramsByName.get('ExportHeaderType'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_EXPORT_HEADER_TYPE));
         }
 
-        if (paramsByName.get('AllRows') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_ALL_ROWS) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'AllRows';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_ALL_ROWS;
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
             param.Parameter_Value__c  = 'false';
             param.Parameter_Label__c  = 'Include All Rows';
             params.add(param);
         } else {
-            params.add(paramsByName.get('AllRows'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_ALL_ROWS));
         }
 
-        if (paramsByName.get('PDFOrientationPortrait') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_PDF_ORIENT_PORTRAIT) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'PDFOrientationPortrait';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_PDF_ORIENT_PORTRAIT;
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
             param.Parameter_Value__c  = 'true';
             param.Parameter_Label__c  = 'PDF Print Uses Portrait Orientation';
             params.add(param);
         } else {
-            params.add(paramsByName.get('PDFOrientationPortrait'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_PDF_ORIENT_PORTRAIT));
         }
 
-        if (paramsByName.get('PDFTheme') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_PDF_THEME) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'PDFTheme';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_PDF_THEME;
             param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
             param.Parameter_Value__c  = 'striped';
             param.Parameter_Label__c  = 'PDF Print Theme';
             params.add(param);
         } else {
-            params.add(paramsByName.get('PDFTheme'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_PDF_THEME));
+        }
+
+        if (paramsByName.get(ListViewHelper.PARAM_SPLIT_COLUMNS) == null)
+        {      
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = ListViewHelper.PARAM_SPLIT_COLUMNS;
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+            param.Parameter_Value__c  = '';
+            param.Parameter_Label__c  = 'Split View Columns';
+            params.add(param);
+        } else {
+            params.add(paramsByName.get(ListViewHelper.PARAM_SPLIT_COLUMNS));
         }
 
         return params;
@@ -409,13 +422,13 @@ public with sharing class ListViewCore extends ListViewAbstract {
             }
 
             if (lvConfig != null && !isShell)
-            rowWrapper.calculateHighlighting(lvConfig.conditions);
+                rowWrapper.calculateHighlighting(lvConfig.conditions);
         }
 
         //if totals have been configured and we are not paging.
         if (lvConfig != null
-            && lvConfig.getParameter('TotalColumns') != null 
-            && !String.isEmpty(lvConfig.getParameter('TotalColumns').getValue())
+            && lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS) != null 
+            && !String.isEmpty(lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS).getValue())
             && offset == -1
             && !isShell)
         {
@@ -424,14 +437,14 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             System.debug(LoggingLevel.DEBUG, 'Starting total column calculations!');
 
-            String totalColumns = lvConfig.getParameter('TotalColumns').getValue();
+            String totalColumns = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS).getValue();
 
             System.debug(LoggingLevel.DEBUG, 'TotalColumns - ' + totalColumns);
 
             RowWrapper totalWrapper = new RowWrapper('000000000000000000');
             totalWrapper.highlight = true;
-            if (lvConfig.getParameter('TotalColumnsColor') != null)
-                totalWrapper.highlightColor = lvConfig.getParameter('TotalColumnsColor').getValue();
+            if (lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) != null)
+                totalWrapper.highlightColor = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR).getValue();
             else
                 totalWrapper.highlightColor = '#FFFFFF';
             totalWrapper.isTotals = true;
