@@ -29,8 +29,8 @@ public with sharing class ListViewBL {
                 if (lv.Subtype__c == ListViewHelper.SUBTYPE_MANUAL)
                 {
                     Boolean isValid = HelperSchema.isValidSFDCObjectName(lv.Object_Name__c);
-                    //if (!isValid)
-                        //lv.addError('The object name provided is not valid(' + lv.Object_Name__c + '). Provide a valid object API name.');
+                    if (!isValid)
+                        lv.addError('The object name provided is not valid(' + lv.Object_Name__c + '). Provide a valid object API name.');
                 }
             }
 

@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 12-19-2021
+ * @Last Modified On   : 12-24-2021
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -197,7 +197,12 @@ public with sharing class HelperSchema {
     
        System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getObjectSchema('simpli_lv__List_View_Org_Wide_Setting__mdt'));
        System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getObjectSchema('Bogus'));
-	 
+       Schema.DescribeSObjectResult objDescribeSobject = HelperSchema.getObjectSchema('Event'));
+        Map<String, Schema.SObjectField> mapFields = objDescribeSobject.fields.getMap();
+        List<Schema.PicklistEntry> lstPickListValues = mapFields.get(strPicklistField).getDescribe().getPickListValues();
+        for (Schema.PicklistEntry objPickList : lstPickListValues) {
+            System.debug('Value = ' +objPickList.getValue() +' , Label = ' +objPickList.getLabel());
+        }	 
      */
 	public static Schema.DescribeSObjectResult getObjectSchema(String name)
 	{
@@ -578,8 +583,7 @@ public with sharing class HelperSchema {
 	{
 		Boolean isValid = true;
 		try {
-			List<String> objName = new List<String>();
-			objName.add(sfdcObjectName);
+			List<String> objName = new List<String>{sfdcObjectName};
 			Schema.describeSObjects(objName);
         } catch (Exception e) {
             ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.isValidSFDCObjectName(' + sfdcObjectName + ') ' + ListViewException.getExtendedString(e)); 
@@ -871,6 +875,24 @@ public with sharing class HelperSchema {
         
         return fieldName;
     }
+
+    public static Map<String, String> getPicklistMap(String obj, String field)
+    {
+		Map<String, String> lstPickvals = new Map<String, String>();
+
+		Schema.DescribeSObjectResult sObjectDesc = HelperSchema.getObjectSchema(obj);
+
+		Map<String, Schema.SObjectField> fields = sObjectDesc.fields.getMap();
+		List<Schema.PicklistEntry> pickListValues = fields.get(field).getDescribe().getPickListValues();
+		for (Schema.PicklistEntry a : pickListValues)
+		{ 
+			lstPickvals.put(a.getLabel(), a.getValue());
+		}
+		
+		return lstPickvals;
+
+    }
+
 
 	/*
 	 * Method to determine if an SObject is createable. This is used
