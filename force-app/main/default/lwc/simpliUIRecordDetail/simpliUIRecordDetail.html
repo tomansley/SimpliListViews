@@ -1,0 +1,21 @@
+<!--
+  @description       : 
+  @author            : tom.h.ansley@medtronic.com
+  @last modified on  : 12-25-2021
+  @last modified by  : tom.h.ansley@medtronic.com
+-->
+<template>
+    <lightning-card>
+        <div slot="title" style="font-size: larger;">Record Details</div>
+        <template if:true={isInitialized}>
+            <lightning-record-form record-id={recordId} object-api-name={objectType}
+                layout-type="Full" columns="2" onsubmit={handleSubmit}>
+            </lightning-record-form>
+        </template>
+        <template if:false={isInitialized}>
+            <div style="text-align: center;">
+                Select a record to display its data.
+            </div>
+        </template>
+    </lightning-card>
+</template>

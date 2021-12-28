@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 12-11-2021
+  @last modified on  : 12-28-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -13,7 +13,7 @@
     <lightning-card>
         <lightning-tabset style="min-height: 400px;background-color: white;">
 
-            <lightning-tab label="Dev Example 1">
+            <lightning-tab label="App Example 1">
                 <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
 
                     <!-- DESCRIPTION OF EXAMPLE -->
@@ -27,7 +27,7 @@
                             <pre>
                                 &lt;c-simpli-u-i-list-views<br/>
                                 &#9;&#9;mode="App Page"<br/>
-                                &#9;&#9;page-name="testPage"&gt;<br/>
+                                &#9;&#9;page-name="App_Example_1"&gt;<br/>
                                 &lt;/c-simpli-u-i-list-views&gt;    
                             </pre>
                         </div>
@@ -36,14 +36,14 @@
                     <!-- WORKING EXAMPLE -->
                     <div class="examplebox">
                         <c-simpli-u-i-list-views mode="App Page"
-                                                page-name="testPage">
+                                                page-name="App_Example_1">
                         </c-simpli-u-i-list-views>
                     </div>
 
                 </div>
             </lightning-tab>
         
-            <lightning-tab label="Dev Example 2">
+            <lightning-tab label="App Example 2">
                 <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
 
                     <!-- DESCRIPTION OF EXAMPLE -->
@@ -57,7 +57,7 @@
                             <pre>
                                 &lt;c-simpli-u-i-list-views<br/>
                                 &#9;&#9;mode="App Page"<br/>
-                                &#9;&#9;page-name="testPage2"<br/>
+                                &#9;&#9;page-name="App_Example_2"<br/>
                                 &#9;&#9;has-main-title=true<br/>
                                 &#9;&#9;main-title="Everything List View!"<br/>
                                 &#9;&#9;use-message-channel=true<br/>
@@ -82,7 +82,7 @@
                     <!-- WORKING EXAMPLE -->
                     <div class="examplebox">
                         <c-simpli-u-i-list-views mode="App Page"
-                                                page-name="testPage2"
+                                                page-name="App_Example_2"
                                                 has-main-title=true
                                                 main-title="Everything List View!"
                                                 use-message-channel=true
@@ -104,7 +104,7 @@
                 </div>
             </lightning-tab>
 
-            <lightning-tab label="Dev Example 3">
+            <lightning-tab label="Single Example 1">
                 <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
 
                     <!-- DESCRIPTION OF EXAMPLE -->
@@ -119,10 +119,10 @@
                                 &lt;c-simpli-u-i-list-views<br/>
                                 &#9;&#9;mode="Single List View"<br/>
                                 &#9;&#9;has-main-title=true<br/>
-                                &#9;&#9;main-title="Special Platinum/Gold Customers!"<br/>
+                                &#9;&#9;main-title="Platinum/Gold Customers!"<br/>
                                 &#9;&#9;<b>single-list-view-object="Account"</b><br/>
                                 &#9;&#9;<b>single-list-view-api-name="PlatinumandGoldSLACustomers"</b><br/>
-                                &#9;&#9;page-name="testPage3"<br/>
+                                &#9;&#9;page-name="Single_Example_1"<br/>
                                 &#9;&#9;use-message-channel=true<br/>
                                 &#9;&#9;display-actions=true<br/>
                                 &#9;&#9;allow-refresh=true<br/>
@@ -137,10 +137,10 @@
                     <div class="examplebox">
                         <c-simpli-u-i-list-views mode="Single List View"
                                                 has-main-title=true
-                                                main-title="Special Platinum/Gold Customers!"
+                                                main-title="Platinum/Gold Customers!"
                                                 single-list-view-object="Account"
                                                 single-list-view-api-name="PlatinumandGoldSLACustomers"
-                                                page-name="testPage3"
+                                                page-name="Single_Example_1"
                                                 use-message-channel=true
                                                 display-actions=true
                                                 allow-refresh=true
@@ -151,7 +151,7 @@
                 </div>
             </lightning-tab>
 
-            <lightning-tab label="Dev Example 4">
+            <lightning-tab label="Related Example 1">
                 <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
 
                     <!-- DESCRIPTION OF EXAMPLE -->
@@ -170,7 +170,7 @@
                                 &#9;&#9;main-title="Contact"<br/>
                                 &#9;&#9;single-list-view-object="Contact"<br/>
                                 &#9;&#9;single-list-view-api-name="AllContacts"<br/>
-                                &#9;&#9;page-name="testPage4"<br/>
+                                &#9;&#9;page-name="Related_Example_1"<br/>
                                 &#9;&#9;join-field-name="AccountId"<br/>
                                 &#9;&#9;join-criteria={<b>selectedAccountId</b>}&gt;<br/>
                                 &lt;/c-simpli-u-i-list-views&gt;    
@@ -203,10 +203,82 @@
                                                 main-title="Contacts"
                                                 single-list-view-object="Contact"
                                                 single-list-view-api-name="AllContacts"
-                                                page-name="testPage4"
+                                                page-name="Related_Example_1"
                                                 join-field-name="AccountId"
                                                 join-criteria={selectedAccountId}>
                         </c-simpli-u-i-list-views>
+                    </div>
+                </div>
+            </lightning-tab>
+
+            <lightning-tab label="Split Example 1">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <!-- DESCRIPTION OF EXAMPLE -->
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                            This example is similar to how a standard split view works. The user is provided a component on the left which shows records based on the selected list view configuration. When the user selects a row the details of that record are displayed on the right side component. In this case the right side component is a basic Simpli component which displays the record based on the full page layout for that object. The record can be edited as well. Do not use the record details component in your own implementation as it is expected that this component will not be enhanced. Copy it and make your own, ensuring to include the messaging logic. The LWC component can be found <a target="_blank" href="https://github.com/tomansley/SimpliListViews/tree/master/force-app/main/default/lwc/simpliUIRecordDetail">here</a>
+                        </div>
+                                                
+                        <!-- EXAMPLE HTML TAG -->
+                        <div class="codebox">
+                            <pre>
+                                &lt;c-simpli-u-i-list-views mode="Split View"<br/> 
+                                &#9;&#9;&#9;page-name="Split_Example_1"<br/>    
+                                &#9;&#9;&#9;excluded-objects="Event,Task"&gt;<br/>    
+                            </pre>
+                        </div>
+                    </lightning-card>
+
+                    <!-- WORKING EXAMPLE -->
+                    <div>
+                        <div class="splitboxleft" style="width: 33%; float:left;">
+                            <c-simpli-u-i-list-views mode="Split View"
+                                                     page-name="Split_Example_1"
+                                                     excluded-objects="Event,Task">
+                            </c-simpli-u-i-list-views>
+                        </div>
+                        <div class="splitboxright" style="width: 66%; float:left;">
+                            <c-simpli-u-i-record-detail></c-simpli-u-i-record-detail>
+                        </div>
+                            
+                    </div>
+                </div>
+            </lightning-tab>
+
+            <lightning-tab label="Split Example 2">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <!-- DESCRIPTION OF EXAMPLE -->
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                            This example is similar to split example 1 except the object is provided. If the object is provided the drop down for the object is not displayed.
+                        </div>
+                                                
+                        <!-- EXAMPLE HTML TAG -->
+                        <div class="codebox">
+                            <pre>
+                                &lt;c-simpli-u-i-list-views mode="Split View"<br/>
+                                &#9;&#9;&#9;single-list-view-object="Account"<br/>    
+                                &#9;&#9;&#9;page-name="Split_Example_2"<br/>    
+                                &#9;&#9;&#9;excluded-objects="Event,Task"&gt;<br/>    
+                            </pre>
+                        </div>
+                    </lightning-card>
+
+                    <!-- WORKING EXAMPLE -->
+                    <div>
+                        <div class="splitboxleft" style="width: 33%; float:left;">
+                            <c-simpli-u-i-list-views mode="Split View"
+                                                     single-list-view-object="Account"
+                                                     page-name="Split_Example_2"
+                                                     excluded-objects="Event,Task">
+                            </c-simpli-u-i-list-views>
+                        </div>
+                        <div class="splitboxright" style="width: 66%; float:left;">
+                            <c-simpli-u-i-record-detail></c-simpli-u-i-record-detail>
+                        </div>
+                            
                     </div>
                 </div>
             </lightning-tab>

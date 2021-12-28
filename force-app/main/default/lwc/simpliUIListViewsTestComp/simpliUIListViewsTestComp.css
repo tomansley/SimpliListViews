@@ -13,3 +13,14 @@
     border: 1px solid lightgray; 
     margin: 10px;
 }
+
+.splitboxleft {
+    border-top: 1px solid lightgray; 
+    border-left: 1px solid lightgray; 
+    padding-right: 5px;
+}
+
+.splitboxright {
+    border-top: 1px solid lightgray; 
+    border-right: 1px solid lightgray; 
+}

@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 12-16-2021
+ * @Last Modified By   : tom.h.ansley@medtronic.com
+ * @Last Modified On   : 12-25-2021
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -403,7 +403,7 @@ public with sharing class ListViewConfigHelper {
     {
         String error = '';
 
-        if (paramName == 'RefreshRate')
+        if (paramName == ListViewHelper.PARAM_REFRESH_RATE)
         {
 
             try {
@@ -417,7 +417,7 @@ public with sharing class ListViewConfigHelper {
                 error = 'Refresh rate must be an integer value';
             }
 
-        } else if (paramName == 'ReturnSize')
+        } else if (paramName == ListViewHelper.PARAM_RETURN_SIZE)
         {
             try {
                 Integer size = Integer.valueOf(paramValue);
@@ -433,7 +433,7 @@ public with sharing class ListViewConfigHelper {
             }
 
 
-        } else if (paramName == 'TotalColumns')
+        } else if (paramName == ListViewHelper.PARAM_TOTAL_COLUMNS)
         {
         } else if (paramName == ListViewHelper.PARAM_ADD_FIELDS)
         {
@@ -461,6 +461,28 @@ public with sharing class ListViewConfigHelper {
 
                 } catch (Exception e) {
                     error = 'The additional fields are invalid. Please ensure syntax is correct, there are no duplicate fields, and the names are valid API field names - ' + e.getMessage();
+                }
+            }
+        
+        } else if (paramName == ListViewHelper.PARAM_SPLIT_COLUMNS)
+        {
+            paramValue = paramValue.remove(' ');
+            List<String> fieldNames = paramValue.split(',');
+
+            if (fieldNames.size() > 4) {
+                error = 'Only 4 columns can be added.';
+            } else {
+
+                try {
+
+                    String soql = 'SELECT ' + paramValue + ' FROM ' + objectName + ' LIMIT 1';
+
+                    System.debug(LoggingLevel.FINE, 'Param Validation SOQL - ' + soql);
+
+                    List<SObject> result = Database.query(soql);
+
+                } catch (Exception e) {
+                    error = 'The split column fields are invalid. Please ensure syntax is correct and the names are valid API field names - ' + e.getMessage();
                 }
             }
         }

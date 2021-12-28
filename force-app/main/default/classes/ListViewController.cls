@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-21-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 12-28-2021
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -144,11 +144,11 @@ public without sharing class ListViewController
     }
 
     @AuraEnabled
-    public static ListViewAbstract.ListViewConfigWrapper getListViewConfig(String objectName, String listViewName)
+    public static ListViewAbstract.ListViewConfigWrapper getListViewConfig(String objectName, String listViewName, String listViewMode)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfig(' + objectName + ', ' + listViewName + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewConfig(' + objectName + ', ' + listViewName + ', ' + listViewMode + ')');
 
-        ListViewAbstract.ListViewConfigWrapper lvConfigWrapper = new ListViewAbstract.ListViewConfigWrapper(objectName, listViewName);
+        ListViewAbstract.ListViewConfigWrapper lvConfigWrapper = new ListViewAbstract.ListViewConfigWrapper(objectName, listViewName, listViewMode);
 
         if (objectName == null || listViewName == null)
             return lvConfigWrapper;
@@ -171,11 +171,14 @@ public without sharing class ListViewController
 
         //create a new instance
         ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
+        lvLogic.listviewMode = listViewMode;
 
         //set all request information into the apex processing class.
         lvlogic.setRequestData(listview);
 
         lvConfigWrapper = lvlogic.lvConfig;
+
+        ListViewErrorHelper.addLog('ListViewController(getListViewConfig)', lvConfigWrapper.getDebugString());
 
         ListViewErrorHelper.processLogs(true);
 
@@ -992,6 +995,19 @@ public without sharing class ListViewController
 
         return result;
 
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<SelectOption> getPicklistValues(String objectName, String fieldName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewPicklistController.getPicklistValues(' + objectName + ',' + fieldName + ')');
+        
+        Map<String, String> picklistVals = HelperSchema.getPicklistMap(objectName, fieldName);
+
+        List<SelectOption> options = new List<SelectOption>();
+        for (String key: picklistVals.keySet())
+            options.add(new SelectOption(key, picklistVals.get(key)));
+        return options;
     }
 
     //=============================

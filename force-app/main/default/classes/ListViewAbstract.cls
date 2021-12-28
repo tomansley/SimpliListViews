@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-19-2021
+ * @last modified on  : 12-25-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -18,6 +18,7 @@ public with sharing abstract class ListViewAbstract {
     public static Set<String> validTotalColumns = new Set<String>{ListViewHelper.TYPE_INTEGER, ListViewHelper.TYPE_DECIMAL, ListViewHelper.TYPE_CURRENCY, ListViewHelper.TYPE_DOUBLE, ListViewHelper.TYPE_NUMBER};
     public static Set<String> validNameColumnNames = new Set<String>{'Name', 'CaseNumber'}; //holds the list of column names that if found will produce a link to the record.
 
+    public String listviewMode = null;                                //holds the mode that the list view is being displayed as. NULL = any mode
     public List_View__c listview = null;                              //holds the list view record associated with this request.
     public List_View_Config__c config = null;                         //holds the SFDC list view config SObject
     public ListViewAbstract.ListViewConfigWrapper lvConfig = null;    //holds the list views config after its been wrapped.
@@ -89,7 +90,7 @@ public with sharing abstract class ListViewAbstract {
 
         List<List_View_Config_Parameter__c> params = getConfigParams(config);
 
-        lvConfig = new ListViewConfigWrapper(listview, config, params);
+        lvConfig = new ListViewConfigWrapper(listview, config, params, listViewMode);
 
     }
 
@@ -195,6 +196,11 @@ public with sharing abstract class ListViewAbstract {
             if (listView.RecordTypeId == ListViewHelper.coreRTId)
                 isCoreListView = true;
             isEdited = false;
+        }
+
+        public ListViewConfigWrapper getListViewConfig() 
+        {
+            return lvConfig;
         }
 
         @AuraEnabled(cacheable=true)
@@ -517,6 +523,86 @@ public with sharing abstract class ListViewAbstract {
         public String getHighlightColor()
         {
             return highlightColor;
+        }
+
+        private FieldWrapper getFieldByAPIName(String apiName)
+        {
+            FieldWrapper field = null;
+            for (FieldWrapper wrapper: getFields())
+            {
+                if (wrapper.getName() == apiName)
+                {
+                    field = wrapper;
+                    break;
+                }
+            }
+
+            return field;
+        }
+
+        private String getSplitColumn(Integer index)
+        {
+            String value = '';
+            ListViewParam splitColumns = parentWrapper.getListViewConfig().getParameter(ListViewHelper.PARAM_SPLIT_COLUMNS);
+
+            //if we have split columns to use
+            if (splitColumns != null && !String.isEmpty(splitColumns.getValue()))
+            {
+                List<String> fields = splitColumns.getValue().split(',');
+
+                //if we have as many fields as we need based on the index
+                if (fields.size() > index)
+                {
+                    //try to find the field data
+                    FieldWrapper field = getFieldByAPIName(fields[index]);
+
+                    //if we can find the field based on the API name
+                    if (field != null)
+                        value = field.getUIValue();
+                    else
+                        value = 'INVALID FIELD';
+
+                    
+                //if not then use whatever is in the data at that column index
+                } else {
+                    FieldWrapper field = getFields()[index];
+                    value = field.getUIValue();
+                }
+
+            //if not then use whatever is in the data at that column index
+            } else {
+                FieldWrapper field = getFields()[index];
+                value = field.getUIValue();
+            }
+
+            if (String.isEmpty(value))
+                value = '--';
+
+            return value;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getSplitColumnOne()
+        {
+            return getSplitColumn(0);
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getSplitColumnTwo()
+        {
+            return getSplitColumn(1);
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getSplitColumnThree()
+        {
+            return getSplitColumn(2);
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getSplitColumnFour()
+        {
+            return getSplitColumn(3);
         }
 
         @AuraEnabled(cacheable=true)
@@ -1154,6 +1240,8 @@ public with sharing abstract class ListViewAbstract {
                         uiStr = null;        //if boolean value is FALSE then send NOTHING
                     else 
                         uiStr = 'true';
+                } else {
+                    uiStr = getValue();
                 }
             }
             System.debug(LoggingLevel.FINE, 'getUIValue - ' + this.getType() + ' - ' + uiStr );
@@ -1391,6 +1479,7 @@ public with sharing abstract class ListViewAbstract {
     public class ListViewConfigWrapper
     {
         public List_View__c listView;
+        public String listViewMode;
         public List_View_Config__c listViewConfig;
         public DateTime lastModifiedDate;
         public String lastModifiedBy;
@@ -1400,28 +1489,30 @@ public with sharing abstract class ListViewAbstract {
         public String label;
         public String obj;
 
-        public ListViewConfigWrapper(String name, String obj)
+        public ListViewConfigWrapper(String name, String obj, String listViewMode)
         {
-            this.name = name;
-            this.obj = obj;
-            parameters       = new Map<String,ListViewParam>();
-            conditions       = new List<ListViewCondition>();
+            this.name         = name;
+            this.obj          = obj;
+            this.listViewMode = listViewMode;
+            parameters        = new Map<String,ListViewParam>();
+            conditions        = new List<ListViewCondition>();
         }
 
         /*
          * Constructor for if the params were not created yet and were created in this transaction.
          */
-        public ListViewConfigWrapper(List_View__c listView, List_View_Config__c listViewConfig, List<List_View_Config_Parameter__c> params)
+        public ListViewConfigWrapper(List_View__c listView, List_View_Config__c listViewConfig, List<List_View_Config_Parameter__c> params, String listViewMode)
         {
+            this.listViewMode   = listViewMode;
             this.listView       = listView;
             this.listViewConfig = listViewConfig;
-            this.name        = listViewConfig.Name;
-            this.label       = listViewConfig.List_View_Label__c;
-            this.obj         = listViewConfig.List_View_Object__c;
-            lastModifiedDate = listViewConfig.LastModifiedDate;
-            lastModifiedBy   = listViewConfig.LastModifiedBy.Name;
-            parameters       = new Map<String,ListViewParam>();
-            conditions       = new List<ListViewCondition>();
+            this.name           = listViewConfig.Name;
+            this.label          = listViewConfig.List_View_Label__c;
+            this.obj            = listViewConfig.List_View_Object__c;
+            lastModifiedDate    = listViewConfig.LastModifiedDate;
+            lastModifiedBy      = listViewConfig.LastModifiedBy.Name;
+            parameters          = new Map<String,ListViewParam>();
+            conditions          = new List<ListViewCondition>();
 
             for (List_View_Config_Parameter__c param: params)
             {
@@ -1486,10 +1577,35 @@ public with sharing abstract class ListViewAbstract {
             return lastModifiedDate;
         }
 
+        /*
+         * Method to get the config parameters. This is where we keep the logic around
+         * which parameters to provide based on the list view mode
+         */
         @AuraEnabled(cacheable=true)
         public List<ListViewParam> getParameters()
         {
-            List<ListViewParam> params = parameters.values();
+            List<ListViewParam> params = new List<ListViewParam>();
+            
+            for (ListViewParam param: parameters.values()) {
+
+                if (listViewMode == null) {
+                    params.add(param);
+                
+                //if we are in SPLIT mode then don't pass back the following params
+                } else if (listViewMode == ListViewHelper.MODE_SPLIT) {
+                    if (param.getName() != 'TotalColumns'
+                        && param.getName() != 'TotalColumnsColor'
+                        && param.getName() != 'RefreshRate'
+                        && param.getName() != 'ExportHeaderType'
+                        && param.getName() != 'AllRows'
+                        && param.getName() != 'PDFOrientationPortrait'
+                        && param.getName() != 'PDFTheme') {
+                        params.add(param);
+                    }
+                } else {
+                    params.add(param);
+                }
+            }
             params.sort();
 
             return params;
@@ -1504,6 +1620,20 @@ public with sharing abstract class ListViewAbstract {
         public List<ListViewCondition> getConditions()
         {
             return conditions;
+        }
+
+        public String getDebugString() {
+            String debug = '\n\n------------------- Config -------------------\n';
+            debug += 'Name    - ' + name + '\n';
+            debug += 'Label   - ' + label + '\n';
+            debug += 'Obj     - ' + obj + '\n';
+            debug += 'LV Mode - ' + listViewMode + '\n';
+            for (ListViewParam param: getParameters())
+                debug += '    Param   - ' + param.getName() + '\n';
+
+            debug += '----------------------------------------------\n';
+            
+            return debug;
         }
 
     }

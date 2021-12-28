@@ -30,6 +30,27 @@
     overflow: auto;
 }
 
+.splitviewobjectlistdropdown {
+    width: 100%;
+    padding-bottom: 5px;
+    padding-left: 5px;
+}
+
+.regularobjectlistdropdown {
+    min-width: 20%;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.splitviewlistviewdropdown {
+    width: 70%;
+    padding-left: 5px;
+}
+
+.regularlistviewdropdown {
+    min-width: 20%;
+}
+
 thead th { position: sticky; top: 0; }
 
 th { z-index: 1 }
