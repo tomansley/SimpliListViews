@@ -3,6 +3,7 @@ import { LightningElement, track, wire, api } from 'lwc';
 import { getPicklistValuesByRecordType } from 'lightning/uiObjectInfoApi';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import { CurrentPageReference } from 'lightning/navigation';
+import getPicklistValues from '@salesforce/apex/ListViewController.getPicklistValues';
 
 //------------------------ LABELS ------------------------
 import None_Dash from '@salesforce/label/c.None_Dash';
@@ -88,9 +89,29 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
                 this.recordTypeId = response.defaultRecordTypeId;
             }
             console.log("Default Record Type Id", JSON.stringify(response.defaultRecordTypeId));
+        
         } else if (error) {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.hasError = true;
+            console.log('Error Detected - ' + error.body.message);
+            console.log('Cannot get record type using UI Api so reverting to Apex schema');
+            
+            getPicklistValues({objectName: this.objectApiName, fieldName: this.pickListFieldApiName})
+            .then(result => {
+                console.log('getPicklistValues result - ' + JSON.stringify(result));
+
+                let tempOptions = [];
+                if (this.type === 'picklist') {
+                    tempOptions = [{ label: '--None--', value: "" }];
+                }
+
+                result.forEach(opt => tempOptions.push(opt));
+
+                this.options = tempOptions;
+
+            })
+            .catch(error => {
+                console.log('Error getting values from schema so bugging out - ' + error.body.message);
+                this.hasError = true;
+            });
         }
     }
                      
