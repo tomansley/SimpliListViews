@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-16-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-28-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -33,6 +33,11 @@ global with sharing class ListViewHelper
     public static final String PROC_TYPE_CREATE = 'create';
     public static final String PROC_TYPE_UPDATE = 'update';
     
+    public static final String MODE_APP     = 'App Page';
+    public static final String MODE_SINGLE  = 'Single List View';
+    public static final String MODE_RELATED = 'Related List View';
+    public static final String MODE_SPLIT   = 'Split View';
+
     public static final String TYPE_ALL    = 'All';
     public static final String TYPE_CORE   = 'Core';
     public static final String TYPE_CUSTOM = 'Custom';
@@ -62,7 +67,16 @@ global with sharing class ListViewHelper
     public static final String TYPE_INTEGER       = 'integer';
     public static final String TYPE_COMBOBOX      = 'combobox';
 
-    public static final String PARAM_ADD_FIELDS   = 'AdditionalFields';
+    public static final String PARAM_ADD_FIELDS          = 'AdditionalFields';
+    public static final String PARAM_TOTAL_COLUMNS       = 'TotalColumns';
+    public static final String PARAM_RETURN_SIZE         = 'ReturnSize';
+    public static final String PARAM_REFRESH_RATE        = 'RefreshRate';
+    public static final String PARAM_TOTAL_COLUMN_COLOR  = 'TotalColumnsColor';
+    public static final String PARAM_EXPORT_HEADER_TYPE  = 'ExportHeaderType';
+    public static final String PARAM_ALL_ROWS            = 'AllRows';
+    public static final String PARAM_PDF_ORIENT_PORTRAIT = 'PDFOrientationPortrait';
+    public static final String PARAM_PDF_THEME           = 'PDFTheme';
+    public static final String PARAM_SPLIT_COLUMNS       = 'SplitColumns';
 
     public static final String SUBTYPE_MANUAL = 'Manual';
     public static final String SUBTYPE_TOOLING = 'Tooling';
@@ -631,7 +645,7 @@ global with sharing class ListViewHelper
     
     public static Map<String, String> getListViewObjects(Set<String> pageWideIncObjs, Set<String> pageWideExcObjs)
     {
-        return getListViewObjects(pageWideIncObjs, pageWideExcObjs, false);
+        return getListViewObjects(pageWideIncObjs, pageWideExcObjs, true);
     }
 
     /*
@@ -1257,7 +1271,7 @@ global with sharing class ListViewHelper
     public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
 
-        String debug = '\n\nStarting getListViewData - \n';
+        String debug = '\n\n------------------------- GET SOQL QUERY -------------------------\n';
         debug += 'soql                            - ' + soql + '\n';
         debug += 'lvConfig                        - ' + lvConfig + '\n';
         debug += 'sortData                        - ' + sortData + '\n';
@@ -1265,8 +1279,7 @@ global with sharing class ListViewHelper
 
         if (joinRecordIds != null)
             debug += 'joinRecordIds Size - ' + joinRecordIds.size() + '\n';
-        debug += 'joinRecordIds      - ' + joinRecordIds + '\n\n';
-        System.debug(LoggingLevel.FINE, debug);
+        debug += 'joinRecordIds                   - ' + joinRecordIds + '\n\n';
 
         Map<String, String> lvConfigParams = new Map<String, String>();
         if (lvConfig != null) //there might not be config yet for this list view
@@ -1278,28 +1291,37 @@ global with sharing class ListViewHelper
         //---------------------------------------------------
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
-        String selectStr = soql.substringBeforeLast(' FROM ');
-        System.debug(LoggingLevel.FINE, 'selectStr - ' + selectStr);
-        String objectName = soql.substringAfterLast(' FROM ');
-        if (objectName.contains(' '))
+        
+        
+        //OBJECT NAME
+        String objectName = soql.replaceAll('\\(.*?\\)', '').substringAfterLast(' FROM '); //get rid of everything inside brackets and then get expression after FROM
+        if (objectName.contains(' '))                                                      //if expression contains stuff after object then remove it.
             objectName = objectName.substringBefore(' ');
-        System.debug(LoggingLevel.FINE, 'objectName - ' + objectName);
-        String whereStr = 'WHERE ' + soql.substringAfterLast(' WHERE ');
+        debug += 'OBJNAME                         - ' + objectName + '\n';
+
+
+        //SELECT
+        String selectStr = soql.substringBefore(' FROM ' + objectName + ' WHERE');
+        if (selectStr == soql)
+            selectStr = soql.substringBefore(' FROM ' + objectName);
+        debug += 'SELECT                          - ' + selectStr + '\n';
+
+        //SCOPE
+        String scopeStr = 'USING SCOPE ';
+        if (!String.isEmpty(lvConfig?.getListView().Filter_Scope__c))
+            scopeStr += lvConfig.getListView().Filter_Scope__c;
+        else
+            scopeStr += 'Everything';
+        debug += 'SCOPE                           - ' + scopeStr + '\n';
+
+
+        //WHERE
+        String whereStr = 'WHERE ' + soql.substringAfter(' FROM ' + objectName).substringAfter(' WHERE ');
         if (whereStr == 'WHERE ') 
             whereStr = '';
         if (whereStr.containsIgnoreCase(' ORDER BY '))
-            whereStr = whereStr.substringBefore(' ORDER BY ');
-        System.debug(LoggingLevel.FINE, 'whereStr - ' + whereStr);
-        String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ').substringBeforeLast(' LIMIT ');
-        System.debug(LoggingLevel.FINE, 'orderByStr - ' + orderByStr);
-        String limitStr = '';
-        if (soql.containsIgnoreCase(' LIMIT '))
-            limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
-        System.debug(LoggingLevel.FINE, 'limitStr - ' + limitStr);
+            whereStr = whereStr.substringBeforeLast(' ORDER BY ');
 
-        //------------------------------------------------------
-        // Handle all changes to the WHERE statement
-        //------------------------------------------------------
         if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
             if (whereStr.containsIgnoreCase(' WHERE '))
@@ -1307,10 +1329,12 @@ global with sharing class ListViewHelper
             else
                 whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
         }
+        debug += 'WHERE                           - ' + whereStr + '\n';
 
-        //------------------------------------------------------
-        // Handle all changes to the ORDER BY statement
-        //------------------------------------------------------
+
+        //ORDER BY
+        String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ').substringBeforeLast(' LIMIT ');
+        
         if (sortData?.size() > 0)
         {
             System.debug(LoggingLevel.FINE, 'Sort data - ' + sortData);
@@ -1336,11 +1360,13 @@ global with sharing class ListViewHelper
             if (orderByStr != '')
                 orderByStr = ' ORDER BY ' + orderByStr;
         }
+        debug += 'ORDER                           - ' + orderByStr + '\n';
 
-        //------------------------------------------------------
-        // Handle the LIMIT statement
-        //------------------------------------------------------
-        
+        //LIMIT
+        String limitStr = '';
+        if (soql.containsIgnoreCase(' LIMIT '))
+            limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
+
         //if we are getting join records then do not use a limit
         if (joinRecordIds?.size() > 0)
         {
@@ -1395,7 +1421,7 @@ global with sharing class ListViewHelper
                 limitStr = ' LIMIT 100';
             }
         }
-        System.debug(LoggingLevel.FINE, 'LIMIT STR - ' + limitStr);
+        debug += 'LIMIT                           - ' + limitStr + '\n';
 
         //------------------------------------------------------
         // Handle the ALL ROWS statement
@@ -1409,22 +1435,17 @@ global with sharing class ListViewHelper
         {
             allRowsStr += ' ALL ROWS';
         }
-
-        //------------------------------------------------------
-        // Handle the USING SCOPE statement
-        //------------------------------------------------------
-        String scopeStr = 'USING SCOPE ';
-        if (!String.isEmpty(lvConfig?.getListView().Filter_Scope__c))
-            scopeStr += lvConfig.getListView().Filter_Scope__c;
-        else
-            scopeStr += 'Everything';
+        debug += 'ALLROWS                         - ' + allRowsStr + '\n';
 
         //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------
         soql = selectStr + ' FROM ' + objectName + ' ' + scopeStr + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
+        debug += '\nFINAL SOQL LAYOUT               - SELECT + \' FROM \' + OBJNAME + \' \' + SCOPE + \' \' + WHERE + ORDER + LIMIT + ALLROWS\n';
+        debug += 'FINAL SOQL                      - ' + soql + '\n';
 
-        System.debug(LoggingLevel.FINE, 'Final SOQL - ' + soql);
+        System.debug(LoggingLevel.FINE, debug);
+        ListViewErrorHelper.addLog('ListViewHelper(getSOQLQuery)', debug);
 
         return soql;
     }
@@ -1663,7 +1684,7 @@ global with sharing class ListViewHelper
         
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config.Id;
-        param2.Parameter_Name__c   = 'TotalColumns';
+        param2.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMNS;
         param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param2.Parameter_Value__c  = 'AnnualRevenue';
         param2.Parameter_Label__c  = 'Total Columns';
@@ -1671,7 +1692,7 @@ global with sharing class ListViewHelper
         
         param2 = new List_View_Config_Parameter__c();
         param2.List_View_Config__c = config.Id;
-        param2.Parameter_Name__c   = 'TotalColumnsColor';
+        param2.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
         param2.Parameter_Type__c   = 'Color';
         param2.Parameter_Value__c  = '#6C95BD';
         param2.Parameter_Label__c  = 'Total Row Color';
@@ -1853,7 +1874,7 @@ global with sharing class ListViewHelper
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
-		param2.Parameter_Name__c = 'TotalColumns';
+		param2.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMNS;
 		param2.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param2.Parameter_Value__c = 'AnnualRevenue';
 		param2.List_View_Config__c = config3.Id;
@@ -1861,7 +1882,7 @@ global with sharing class ListViewHelper
         params2.add(param2);
         
         param2 = new List_View_Config_Parameter__c();
-		param2.Parameter_Name__c = 'TotalColumnsColor';
+		param2.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
 		param2.Parameter_Type__c = 'Color';
 		param2.Parameter_Value__c = '#6C95BD';
 		param2.List_View_Config__c = config3.Id;
