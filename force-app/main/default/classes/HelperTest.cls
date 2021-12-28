@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-16-2021
+ * @last modified on  : 12-27-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -35,6 +35,7 @@ public with sharing class HelperTest {
         cont.LastName  = 'Testerson';
         cont.Email     = 'testy@testerson.com';
         cont.AccountId = acct.Id;
+        cont.Title     = 'SVP, Operations';
         cont = (Contact) HelperDatabase.insertRecord(cont);
 		
 		return cont;

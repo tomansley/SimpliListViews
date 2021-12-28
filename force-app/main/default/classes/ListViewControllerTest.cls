@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-22-2021
+ * @last modified on  : 12-28-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -154,7 +154,7 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        ListViewAbstract.ListViewConfigWrapper lvConfig = ListViewController.getListViewConfig('Account', 'simpli_lv__AllAccounts');
+        ListViewAbstract.ListViewConfigWrapper lvConfig = ListViewController.getListViewConfig('Account', 'simpli_lv__AllAccounts', 'App Page');
 
         System.assertNotEquals(lvConfig.listViewConfig, null);
 

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 12-27-2021
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -16,8 +16,9 @@ private class ListViewHelperTest {
         ListViewHelper.insertCoreConfiguration();
 
         Account acct = HelperTest.insertAccount('Testy Account');
-        Opportunity opp = HelperTest.insertOpportunity(acct, 'Opportunity 1');
-        opp = HelperTest.insertOpportunity(acct, 'Opportunity 2');
+        HelperTest.insertContact(acct);
+        HelperTest.insertOpportunity(acct, 'Opportunity 1');
+        HelperTest.insertOpportunity(acct, 'Opportunity 2');
     }
 
     @IsTest
@@ -264,6 +265,75 @@ private class ListViewHelperTest {
     static void getListViewDataSOQLTest8()
     {
         String soql = 'SELECT Id FROM Account USING SCOPE everything';
+
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+
+        List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
+        sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
+
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+    }
+
+    @IsTest
+    static void getListViewDataSOQLTest9()
+    {
+        String soql = 'SELECT Id, ' + 
+                             '(SELECT Id ' + 
+                                'FROM Contacts ' + 
+                                'ORDER BY Name), ' + 
+                             '(SELECT Id ' + 
+                                'FROM Opportunities ' + 
+                                'ORDER BY Name) ' + 
+                        'FROM Account ' +
+                        'WHERE Id IN (SELECT AccountId ' + 
+                                     'FROM Contact ' + 
+                                     'WHERE Title = \'SVP, Operations\') ';
+
+        List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+
+        objs = ListViewHelper.getListViewData(soql, null, null, null, null, true, -1);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+
+        List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
+        sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
+
+        objs = ListViewHelper.getListViewData(soql, null, sortData, null, null);
+        System.assert(objs.size() > 0);
+
+        //-------------------------------------
+    }
+
+    @IsTest
+    static void getListViewDataSOQLTest10()
+    {
+        String soql = 'SELECT Id, ' + 
+                             '(SELECT Id ' + 
+                                'FROM Contacts ' + 
+                                'ORDER BY Name), ' + 
+                             '(SELECT Id ' + 
+                                'FROM Opportunities ' + 
+                                'ORDER BY Name) ' + 
+                        'FROM Account ' +
+                        'WHERE Id IN (SELECT AccountId ' + 
+                                     'FROM Contact ' + 
+                                     'WHERE Title = \'SVP, Operations\') ' +
+                        'ORDER BY Id';
 
         List<SObject> objs = ListViewHelper.getListViewData(soql, null, null, null, null);
         System.assert(objs.size() > 0);
