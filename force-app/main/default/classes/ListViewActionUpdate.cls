@@ -2,13 +2,13 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-16-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-05-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
  * 2.0   09-08-2020   tom@ansleyllc.com   Fixed bug where record ids were being passed in with row nums. Row nums are now stripped.
- * 3.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+ * 3.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility.
 **/
 public with sharing class ListViewActionUpdate  extends ListViewAction {
 

@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-25-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 01-05-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -27,6 +27,7 @@ public with sharing abstract class ListViewAbstract {
     public String joinField = null;                                   //if getting data based on join Ids this field describes the join field to use.
     public Integer offset = -1;                                       //holds the offset value if we need to page data into the list view.
     public Boolean isShell = false;                                   //indicates whether the request should only retrieve the rowwrapper without data or all the data
+    public String textSearchStr = '';                                 //holds the text search if the user entered one for a SOSL query
 
     //----------------------------------------------------------------------------------
     // Method to be overridden
@@ -67,6 +68,11 @@ public with sharing abstract class ListViewAbstract {
     //----------------------------------------------------------------------------------
     // Concrete methods
     //----------------------------------------------------------------------------------
+    public void setTextSearchString(String textSearchStr)
+    {
+        this.textSearchStr = textSearchStr;
+    }
+
     public void setIsShell(Boolean isShell)
     {
         this.isShell = isShell;
@@ -219,6 +225,12 @@ public with sharing abstract class ListViewAbstract {
         public String getUserTimeZone()
         {
             return UserInfo.getTimeZone().getID();
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getCanTextSearch()
+        {
+            return ListViewHelper.canPerformSOSLQuery(listView.listView);
         }
 
         @AuraEnabled
@@ -548,31 +560,41 @@ public with sharing abstract class ListViewAbstract {
             //if we have split columns to use
             if (splitColumns != null && !String.isEmpty(splitColumns.getValue()))
             {
-                List<String> fields = splitColumns.getValue().split(',');
+                List<String> splitFields = splitColumns.getValue().split(',');
 
-                //if we have as many fields as we need based on the index
-                if (fields.size() > index)
+                //if we have as many split fields as we need based on the index
+                if (splitFields.size() > index)
                 {
                     //try to find the field data
-                    FieldWrapper field = getFieldByAPIName(fields[index]);
+                    FieldWrapper field = getFieldByAPIName(splitFields[index]);
 
                     //if we can find the field based on the API name
                     if (field != null)
                         value = field.getUIValue();
                     else
                         value = 'INVALID FIELD';
-
-                    
                 //if not then use whatever is in the data at that column index
                 } else {
-                    FieldWrapper field = getFields()[index];
-                    value = field.getUIValue();
+                    List<ListViewAbstract.FieldWrapper> flds = getFields();
+                    if (flds.size() > index)
+                    {
+                        FieldWrapper field = flds[index];
+                        value = field.getUIValue();
+                    } else {
+                        value = '';
+                    }
                 }
 
             //if not then use whatever is in the data at that column index
             } else {
-                FieldWrapper field = getFields()[index];
-                value = field.getUIValue();
+                List<ListViewAbstract.FieldWrapper> flds = getFields();
+                if (flds.size() > index)
+                {
+                    FieldWrapper field = flds[index];
+                    value = field.getUIValue();
+                } else {
+                    value = '';
+                }
             }
 
             if (String.isEmpty(value))
@@ -1888,13 +1910,47 @@ public with sharing abstract class ListViewAbstract {
         public String getHyperlink()
         {
             String url = '';
-            for (ActionParameterWrapper param: nonDisplayParameters)
+            for (ActionParameterWrapper param: getAllParameters())
             {
-                if (param.getAPIName().toUpperCase() == ListViewActionHelper.PARAM_KEY_URL)
+                if (param.getAPIName().toUpperCase() == ListViewActionHelper.PARAM_KEY_URL.toUpperCase())
+                {
                     url = param.getValue();
+                    break;
+                }
             }
             return url;
         }
+
+        @AuraEnabled(cacheable=true)
+        public String getEmailTemplateFolder()
+        {
+            String folder = '';
+            for (ActionParameterWrapper param: getAllParameters())
+            {
+                if (param.getAPIName().toUpperCase() == ListViewActionHelper.PARAM_KEY_EMAIL_TEMP_FOLDER.toUpperCase())
+                {
+                    folder = param.getValue();
+                    break;
+                }
+            }
+            return folder;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getEmailTemplateWhatIdField()
+        {
+            String whatId = '';
+            for (ActionParameterWrapper param: getAllParameters())
+            {
+                if (param.getAPIName().toUpperCase() == ListViewActionHelper.PARAM_KEY_EMAIL_WHAT_ID.toUpperCase())
+                {
+                    whatId = param.getValue();
+                    break;
+                }
+            }
+            return whatId;
+        }
+
     }
 
     //---------------------------------------------------------

@@ -1,0 +1,108 @@
+<!-- sldsValidatorIgnore -->
+<!--
+  @description       : 
+  @author            : tom@ansleyllc.com
+  @group             : 
+  @last modified on  : 01-05-2022
+  @last modified by  : tom@ansleyllc.com
+  Modifications Log 
+  Ver   Date         Author                 Modification
+  1.0   11-13-2021   tom@ansleyllc.com      Initial Version
+-->
+<template>
+    <template if:true={showModal}>
+        <div>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <template if:true={spinner}>
+                    <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
+                </template>
+                <div class="slds-modal__container" style="align-items: center; overflow: initial;">
+                
+                    <header class="slds-modal__header" style="min-width: 1100px;">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title={label.Close} onclick={handleClose}>
+                            <lightning-icon icon-name="utility:close" alternative-text={label.Close} variant="warning"></lightning-icon>
+                            <span class="slds-assistive-text">{label.Close}</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_small slds-hyphenate">Send Email From Template</h2>
+                    </header>
+
+                    <div class="slds-modal__content slds-p-around_xx-small" style="width: 1100px; height:400px; overflow:hidden;">
+                        <lightning-card title="">
+                            <div slot="title" style="display: none;"></div>
+                            <div style="width: 1065px; height: 40px; z-index:1;overflow:unset;">
+                                <lightning-combobox placeholder="Select Template" 
+                                                    label="Email Templates"
+                                                    value={selectedTemplateName}
+                                                    options={templateList}
+                                                    onchange={handleTemplateChange}
+                                                    variant=label-hidden>
+                                </lightning-combobox>                        
+                            </div>
+                            <template if:true={selectedTemplate}>
+                                <div style="width: 1100px; height: 400px; z-index:-1;">
+                                    <table class="slds-table slds-table_bordered">
+                                        <tbody>
+
+                                            <tr class="slds-hint-parent">
+                                                <td style="width: 20%;">
+                                                    <div class="slds-truncate" title="Description">
+                                                        <b>Record Count</b>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {recordCount}
+                                                </td>
+                                            </tr>
+                                            <tr class="slds-hint-parent">
+                                                <td style="width: 20%;">
+                                                    <div class="slds-truncate" title="Description">
+                                                        <b>Description</b>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {selectedTemplate.Description}
+                                                </td>
+                                            </tr>
+                                            <tr class="slds-hint-parent">
+                                                <td style="width: 20%;">
+                                                    <div class="slds-truncate" title="Subject">
+                                                        <b>Email Subject</b>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {selectedTemplate.Subject}
+                                                </td>
+                                            </tr>
+                                            <tr class="slds-hint-parent">
+                                                <td colspan="2" style="width: 20%;">
+                                                    <div class="slds-truncate" title="Template Body">
+                                                        <b>Email Body</b>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr class="slds-hint-parent">
+                                                <td colspan="2" style="width: 20%;">
+                                                    <div style="overflow-y: scroll;max-height: 225px;">
+                                                        <lightning-formatted-text value={selectedTemplate.Body}></lightning-formatted-text>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>      
+                                </div>
+                            </template>
+                        </lightning-card>
+                    </div>            
+
+                    <footer class="slds-modal__footer" style="min-width: 1100px;">
+                        <button class="slds-button slds-button_brand" onclick={handleProcessClick}>Send Emails</button>
+                        <button class="slds-button slds-button_brand" onclick={handleCancelClick}>{label.Cancel}</button>
+                    </footer>
+                    
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+</template>

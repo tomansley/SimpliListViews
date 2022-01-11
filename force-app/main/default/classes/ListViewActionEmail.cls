@@ -1,11 +1,11 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-16-2021
+ * @last modified on  : 01-11-2022
  * @last modified by  : tom@ansleyllc.com
  * Ver   Date         Author                       Modification
  * 1.0   08-19-2021   tom@ansleyllc.com   Initial Version
- * 2.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+ * 2.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility.
 
 **/
 public with sharing class ListViewActionEmail  extends ListViewAction {
