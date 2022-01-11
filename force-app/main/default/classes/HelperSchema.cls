@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 12-24-2021
+ * @Last Modified On   : 01-08-2022
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -13,7 +13,7 @@
  * 4.0    08-19-2021   tom@ansleyllc.com     Added getObjectPluralName(String) method, added getFieldLabel(String, String)
  * 5.0    10-19-2021   tom@ansleyllc.com     Added getAllObjectsByName() method, resolved null pointer exception with getObjectLabel(String)
  * 5.0    10-27-2021   tom@ansleyllc.com     Added getSFDCFieldLabel() method, resolved issue where getting column labels from first row and no data returns empty column name
- * 6.0    12-15-2021   tom@ansleyllc.com     Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+ * 6.0    12-15-2021   tom@ansleyllc.com     Removed old methods for checking object accessibility.
  * 7.0    12-15-2021   tom@ansleyllc.com     Added getClassType() method.
 **/
 public with sharing class HelperSchema {
@@ -86,11 +86,6 @@ public with sharing class HelperSchema {
 
 	}
 
-    public static Schema.ChildRelationship getFieldRelationship(String obj, String field)
-    {
-        return null;
-    }
-
     public static String getFieldRelationshipType(String obj, String field)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting getFieldRelationshipType(' + obj + ',' + field + ')');
@@ -129,7 +124,7 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method to return a describe result for a given object and field.
-       System.debug(LoggingLevel.FINE, 'RESULT - ' + HelperSchema.getFieldDescribeResult('Account','LastModifiedBy'));  
+       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getFieldDescribeResult('Contact','Child_Object__c'));  
 	 */
 	public static Schema.DescribeFieldResult getFieldDescribeResult(String obj, String field)
 	{
@@ -277,6 +272,9 @@ public with sharing class HelperSchema {
 	 */
 	public static String getObjectTypeFromId(Id objId)
 	{
+        if (String.isEmpty(objId))
+            return 'BAD ID';
+            
 		if (objectDescribeByPrefix.isEmpty())
 			initObjectDescribeByPrefix();
 

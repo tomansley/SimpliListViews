@@ -1,10 +1,17 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-29-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class HelperString {
+
+    public static String scrubSOQL(String soql)
+    {
+        soql = soql.replaceAll('\\s+', ' '); //get rid of all extra spaces
+
+        return soql;
+    }
 
     /*
      * Method that takes a string that is to be split and a split char
