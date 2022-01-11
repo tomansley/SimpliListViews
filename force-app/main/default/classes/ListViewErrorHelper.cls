@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 12-06-2021
+ * @Last Modified On   : 01-11-2022
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -28,7 +28,20 @@ public with sharing class ListViewErrorHelper {
 
     private static void addLog(String type, String className, String message)
     {
-        if (Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam('Debug')))
+        addLog(type, className, message, false);
+    }
+
+    /**
+    * @description Method to add a log to be processed.
+    * @author tom.h.ansley@medtronic.com | 01-11-2022 
+    * @param type the type of log. EXCEPTION or LOG
+    * @param className the subject of category of the log.
+    * @param message the long description of the log.
+    * @param force indicates the log should be added regardless of whether debugging is on.
+    **/
+    public static void addLog(String type, String className, String message, Boolean force)
+    {
+        if (force || Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam(ListViewConfigHelper.DEBUG)))
         {
             List_View_Error__c log   = new List_View_Error__c();
             log.Running_User__c  = UserInfo.getUserId();

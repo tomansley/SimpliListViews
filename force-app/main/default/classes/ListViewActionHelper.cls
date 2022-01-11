@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-21-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 01-10-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -25,7 +25,9 @@ public with sharing class ListViewActionHelper {
     public static final String VIS_ONLY_ONE = 'Displayed if one record is selected';
     public static final String VIS_AT_LEAST_ONE = 'Displayed if one or more records are selected';
 
-    public static final String PARAM_KEY_URL = 'URL';
+    public static final String PARAM_KEY_URL               = 'URL';
+    public static final String PARAM_KEY_EMAIL_TEMP_FOLDER = 'EmailTemplateFolder';
+    public static final String PARAM_KEY_EMAIL_WHAT_ID     = 'EmailTemplateWhatIdField';
 
     private static String debugString = '';
 
@@ -147,6 +149,51 @@ public with sharing class ListViewActionHelper {
                 WHERE Primary_Key__c = :primaryKey]);
 
         return (List_View_Action__c) dec.getRecords()[0];
+    }
+
+    /*
+     * Method to get a list view action based on its primary key
+     */
+    public static Map<String, List_View_Action__c> getListViewActionsByKey(Set<String> primaryKeys)
+    {
+        SObjectAccessDecision dec = 
+         Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
+                        Apex_Class_Name__c,
+                        Object_Type__c,
+                        Primary_Key__c,
+                        Subtype__c,
+                        RecordTypeId,
+                        RecordType.Name,
+                        Permissions__c,
+                        Is_Hyperlink__c,
+                        Is_Active__c,
+                        Is_Flow__c,
+                        Flow_Type__c,
+                        Flow_API_Name__c,
+                        Flow_Frame_Height__c,
+                        Flow_Frame_Width__c,
+                        Mass_Create_List_View_Name__c,
+                        Selected_Record_Visibility__c,
+                        Component_Name__c,
+                        (SELECT Field_API_Name__c,
+                                Label__c,
+                                Display_Order__c,
+                                Type__c,
+                                Default_Value__c,
+                                Placeholder_Text__c,
+                                Lookup_Type__c
+                         FROM List_View_Action_Parameters__r
+                         ORDER BY Display_Order__c NULLS LAST)
+                FROM List_View_Action__c
+                WHERE Primary_Key__c IN :primaryKeys]);
+
+        List<List_View_Action__c> actions = (List<List_View_Action__c>) dec.getRecords();
+        Map<String, List_View_Action__c> actionsByKey = new Map<String, List_View_Action__c>();
+        for (List_View_Action__c action: actions)
+            actionsByKey.put(action.Primary_Key__c, action);
+
+        return actionsByKey;
     }
 
     /**

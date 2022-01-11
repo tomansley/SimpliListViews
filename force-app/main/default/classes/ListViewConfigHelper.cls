@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 12-25-2021
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 01-11-2022
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -20,7 +20,7 @@ public with sharing class ListViewConfigHelper {
     private static List_View_Config__c orgWideConfig                = null;
     private static final String ALL = 'All';
 
-    private static final String DEBUG = 'Debug';
+    public static final String DEBUG = 'Debug';
 
     public static final String OPER_EQUAL = 'Equals';
     public static final String OPER_NOT_EQUAL = 'Not Equal';
@@ -346,9 +346,12 @@ public with sharing class ListViewConfigHelper {
 
         if (configs.size() > 1)
             throw new ListViewException('Found more than one list view config with name - ' + listViewName + ' and object - ' + objectName);
-        else if (configs.size() == 0)
-            throw new ListViewException('No list view config was found with name - ' + listViewName + ' and object - ' + objectName);
-
+        else if (configs.size() == 0) {
+            if (objectName == 'All' && listViewName == 'All')
+                throw new ListViewException('Global config not found. Go to the admin page and either import a config file or create a new config');
+            else
+                throw new ListViewException('No list view config was found with name - ' + listViewName + ' and object - ' + objectName);
+        }
         System.debug(LoggingLevel.FINE, 'Returning configs - ' + configs);
         return configs[0];
     }
@@ -390,6 +393,32 @@ public with sharing class ListViewConfigHelper {
 
         return mappedConfigs;
 
+    }
+
+    public static Map<String, List_View_Config__c> getListViewConfigsById(Set<String> ids) 
+    {
+        return new Map<String, List_View_Config__c>(
+            [SELECT Name,
+                    List_View_Object__c,
+                    List_View_Label__c,
+                    LastModifiedDate,
+                    LastModifiedBy.Name,
+                    Primary_Key__c,
+                    (SELECT Parameter_Name__c,
+                            Parameter_Type__c,
+                            Parameter_Label__c,
+                            Parameter_Value__c
+                    FROM List_View_Config_Parameters__r
+                    ORDER BY Parameter_Label__c),
+                    (SELECT Field_Name__c,
+                                Highlight_Color__c,
+                                Operator__c,
+                                Order__c,
+                                Value__c
+                    FROM List_View_Config_Conditions__r
+                    ORDER BY Order__c ASC)
+        FROM List_View_Config__c
+                WHERE Id IN :ids]);
     }
 
     /**

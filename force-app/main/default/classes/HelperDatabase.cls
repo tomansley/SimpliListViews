@@ -1,13 +1,13 @@
 /**
  * @description       : Helper class to aid in the handling of DML transactions
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-16-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-11-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
  * 2.0   10-31-2021   tom@ansleyllc.com   Added query() methods.
- * 3.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+ * 3.0   12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility.
 
 **/
 public with sharing class HelperDatabase {
@@ -86,9 +86,17 @@ public with sharing class HelperDatabase {
 
     public static List<SObject> insertRecords(List<SObject> data, Boolean allOrNone) 
     {
+        if (data == null || data.size() == 0) return new List<SObject>();
+
         SObjectAccessDecision dec = Security.stripInaccessible(AccessType.CREATABLE, data);
 
-        Database.insert(dec.getRecords(), allOrNone);
+        List<Database.SaveResult> results = Database.insert(dec.getRecords(), allOrNone);
+
+        Integer errorCount = 0;
+        for (Database.SaveResult result: results)
+            errorCount = errorCount + result.getErrors().size();
+
+        try { System.debug(LoggingLevel.DEBUG, 'Inserting(' + HelperSchema.getObjectTypeFromId((Id)data[0].get('Id')) + ') - Total = ' + data.size() + ', Error = ' + errorCount); } catch (Exception e) { }
 
         data = dec.getRecords();
         
@@ -116,10 +124,18 @@ public with sharing class HelperDatabase {
 
     public static void updateRecords(List<SObject> data, Boolean allOrNone) 
     {
+        if (data == null || data.size() == 0) return;
+
         SObjectAccessDecision dec = Security.stripInaccessible(AccessType.UPDATABLE, data);
 
-        Database.update(dec.getRecords(), allOrNone);
+        List<Database.SaveResult> results = Database.update(dec.getRecords(), allOrNone);
         
+        Integer errorCount = 0;
+        for (Database.SaveResult result: results)
+            errorCount = errorCount + result.getErrors().size();
+
+        try { System.debug(LoggingLevel.DEBUG, 'Updating(' + HelperSchema.getObjectTypeFromId((Id)data[0].get('Id')) + ') - Total = ' + data.size() + ', Error = ' + errorCount); } catch (Exception e) { }
+
         data = dec.getRecords();
 
     }
@@ -160,16 +176,50 @@ public with sharing class HelperDatabase {
         
         SObjectAccessDecision dec = Security.stripInaccessible(AccessType.UPSERTABLE, data);        
 
+        List<Database.UpsertResult> results = null;
         if (externalIdField != null)
         {
             Schema.SObjectField field = HelperSchema.getFieldSchema(HelperSchema.getObjectType(data[0]), externalIdField);
-            Database.upsert(dec.getRecords(), field, allOrNone);
-        } else 
-            Database.upsert(dec.getRecords(), allOrNone);
+            results = Database.upsert(dec.getRecords(), field, allOrNone);
+        } else {    
+            results = Database.upsert(dec.getRecords(), allOrNone);
+        }
+
+        Integer errorCount = 0;
+        for (Database.UpsertResult result: results)
+            errorCount = errorCount + result.getErrors().size();
+
+        try { System.debug(LoggingLevel.DEBUG, 'Upserting(' + HelperSchema.getObjectTypeFromId((Id)data[0].get('Id')) + ') - Total = ' + data.size() + ', Error = ' + errorCount); } catch (Exception e) { }
         
         data = dec.getRecords();
 
         return data;
+    }
+
+    /*
+     * Method to perform an upsertion without using the stripping core method. This ensures that
+     * the returned SObjects are pointing to the same SObjects as the method that called it.
+     */
+    public static List<Database.UpsertResult> upsertRecordsNoStrip(List<SObject> data, String externalIdField, Boolean allOrNone) 
+    {
+        if (data.size() == 0) return new List<Database.UpsertResult>();
+        
+        List<Database.UpsertResult> results = null;
+        if (externalIdField != null)
+        {
+            Schema.SObjectField field = HelperSchema.getFieldSchema(HelperSchema.getObjectType(data[0]), externalIdField);
+            results = Database.upsert(data, field, allOrNone);
+        } else {    
+            results = Database.upsert(data, allOrNone);
+        }
+
+        Integer errorCount = 0;
+        for (Database.UpsertResult result: results)
+            errorCount = errorCount + result.getErrors().size();
+
+        try { System.debug(LoggingLevel.DEBUG, 'Upserting(' + HelperSchema.getObjectTypeFromId((Id)data[0].get('Id')) + ') - Total = ' + data.size() + ', Error = ' + errorCount); } catch (Exception e) { }
+        
+        return results;
     }
 
     //--------------------------------------------------------------------------------------------------------------------------
