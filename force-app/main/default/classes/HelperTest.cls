@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-27-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 12-29-2021
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-07-2020   tom@ansleyllc.com   Initial Version
@@ -12,6 +12,8 @@
  * 4.0   08-18-2021   tom@ansleyllc.com   Updated all strings to static final strings
 **/
 public with sharing class HelperTest {
+
+    public static Pricebook2 pricebook = null;
 
     public static Account insertAccount(String name)
     {
@@ -51,6 +53,62 @@ public with sharing class HelperTest {
         opp = (Opportunity) HelperDatabase.insertRecord(opp);
 		
 		return opp;
+    }
+
+    public static OpportunityLineItem insertOpportunityLineItem(Opportunity opp, PriceBookEntry pe, Integer quantity, Decimal totalPrice)
+    {
+        OpportunityLineItem li = new OpportunityLineItem();
+        li.OpportunityId = opp.Id;
+        li.Product2Id = pe.Product2Id;
+        li.PricebookEntryId = pe.Id;
+        li.Quantity = quantity;
+        li.TotalPrice = totalPrice;
+        insert li;
+
+        return li;
+    }
+
+    public static Product2 createProduct(String prodName)
+    {
+        Product2 prod = new Product2(
+            Name = prodName,
+            IsActive = true
+        );
+        insert prod;
+    
+        return prod;
+    }
+
+    public static PricebookEntry createProductAndEntry(String prodName, Integer price)
+    {
+        Product2 prod1 = HelperTest.createProduct(prodName);
+
+        PricebookEntry pbe = new PricebookEntry(
+            Pricebook2Id = HelperTest.getPriceBook().Id,
+            Product2Id = prod1.Id,
+            UnitPrice = price,
+            IsActive = true
+        );
+
+        insert pbe;
+
+        return pbe;
+    }
+
+    private static Pricebook2 getPriceBook()
+    {
+        if (pricebook == null)
+        {
+            pricebook = new Pricebook2(
+                                        Id = Test.getStandardPricebookId(),
+                                        IsActive = true
+                                      );
+        
+            // Run an update DML on the Pricebook2 record
+            // This is the weird workaround that enables IsStandard to become true on the PricebookEntry record
+            update pricebook;
+        }     
+        return pricebook;
     }
     
     public static User insertUser(String lastname, String profileName, String roleName, String userName, boolean insertRec){
