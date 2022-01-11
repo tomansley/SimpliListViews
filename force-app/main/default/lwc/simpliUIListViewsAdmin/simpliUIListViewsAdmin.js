@@ -1,6 +1,7 @@
 import { LightningElement, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 //------------------------ LABELS ------------------------
 import Parameter_Name from '@salesforce/label/c.Parameter_Name';
@@ -24,8 +25,9 @@ import cleanListViews from '@salesforce/apex/ListViewAdminController.cleanListVi
 
 export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningElement) {
 
+    @track hasConfig = true;            //indicates whether the global config exists in the org
     @track config = undefined;
-    @track parameters = new Map();       //holds the map of field/value parameter data
+    @track parameters = new Map();      //holds the map of field/value parameter data
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
     @track objNamesList = undefined;
     @track isInitialized = false;       //indicates whether the list views have been initialized for the first time or not.
@@ -46,7 +48,7 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
     renderedCallback() {
         console.log('SimpliUIListViewsAdmin.renderedCallback started');
 
-        if (this.config === undefined)
+        if (this.config === undefined && this.hasConfig === true)
         {
             console.log('Starting getConfig()');
             this.getConfig();
@@ -69,15 +71,9 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
             console.log('Object names size - ' + this.objNamesList.length); 
             this.spinnerOff(); 
         } else if (error) { 
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             this.listViewList = undefined; 
             this.spinnerOff(); 
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error Retrieving Object Names',
-                message: 'There was an error retrieving all object names - ' + error.body.message,
-                variant: 'error',
-                mode: 'sticky'
-            }));
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Object Names', 'There was an error retrieving all object names - ', true)); 
         }
         console.log('Finished getObjectNames'); 
     }
@@ -85,6 +81,8 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
     getConfig()
     {
         this.spinnerOn();
+        this.hasConfig = true;
+        console.log('simpliUIListViewsAdmin CALLOUT - getOrgWideConfig - ' + this.calloutCount++);
         getOrgWideConfig()
         .then(result => {
             console.log('Org wide config retrieved successfully - ' + result);
@@ -92,13 +90,9 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
             this.spinnerOff();
         })
         .catch(error => {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error Handling User Config',
-                message: 'There was an error handling the config - ' + error.body.message,
-                variant: 'error',
-                mode: 'sticky'
-            }));
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error handling the config - ', true)); 
+            this.hasConfig = false;
+            this.isInitialized = false;
             this.spinnerOff();
         });
     }
@@ -122,6 +116,7 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         strValuesMap = JSON.stringify( Array.from(valuesMap) );
         console.log('Field/Value  - ' + strValuesMap);
 
+        console.log('simpliUIListViewsAdmin CALLOUT - saveOrgWideConfig - ' + this.calloutCount++);
         saveOrgWideConfig({ paramStr: strValuesMap})
             .then(result => {
                 resultStr = result;
@@ -138,35 +133,18 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
                 }
 
                 if (status === 'Ok') {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Save Successful!',
-                        message: message,
-                        variant: 'success',
-                        mode: 'dismissable'
-                    }));
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Save Successful!', message, false)); 
                     this.getConfig();
                 
                 } else {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Processing Error!',
-                        message: message,
-                        variant: 'error',
-                        mode: 'sticky'
-                    }));
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', message, false)); 
                     this.spinnerOff();
                     return;
                 }
             })
             .catch(error => {
                 resultStr = undefined;
-                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Processing Error',
-                    message: 'There was an error saving the admin config - ' + error.body.message,
-                    variant: 'error',
-                    mode: 'sticky'
-                }));
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error saving the admin config - ', true)); 
                 this.spinnerOff();
                 return;
         });
@@ -180,45 +158,27 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         this.spinnerOn();
         console.log('Listview cleaning button clicked and updating all list views');
 
+        console.log('simpliUIListViewsAdmin CALLOUT - cleanListViews - ' + this.calloutCount++);
         cleanListViews({ })
         .then(result => {
 
             //if we have an error then send an ERROR toast.
             if (result === 'failed')
             {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Processing Error',
-                    message: 'There was an error cleaning the list views - ' + error.body.message,
-                    variant: 'error',
-                    mode: 'sticky'
-                }));
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error cleaning the list views - ', true)); 
                 this.spinnerOff();
 
             //else send a SUCCESS toast.
             } else {
-
                 this.batchId = result;
-
                 this.showCleanProgress = true;
-
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'List View Cleaning',
-                    message: 'List view cleaning has started.',
-                    variant: 'success',
-                    mode: 'dismissable'
-                }));
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Cleaning', 'List view cleaning has started.', false)); 
                 this.dispatchEvent(new CustomEvent('cleanlistviewclick'));
                 this.spinnerOff();
             }
         })
         .catch(error => {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Processing Error',
-                message: 'There was an error cleaning the list views - ' + error.body.message,
-                variant: 'error',
-                mode: 'sticky'
-            }));
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error cleaning the list views - ', true)); 
             this.spinnerOff();
         });
 
@@ -234,6 +194,31 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
     }
 
     handleScheduleJobRefreshed(event) {
+        this.getConfig();
+    }
+
+    handleConfigCreated(event) {
+        console.log('NAME - ' + event.detail.name);
+        console.log('STATUS - ' + event.detail.status);
+
+        if (event.detail.name === 'createStart')
+            this.spinnerOn();
+        else if (event.detail.name === 'createEnd')
+            this.getConfig();
+        else if (event.detail.name === 'importStart')
+            this.spinnerOn();
+        else if (event.detail.name === 'importEnd')
+        {
+            this.spinnerOff();
+        }
+    }
+
+    handleImportExportEvent(event) {
+        console.log('IMPORT/EXPORT EVENT - ' + event);
+        //this.getConfig();
+    }
+
+    handleConfigImported(event) {
         this.getConfig();
     }
 

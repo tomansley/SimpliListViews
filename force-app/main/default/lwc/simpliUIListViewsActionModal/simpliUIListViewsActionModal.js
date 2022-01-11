@@ -1,5 +1,6 @@
 import { LightningElement, wire, track, api  } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 //------------------------ LABELS ------------------------
 import Close from '@salesforce/label/c.Close';
@@ -27,6 +28,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
     @track requestDataMap = new Map();  //holds the map of field/value request data
     @track spinner = false;             //identifies if the spinner should be displayed or not.
     @track isInitialized = false;
+    @track calloutCount = 1;            //indicates the number of callouts made for this component
 
     label = { Close, Value, Field_Name, Process, Cancel, Continue_Processing, Selected_Records_With, Action };
 
@@ -42,11 +44,10 @@ export default class simpliUIListViewsActionModal extends LightningElement {
             var parsedIds = JSON.parse(this.recordIds);
             this.recordCount = parsedIds.length; 
 
-            this.recordCount = 1;
-
             if (this.recordCount === 1)
             {
                 this.spinner = true;
+                console.log('simpliUIListViewsActionModal CALLOUT - getActionAndData - ' + this.calloutCount++);
                 getListViewActionAndData({ actionName: this.actionApiName, dataIds: this.recordIds})
                 .then(result => {
                     console.log('getListViewActionAndData successfully called'); 
@@ -77,6 +78,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                 
             } else {
                 this.spinner = true;
+                console.log('simpliUIListViewsActionModal CALLOUT - getListViewAction - ' + this.calloutCount++);
                 getListViewAction({ actionName: this.actionApiName})
                 .then(result => {
                     console.log('getListViewAction successfully called'); 
@@ -121,6 +123,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
         console.log('Data         - ' + this.recordIds);
         console.log('Field/Value  - ' + strValuesMap);
 
+        console.log('simpliUIListViewsActionModal CALLOUT - processAction - ' + this.calloutCount++);
         processAction({ actionKey: this.actionApiName, dataIds: this.recordIds, valuesMap: strValuesMap})
             .then(result => {
                 resultStr = result;
@@ -137,12 +140,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                 }
 
                 if (status === 'Ok') {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: this.listViewAction.label + ' Completed!',
-                        message: message,
-                        variant: 'success',
-                        mode: 'dismissable'
-                    }));
+                    this.dispatchEvent(SLVHelper.createToast('success', '', this.listViewAction.label + ' Completed!', message, false)); 
                     this.spinner = false;
                     this.recordCount = undefined;
                     this.isInitialized = false;
@@ -150,26 +148,14 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                     this.dispatchEvent(new CustomEvent('processed'));
                 
                 } else {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Processing Error!',
-                        message: message,
-                        variant: 'error',
-                        mode: 'sticky'
-                    }));
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', message, false)); 
                     this.spinner = false;
                     return;
                 }
             })
             .catch(error => {
                 resultStr = undefined;
-                console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Processing Error',
-                    message: 'There was an error processing the records - ' + error.body.message,
-                    variant: 'error',
-                    mode: 'sticky'
-                }));
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the records - ', true)); 
                 this.spinner = false;
                 return;
         });

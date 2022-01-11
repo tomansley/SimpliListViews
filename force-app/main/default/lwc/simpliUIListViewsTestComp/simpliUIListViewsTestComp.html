@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 12-28-2021
+  @last modified on  : 12-29-2021
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -269,14 +269,18 @@
                     <!-- WORKING EXAMPLE -->
                     <div>
                         <div class="splitboxleft" style="width: 33%; float:left;">
-                            <c-simpli-u-i-list-views mode="Split View"
-                                                     single-list-view-object="Account"
-                                                     page-name="Split_Example_2"
-                                                     excluded-objects="Event,Task">
-                            </c-simpli-u-i-list-views>
+                            <lightning-card>
+                                <c-simpli-u-i-list-views mode="Split View"
+                                                        single-list-view-object="Account"
+                                                        page-name="Split_Example_2"
+                                                        excluded-objects="Event,Task">
+                                </c-simpli-u-i-list-views>
+                            </lightning-card>
                         </div>
                         <div class="splitboxright" style="width: 66%; float:left;">
-                            <c-simpli-u-i-record-detail></c-simpli-u-i-record-detail>
+                            <lightning-card>
+                                <c-simpli-u-i-record-detail></c-simpli-u-i-record-detail>
+                            </lightning-card>
                         </div>
                             
                     </div>

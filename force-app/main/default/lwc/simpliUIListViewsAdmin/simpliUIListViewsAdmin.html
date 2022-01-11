@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 12-13-2021
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 01-09-2022
+  @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom@ansleyllc.com   Initial Version
@@ -19,55 +19,65 @@
     <!-- ------------------------------------------------------------------------ -->
     <!-- Section which handles the initialization of the list views if its needed -->
     <!-- ------------------------------------------------------------------------ -->
-    <c-simpli-u-i-list-views-init-card always-displayed=true
-                                       oninitializedcheck={handleInitializedCheck}>
-    </c-simpli-u-i-list-views-init-card>
-
-    <lightning-card>
+    <template if:true={hasConfig}>
+        <c-simpli-u-i-list-views-init-card always-displayed=true
+                                           oninitializedcheck={handleInitializedCheck}>
+        </c-simpli-u-i-list-views-init-card>
+    
         <!-- ------------------------------------------------------------------------ -->
         <!-- Section which handles the cleaning of the list views                     -->
         <!-- ------------------------------------------------------------------------ -->
         <template if:false={showCleanProgress}>
             <template if:true={isInitialized}>    
-                <lightning-layout>
-                    <lightning-layout-item padding="horizontal-small">
-                        <div style="padding-left: 10px;">   
-                            <lightning-icon icon-name="standard:maintenance_plan" 
-                                            alternative-text={label.List_Views_Cleaned} 
-                                            title={label.List_Views_Cleaned} >
-                            </lightning-icon>&nbsp;&nbsp;
-                        </div>
-                    </lightning-layout-item>
-                    <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
-                        <div>
-                            {label.List_Views_Click_For_Cleaning}  
-                            <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
-                                {label.List_Views_Click_For_Cleaning_Verbage}
+                <lightning-card>
+                    <lightning-layout>
+                        <lightning-layout-item padding="horizontal-small">
+                            <div style="padding-left: 10px;">   
+                                <lightning-icon icon-name="standard:maintenance_plan" 
+                                                alternative-text={label.List_Views_Cleaned} 
+                                                title={label.List_Views_Cleaned} >
+                                </lightning-icon>&nbsp;&nbsp;
                             </div>
-                        </div>
-                    </lightning-layout-item>
-                    <lightning-layout-item padding="horizontal-small" >
-                        <lightning-button variant="brand" label={label.Clean} title={label.Clean_List_Views} icon-name="utility:custom_apps" class="slds-m-left_x-small" onclick={handleCleanListViewsButtonClick}></lightning-button>
-                    </lightning-layout-item>
-                </lightning-layout>
+                        </lightning-layout-item>
+                        <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
+                            <div>
+                                {label.List_Views_Click_For_Cleaning}  
+                                <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
+                                    {label.List_Views_Click_For_Cleaning_Verbage}
+                                </div>
+                            </div>
+                        </lightning-layout-item>
+                        <lightning-layout-item padding="horizontal-small" >
+                            <lightning-button variant="brand" label={label.Clean} title={label.Clean_List_Views} icon-name="utility:custom_apps" class="slds-m-left_x-small" onclick={handleCleanListViewsButtonClick}></lightning-button>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </lightning-card>
             </template>
         </template>
         <template if:true={showCleanProgress}>
-            <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
-                                                        working-text={label.Cleaning_Status}
-                                                        complete-text={label.List_View_Cleaning_Complete}>
-            </c-simpli-u-i-list-views-init-progress-bar>
+            <lightning-card>
+                <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
+                                                            working-text={label.Cleaning_Status}
+                                                            complete-text={label.List_View_Cleaning_Complete}>
+                </c-simpli-u-i-list-views-init-progress-bar>
+            </lightning-card>
         </template>
+    </template>
+
+    <lightning-card>
+        <c-simpli-u-i-list-views-export-import oncreated={handleConfigCreated}>
+        </c-simpli-u-i-list-views-export-import>
     </lightning-card>
 
     <br/>
 
-    <lightning-card>
-        <c-simpli-u-i-list-views-schedule-job time-period="minutely"
-                                              onupdated={handleScheduleJobRefreshed}>
-        </c-simpli-u-i-list-views-schedule-job>
-    </lightning-card>
-
+    <template if:true={hasConfig}>
+        <lightning-card>
+            <c-simpli-u-i-list-views-schedule-job time-period="minutely"
+                                                onupdated={handleScheduleJobRefreshed}>
+            </c-simpli-u-i-list-views-schedule-job>
+        </lightning-card>
+    </template>
     <br/>
 
     <!-- ------------------------------------------------------------------------------- -->
@@ -142,10 +152,11 @@
                     </tr>
                 </template>            
             </tbody>
-        </table>      
+        </table>     
+         
+        <footer class="slds-modal__footer" style="min-width: 1100px;">
+            <button class="slds-button slds-button_brand" onclick={handleSaveClick}>{label.Save}</button>
+        </footer>
     </template>   
 
-    <footer class="slds-modal__footer" style="min-width: 1100px;">
-        <button class="slds-button slds-button_brand" onclick={handleSaveClick}>{label.Save}</button>
-    </footer>
 </template>
