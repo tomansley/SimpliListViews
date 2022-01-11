@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-25-2021
+ * @last modified on  : 12-31-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -151,7 +151,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
     public override RowsWrapper getData()
     {
-        List<SObject> dataRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, columnSortData, joinField, joinRecordIds, offset);
+        List<SObject> dataRows = ListViewHelper.getCustomListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, false, offset, textSearchStr);
 
         RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData);
 
@@ -165,10 +165,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         //try to get a true example row
         List<SObject> objectRows = null;
         
-        if (listview.RecordTypeId == ListViewHelper.coreRTId)
-            objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true, -1);
-        else 
-            objectRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, null, null, null, true, -1);
+        objectRows = ListViewHelper.getCustomListViewData(listview, lvConfig, null, null, null, true, -1);
         
         if (objectRows != null && objectRows.size() > 0) 
         {

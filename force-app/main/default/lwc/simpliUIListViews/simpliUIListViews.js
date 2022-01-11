@@ -2,12 +2,13 @@
 /* eslint-disable no-console */
 import { LightningElement, wire, track, api  } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import  LISTVIEW_MC  from '@salesforce/messageChannel/SimpliListViewMessageChannel__c';
 import { refreshApex } from '@salesforce/apex';
 import { subscribe, unsubscribe, publish, APPLICATION_SCOPE, MessageContext } from 'lightning/messageService';
 import { encodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
 import currentUserId from '@salesforce/user/Id';
+import * as SLVHelper from 'c/simpliUIListViewsHelper';
+
 
 //------------------------ LABELS ------------------------
 import Rows from '@salesforce/label/c.Rows';
@@ -158,6 +159,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track objectActionList;            //holds the (Complex Object) list of available actions for the selected object
     @track displayedActionList;         //holds the (Complex Object) list of available actions for the selected object based on the number of selected records
     @track showMassCreateModal;         //indicates whether the mass create action modal form should be displayed.
+    @track showEmailTemplateModal;      //indicates whether the email template modal form should be displayed.
+    @track emailTemplateFolder;         //indicates the email folder that holds the templates if the action selected has one.
+    @track emailTemplateWhatIdField;    //indicates the whatId, if it exists, which will be processed along with the template.
     @track showActionModal;             //indicates whether the action modal form should be displayed.
     @track showFlowModal;               //indicates whether the flow modal form should be displayed.
     @track showAdminModal;              //indicates whether the admin modal form should be displayed.
@@ -173,6 +177,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track firstListViewGet = true;     //indicates whether this is the first time the list views are being retrieved.
     @track canDisplayActions = false;   //indicates whether the page is in a position where the actions list is active
     @track canPin = false;              //indicates whether pinning can occur. Only available for App Page and Split View.
+    @track canDisplayTextSearch = false;//indicates whether text search can occur on this page.
     @track displayObjectNames = false;  //indicates whether the objects drop down can be displayed.
     @track displayListViewNames = false;//indicates whether the list view names drop down can be displayed.
     @track headerCanWrap = false;       //indicates whether the header row can wrap
@@ -244,7 +249,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         if (this.pageName === '')
         {
-            this.handleErrorToast('', 'List View Configuration Error', 'A page/component name must be provided for all simpli list view components.', false); 
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Configuration Error', 'A page/component name must be provided for all simpli list view components.', false)); 
             return;
         }
         console.log('Starting simpliUIListViews.renderedCallback for ' + this.pageName);
@@ -303,7 +308,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 if (this.singleListViewObject === '' || this.singleListViewApiName === '')
                 {
-                    this.handleErrorToast('', 'Single List View Configuration Error', 'If using Single List View mode the list view object and API name must be provided.', false); 
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Single List View Configuration Error', 'If using Single List View mode the list view object and API name must be provided.', false)); 
                     this.spinnerOff('renderedCallback');
                     return;
                 } else {
@@ -319,7 +324,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 if (this.singleListViewObject === '' || this.singleListViewApiName === '' || this.joinFieldName === '')
                 {
-                    this.handleErrorToast('', 'Related List View Configuration Error', 'If using Related List View mode the list view object, list view API name and join field name must be provided.', false); 
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Related List View Configuration Error', 'If using Related List View mode the list view object, list view API name and join field name must be provided.', false)); 
                     this.spinnerOff('renderedCallback');
                     return;
                 } else {
@@ -423,7 +428,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
             if (this.toBool(this.componentConfig.DisplayRowCount) === false) { this.displayRowCount = false; }
             if (this.toBool(this.componentConfig.DisplaySelectedCount) === false) { this.displaySelectedCount = false; }
-            if (this.toBool(this.componentConfig.DisplayTextSearch) === false) { this.displayTextSearch = false; }
+            if (this.toBool(this.componentConfig.DisplayTextSearch) === false) { this.displayTextSearch = false; this.canDisplayTextSearch = false; }
+            if (this.toBool(this.componentConfig.DisplayTextSearch) === true) { this.displayTextSearch = true; this.canDisplayTextSearch = true; }
             if (this.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
             if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
             if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
@@ -445,7 +451,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.isInitializing = false;
             }
         } catch(error) {
-            this.handleErrorToast(error, 'Error Retrieving User Config', 'There was an error retrieving the user config. Please see an administrator', true); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Config', 'There was an error retrieving the user config. Please see an administrator', true)); 
         };
 
     }
@@ -507,7 +513,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 }
             } 
         } catch(error) {
-            this.handleErrorToast(error, 'Error Retrieving User Sorting', 'There was an error retrieving the user sorting config. Please see an administrator', true); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Sorting', 'There was an error retrieving the user sorting config. Please see an administrator', true)); 
         };
     }
     /*
@@ -557,7 +563,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         } else if (error) { 
             this.objectActionList = undefined; 
-            this.handleErrorToast(error, 'Error Retrieving Actions', 'There was an error retrieving the list view actions. Please see an administrator', true); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Actions', 'There was an error retrieving the list view actions. Please see an administrator', true)); 
         }
     }
 
@@ -595,7 +601,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.offset = -1;
         this.selectedRecordCount = 0;
         this.isEdited = false;
-        this.textSearchText = '';
         this.hoverIsDisplayed = false;
         let selectedRows = this.template.querySelectorAll('lightning-input');
         selectedRows.forEach(element => element.checked = false);
@@ -609,10 +614,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         try {
             console.log(this.pageName + ' CALLOUT - getListViewData - ' + this.calloutCount++);
-            let listViewDataResult = await getListViewData({pageName: this.pageName, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset });
+            let listViewDataResult = await getListViewData({pageName: this.pageName, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset, textSearchStr: this.textSearchText });
             this.handleListViewDataPage(listViewDataResult);
         } catch(error) {
-            this.handleErrorToast(error, 'Error Retrieving List View Data', 'There was an error retrieving the list view actions. Please see an administrator', true);
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Data', 'There was an error retrieving the list view data. Please see an administrator', true));
         }
 
         this.spinnerOff('getListViewDataPage');
@@ -707,8 +712,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.isCustomListView = true;
         }
 
+        if (this.canDisplayTextSearch === true && this.listViewData.canTextSearch === false)
+        {
+            this.displayTextSearch = false;
+        } else {
+            this.displayTextSearch = true;
+        }
+
         this.refreshTitle = 'Click to perform list view refresh on current list view';
-        this.textSearchText = '';
         this.isInitializing = false;
 
     }
@@ -748,13 +759,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             })
             .catch(error => {
                 this.spinnerOff('getObjectsList');
-                this.handleErrorToast(error, 'Error Retrieving List View Objects', 'There was an error retrieving the list view objects. Please see an administrator', true);
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Objects', 'There was an error retrieving the list view objects. Please see an administrator', true));
             });
         }
     }
 
     async getListViewsForObject()
-    {
+    {    
         if (this.listViewListObject !== this.selectedObject) //only get the list views if its for a new object
         {
             this.listViewListObject = this.selectedObject;
@@ -771,7 +782,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 //if we have no list views to display then either the object name is bad or the user does not have access to the object.
                 if (this.listViewList.length === 0)
                 {
-                    this.handleErrorToast('', 'Error Retrieving Object List Views', 'No list views available as the user does not have access to this object.', false) 
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Retrieving Object List Views', 'No list views available as the user does not have access to this object.', false));
                 } else if (this.urlListView != undefined) {
                     this.selectedListView = this.urlListView;
                     this.selectedListViewExportName = this.selectedListView + '.csv';
@@ -804,7 +815,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             })
             .catch(error => {
                 this.spinnerOff('getListViewsForObject');
-                this.handleErrorToast(error, 'Error Retrieving Object List Views', 'There was an error retrieving ' + this.selectedObject + ' list views data. This usually indicates the user does not have read access to the object. Please see an administrator if you believe this to be an error', true);
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Object List Views', 'There was an error retrieving ' + this.selectedObject + ' list views data. This usually indicates the user does not have read access to the object. Please see an administrator if you believe this to be an error', true));
             });
 
         }
@@ -895,7 +906,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     
             })
             .catch(error => {
-                this.handleErrorToast(error, 'Processing Error', 'There was an error processing the list view. Please see an administrator', true); 
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list view. Please see an administrator', true)); 
             });
 
         } else {
@@ -941,21 +952,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         if (this.isRefreshed === true)
         {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'List View Auto Refresh Started',
-                message: 'List view refresh has been started. To stop refreshing click the refresh button again.',
-                variant: 'success',
-                mode: 'dismissable'
-            }));
-
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Auto Refresh Started', 'List view refresh has been started. To stop refreshing click the refresh button again.', false)); 
         } else {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'List View Auto Refresh Stopped',
-                message: 'List view refresh has been stopped. To start refreshing click the refresh button again.',
-                variant: 'success',
-                mode: 'dismissable'
-            }));
-    
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Auto Refresh Stopped', 'List view refresh has been stopped. To start refreshing click the refresh button again.', false));     
         }
 
         this.handleAutoRefreshData();
@@ -1119,6 +1118,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.columnSortData = new Map(); 
         this.modifiedText = '';
         this.isRefreshed = false;
+        this.textSearchText = '';
         console.log('Object selected - ' + this.selectedObject + ' for ' + this.pageName);
         this.getListViewsForObject();
     }
@@ -1127,12 +1127,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * Called when a user changed a list view, used 
      * to retrieve record data.
      */
-    handleListViewSelected(event) {
+    handleListViewChanged(event) {
 
         console.log('Old list view - ' + this.selectedListView + ' for ' + this.pageName);
         console.log('Sort data - ' + this.listViewSortData + ' for ' + this.pageName);
-        this.spinnerOn('handleListViewSelected');
+        this.spinnerOn('handleListViewChanged');
         this.isRefreshed = false;
+        this.textSearchText = '';
        
         //set the old column sort information into the list view sort data for caching otherwise it disappears.
         if (this.columnSortDataStr !== '')
@@ -1178,16 +1179,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log(this.pageName + ' CALLOUT - updateUserConfig(pinnedListView) - ' + this.calloutCount++);
         updateUserConfig({compName: this.pageName, configName: 'pinnedListView', value: this.selectedObject + ':' + this.selectedListView })
         .then(result => {
-            console.log('List view pinning successful for ' + this.pageName);
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'List View Pinned',
-                message: 'List view successfully pinned.',
-                variant: 'success',
-                mode: 'dismissable'
-            }));
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Pinned', 'List view successfully pinned.', false)); 
         })
         .catch(error => {
-            this.handleErrorToast(error, 'Pinning Error', 'There was an error during user configuration update. Please see an administrator', true); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Pinning Error', 'There was an error during user configuration update. Please see an administrator', true)); 
         });
 
     }
@@ -1203,21 +1198,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('RESULT - ' + result);
             if (result === 'success')
             {
-                console.log('List view unpinning successful for ' + this.pageName);
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'List View Unpinned',
-                    message: 'List view successfully unpinned.',
-                    variant: 'success',
-                    mode: 'dismissable'
-                }));
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Unpinned', 'List view successfully unpinned.', false)); 
                 this.isPinned = false;
             } else {
                 console.log('List view unpinning NOT successful for ' + this.pageName);
-                this.handleErrorToast('', 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator', false); 
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator', false)); 
             }
         })
         .catch(error => {
-            this.handleErrorToast(error, 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator', true); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator', true)); 
         });
     }
     
@@ -1321,23 +1310,18 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     //if we have an error then send an ERROR toast.
                     if (result === 'success')
                     {
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'List View Updated Successfully',
-                            message: 'List view has been updated and refreshed successfully.',
-                            variant: 'success',
-                            mode: 'dismissable'
-                        }));
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Updated Successfully', 'List view has been updated and refreshed successfully.', false)); 
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
                         this.refreshAllListViewData();
 
                     //else send an ERROR toast.
                     } else {
-                        this.handleErrorToast('', 'Processing Error', 'There was an error processing the list view. Please see an administrator', false); 
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error processing the list view. Please see an administrator', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick1');
                     }
                 })
                 .catch(error => {
-                    this.handleErrorToast(error, 'Processing Error', 'There was an error processing the list view. Please see an administrator', true); 
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list view. Please see an administrator', true)); 
                     this.spinnerOff('handleProcessListViewsButtonClick2');
                 });
 
@@ -1356,24 +1340,19 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     //if we have an error then send an ERROR toast.
                     if (result === 'success')
                     {
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'List Views Updated Successfully',
-                            message: 'List views have been updated successfully.',
-                            variant: 'success',
-                            mode: 'dismissable'
-                        }));
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Updated Successfully', 'List view has been updated successfully.', false)); 
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
                         this.getListViewsForObject();
                         this.spinnerOff('handleProcessListViewsButtonClick3');
 
                     //else send an ERROR toast.
                     } else {
-                        this.handleErrorToast('', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false); 
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick4');
                     }
                 })
                 .catch(error => {
-                    this.handleErrorToast(error, 'Processing Error', 'There was an error processing the list views. Please see an administrator', true); 
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list views. Please see an administrator', true)); 
                     this.spinnerOff('handleProcessListViewsButtonClick5');
                 });
 
@@ -1391,7 +1370,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     //if we have an error then send an ERROR toast.
                     if (result === 'failed')
                     {
-                        this.handleErrorToast('', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false); 
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick6');
 
                     //else send a SUCCESS toast.
@@ -1402,18 +1381,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         //this.isInitialized = false;
                         //this.showProgress = true;
 
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'List View Processing',
-                            message: 'List view processing has started for ALL list views. You MUST do a full page refresh after completion to see changes.',
-                            variant: 'success',
-                            mode: 'dismissable'
-                        }));
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Processing', 'List view processing has started for ALL list views. You MUST do a full page refresh after completion to see changes.', false)); 
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
                         this.spinnerOff('handleProcessListViewsButtonClick7');
                     }
                 })
                 .catch(error => {
-                    this.handleErrorToast(error, 'Processing Error', 'There was an error processing the list views. Please see an administrator', true); 
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list views. Please see an administrator', true)); 
                     this.spinnerOff('handleProcessListViewsButtonClick8');
                 });
 
@@ -1557,7 +1531,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             if (this.selectedRecordIds.size > 1)
             {
-                this.handleErrorToast('', 'Error Processing Action', 'Multiple rows cannot be selected for this action', false); 
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'Multiple rows cannot be selected for this action', false)); 
             } else {
 
                 //go through the action parameters checking for field substitutions
@@ -1576,7 +1550,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                                                                             if (row === undefined)
                                                                             {
-                                                                                this.handleErrorToast('', 'Error Processing Action', 'A row must be selected for this action', false); 
+                                                                                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'A row must be selected for this action', false)); 
                                                                                 hyperlink = '';
 
                                                                             } else if (param.value === 'Id')
@@ -1662,7 +1636,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         {
 
             if (this.selectedRecordIds.size !== 1) {    
-                this.handleErrorToast('', 'Error Processing Action', 'A single row must be selected for cloning', false); 
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'A single row must be selected for cloning', false)); 
             } else {
                 console.log('We are cloning the following id - ' + selectedRowId + ' for ' + this.pageName);
 
@@ -1684,7 +1658,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         {
 
             if (this.selectedRecordIds.size !== 1) {      
-                this.handleErrorToast('', 'Error Processing Action', 'A single row must be selected for editing', false); 
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'A single row must be selected for editing', false)); 
             } else {
 
                 console.log('We are editing the following id - ' + selectedRowId + ' for ' + this.pageName);
@@ -1709,7 +1683,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('We are editing all records for ' + this.pageName);
 
             if (this.listViewDataRows.length > 101) {
-                this.handleErrorToast('', 'Too Many Rows!', 'Inline editing only available for up to 100 rows', false); 
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Too Many Rows!', 'Inline editing only available for up to 100 rows', false)); 
             } else {
                 this.setAllRowsEdited();
             }
@@ -1727,6 +1701,17 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.massCreateListView = this.selectedListView;
 
             this.showMassCreateModal = true;
+
+        //------------------------------------------------------
+        //EMAIL USING TEMPLATE
+        //------------------------------------------------------
+        } else if (this.selectedAction.className === 'ListViewActionEmail' && this.selectedAction.emailTemplateFolder !== '' && this.selectedRecordIds.size > 0)
+        {
+            console.log('We are creating emails from a template for ' + this.pageName);
+            this.showEmailTemplateModal = true;
+            this.emailTemplateFolder = this.selectedAction.emailTemplateFolder;
+            this.emailTemplateWhatIdField = this.selectedAction.emailTemplateWhatIdField;
+            this.spinnerOff('ListViewActionEmailTemplate');
 
         //------------------------------------------------------
         //GENERATE PDF
@@ -1766,7 +1751,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else {
 
             if (this.selectedRecordIds.size === 0) {
-                this.handleErrorToast('', 'Error Processing Action', 'No rows selected for processing', false); 
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'No rows selected for processing', false)); 
                 this.dispatchEvent(new CustomEvent('processclick'));
             
             } else {
@@ -1805,6 +1790,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     handleMassCreateModalClose() {
         this.showMassCreateModal = false;
+    }
+ 
+    handleEmailTemplateModalClose() {
+        this.showEmailTemplateModal = false;
     }
  
     cancelActionModal() {    
@@ -1907,12 +1896,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 }
             });        
         } else {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Editing Not Available',
-                message: 'Inline editing is not available for this list view.',
-                variant: 'info',
-                mode: 'dismissable'
-            }));
+            this.dispatchEvent(SLVHelper.createToast('info', '', 'Editing Not Available', 'Inline editing is not available for this list view.', false)); 
         }
     }
 
@@ -1934,17 +1918,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log(this.pageName + ' CALLOUT - updateRecord - ' + this.calloutCount++);
             updateRecord({rowId: rowId, rowData: rowDataStr})
             .then(result => {
-                console.log('Save successful for ' + this.pageName);
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Success',
-                    message: 'Record saved successfully.',
-                    variant: 'success',
-                    mode: 'dismissable'
-                }));
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false)); 
                 this.refreshAllListViewData();
             })
             .catch(error => {
-                this.handleErrorToast(error, 'Error', 'There was an error saving the record. Please see an administrator', true); 
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the record. Please see an administrator', true)); 
             });
         }
     }     
@@ -1978,12 +1956,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 }
         
                 if (rowCount > 0) {
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Success',
-                        message: rowCount + ' record(s) saved successfully.',
-                        variant: 'success',
-                        mode: 'dismissable'
-                    }));
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', rowCount + ' record(s) saved successfully.', false)); 
                 }
                 
                 this.refreshAllListViewData();
@@ -1997,7 +1970,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             })
             .catch(error => {
-                this.handleErrorToast(error, 'Error', 'There was an error saving the records. Please see an administrator', true); 
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the records. Please see an administrator', true)); 
             });
         }
 
@@ -2093,28 +2066,49 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     }
 
+    handleTextSearchChange(event) {
+        this.textSearchText = event.target.value;
+    }
+
     /*
      * Method that handles text changes to the text search field.
      */
-    handleTextSearchChange(event) {
+    handleTextSearch(event) {
         
-        console.log('handleTextSearchChange called - ' + event.target.value + ' for ' + this.pageName);
+        let searchStr = event.target.value;
+        console.log('handleTextSearch called - ' + searchStr + ' for ' + this.pageName);
 
-        this.listViewDataRows.forEach(element => { 
-            if (event.target.value === '')
+        var keyCode = event.code || event.key;
+
+        //if we have clicked "Enter" and either the search string is greater than 2 characters
+        //  or we had a search string and its been removed.
+        if (keyCode == 'Enter' && (searchStr.length > 2 || searchStr.length === 0))
+        {
+            //CUSTOM list views can only do CLIENT SIDE
+            if (this.isCustomListView === true)
             {
-                element.isDisplayed = true;
+                this.listViewDataRows.forEach(element => { 
+                    if (searchStr === '')
+                    {
+                        element.isDisplayed = true;
+                    } else {
+                        console.log('CSV String - ' + element.dataAsCSVString + ' for ' + this.pageName);
+                        if (element.dataAsCSVString.toLowerCase().includes(searchStr.toLowerCase())) {
+                            console.log('Element will be displayed for ' + this.pageName);
+                            element.isDisplayed = true;
+                        } else {
+                            console.log('Element will NOT be displayed for ' + this.pageName);
+                            element.isDisplayed = undefined;
+                        }
+                    }
+                });
+
+            //CORE list views can do SERVER SIDE
             } else {
-                console.log('CSV String - ' + element.dataAsCSVString + ' for ' + this.pageName);
-                if (element.dataAsCSVString.toLowerCase().includes(event.target.value.toLowerCase())) {
-                    console.log('Element will be displayed for ' + this.pageName);
-                    element.isDisplayed = true;
-                } else {
-                    console.log('Element will NOT be displayed for ' + this.pageName);
-                    element.isDisplayed = undefined;
-                }
+                this.textSearchText = searchStr;
+                this.refreshAllListViewData();
             }
-        });
+        }
 
     }
 
@@ -2245,27 +2239,5 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
           publish(this.messageContext, LISTVIEW_MC, message);        
 
       }
-
-    handleErrorToast(error, title, message, includeStack) 
-    {
-        let errorStr = message;
-        if (error != '' && error.body !== undefined)
-        {
-            if (includeStack === true)
-                errorStr = message + ' - ' + error.body.message;
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-        } else if (error != '') {
-            if (includeStack === true)
-                errorStr = message + ' - ' + error.message;
-            console.log('Error Detected - ' + error.message + ' | ' + error.stack);
-        }
-
-        this.dispatchEvent(new ShowToastEvent({
-            title: title,
-            message: errorStr,
-            variant: 'error',
-            mode: 'sticky'
-        }));
-    }
   
 }

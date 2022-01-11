@@ -3,8 +3,8 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 12-28-2021
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 01-05-2022
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
   1.0   08-03-2020   tom@ansleyllc.com   Initial Version
@@ -74,7 +74,7 @@
                                 <lightning-combobox placeholder={label.Select_List_View} 
                                                     label={label.List_View} 
                                                     value={selectedListView} 
-                                                    onchange={handleListViewSelected} 
+                                                    onchange={handleListViewChanged} 
                                                     options={listViewList}
                                                     variant=label-hidden
                                                     title={modifiedText}>
@@ -198,10 +198,11 @@
                                 <template if:true={listViewData}>
                                     <lightning-layout-item padding="horizontal-small">
                                         <lightning-input placeholder={label.Search_List_Dot}
-                                                            type="search"
+                                                            type="text"
                                                             value={textSearchText}
                                                             variant=label-hidden
-                                                            onchange={handleTextSearchChange}>
+                                                            onchange={handleTextSearchChange}
+                                                            onkeypress={handleTextSearch}>
                                         </lightning-input>
                                     </lightning-layout-item>
                                 </template>
@@ -867,5 +868,15 @@
                                                 master-obj-field={joinFieldName}
                                                 onclose={handleMassCreateModalClose}>
     </c-simpli-u-i-list-views-mass-create-modal>
+
+    <!-- ---------------------------------------------------------------------------------- -->
+    <!-- The modal view if the EMAIL TEMPLATE action is selected                            -->
+    <!-- ---------------------------------------------------------------------------------- -->
+    <c-simpli-u-i-list-views-email-template-modal show-modal={showEmailTemplateModal}
+                                                  folder-name={emailTemplateFolder}
+                                                  record-ids={selectedRecordIds}
+                                                  what-id-field={emailTemplateWhatIdField}
+                                                  onclose={handleEmailTemplateModalClose}>
+    </c-simpli-u-i-list-views-email-template-modal>
 
 </template>

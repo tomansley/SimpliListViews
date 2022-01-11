@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-28-2021
+ * @last modified on  : 01-11-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -17,7 +17,7 @@
  * 7.0   08-16-2021   tom@ansleyllc.com   Added permission check for each action before display
  * 8.0   08-18-2021   tom@ansleyllc.com   Updated strings to static final variables, added hyperlink action config
  * 9.0   08-18-2021   tom@ansleyllc.com   Added TYPE_COMBOBOX. Added CampaignMember config
- * 10    12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility. Added getFieldRelationship() method. Fixed getSFDCFieldLabel() and isValidSFDCFieldName() methods.
+ * 10    12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility.
  * 11    12-15-2021   tom@ansleyllc.com   Pulled out creating types due to different methods for handling types with package names etc.
  **/
 global with sharing class ListViewHelper 
@@ -84,6 +84,9 @@ global with sharing class ListViewHelper
 
     public static final String ID_TYPE_CORE = 'Core';
     public static final String ID_TYPE_SLV  = 'SLV';
+
+    public static final String QUERY_TYPE_SOQL = 'soql';
+    public static final String QUERY_TYPE_SOSL = 'sosl';
 
     private static Boolean simpliLVsGetRetry = false;             //used to identify whether we are trying to perform a list view get retry with the "simpli_lv__" attached.
 
@@ -991,7 +994,30 @@ global with sharing class ListViewHelper
         return listviewsById;
     }
 
-    public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
+    //===============================================================================
+    // CORE LIST VIEWS
+    //===============================================================================
+
+
+    public static List<SObject> getCoreListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    {
+        return getCoreListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1, '');
+    }
+
+    public static List<SObject> getCoreListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Integer offset)
+    {
+        return getCoreListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false, offset, '');
+    }
+
+    public static List<SObject> getCoreListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset, String soslTextSearchStr)
+    {
+        if (String.isEmpty(soslTextSearchStr))
+            return getCoreListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
+        else
+            return getSOSLListViewData(soslTextSearchStr, listview, lvConfig, sortData, offset);
+    }
+
+    public static List<SObject> getCoreListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
 
         String debug = '\n\nStarting getListViewData - \n';
@@ -1193,7 +1219,7 @@ global with sharing class ListViewHelper
         try {
             objectRows = Database.query(query);
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getListViewData(' + query + ')  ' + ListViewException.getExtendedString(e));
+            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getCoreListViewData(' + query + ')  ' + ListViewException.getExtendedString(e));
             throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         
@@ -1201,55 +1227,40 @@ global with sharing class ListViewHelper
 
     }
 
-    /*
-     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
-     * the possible additional fields added by the user and then use it to get the data.
-     */ 
-    public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+
+
+    //===============================================================================
+    // CUSTOM LIST VIEWS
+    //===============================================================================
+
+    public static List<SObject> getCustomListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
-        return getListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
+        return getCustomListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
     }
 
-    /*
-     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
-     * the possible additional fields added by the user and then use it to get the data.
-     */ 
-    public static List<SObject> getListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Integer offset)
+    public static List<SObject> getCustomListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Integer offset)
     {
-        return getListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false, offset);
+        return getCustomListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, false, offset);
     }
 
-    /*
-     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
-     * the possible additional fields added by the user and then use it to get the data.
-     */ 
-    public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    public static List<SObject> getCustomListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset, String soslTextSearchStr)
     {
-        return getListViewData(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
+        if (String.isEmpty(soslTextSearchStr)) {
+            return getCustomListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
+        } else
+            return getSOSLListViewData(soslTextSearchStr, listview, lvConfig, sortData, offset);
     }
 
-    /*
-     * Method to use the SOQL query retrieved from the core listview describe, amend it to include
-     * the possible additional fields added by the user and then use it to get the data.
-     */ 
-    public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Integer offset)
+    public static List<SObject> getCustomListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
-        return getListViewData(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false, offset);
-    }
-
-    /*
-      ListViewHelper.getListViewData('SELECT Name, List_View_Label__c, List_View_Object__c, LastModifiedDate, LastModifiedBy.Name, Primary_Key__c, (SELECT Parameter_Name__c, Parameter_Type__c, Parameter_Label__c, Parameter_Value__c FROM List_View_Config_Parameters__r ORDER BY Parameter_Label__c), (SELECT Field_Name__c, Highlight_Color__c, Operator__c, Order__c, Value__c FROM List_View_Config_Conditions__r ORDER BY Order__c ASC) FROM List_View_Config__c', null, null, null, null, false);
-     */
-    public static List<SObject> getListViewData(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
-    {
-        soql = getSOQLQuery(soql, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
+        String soql = getSOQLQuery(listview.Core_ListView_Query__c, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
         
         //get rows of data from query
         List<SObject> objectRows = null;
         try {
             objectRows = Database.query(soql);
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getListViewData(' + soql + ')  ' + ListViewException.getExtendedString(e));
+            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getCustomListViewData(' + soql + ')  ' + ListViewException.getExtendedString(e));
             throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         
@@ -1292,6 +1303,8 @@ global with sharing class ListViewHelper
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
         
+        //SCRUB SOQL
+        soql = HelperString.scrubSOQL(soql);
         
         //OBJECT NAME
         String objectName = soql.replaceAll('\\(.*?\\)', '').substringAfterLast(' FROM '); //get rid of everything inside brackets and then get expression after FROM
@@ -1302,7 +1315,7 @@ global with sharing class ListViewHelper
 
         //SELECT
         String selectStr = soql.substringBefore(' FROM ' + objectName + ' WHERE');
-        if (selectStr == soql)
+        if (selectStr == soql) //not sure this is needed.
             selectStr = soql.substringBefore(' FROM ' + objectName);
         debug += 'SELECT                          - ' + selectStr + '\n';
 
@@ -1448,6 +1461,219 @@ global with sharing class ListViewHelper
         ListViewErrorHelper.addLog('ListViewHelper(getSOQLQuery)', debug);
 
         return soql;
+    }
+
+
+    //===============================================================================
+    // SOSL
+    //===============================================================================
+
+    public static List<SObject> getSOSLListViewData(String textSearchStr, List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, Integer offset)
+    {
+        String sosl = getSOSLQuery(listview, lvConfig, sortData, textSearchStr, offset);
+        
+        //get rows of data from query
+        List<SObject> objectRows = null;
+        try {
+            objectRows = search.query(sosl)[0];
+        } catch (Exception e) {
+            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getSOSLListViewData(' + sosl + ')  ' + ListViewException.getExtendedString(e));
+            throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
+        }
+        
+        return objectRows;
+
+    }
+
+    public static String getSOSLQuery(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String soslTextString, Integer offset)
+    {
+        if (!canPerformSOSLQuery(listview))
+            throw new ListViewException('Cannot perform a text search against this custom list view due to subqueries within SELECT statement.');
+
+        String soql = listview.Core_ListView_Query__c;
+        String debug = '\n\n------------------------- GET SOSL QUERY -------------------------\n';
+        debug += 'soql                            - ' + soql + '\n';
+        debug += 'lvConfig                        - ' + lvConfig + '\n';
+        debug += 'sortData                        - ' + sortData + '\n';
+
+        Map<String, String> lvConfigParams = new Map<String, String>();
+        if (lvConfig != null) //there might not be config yet for this list view
+        {
+            for (List_View_Config_Parameter__c param: lvConfig.listViewConfig.List_View_Config_Parameters__r)
+                lvConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
+        }
+        
+        //---------------------------------------------------
+        // Parse out the query retrieved from the list view.
+        //---------------------------------------------------
+        
+        //SCRUB SOQL
+        soql = HelperString.scrubSOQL(soql);
+        
+        //OBJECT NAME
+        String objectName = soql.replaceAll('\\(.*?\\)', '').substringAfterLast(' FROM '); //get rid of everything inside brackets and then get expression after FROM
+        if (objectName.contains(' '))                                                      //if expression contains stuff after object then remove it.
+            objectName = objectName.substringBefore(' ');
+        debug += 'OBJNAME                         - ' + objectName + '\n';
+
+
+        //SELECT
+        String selectStr = soql.substringBetween('SELECT ', ' FROM ' + objectName + ' WHERE');
+        if (selectStr == null)
+            selectStr = soql.substringBetween('SELECT ', ' FROM ' + objectName);
+        debug += 'SELECT                          - ' + selectStr + '\n';
+        System.debug(LoggingLevel.DEBUG, debug);
+
+        Set<String> selectFields = new Set<String>(selectStr.split(',')); //use set to remove duplicates
+
+        //Additional Fields
+        if (lvConfigParams.get(PARAM_ADD_FIELDS) != null)
+            selectFields.addAll(lvConfigParams.get(PARAM_ADD_FIELDS).split(','));
+
+        //IsDeleted
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted'))
+            selectFields.add('IsDeleted');
+
+            selectStr = '';
+        for (String field: selectFields)
+        {
+            field = HelperSchema.scrubFieldNameForSOQL(field); //remove weird stuff like toLabel() etc.
+            selectStr += field + ', ';
+        }
+        selectStr = selectStr.removeEnd(', ');
+
+
+        //SCOPE
+        String scopeStr = 'USING SCOPE ';
+        if (!String.isEmpty(lvConfig?.getListView().Filter_Scope__c))
+            scopeStr += lvConfig.getListView().Filter_Scope__c;
+        else
+            scopeStr += 'Everything';
+        debug += 'SCOPE                           - ' + scopeStr + '\n';
+
+
+        //WHERE
+        String whereStr = 'WHERE ' + soql.substringAfter(' FROM ' + objectName).substringAfter(' WHERE ');
+        if (whereStr == 'WHERE ') 
+            whereStr = '';
+        if (whereStr.containsIgnoreCase(' ORDER BY '))
+            whereStr = whereStr.substringBeforeLast(' ORDER BY ');
+        debug += 'WHERE                           - ' + whereStr + '\n';
+
+
+        //ORDER BY
+        String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ').substringBeforeLast(' LIMIT ');
+        
+        if (sortData?.size() > 0)
+        {
+            System.debug(LoggingLevel.FINE, 'Sort data - ' + sortData);
+            orderByStr = ' ORDER BY ';
+            
+            for (ListViewHelper.ColumnSortData columnSortData: sortData)
+            {
+                //make sure the field name is valid if we are not dealing with an API callout
+                if (lvConfig?.getListView().Subtype__c == ListViewHelper.SUBTYPE_TOOLING || HelperSchema.isValidSFDCFieldName(objectName, columnSortData.fieldName))
+                {
+                    orderByStr += columnSortData.fieldName + ' ';
+                    if (columnSortData.sortDirection == true)
+                        orderByStr += 'ASC NULLS LAST, ';
+                    else
+                        orderByStr += 'DESC NULLS FIRST, ';
+                } else {
+                    System.debug(LoggingLevel.FINE, 'Sort column not valid - ' + columnSortData.fieldName);
+                }
+            }
+
+            orderByStr = orderByStr.removeEnd(', ').removeEnd('ORDER BY ');
+        } else {
+            if (orderByStr != '')
+                orderByStr = ' ORDER BY ' + orderByStr;
+        }
+        debug += 'ORDER                           - ' + orderByStr + '\n';
+
+        //LIMIT
+        String limitStr = '';
+        if (soql.containsIgnoreCase(' LIMIT '))
+            limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
+
+        if (lvConfigParams.get('ReturnSize') != null)
+        {
+            Integer returnSize = Integer.valueOf(lvConfigParams.get('ReturnSize'));
+            limitStr = ' LIMIT ' + returnSize;
+            if (offset == null) offset = -1;
+
+            //if we have an offset or we are returning LARGE datasets
+            if (offset != -1 || returnSize > 500)
+            {
+                Integer rowLimit = 500;
+                //if we DO NOT have an offset then set to 0
+                if (offset == -1)
+                {
+                    offset = 0;
+
+                //if we DO have an offset then increase it but not above the return size max
+                } else {
+                    System.debug(LoggingLevel.FINE, 'Offset - ' + offset);
+                    System.debug(LoggingLevel.FINE, 'returnSize - ' + returnSize);
+                    
+                    //if we have NOT hit the max
+                    if ((offset + rowLimit) < returnSize)
+                    {
+                        offset = offset + 500;
+                    }
+
+                    if ((offset + rowLimit) > returnSize)
+                    {
+                        rowLimit = returnSize - offset;
+                    }
+                }
+                limitStr = ' LIMIT ' + rowLimit + ' OFFSET ' + offset;
+
+                ListViewHelper.offset = offset; //set the offset as static to be used up the stack.
+            }
+
+        //otherwise use 100
+        } else {
+            limitStr = ' LIMIT 100';
+        }
+        debug += 'LIMIT                           - ' + limitStr + '\n';
+
+        //------------------------------------------------------
+        // Put the query back together again
+        //------------------------------------------------------
+        String sosl = 'FIND {' + soslTextString + '} IN ALL FIELDS RETURNING ' + objectName + ' (' + selectStr + ' ' + whereStr + orderByStr + limitStr + ') ' ;
+        debug += '\nFINAL SOSL LAYOUT               - FIND {SOSLTEXTSTRING} IN ALL FIELDS RETURNING OBJNAME (SELECT WHERE ORDERBY LIMIT)\n';
+        debug += 'FINAL SOSL                      - ' + sosl + '\n';
+
+        System.debug(LoggingLevel.FINE, debug);
+        ListViewErrorHelper.addLog('ListViewHelper(getSOSLQuery)', debug);
+
+        return sosl;
+    }
+
+    /**
+    * @description Method to determine whether the list view (based on the SOQL string) can perform
+    *              a SOSL query. This is determined by checking if there is more than one SELECT statement
+    *              in the main SELECT statement. If so then it cannot perform a SOSL query.
+    * @author tom.h.ansley@medtronic.com | 12-31-2021 
+    * @param listView the list view to check if a SOSL query can be performed on it.
+    * @return Boolean true - YES, false - NO
+    **/
+    public static Boolean canPerformSOSLQuery(List_View__c listView)
+    {
+        String soql = listView.Core_ListView_Query__c;
+
+        //must get the object name from the SOQL statement!
+        String objectName = soql.replaceAll('\\(.*?\\)', '').substringAfterLast(' FROM '); //get rid of everything inside brackets and then get expression after FROM
+        if (objectName.contains(' '))                                                      //if expression contains stuff after object then remove it.
+            objectName = objectName.substringBefore(' ');
+
+        String selectStr = soql.removeStart('SELECT ').substringBefore(' FROM ' + objectName + ' WHERE');
+
+        if (selectStr.containsIgnoreCase('SELECT '))
+            return false;
+        else
+            return true;
     }
 
     public static List<List_View_Action__c> insertCoreActions()
@@ -1641,8 +1867,189 @@ global with sharing class ListViewHelper
         return actions;
     }
 
+    //---------------------------------------
+    // ALL:ALL Config
+    //---------------------------------------
+    public static List_View_Config__c insertCoreGlobalConfig()
+    {
+        List_View_Config__c config = new List_View_Config__c();
+        config.Name                = 'All';
+        config.List_View_Object__c = 'All';
+        config.List_View_Label__c   = 'Org Wide Configuration';
+        config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
+        
+        insert config;
+
+        List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
+        List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'ListViewObjects';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = '';
+        param.Parameter_Label__c  = 'List View Objects';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'IncludedObjectTypes';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = '';
+        param.Parameter_Label__c  = 'Included Object Types';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'ExcludedObjectTypes';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
+        param.Parameter_Label__c  = 'Excluded Object Types';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'DisplayActionsButton';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Display Actions Button';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'AllowAdmin';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Display Admin Button';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Display List View Reprocessing Button';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'DisplayOriginalListViewButton';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Display Original List View Button';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'DisplaySelectedCount';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Display Selected Count';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'AllowDataExport';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Allow Data Export';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'AllowAutomaticDataRefresh';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Allow Automatic Data Refresh';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'DisplayRowCount';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Display Row Count';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'MaxRowsDisplayed';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
+        param.Parameter_Value__c  = '2500';
+        param.Parameter_Label__c  = 'Max Rows Displayed';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'QueryPagingSize';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
+        param.Parameter_Value__c  = '250';
+        param.Parameter_Label__c  = 'Query Paging Size';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'IsInitialized';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'false';
+        param.Parameter_Label__c  = 'Is Initialized';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'AllowInlineEditing';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Allow Inline Editing';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'DisplayTextSearch';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Display Text Search';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'DisplayRecordPopovers';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'true';
+        param.Parameter_Label__c  = 'Display Record Popovers';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'ExcludedRecordPopoverTypes';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = '';
+        param.Parameter_Label__c  = 'Excluded Record Popover Types';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'Debug';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = 'false';
+        param.Parameter_Label__c  = 'Debug';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'RefreshJob';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
+        param.Parameter_Label__c  = 'Scheduled Refresh Job';
+        params.add(param);
+
+        insert params;
+
+        return ListViewConfigHelper.getListViewConfig('All', 'All'); 
+    }
+
     public static List<List_View_Config__c> insertCoreListViewConfig()
     {
+        insertCoreGlobalConfig();
+
         List<List_View_Config__c> configs = new List<List_View_Config__c>();
 
         List_View_Config__c config = new List_View_Config__c();
@@ -1653,243 +2060,71 @@ global with sharing class ListViewHelper
         configs.add(config);
 
         List_View_Config__c config2 = new List_View_Config__c();
-        config2.Name                = 'All';
-        config2.List_View_Object__c = 'All';
-        config2.List_View_Label__c   = 'Org Wide Configuration';
+        config2.Name                = 'simpli_lv__AllAccounts';
+        config2.List_View_Object__c = 'Account';
+        config2.List_View_Label__c   = 'All Accounts';
         config2.Primary_Key__c      = config2.List_View_Object__c + ':' + config2.Name;
         configs.add(config2);
-
-        List_View_Config__c config3 = new List_View_Config__c();
-        config3.Name                = 'simpli_lv__AllAccounts';
-        config3.List_View_Object__c = 'Account';
-        config3.List_View_Label__c   = 'All Accounts';
-        config3.Primary_Key__c      = config3.List_View_Object__c + ':' + config3.Name;
-        configs.add(config3);
 
         configs = HelperDatabase.insertRecords(configs);
         Map<String, SObject> configsByName = HelperCollection.getStringMappedObjects(configs, 'Name');
         config = (simpli_lv__List_View_Config__c) configsByName.get('simpli_lv__PlatinumandGoldSLACustomers');
-        config2 = (simpli_lv__List_View_Config__c) configsByName.get('All');
-        config3 = (simpli_lv__List_View_Config__c) configsByName.get('simpli_lv__AllAccounts');
+        config2 = (simpli_lv__List_View_Config__c) configsByName.get('simpli_lv__AllAccounts');
 
-        List<List_View_Config_Parameter__c> params2 = new List<List_View_Config_Parameter__c>();
+        List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
       
-        List_View_Config_Parameter__c param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config.Id;
-        param2.Parameter_Name__c   = PARAM_ADD_FIELDS;
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param2.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
-        param2.Parameter_Label__c  = 'Additional Fields';
-        params2.add(param2);
+        List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = PARAM_ADD_FIELDS;
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = 'Type, AnnualRevenue,CreatedBy.Name,Owner.Profile.Name';
+        param.Parameter_Label__c  = 'Additional Fields';
+        params.add(param);
         
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config.Id;
-        param2.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMNS;
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param2.Parameter_Value__c  = 'AnnualRevenue';
-        param2.Parameter_Label__c  = 'Total Columns';
-        params2.add(param2);
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMNS;
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = 'AnnualRevenue';
+        param.Parameter_Label__c  = 'Total Columns';
+        params.add(param);
         
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config.Id;
-        param2.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
-        param2.Parameter_Type__c   = 'Color';
-        param2.Parameter_Value__c  = '#6C95BD';
-        param2.Parameter_Label__c  = 'Total Row Color';
-        params2.add(param2);
-        
-        //---------------------------------------
-        // ALL:ALL Config
-        //---------------------------------------
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'ListViewObjects';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param2.Parameter_Value__c  = '';
-        param2.Parameter_Label__c  = 'List View Objects';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'IncludedObjectTypes';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param2.Parameter_Value__c  = '';
-        param2.Parameter_Label__c  = 'Included Object Types';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'ExcludedObjectTypes';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param2.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
-        param2.Parameter_Label__c  = 'Excluded Object Types';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'DisplayActionsButton';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Display Actions Button';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'AllowAdmin';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Display Admin Button';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Display List View Reprocessing Button';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'DisplayOriginalListViewButton';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Display Original List View Button';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'DisplaySelectedCount';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Display Selected Count';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'AllowDataExport';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Allow Data Export';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'AllowAutomaticDataRefresh';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Allow Automatic Data Refresh';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'DisplayRowCount';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Display Row Count';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'MaxRowsDisplayed';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
-        param2.Parameter_Value__c  = '2500';
-        param2.Parameter_Label__c  = 'Max Rows Displayed';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'QueryPagingSize';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
-        param2.Parameter_Value__c  = '250';
-        param2.Parameter_Label__c  = 'Query Paging Size';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'IsInitialized';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'false';
-        param2.Parameter_Label__c  = 'Is Initialized';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'AllowInlineEditing';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Allow Inline Editing';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'DisplayTextSearch';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Display Text Search';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'DisplayRecordPopovers';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'true';
-        param2.Parameter_Label__c  = 'Display Record Popovers';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'ExcludedRecordPopoverTypes';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param2.Parameter_Value__c  = '';
-        param2.Parameter_Label__c  = 'Excluded Record Popover Types';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'Debug';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param2.Parameter_Value__c  = 'false';
-        param2.Parameter_Label__c  = 'Debug';
-        params2.add(param2);
-
-        param2 = new List_View_Config_Parameter__c();
-        param2.List_View_Config__c = config2.Id;
-        param2.Parameter_Name__c   = 'RefreshJob';
-        param2.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param2.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
-        param2.Parameter_Label__c  = 'Scheduled Refresh Job';
-        params2.add(param2);
-
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
+        param.Parameter_Type__c   = 'Color';
+        param.Parameter_Value__c  = '#6C95BD';
+        param.Parameter_Label__c  = 'Total Row Color';
+        params.add(param);
 
         //---------------------------------------
         // 
         //---------------------------------------
-        param2 = new List_View_Config_Parameter__c();
-		param2.Parameter_Name__c = PARAM_ADD_FIELDS;
-		param2.Parameter_Type__c = ListViewHelper.TYPE_STRING;
-		param2.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
-		param2.List_View_Config__c = config3.Id;
-        param2.Parameter_Label__c  = 'Additional Fields';
-        params2.add(param2);
+        param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = PARAM_ADD_FIELDS;
+		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
+		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
+		param.List_View_Config__c = config2.Id;
+        param.Parameter_Label__c  = 'Additional Fields';
+        params.add(param);
         
-        param2 = new List_View_Config_Parameter__c();
-		param2.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMNS;
-		param2.Parameter_Type__c = ListViewHelper.TYPE_STRING;
-		param2.Parameter_Value__c = 'AnnualRevenue';
-		param2.List_View_Config__c = config3.Id;
-        param2.Parameter_Label__c  = 'Total Columns';
-        params2.add(param2);
+        param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMNS;
+		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
+		param.Parameter_Value__c = 'AnnualRevenue';
+		param.List_View_Config__c = config2.Id;
+        param.Parameter_Label__c  = 'Total Columns';
+        params.add(param);
         
-        param2 = new List_View_Config_Parameter__c();
-		param2.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
-		param2.Parameter_Type__c = 'Color';
-		param2.Parameter_Value__c = '#6C95BD';
-		param2.List_View_Config__c = config3.Id;
-        param2.Parameter_Label__c  = 'Total Row Color';
-        params2.add(param2);
+        param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
+		param.Parameter_Type__c = 'Color';
+		param.Parameter_Value__c = '#6C95BD';
+		param.List_View_Config__c = config2.Id;
+        param.Parameter_Label__c  = 'Total Row Color';
+        params.add(param);
         
-        params2 = HelperDatabase.insertRecords(params2);
+        HelperDatabase.insertRecords(params);
 
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
 
@@ -1944,29 +2179,44 @@ global with sharing class ListViewHelper
 
         listViews.add(lv);
 
-        lv                          = new List_View__c();
-        lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
-        lv.Label__c                 = 'Campaign Members';
-        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},  {"fieldNameOrPath":"Status","type":"string","label":"Status"},{"fieldNameOrPath":"Type","type":"string","label":"Type"},{"fieldNameOrPath":"Phone","type":"string","label":"Phone"}]';
-        lv.Core_ListView_Query__c   = 'SELECT Name, Status, Type, Phone FROM CampaignMember';
-        lv.Object_Name__c           = 'CampaignMember';
-        lv.RecordTypeId             = ListViewHelper.customRTId;
-        lv.Subtype__c               = 'Manual';
-
-        listViews.add(lv);
-
-        lv                          = new List_View__c();
-        lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
-        lv.Label__c                 = 'Pricebook Standard';
-        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"CreatedDate","type":"date","label":"Created Date"},{"fieldNameOrPath":"IsActive","type":"boolean","label":"Is Active"},{"fieldNameOrPath":"IsStandard","type":"boolean","label":"Is Standard"},{"fieldNameOrPath":"LastModifiedDate","type":"datetime","label":"Last Modified Date"}]';
-        lv.Core_ListView_Query__c   = 'SELECT CreatedDate,IsActive,IsStandard,LastModifiedDate,Name FROM Pricebook2';
-        lv.Object_Name__c           = 'Pricebook2';
-        lv.RecordTypeId             = ListViewHelper.customRTId;
-        lv.Subtype__c               = 'Manual';
-
-        listViews.add(lv);
-
         listViews = HelperDatabase.insertRecords(listViews);
+
+        //org might not have CampaignMember object so do it individually.
+        try 
+        {
+            listViews = new List<List_View__c>();
+            lv                          = new List_View__c();
+            lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+            lv.Label__c                 = 'Campaign Members';
+            lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},  {"fieldNameOrPath":"Status","type":"string","label":"Status"},{"fieldNameOrPath":"Type","type":"string","label":"Type"},{"fieldNameOrPath":"Phone","type":"string","label":"Phone"}]';
+            lv.Core_ListView_Query__c   = 'SELECT Name, Status, Type, Phone FROM CampaignMember';
+            lv.Object_Name__c           = 'CampaignMember';
+            lv.RecordTypeId             = ListViewHelper.customRTId;
+            lv.Subtype__c               = 'Manual';
+
+            listViews.add(lv);
+            listViews = HelperDatabase.insertRecords(listViews);
+
+        } catch (Exception e) { }
+
+        //org might not have PriceBook2 object so do it individually.
+        try 
+        {
+            listViews = new List<List_View__c>();
+            lv                          = new List_View__c();
+            lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+            lv.Label__c                 = 'Pricebook Standard';
+            lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"CreatedDate","type":"date","label":"Created Date"},{"fieldNameOrPath":"IsActive","type":"boolean","label":"Is Active"},{"fieldNameOrPath":"IsStandard","type":"boolean","label":"Is Standard"},{"fieldNameOrPath":"LastModifiedDate","type":"datetime","label":"Last Modified Date"}]';
+            lv.Core_ListView_Query__c   = 'SELECT CreatedDate,IsActive,IsStandard,LastModifiedDate,Name FROM Pricebook2';
+            lv.Object_Name__c           = 'Pricebook2';
+            lv.RecordTypeId             = ListViewHelper.customRTId;
+            lv.Subtype__c               = 'Manual';
+
+            listViews.add(lv);
+            listViews = HelperDatabase.insertRecords(listViews);
+
+        } catch (Exception e) { }
+
 
         return listViews;
     }

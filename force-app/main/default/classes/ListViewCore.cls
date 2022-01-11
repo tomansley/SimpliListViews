@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-25-2021
+ * @last modified on  : 12-31-2021
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -16,7 +16,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
     public override RowsWrapper getData()
     {
-        List<SObject> dataRows = ListViewHelper.getListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, this.isShell, offset);
+        List<SObject> dataRows = ListViewHelper.getCoreListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, this.isShell, offset, textSearchStr);
 
         RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData, ListViewHelper.offset, isShell);
         if (lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE) != null && !String.isEmpty(lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE).getValue()))
@@ -183,10 +183,10 @@ public with sharing class ListViewCore extends ListViewAbstract {
         //try to get a true example row
         List<SObject> objectRows = null;
         
-        if (listview.RecordTypeId == ListViewHelper.coreRTId)
-            objectRows = ListViewHelper.getListViewData(listview, lvConfig, null, null, null, true, -1);
-        else 
-            objectRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, null, null, null, true, -1);
+        //if (listview.RecordTypeId == ListViewHelper.coreRTId)
+            objectRows = ListViewHelper.getCoreListViewData(listview, lvConfig, null, null, null, true, -1, '');
+        //else 
+        //    objectRows = ListViewHelper.getListViewData(listview.Core_ListView_Query__c, lvConfig, null, null, null, true, -1);
         
         if (objectRows != null && objectRows.size() > 0) 
         {
