@@ -7,11 +7,19 @@ import createGlobalConfig from '@salesforce/apex/ListViewAdminController.createG
 import getConfigExportJSON from '@salesforce/apex/ListViewAdminController.getConfigExportJSON';
 import importConfigJSON from '@salesforce/apex/ListViewAdminController.importConfigJSON';
 
+import Import_Export from '@salesforce/label/c.Import_Export';
+import Import_Export_Verbage from '@salesforce/label/c.Import_Export_Verbage';
+import Export from '@salesforce/label/c.Export';
+import Import from '@salesforce/label/c.Import';
+import Create from '@salesforce/label/c.Create';
+
 export default class SimpliUIListViewsExportImport extends LightningElement {
 
     @track calloutCount = 1;            //indicates the number of callouts made for this component
     @track inRenderedCallback = false;
     @track exportJSONStr = '';
+
+    label = { Import_Export, Import_Export_Verbage, Export, Import, Create  };
 
     renderedCallback() {
         if (this.inRenderedCallback === false)
@@ -42,7 +50,7 @@ export default class SimpliUIListViewsExportImport extends LightningElement {
             }
         })
         .catch(error => {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error creating the config - ', true)); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'Error creating the config ', true)); 
             this.spinnerOff('createEnd');
         });
 

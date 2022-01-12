@@ -9,22 +9,22 @@
         <lightning-layout-item padding="horizontal-small"> 
             <div style="padding-left: 10px;">
                 <lightning-icon icon-name="standard:product_transfer" 
-                                alternative-text="Import/Export"
-                                title="Import/Export">
+                                alternative-text={label.Import_Export}
+                                title={label.Import_Export}>
                 </lightning-icon>
             </div>
         </lightning-layout-item>
         <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
             <div>
-                Import/Export
+                {label.Import_Export}
                 <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
-                    Use if config needs to be moved between orgs or new config should be created. This is useful when a new sandbox is created. See the FAQ page on github for those entities that are moved.
+                    {label.Import_Export_Verbage}
                 </div>
             </div>
         </lightning-layout-item>
         <lightning-layout-item padding="horizontal-small" >
             <a style="background-color: #0176D3; color: white; padding: 7px 30px; border-radius: 4px; text-align: center; text-decoration: none; display: inline-block;" download="export.slv" type='application/json' onclick={handleExportButtonClick}>
-                Export
+                {label.Export}
             </a>
         </lightning-layout-item>
         <lightning-layout-item>
@@ -33,19 +33,14 @@
                       <input onchange={handleImportButtonClick} type="file" class="slds-file-selector__input slds-assistive-text" id="file-upload-input" />
                       <label class="slds-file-selector__body" for="file-upload-input">
                         <span style="width: 97px; background-color: rgb(1, 118, 211); color: white;" class="slds-file-selector__button slds-button slds-button_neutral">
-                            Import
+                            {label.Import}
                         </span>
                       </label>
                 </div>
               </div>
-<!--
-                <lightning-file-upload accept=".slv"
-                                    onuploadfinished={handleImportButtonClick}>
-                </lightning-file-upload>
--->
         </lightning-layout-item>
         <lightning-layout-item padding="horizontal-small" >
-            <lightning-button variant="brand" label="Create" title="Create" icon-name="action:refresh" class="slds-var-m-left_x-small" onclick={handleCreateButtonClick}></lightning-button>
+            <lightning-button variant="brand" label={label.Create} title={label.Create} icon-name="action:refresh" class="slds-var-m-left_x-small" onclick={handleCreateButtonClick}></lightning-button>
         </lightning-layout-item>
     </lightning-layout>
 

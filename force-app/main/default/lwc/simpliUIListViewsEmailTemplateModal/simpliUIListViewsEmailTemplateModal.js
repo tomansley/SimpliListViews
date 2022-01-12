@@ -10,6 +10,16 @@ import Create from '@salesforce/label/c.Create';
 import Cancel from '@salesforce/label/c.Cancel';
 import Save_All_Data from '@salesforce/label/c.Save_All_Data';
 import Reset_All_Data from '@salesforce/label/c.Reset_All_Data';
+import Send_Email_From_Template from '@salesforce/label/c.Send_Email_From_Template';
+import Select_Template from '@salesforce/label/c.Select_Template';
+import Email_Templates from '@salesforce/label/c.Email_Templates';
+import Record_Count from '@salesforce/label/c.Record_Count';
+import Description from '@salesforce/label/c.Description';
+import Email_Subject from '@salesforce/label/c.Email_Subject';
+import Email_Body from '@salesforce/label/c.Email_Body';
+import Send_Emails from '@salesforce/label/c.Send_Emails';
+
+
 
 export default class SimpliUIListViewsEmailTemplateModal extends LightningElement {
 
@@ -29,7 +39,7 @@ export default class SimpliUIListViewsEmailTemplateModal extends LightningElemen
         return this.recordIds.size; 
     }                 
 
-    label = { Create, Cancel, Save_All_Data, Reset_All_Data };
+    label = { Create, Cancel, Save_All_Data, Reset_All_Data, Send_Email_From_Template, Select_Template, Email_Templates, Record_Count, Description, Email_Subject, Email_Body, Send_Emails };
 
     /*
      * Method which gets called after the class has been instantiated
