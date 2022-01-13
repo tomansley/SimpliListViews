@@ -43,7 +43,7 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
 
     async renderedCallback() {
 
-        console.log('Starting simpliUIListViews.renderedCallback');
+        console.log('Starting simpliUIListViewsInitCard.renderedCallback');
         console.log('Record id - ' + this.recordId);
 
         if (this.isInitializedCheck === false)
