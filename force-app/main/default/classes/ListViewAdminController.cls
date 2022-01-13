@@ -15,7 +15,7 @@ public with sharing class ListViewAdminController {
     @AuraEnabled
     public static String importConfigJSON(String configStr)
     {
-        String response = 'Works!';
+        String response = '';
         String debug = '\n\n----- Import Response -----\n';
 
         try {
@@ -205,6 +205,10 @@ public with sharing class ListViewAdminController {
                         for (List_View_Config_Parameter__c oldParam: params)
                         {
 
+                            //if we are importing the is Initialized parameter for the global configs then automatically set to false!
+                            if (newConfig.Primary_Key__c == 'All:All' && oldParam.Parameter_Name__c == 'IsInitialized')
+                                oldParam.Parameter_Value__c = 'false';
+                            
                             //check if the param already exists
                             Boolean paramExists = false;
                             for (List_View_Config_Parameter__c param: fullConfig.List_View_Config_Parameters__r)
