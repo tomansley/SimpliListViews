@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-11-2022
+ * @last modified on  : 01-12-2022
  * @last modified by  : tom@ansleyllc.com
  * 1.0   04-01-2020   tom@ansleyllc.com   Initial Version
  * 2.0   01-06-2022   tom@ansleyllc.com   Added getEmailTemplate(), getEmailTemplates(), sendEmailsFromTemplate() methods.
@@ -110,21 +110,17 @@ public with sharing class HelperEmail {
 
         String soql = 'SELECT Id';
         if (!String.isEmpty(whatIdField))
-            soql += ', ' + whatIdField;
+            soql += ', ' + String.escapeSingleQuotes(whatIdField);
         soql += ' FROM ' + objType + ' WHERE Id IN :recordIds';
 
         List<SObject> records = Database.query(soql);
 
         do {
-            System.debug(LoggingLevel.DEBUG, 'Starting first do-loop');
             List<Messaging.Email> emails = new List<Messaging.Email>();
             do {
-                System.debug(LoggingLevel.DEBUG, 'Starting second do-loop - ' + records.size());
                 //REMOVE record from list
                 SObject record = records.remove(0);
                 
-                System.debug(LoggingLevel.DEBUG, 'Records size 1 - ' + records.size());
-
                 //create email message
                 Messaging.SingleEmailMessage message = new Messaging.SingleEmailMessage();
                 message.setTemplateId(template.Id);  

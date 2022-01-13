@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-11-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 01-12-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -1878,7 +1878,8 @@ global with sharing class ListViewHelper
         config.List_View_Label__c   = 'Org Wide Configuration';
         config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
         
-        insert config;
+        if (HelperSchema.checkObjectCreateable('List_View_Config__c', true))
+            insert config;
 
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
         List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
@@ -2041,7 +2042,7 @@ global with sharing class ListViewHelper
         param.Parameter_Label__c  = 'Scheduled Refresh Job';
         params.add(param);
 
-        insert params;
+        HelperDatabase.insertRecords(params);
 
         return ListViewConfigHelper.getListViewConfig('All', 'All'); 
     }

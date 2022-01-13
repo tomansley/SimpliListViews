@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-11-2022
+ * @last modified on  : 01-12-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -401,7 +401,7 @@ public with sharing class ListViewAdminController {
             log.Message__c       = message;
             log.Type__c          = ListViewErrorHelper.TYPE_EXCEPTION;
             log.Subtype__c       = 'ListViewAdminController(importConfigJSON)';
-            insert log;
+            HelperDatabase.insertRecord(log);
             response = 'There was an error importing the data. Please see the logs for more details - ' + message;
         }
 
@@ -410,7 +410,7 @@ public with sharing class ListViewAdminController {
         log.Message__c       = debug;
         log.Type__c          = ListViewErrorHelper.TYPE_LOG;
         log.Subtype__c       = 'ListViewAdminController(importConfigJSON)';
-        insert log;
+        HelperDatabase.insertRecord(log);
 
         return response;
     }
@@ -460,7 +460,7 @@ public with sharing class ListViewAdminController {
         }
 
         if (!canCreate)
-            throw new ListViewException('Global config already exists!');
+            throw new ListViewException('global config already exists!');
         
         try {
 
