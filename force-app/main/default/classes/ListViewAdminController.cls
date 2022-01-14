@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-12-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-14-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   07-07-2021   tom@ansleyllc.com   Initial Version
@@ -446,7 +446,7 @@ public with sharing class ListViewAdminController {
         List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
         objects.put('Actions', actions);
 
-        jsonStr = JSON.serializePretty(objects);
+        jsonStr = JSON.serialize(objects);
 
         return jsonStr;
     }
