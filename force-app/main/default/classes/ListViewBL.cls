@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-11-2022
+ * @last modified on  : 01-14-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -28,7 +28,7 @@ public with sharing class ListViewBL {
             {
                 if (lv.Subtype__c == ListViewHelper.SUBTYPE_MANUAL)
                 {
-                    Boolean isValid = HelperSchema.isValidSFDCObjectName(lv.Object_Name__c);
+                    Boolean isValid = HelperSchema.isObject(lv.Object_Name__c);
                     if (!isValid)
                         lv.addError('The object name provided is not valid(' + lv.Object_Name__c + '). Provide a valid object API name.');
                 }
