@@ -43,11 +43,15 @@ export default class SimpliUIListViewsMassCreateModal extends LightningElement {
 
     handleClose() {
         this.listViewData = undefined;
+        this.updatedRowData = new Map();
+
         this.dispatchEvent(new CustomEvent('close'));
     }
 
     handleCancelClick(event) {
         this.listViewData = undefined;
+        this.updatedRowData = new Map();
+
         this.dispatchEvent(new CustomEvent('close'));
     }
 
