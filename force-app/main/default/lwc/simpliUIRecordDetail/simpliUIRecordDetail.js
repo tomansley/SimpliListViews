@@ -7,6 +7,7 @@ import { subscribe, unsubscribe, APPLICATION_SCOPE, MessageContext } from 'light
 export default class simpliUIRecordDetail extends LightningElement {
         
     @track recordId = '';
+    @track recordURL = '';
     @track objectType = '';
     @track isInitialized = false;
 
@@ -57,8 +58,9 @@ export default class simpliUIRecordDetail extends LightningElement {
         this.receivedMessage = message;
         console.log('simpliUIRecordDetail received a message from ' + this.receivedMessage.uniqueComponentId);
 
-        this.recordId = this.receivedMessage.recordIds;
-        this.objectType = this.receivedMessage.objectType;
+        this.recordId      = this.receivedMessage.recordIds;
+        this.recordURL     = window.location.origin + '/' + this.recordId;
+        this.objectType    = this.receivedMessage.objectType;
         this.isInitialized = true;
     }
 

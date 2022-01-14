@@ -1,12 +1,17 @@
 <!--
   @description       : 
   @author            : tom.h.ansley@medtronic.com
-  @last modified on  : 12-25-2021
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 01-14-2022
+  @last modified by  : tom@ansleyllc.com
 -->
 <template>
     <lightning-card>
-        <div slot="title" style="font-size: larger;">Record Details</div>
+        <div slot="title" style="font-size: larger;">
+            Record Details 
+            <template if:true={isInitialized}>
+                <lightning-formatted-url style="font-size: 15px;" value={recordURL} label=" - Go to record" target="_blank" ></lightning-formatted-url>
+            </template>
+        </div>
         <template if:true={isInitialized}>
             <lightning-record-form record-id={recordId} object-api-name={objectType}
                 layout-type="Full" columns="2" onsubmit={handleSubmit}>
