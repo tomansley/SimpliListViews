@@ -3,7 +3,7 @@
  * @author            : tom@ansleyllc.com
  * @group             : 
  * @last modified on  : 01-14-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-06-2020   tom@ansleyllc.com   Initial Version
@@ -487,6 +487,8 @@ global class ListViewControllerTest {
         Test.startTest();
             ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Contact', 'simpli_lv__AllContacts', '', 'AccountId', '{"recordIds":"' + acct.Id + '","objectType":"Account","uniqueComponentId":"Example_7_Account_List_View:439820"}', -1, '');
         Test.stopTest();
+
+        System.assert(rows.getRowCount() > 0);
     }
 
     static testMethod void getListViewDataWithSortingDataTest() {
