@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-22-2021
+ * @last modified on  : 01-14-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -61,30 +61,36 @@ global with sharing class ScriptInstall implements InstallHandler {
 
                 if (!hasCampMem)
                 {
-                    List_View__c lv             = new List_View__c();
-                    lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
-                    lv.Label__c                 = 'Campaign Members';
-                    lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},  {"fieldNameOrPath":"Status","type":"string","label":"Status"},{"fieldNameOrPath":"Type","type":"string","label":"Type"},{"fieldNameOrPath":"Phone","type":"string","label":"Phone"}]';
-                    lv.Core_ListView_Query__c   = 'SELECT Name, Status, Type, Phone FROM CampaignMember';
-                    lv.Object_Name__c           = 'CampaignMember';
-                    lv.RecordTypeId             = ListViewHelper.customRTId;
-                    lv.Subtype__c               = 'Manual';
-            
-                    newListViews.add(lv);
+                    if (HelperSchema.isObject('CampaignMember')) //if we do not have sales cloud this will not work!
+                    {
+                        List_View__c lv             = new List_View__c();
+                        lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+                        lv.Label__c                 = 'Campaign Members';
+                        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},  {"fieldNameOrPath":"Status","type":"string","label":"Status"},{"fieldNameOrPath":"Type","type":"string","label":"Type"},{"fieldNameOrPath":"Phone","type":"string","label":"Phone"}]';
+                        lv.Core_ListView_Query__c   = 'SELECT Name, Status, Type, Phone FROM CampaignMember';
+                        lv.Object_Name__c           = 'CampaignMember';
+                        lv.RecordTypeId             = ListViewHelper.customRTId;
+                        lv.Subtype__c               = 'Manual';
+                
+                        newListViews.add(lv);
+                    }
                 }
 
                 if (!hasPricebook)
                 {
-                    List_View__c lv             = new List_View__c();
-                    lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
-                    lv.Label__c                 = 'Pricebook Standard';
-                    lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"CreatedDate","type":"date","label":"Created Date"},{"fieldNameOrPath":"IsActive","type":"boolean","label":"Is Active"},{"fieldNameOrPath":"IsStandard","type":"boolean","label":"Is Standard"},{"fieldNameOrPath":"LastModifiedDate","type":"datetime","label":"Last Modified Date"}]';
-                    lv.Core_ListView_Query__c   = 'SELECT CreatedDate,IsActive,IsStandard,LastModifiedDate,Name FROM Pricebook2';
-                    lv.Object_Name__c           = 'Pricebook2';
-                    lv.RecordTypeId             = ListViewHelper.customRTId;
-                    lv.Subtype__c               = 'Manual';        
-            
-                    newListViews.add(lv);
+                    if (HelperSchema.isObject('Pricebook2')) //if we do not have sales cloud this will not work!
+                    {
+                        List_View__c lv             = new List_View__c();
+                        lv.Custom_Apex_Class__c     = 'ListViewCustomManual';
+                        lv.Label__c                 = 'Pricebook Standard';
+                        lv.Core_ListView_Columns__c = '[{"fieldNameOrPath":"Name","type":"string","label":"Name"},{"fieldNameOrPath":"CreatedDate","type":"date","label":"Created Date"},{"fieldNameOrPath":"IsActive","type":"boolean","label":"Is Active"},{"fieldNameOrPath":"IsStandard","type":"boolean","label":"Is Standard"},{"fieldNameOrPath":"LastModifiedDate","type":"datetime","label":"Last Modified Date"}]';
+                        lv.Core_ListView_Query__c   = 'SELECT CreatedDate,IsActive,IsStandard,LastModifiedDate,Name FROM Pricebook2';
+                        lv.Object_Name__c           = 'Pricebook2';
+                        lv.RecordTypeId             = ListViewHelper.customRTId;
+                        lv.Subtype__c               = 'Manual';        
+                
+                        newListViews.add(lv);
+                    }
                 }
 
                 HelperDatabase.insertRecords(newListViews);
@@ -546,7 +552,7 @@ global with sharing class ScriptInstall implements InstallHandler {
         {
             String debug = ListViewException.getExtendedString(e);
             HelperEmail.sendEmail('tom@ansleyllc.com', debug, 'Failure On Install!');
-            throw e;
+            //throw e;
         }
     }
 

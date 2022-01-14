@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-12-2022
+ * @last modified on  : 01-14-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2183,7 +2183,7 @@ global with sharing class ListViewHelper
         listViews = HelperDatabase.insertRecords(listViews);
 
         //org might not have CampaignMember object so do it individually.
-        try 
+        if (HelperSchema.isObject('CampaignMember')) //if we do not have sales cloud this will not work!
         {
             listViews = new List<List_View__c>();
             lv                          = new List_View__c();
@@ -2198,10 +2198,10 @@ global with sharing class ListViewHelper
             listViews.add(lv);
             listViews = HelperDatabase.insertRecords(listViews);
 
-        } catch (Exception e) { }
+        }
 
         //org might not have PriceBook2 object so do it individually.
-        try 
+        if (HelperSchema.isObject('PriceBook2')) //if we do not have sales cloud this will not work!
         {
             listViews = new List<List_View__c>();
             lv                          = new List_View__c();
