@@ -352,6 +352,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.displaySelectedCount  = false;
                 this.allowInlineEditing    = false;
                 this.displayTextSearch     = false;
+                this.canDisplayTextSearch  = false;
                 this.displayActions        = false;
                 this.displayRecordPopovers = false;
                 this.allowRefresh          = false;
@@ -428,8 +429,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
             if (this.toBool(this.componentConfig.DisplayRowCount) === false) { this.displayRowCount = false; }
             if (this.toBool(this.componentConfig.DisplaySelectedCount) === false) { this.displaySelectedCount = false; }
-            if (this.toBool(this.componentConfig.DisplayTextSearch) === false) { this.displayTextSearch = false; this.canDisplayTextSearch = false; }
-            if (this.toBool(this.componentConfig.DisplayTextSearch) === true) { this.displayTextSearch = true; this.canDisplayTextSearch = true; }
+            if (this.toBool(this.componentConfig.DisplayTextSearch) === false) { this.displayTextSearch = false; }
+            if (this.displayTextSearch === true) { this.canDisplayTextSearch = true; }
             if (this.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
             if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
             if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
@@ -712,11 +713,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.isCustomListView = true;
         }
 
-        if (this.canDisplayTextSearch === true && this.listViewData.canTextSearch === false)
+        this.displayTextSearch = false;
+        if (this.canDisplayTextSearch === true && this.listViewData.canTextSearch === true)
         {
-            this.displayTextSearch = false;
-        } else {
-            this.displayTextSearch = true;
+                this.displayTextSearch = true;
         }
 
         this.refreshTitle = 'Click to perform list view refresh on current list view';
