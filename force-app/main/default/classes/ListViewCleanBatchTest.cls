@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-08-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-14-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   06-30-2021   tom@ansleyllc.com   Initial Version
@@ -37,7 +37,7 @@ public with sharing class ListViewCleanBatchTest {
         
         HelperTest.createCoreListViews();
 
-        System.assert([SELECT Id FROM List_View__c].size() == 6);
+        System.assertEquals(7, [SELECT Id FROM List_View__c].size());
 
         Test.startTest();
             ListViewCleanBatch job = new ListViewCleanBatch();
@@ -57,7 +57,7 @@ public with sharing class ListViewCleanBatchTest {
 
         HelperTest.createDeletedCoreListViews();
 
-        System.assert([SELECT Id FROM List_View__c].size() == 7);
+        System.assertEquals(8, [SELECT Id FROM List_View__c].size());
 
         Test.startTest();
             ListViewCleanBatch job = new ListViewCleanBatch();

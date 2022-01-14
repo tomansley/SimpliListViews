@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-11-2022
+ * @last modified on  : 01-14-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -458,6 +458,92 @@ global class ListViewControllerTest {
         System.assert(rows.getRowCount() > 0);
     }
 
+    static testMethod void createRecordsTest() {
+
+        Test.startTest();
+            String result = ListViewController.createRecords('Account', '{"1":[["Name","Mass Create Test"],["BillingState","WI"],["simpli_lv__Active__c","Yes"],["Type","Prospect"],["AnnualRevenue","1000"]]} for MassCreateModal');
+        Test.stopTest();
+
+        System.assertEquals('1:success', result);
+    }
+
+    static testMethod void getPicklistValuesTest() {
+
+        Test.startTest();
+            List<ListViewController.SelectOption> options = ListViewController.getPicklistValues('Account', 'Type');
+        Test.stopTest();
+
+        System.assert(options.size() > 0);
+    }
+
+    static testMethod void getListViewDataWithJoinDataTest() {
+        HelperTest.createCoreListViews();
+
+        Account acct = HelperTest.insertAccount('List View Account');
+
+        Contact cont = HelperTest.insertContact(acct, 'First1', 'Last1', 'testy1@testerson.com');
+        cont = HelperTest.insertContact(acct, 'Secondly', 'LastName', 'tom@testerson.com');
+
+        Test.startTest();
+            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Contact', 'simpli_lv__AllContacts', '', 'AccountId', '{"recordIds":"' + acct.Id + '","objectType":"Account","uniqueComponentId":"Example_7_Account_List_View:439820"}', -1, '');
+        Test.stopTest();
+    }
+
+    static testMethod void getListViewDataWithSortingDataTest() {
+        HelperTest.createCoreListViews();
+
+        HelperTest.insertAccount('List View Account');
+        HelperTest.insertAccount('Ansley LLC');
+
+        Test.startTest();
+            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('Test_Page_Name', 'Account', 'simpli_lv__AllAccounts', '[[0,[0,"Industry",true]]]', '', '', -1, '');
+        Test.stopTest();
+
+        System.assert(rows.getRowCount() > 0);
+    }
+
+    static testMethod void isValidListViewDataRequestTest() {
+        HelperTest.createCoreListViews();
+        Account acct = HelperTest.insertAccount('List View Account');
+
+        Test.startTest();
+            String result = ListViewController.isValidListViewDataRequest('Contact', 'AccountId', '{"recordIds":"' + acct.Id + '","objectType":"Account","uniqueComponentId":"Example_7_Account_List_View:439820"}');
+        Test.stopTest();
+
+        System.assertEquals('success', result);
+    }
+
+    static testMethod void getListViewConfigParameterTest() {
+
+        ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', ListViewHelper.PARAM_ADD_FIELDS, 'CreatedBy.Name, Owner.Profile.Name', 'Additional Fields', ListViewHelper.TYPE_STRING);
+
+        Test.startTest();
+            String result = ListViewController.getListViewConfigParameter('Account', 'simpli_lv__AllAccounts', ListViewHelper.PARAM_ADD_FIELDS);
+        Test.stopTest();
+
+        System.assertNotEquals('', result);
+    }
+
+    static testMethod void getUserSortConfigsTest() {
+
+        HelperTest.createCoreListViews();
+
+        HelperTest.insertAccount('List View Account');
+        HelperTest.insertAccount('Ansley LLC');
+        
+        //this passes in a sorting order so it automatically saves it as well. Useful for testing GET functionality
+        ListViewController.getListViewData('Test_Page_Name', 'Account', 'simpli_lv__AllAccounts', '[[0,[0,"Industry",true]]]', '', '', -1, '');
+
+        Test.startTest();
+            String configsJSON = ListViewController.getUserSortConfigs('Test_Page_Name');
+
+            Object configs = JSON.deserializeUntyped(configsJSON);
+        Test.stopTest();
+
+        System.assertNotEquals(null, configs);
+    }
+
+    
     static testMethod void stupidMetadataAPITest()
     {
         ListViewMetadataAPIService.ListViewFilter f = new ListViewMetadataAPIService.ListViewFilter();
