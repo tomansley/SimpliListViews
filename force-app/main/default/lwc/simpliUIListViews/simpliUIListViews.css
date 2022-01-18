@@ -30,6 +30,15 @@
     overflow: auto;
 }
 
+.splitviewscrollwrapper {
+    width: 100%;
+    min-height: 80px;
+    max-height: 67vh;
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    overflow: auto;
+}
+
 .splitviewobjectlistdropdown {
     width: 100%;
     padding-bottom: 5px;

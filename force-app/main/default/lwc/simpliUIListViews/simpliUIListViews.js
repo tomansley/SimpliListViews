@@ -359,7 +359,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.displayURL            = false;
                 this.displayReprocess      = false;
                 this.listviewdropdownstyle = 'splitviewlistviewdropdown';
-
+                this.listwrapperstyle      = 'splitviewscrollwrapper';
                 //NO OBJECT
                 if (this.singleListViewObject === '')
                 {
@@ -1740,7 +1740,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 margin: {top: 5, right: 5, bottom: 5, left: 5},
             });
               
-            this.selectedListViewExportName = this.selectedListView + '.csv';
+            this.selectedListViewExportName = this.selectedListView + '.pdf';
 
             doc.save(this.selectedListViewExportName);
             this.spinnerOff('ListViewActionPDF');
