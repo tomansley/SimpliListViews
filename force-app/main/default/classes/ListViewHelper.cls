@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-14-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-16-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -1337,7 +1337,7 @@ global with sharing class ListViewHelper
 
         if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
-            if (whereStr.containsIgnoreCase(' WHERE '))
+            if (whereStr.containsIgnoreCase('WHERE '))
                 whereStr += ' AND ' + joinFieldName + ' IN :joinRecordIds';
             else
                 whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
@@ -2201,7 +2201,7 @@ global with sharing class ListViewHelper
         }
 
         //org might not have PriceBook2 object so do it individually.
-        if (HelperSchema.isObject('PriceBook2')) //if we do not have sales cloud this will not work!
+        try 
         {
             listViews = new List<List_View__c>();
             lv                          = new List_View__c();
