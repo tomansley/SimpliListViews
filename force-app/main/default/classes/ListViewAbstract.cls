@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-05-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-17-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -1121,7 +1121,7 @@ public with sharing abstract class ListViewAbstract {
                 strValue = String.valueOf(objValue);
             }
 
-            System.debug(LoggingLevel.FINE, 'Finished getValue with type - ' + this.type + ' - ' + strValue);
+            System.debug(LoggingLevel.FINE, 'Finished getValue for ' + this.getName() + ' with type - ' + this.getType() + ' - ' + strValue);
             return strValue;
         }
 

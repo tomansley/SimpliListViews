@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-31-2021
+ * @last modified on  : 01-17-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -300,6 +300,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 {
                     HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnMetaData.name);
     
+                    System.debug(LoggingLevel.FINE, 'None Child Field Parent Obj Type - ' + fieldData.parentObjType + ', Field Data Type - ' + fieldData.getType() + ', Value - ' + fieldData.value);
+
                     FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                           fieldData.value, 
                                                           fieldData.getType(),
@@ -364,6 +366,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                             columnMetaData.isSortable = false; //set the column to not be sortable
                             String fieldName = columnMetaData.name.removeStart(childFieldKey + '.');
                             HelperSchema.FieldData fieldData = HelperSchema.getFieldData(child, fieldName);
+
+                            System.debug(LoggingLevel.FINE, 'Child Field Parent Obj Type - ' + fieldData.parentObjType + ', Field Data Type - ' + fieldData.getType() + ', Value - ' + fieldData.value);
 
                             FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                                   fieldData.value, 
