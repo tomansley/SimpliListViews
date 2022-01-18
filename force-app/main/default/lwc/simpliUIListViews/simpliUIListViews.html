@@ -3,8 +3,8 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 01-05-2022
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 01-17-2022
+  @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author              Modification
   1.0   08-03-2020   tom@ansleyllc.com   Initial Version
@@ -54,7 +54,7 @@
                     <!-- OBJECT PICKLIST       -->
                     <!-- --------------------- -->
                     <template if:true={displayObjectNames}>
-                        <lightning-layout-item class={objectlistdropdownstyle}>
+                        <lightning-layout-item class={objectlistdropdownstyle} padding="horizontal-small">
                             <lightning-combobox placeholder={label.Select_Object} 
                                                 label={label.Object} 
                                                 value={selectedObject} 
@@ -437,6 +437,11 @@
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isString}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                            {fieldData.value}
+                                                                        </div>
+                                                                    </template>
+                                                                    <template if:true={fieldData.isLookup}>
                                                                         <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                             {fieldData.value}
                                                                         </div>
