@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-06-2022
+ * @last modified on  : 01-17-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -480,7 +480,8 @@ public without sharing class ListViewController
                 //if we have any Ids we need to check that the Ids match the field object type
                 //unless its a polymorphic field, then we just have to go with it!!
                 if (joinRecordIds.size() > 0
-                    && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName))
+                    && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName)
+                    && !joinFieldName.contains('.'))
                 {
                     //get the type of the join field lookup object.
                     String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
@@ -581,7 +582,8 @@ public without sharing class ListViewController
                 //if we have any Ids we need to check that the Ids match the field object type
                 //unless its a polymorphic field!
                 if (joinRecordIds.size() > 0
-                    && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName))
+                    && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName)
+                    && !joinFieldName.contains('.'))
                 {
                     //get the type of the join field lookup object.
                     String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
