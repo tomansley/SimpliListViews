@@ -33,6 +33,7 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
     @track isInitialized = false;       //indicates whether the list views have been initialized for the first time or not.
     @track showProgress = false;        //indicates whether the progress bar should be displayed
     @track showCleanProgress = false;   //indicates whether the cleaning job progress bar should be displayed
+    @track showCreateActionWizardModal = false; //indicates whether the create action wizard modal should be displayed
     @track batchId = '';                //indicates the batch Id of the list view batch process.
 
     get booleanList() {
@@ -137,7 +138,7 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
                     this.getConfig();
                 
                 } else {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', message, false)); 
+                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', message, false)); 
                     this.spinnerOff();
                     return;
                 }
@@ -220,6 +221,18 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
 
     handleConfigImported(event) {
         this.getConfig();
+    }
+
+    handleCreateActionClicked(event) {
+        this.showCreateActionWizardModal = true;
+    }
+
+    handleCreateActionClose(event) {
+        this.showCreateActionWizardModal = false;
+    }
+
+    handleCreateActionFinished(event) {
+        this.showCreateActionWizardModal = false;
     }
 
     spinnerOn() {

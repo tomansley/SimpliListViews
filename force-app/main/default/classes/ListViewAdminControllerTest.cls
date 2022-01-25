@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-14-2022
+ * @last modified on  : 01-25-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -14,6 +14,280 @@ global class ListViewAdminControllerTest {
     static void createSampleData()
     {
         HelperTest.insertAccount('Test Account 1');
+    }
+
+    @IsTest
+    static void createActionHyperlinkTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","Hyperlink"],["actionSubType",""],["actionLabel","Hyperlink Test - Active - Core"],["actionIsActive","true"],["hyperlinkURL","https://www.google.com/$recordId$"],["hyperlinkSubParamName1","recordId"],["hyperlinkSubParamField1","Id"],["actionHasObject","true"],["actionObjectType","Account"],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Always Displayed"],["actionUserPermissions",["Read","Create"]]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('HyperlinkTest-Active-Core:Account');
+
+        System.assert(action != null);
+        System.assertEquals(2, action.List_View_Action_Parameters__r.size());
+
+        System.assert(action.RecordTypeId != null);
+        System.assertEquals('Core', action.RecordType.Name);
+        System.assertEquals(true, action.Is_Active__c);
+        System.assertEquals(true, action.Is_Hyperlink__c);
+        System.assertEquals('Hyperlink Test - Active - Core', action.Label__c);
+        System.assertEquals(null, action.Subtype__c);
+        System.assert(action.RecordTypeId != null);
+
+        for (List_View_Action_Parameter__c param: action.List_View_Action_Parameters__r)
+        {
+            if (param.Field_API_Name__c == 'recordId')
+            {
+                System.assertEquals('recordId', param.Label__c);
+                System.assertEquals('string', param.Type__c);
+                System.assertEquals('Id', param.Default_Value__c);
+                System.assertEquals(-1, param.Display_Order__c);
+            }
+        }
+
+
+    }
+
+    @IsTest
+    static void createActionEmailClassicTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Custom"],["actionType","EmailClassic"],["actionSubType",""],["actionLabel","Email Classic Test - Inactive - Custom"],["actionIsActive","false"],["actionHasObject","true"],["actionObjectType","Opportunity"],["actionHasComponent","true"],["actionComponentName","LtnComp"],["actionRecordVisible","Always Displayed"],["actionUserPermissions",""]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('EmailClassicTest-Inactive-Custom:Opportunity');
+
+        System.assert(action != null);
+    }
+
+    @IsTest
+    static void createActionEmailTemplateTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","EmailTemplate"],["actionSubType",""],["actionLabel","Send Email From Template Test - Active - Core"],["actionIsActive","true"],["sendEmailTemplateFolderName","Template Folder Name"],["sendEmailTemplateWhatIdField","AccountId"],["actionHasObject","false"],["actionObjectType",""],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Displayed if multiple records are selected"],["actionUserPermissions",["Read","Create"]]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('SendEmailFromTemplateTest-Active-Core:null');
+
+        System.assert(action != null);
+    }
+
+    @IsTest
+    static void createActionAutoFlowTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","LaunchFlow"],["actionSubType",""],["actionLabel","Auto Launch Test"],["actionIsActive","false"],["launchFlowAPIName","FlowAPIName"],["actionHasObject","false"],["actionObjectType",""],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Always Displayed"],["actionUserPermissions",""]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('AutoLaunchTest:null');
+
+        System.assert(action != null);
+    }
+
+    @IsTest
+    static void createActionScreenFlowTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","ScreenFlow"],["actionSubType",""],["actionLabel","Screen Flow Test"],["actionIsActive","true"],["screenFlowAPIName","ScreenAPIName"],["screenFlowFrameHeight","600"],["screenFlowFrameWidth","1000"],["actionHasObject","true"],["actionObjectType","Opportunity"],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Displayed if one record is selected"],["actionUserPermissions",["Create"]]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('ScreenFlowTest:Opportunity');
+
+        System.assert(action != null);
+    }
+
+    @IsTest
+    static void createActionManageDataCreateTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Custom"],["actionType","ManageData"],["actionSubType","Create"],["actionLabel","Create Record Test"],["actionIsActive","true"],["manageDataCreateOwnerField","OwnerId"],["actionHasObject","true"],["actionObjectType","Account"],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Always Displayed"],["actionUserPermissions",""]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('CreateRecordTest:Account');
+
+        System.assert(action != null);
+    }
+
+    @IsTest
+    static void createActionManageDataMassCreateTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","ManageData"],["actionSubType","MassCreate"],["actionLabel","Mass Create Test"],["actionIsActive","true"],["actionHasObject","false"],["actionObjectType",""],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Always Displayed"],["actionUserPermissions",""]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('MassCreateTest:null');
+
+        System.assert(action != null);
+    }
+
+    @IsTest
+    static void createActionManageDataMassUpdateTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","ManageData"],["actionSubType","MassUpdate"],["actionLabel","Mass Update Test"],["actionIsActive","true"],["manageDataMassUpdateLabel1","Account Name"],["manageDataMassUpdateField1","Name"],["manageDataMassUpdateType1","string"],["manageDataMassUpdateOrder1","1"],["manageDataMassUpdateLabel2","Revenue"],["manageDataMassUpdateField2","AnnualRevenue"],["manageDataMassUpdateType2","decimal"],["manageDataMassUpdateOrder2","2"],["manageDataMassUpdateLabel3","Account Type"],["manageDataMassUpdateField3","Type"],["manageDataMassUpdateType3","string"],["manageDataMassUpdateOrder3","3"],["actionHasObject","true"],["actionObjectType","Account"],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Always Displayed"],["actionUserPermissions",["Read"]]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('MassUpdateTest:Account');
+
+        System.assert(action != null);
+    }
+
+    @IsTest
+    static void createActionSaveToPDFTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","SaveToPDF"],["actionSubType",""],["actionLabel","Save To PDF Test"],["actionIsActive","true"],["actionHasObject","false"],["actionObjectType",""],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Always Displayed"],["actionUserPermissions",""]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('SaveToPDFTest:null');
+
+        System.assert(action != null);
+        System.assertEquals('ListViewActionPDF', action.Apex_Class_Name__c);
+    }
+
+    @IsTest
+    static void createActionCustomTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","Custom"],["actionSubType",""],["actionLabel","Custom Action Test"],["actionIsActive","true"],["customApexClassName","ListViewActionUpdate"],["actionHasObject","false"],["actionObjectType",""],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Always Displayed"],["actionUserPermissions",""]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('CustomActionTest:null');
+
+        System.assert(action != null);
+        System.assertEquals('ListViewActionUpdate', action.Apex_Class_Name__c);
     }
 
     @IsTest
@@ -155,7 +429,7 @@ global class ListViewAdminControllerTest {
 
         Test.stopTest();
         
-        System.assert(result == ListViewAdminController.SUCCESS);
+        System.assert(result == ListViewActionHelper.SUCCESS);
 
     }
 
@@ -177,7 +451,7 @@ global class ListViewAdminControllerTest {
 
         Test.stopTest();
         
-        System.assert(result == ListViewAdminController.SUCCESS);
+        System.assert(result == ListViewActionHelper.SUCCESS);
 
     }
 
@@ -199,7 +473,7 @@ global class ListViewAdminControllerTest {
 
         Test.stopTest();
         
-        System.assert(result == ListViewAdminController.SUCCESS);
+        System.assert(result == ListViewActionHelper.SUCCESS);
 
     }
 
@@ -221,7 +495,7 @@ global class ListViewAdminControllerTest {
 
         Test.stopTest();
         
-        System.assert(result == ListViewAdminController.SUCCESS);
+        System.assert(result == ListViewActionHelper.SUCCESS);
 
     }
 
@@ -243,7 +517,7 @@ global class ListViewAdminControllerTest {
 
         Test.stopTest();
         
-        System.assert(result == ListViewAdminController.SUCCESS);
+        System.assert(result == ListViewActionHelper.SUCCESS);
 
     }
 
@@ -265,7 +539,7 @@ global class ListViewAdminControllerTest {
 
         Test.stopTest();
         
-        System.assert(result == ListViewAdminController.SUCCESS);
+        System.assert(result == ListViewActionHelper.SUCCESS);
 
     }
 }

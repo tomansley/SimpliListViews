@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-29-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 01-21-2022
+ * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperString {
 
@@ -27,6 +27,24 @@ public with sharing class HelperString {
         dataSet = new Set<String>(data.split(splitChar));
 
         return dataSet;
+    }
+
+    public static String getStringFromList(List<Object> data, String splitChar)
+    {
+        String dataStr = '';
+
+        if (data == null)
+            return dataStr;
+
+        if (splitChar == null)
+            splitChar = ',';
+
+        for (Object item: data)
+            dataStr += String.valueOf(item) + splitChar;
+
+        dataStr = dataStr.removeEnd(splitChar);
+
+        return dataStr;
     }
 
     public static String getStringFromSet(Set<String> data, String splitChar)

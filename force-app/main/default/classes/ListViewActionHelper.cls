@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-10-2022
+ * @last modified on  : 01-24-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -29,11 +29,202 @@ public with sharing class ListViewActionHelper {
     public static final String PARAM_KEY_EMAIL_TEMP_FOLDER = 'EmailTemplateFolder';
     public static final String PARAM_KEY_EMAIL_WHAT_ID     = 'EmailTemplateWhatIdField';
 
+    public static final String SUCCESS = 'success';
+    public static final String FAILED = 'failed';
+
+    public static final String SUB_TYPE_MANUAL   = 'Manual';
+    public static final String SUB_TYPE_TOOLING  = 'Tooling';
+    public static final String SUB_TYPE_METADATA = 'Metadata';
+
     private static String debugString = '';
 
     public static String getPrimaryKey(List_View_Action__c action)
     {
         return action.Label__c.deleteWhitespace() + ':' + action.Object_Type__c;
+    }
+
+    public static String createAction(Map<String, String> actionFields)
+    {
+        String response = SUCCESS;
+
+        try {
+            //--------------------------------------------------
+            // CREATE THE ACTION USING THE MAIN DETAILS
+            //--------------------------------------------------
+            List_View_Action__c action = new List_View_Action__c();
+            List<List_View_Action_Parameter__c> actionParams = new List<List_View_Action_Parameter__c>();
+            action.Label__c          = actionFields.get('actionLabel');
+            action.Is_Active__c      = Boolean.valueOf(actionFields.get('actionIsActive'));
+            action.Object_Type__c    = actionFields.get('actionObjectType');
+            action.Component_Name__c = actionFields.get('actionComponentName');
+            action.Permissions__c    = actionFields.get('actionUserPermissions');
+            action.Selected_Record_Visibility__c = actionFields.get('actionRecordVisible');
+
+            if (actionFields.get('actionRecordType') == 'Core')
+                action.RecordTypeId = coreRTId;
+            else {
+                action.RecordTypeId = customRTId;
+                action.Subtype__c = SUB_TYPE_MANUAL;
+                if (String.isEmpty(action.Object_Type__c))
+                    throw new ListViewException('Custom actions of subtype "Manual" must have an object type if they are not of type hyperlink or flow');
+            }
+
+
+            //--------------------------------------------------
+            // HANDLE EACH ACTION TYPE SPECIFICALLY
+            //--------------------------------------------------
+            String actionType = actionFields.get('actionType');
+
+            if (actionType == 'HyperLink')
+            {
+                action.Apex_Class_Name__c = 'ListViewActionNull';
+                action.Is_Hyperlink__c = true;
+                
+                actionParams.add(createActionParameter('URL', 'URL', 'url', -1, actionFields.get('hyperlinkURL')));
+
+                if (!String.isEmpty(actionFields.get('hyperlinkSubParamName1')))
+                    actionParams.add(createActionParameter(actionFields.get('hyperlinkSubParamName1'), actionFields.get('hyperlinkSubParamName1'), 'string', -1, actionFields.get('hyperlinkSubParamField1')));  
+
+                if (!String.isEmpty(actionFields.get('hyperlinkSubParamName2')))
+                    actionParams.add(createActionParameter(actionFields.get('hyperlinkSubParamName2'), actionFields.get('hyperlinkSubParamName2'), 'string', -1, actionFields.get('hyperlinkSubParamField2')));     
+                
+
+            } else if (actionType == 'EmailClassic')
+            {
+                action.Apex_Class_Name__c = 'ListViewActionEmail';
+
+                actionParams.add(createActionParameter('Subject', 'Email Subject', 'string', -1, ''));  
+                actionParams.add(createActionParameter('Body', 'Email Body', 'rich textarea', -1, ''));  
+
+                if (!String.isEmpty(actionFields.get('sendEmailClassicFieldName')))
+                    actionParams.add(createActionParameter('API Field Name', 'API Field Name', 'string', -1, actionFields.get('sendEmailClassicFieldName')));     
+
+
+            } else if (actionType == 'EmailTemplate')
+            {
+                action.Apex_Class_Name__c = 'ListViewActionEmail';
+
+                actionParams.add(createActionParameter('EmailTemplateFolder', 'EmailTemplateFolder', 'string', -1, actionFields.get('sendEmailTemplateFolderName')));  
+
+                if (!String.isEmpty(actionFields.get('sendEmailTemplateWhatIdField')))
+                    actionParams.add(createActionParameter('EmailTemplateWhatIdField', 'EmailTemplateWhatIdField', 'string', -1, actionFields.get('sendEmailTemplateWhatIdField')));     
+
+            } else if (actionType == 'LaunchFlow')
+            {
+                action.Apex_Class_Name__c = 'ListViewActionFlow';
+                action.Is_Flow__c       = true;
+                action.Flow_API_Name__c = actionFields.get('launchFlowAPIName');
+                action.Flow_Type__c     = 'Autolaunched Flow';
+
+            } else if (actionType == 'ScreenFlow')
+            {
+                action.Apex_Class_Name__c = 'ListViewActionFlow';
+                action.Is_Flow__c = true;
+                action.Flow_API_Name__c = actionFields.get('screenFlowAPIName');
+                action.Flow_Type__c     = 'Screen Flow';
+
+                if (!String.isEmpty(actionFields.get('screenFlowFrameHeight')))
+                    action.Flow_Frame_Height__c = actionFields.get('screenFlowFrameHeight');
+
+                if (!String.isEmpty(actionFields.get('screenFlowFrameWidth')))
+                    action.Flow_Frame_Height__c = actionFields.get('screenFlowFrameWidth');
+    
+            } else if (actionType == 'SaveToPDF')
+            {
+                action.Apex_Class_Name__c = 'ListViewActionPDF';
+
+            } else if (actionType == 'Custom')
+            {
+                action.Apex_Class_Name__c = actionFields.get('customApexClassName');
+
+            } else if (actionType == 'ManageData')
+            {
+                String actionSubType = actionFields.get('actionSubType'); 
+    
+                if (actionSubType == 'Create')
+                {
+                    action.Apex_Class_Name__c = 'ListViewActionNull';
+
+                } else if (actionSubType == 'Edit')
+                {
+                    action.Apex_Class_Name__c = 'ListViewActionNull';
+
+                } else if (actionSubType == 'EditAll')
+                {
+                    action.Apex_Class_Name__c = 'ListViewActionNull';
+
+                } else if (actionSubType == 'Clone')
+                {
+                    action.Apex_Class_Name__c = 'ListViewActionNull';
+
+                } else if (actionSubType == 'Delete')
+                {
+                    action.Apex_Class_Name__c = 'ListViewActionDelete';
+
+                } else if (actionSubType == 'MassCreate')
+                {
+                    action.Apex_Class_Name__c = 'ListViewActionMassCreate';
+
+                    if (!String.isEmpty(actionFields.get('manageDataMassCreateListViewName')))
+                        action.Mass_Create_List_View_Name__c = actionFields.get('manageDataMassCreateListViewName');
+
+                } else if (actionSubType == 'MassUpdate')
+                {
+                    action.Apex_Class_Name__c = 'ListViewActionUpdate';
+                    //we could have up to 8 parameters for the mass update
+                    for (Integer index = 1; index < 8; index++)
+                    {
+                        if (!String.isEmpty(actionFields.get('manageDataMassUpdateLabel' + index))
+                            && !String.isEmpty(actionFields.get('manageDataMassUpdateField' + index))
+                            && !String.isEmpty(actionFields.get('manageDataMassUpdateType' + index)))
+                        {
+                            Integer order = 1;
+                            if (!String.isEmpty(actionFields.get('manageDataMassUpdateOrder' + index)))
+                                order = Integer.valueOf(actionFields.get('manageDataMassUpdateOrder' + index));
+
+                            String defaultValue = '';
+                            if (!String.isEmpty(actionFields.get('manageDataMassUpdateDefault' + index)))
+                                defaultValue = actionFields.get('manageDataMassUpdateDefault' + index);
+
+                            actionParams.add(createActionParameter(actionFields.get('manageDataMassUpdateField' + index), 
+                                                                actionFields.get('manageDataMassUpdateLabel' + index), 
+                                                                actionFields.get('manageDataMassUpdateType' + index),
+                                                                order,
+                                                                defaultValue));     
+                        }
+                    }
+
+                }
+            }
+
+            //insert the ACTION
+            action = (List_View_Action__c) HelperDatabase.insertRecord(action);
+
+            //set ACTION ID into params
+            for (List_View_Action_Parameter__c param: actionParams)
+                param.List_View_Action__c = action.Id;
+
+            //insert PARAMS
+            HelperDatabase.insertRecords(actionParams);
+
+        } catch (Exception e) {
+            response = e.getMessage();
+        }
+
+
+        return response;
+    }
+
+    private static List_View_Action_Parameter__c createActionParameter(String apiName, String label, String type, Integer order, String value)
+    {
+        List_View_Action_Parameter__c param = new List_View_Action_Parameter__c();
+        param.Field_API_Name__c = apiName;
+        param.Label__c          = label;
+        param.Type__c           = type;
+        param.Display_Order__c  = order;
+        param.Default_Value__c  = value;
+
+        return param;
     }
 
     public static List<List_View_Action__c> getListViewActions()

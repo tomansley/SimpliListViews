@@ -1,0 +1,7 @@
+.scroll {
+    overflow: auto;
+}
+
+.pageSpinnerHolder{
+    position: absolute;
+}

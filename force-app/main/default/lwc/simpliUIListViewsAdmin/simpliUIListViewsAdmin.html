@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 01-09-2022
+  @last modified on  : 01-20-2022
   @last modified by  : tom.h.ansley@medtronic.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -24,12 +24,15 @@
                                            oninitializedcheck={handleInitializedCheck}>
         </c-simpli-u-i-list-views-init-card>
     
-        <!-- ------------------------------------------------------------------------ -->
-        <!-- Section which handles the cleaning of the list views                     -->
-        <!-- ------------------------------------------------------------------------ -->
-        <template if:false={showCleanProgress}>
-            <template if:true={isInitialized}>    
-                <lightning-card>
+        <br/>
+        
+        <lightning-card title="Tools">
+
+            <!-- ------------------------------------------------------------------------ -->
+            <!-- Section which handles the cleaning of the list views                     -->
+            <!-- ------------------------------------------------------------------------ -->
+            <template if:false={showCleanProgress}>
+                <template if:true={isInitialized}>    
                     <lightning-layout>
                         <lightning-layout-item padding="horizontal-small">
                             <div style="padding-left: 10px;">   
@@ -51,112 +54,146 @@
                             <lightning-button variant="brand" label={label.Clean} title={label.Clean_List_Views} icon-name="utility:custom_apps" class="slds-m-left_x-small" onclick={handleCleanListViewsButtonClick}></lightning-button>
                         </lightning-layout-item>
                     </lightning-layout>
+                </template>
+            </template>
+            <template if:true={showCleanProgress}>
+                <lightning-card title="Current Status">
+                    <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
+                                                                working-text={label.Cleaning_Status}
+                                                                complete-text={label.List_View_Cleaning_Complete}>
+                    </c-simpli-u-i-list-views-init-progress-bar>
                 </lightning-card>
             </template>
-        </template>
-        <template if:true={showCleanProgress}>
-            <lightning-card>
-                <c-simpli-u-i-list-views-init-progress-bar batch-id={batchId}
-                                                            working-text={label.Cleaning_Status}
-                                                            complete-text={label.List_View_Cleaning_Complete}>
-                </c-simpli-u-i-list-views-init-progress-bar>
-            </lightning-card>
-        </template>
-    </template>
 
-    <lightning-card>
-        <c-simpli-u-i-list-views-export-import oncreated={handleConfigCreated}>
-        </c-simpli-u-i-list-views-export-import>
-    </lightning-card>
+            <br/>
 
-    <br/>
+            <c-simpli-u-i-list-views-export-import oncreated={handleConfigCreated}>
+            </c-simpli-u-i-list-views-export-import>
 
-    <template if:true={hasConfig}>
-        <lightning-card>
-            <c-simpli-u-i-list-views-schedule-job time-period="minutely"
-                                                onupdated={handleScheduleJobRefreshed}>
-            </c-simpli-u-i-list-views-schedule-job>
+            <br/>
+
+            <template if:true={hasConfig}>
+                <c-simpli-u-i-list-views-schedule-job time-period="minutely"
+                                                    onupdated={handleScheduleJobRefreshed}>
+                </c-simpli-u-i-list-views-schedule-job>
+
+                <br/>
+
+                <lightning-layout>
+                    <lightning-layout-item padding="horizontal-small"> 
+                        <div style="padding-left: 10px;">
+                            <lightning-icon icon-name="standard:record_create" 
+                                            alternative-text=""
+                                            title="">
+                            </lightning-icon>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
+                        <div>
+                            Create Action Wizard
+                            <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
+                                Use this wizard to easily create actions.
+                            </div>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item padding="horizontal-small" >
+                        <lightning-button variant="brand" label="Create Action" title="Create Action" icon-name="action:clone" class="slds-var-m-left_x-small" onclick={handleCreateActionClicked}></lightning-button>
+                    </lightning-layout-item>
+                </lightning-layout>
+
+            </template>
         </lightning-card>
     </template>
+    
     <br/>
 
     <!-- ------------------------------------------------------------------------------- -->
     <!-- Section which handles the displaying of all the org wide configuration settings -->
     <!-- ------------------------------------------------------------------------------- -->
     <template if:true={config}>
-        <table class="slds-table slds-table_bordered">
-            <thead>
-                <tr>
-                    <th scope="col">
-                        <div class="slds-truncate" title={label.Parameter_Name}>{label.Parameter_Name}</div>
-                    </th>
-                    <th scope="col">
-                        <div class="slds-truncate" title={label.Value}>{label.Value}</div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <template for:each={config.parameters} for:item="param">
-                    <tr key={param.name} class="slds-hint-parent">
+        <lightning-card title="Global Settings">
+            <table class="slds-table slds-table_bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            <div class="slds-truncate" title={label.Parameter_Name}>{label.Parameter_Name}</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate" title={label.Value}>{label.Value}</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={config.parameters} for:item="param">
+                        <tr key={param.name} class="slds-hint-parent">
 
-                        <td key={param.name} style="width: 30%;">
-                            <div key={param.name} class="slds-truncate" title={param.name}>
-                                {param.label}
-                                &nbsp;
-                                <div key={param.name} class="slds-wrap" style="white-space:normal; font-size:0.75em" title={param.name}>
-                                    {param.description}
+                            <td key={param.name} style="width: 30%;">
+                                <div key={param.name} class="slds-truncate" title={param.name}>
+                                    {param.label}
+                                    &nbsp;
+                                    <div key={param.name} class="slds-wrap" style="white-space:normal; font-size:0.75em" title={param.name}>
+                                        {param.description}
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td key={param.name} data-label={param.name} style="width: 70%;">
-                            <div class="slds-form-element__control" title={param.value}>
-                                <template if:true={param.isBoolean}>
-                                    <lightning-combobox placeholder={label.Select_A_Value}
-                                                        onblur={handleParamUpdate}
-                                                        options={booleanList}
-                                                        variant=label-hidden
-                                                        value={param.value}
-                                                        name={param.name}
-                                                        label={param.label}
-                                                        disabled={param.readOnly}>
-                                    </lightning-combobox>                        
-                                </template>
-                                <template if:false={param.isBoolean}>
-                                    <template if:true={param.isListString}>
-                                        <lightning-dual-listbox name={param.name}
-                                                                label={param.label}
-                                                                source-label={label.Available}
-                                                                selected-label={label.Selected}
-                                                                options={objNamesList}
-                                                                onchange={handleParamUpdate}
-                                                                variant=label-hidden
-                                                                value={param.listValues}
-                                                                size=4
-                                                                disabled={param.readOnly}>
-                                        </lightning-dual-listbox>
-                                    </template>
-                                    <template if:false={param.isListString}>
-                                        <lightning-input type={param.type} 
-                                                            variant="label-hidden"
-                                                            name={param.name} 
-                                                            onchange={handleParamUpdate}
-                                                            placeholder={param.placeHolder}
+                            </td>
+                            <td key={param.name} data-label={param.name} style="width: 70%;">
+                                <div class="slds-form-element__control" title={param.value}>
+                                    <template if:true={param.isBoolean}>
+                                        <lightning-combobox placeholder={label.Select_A_Value}
+                                                            onblur={handleParamUpdate}
+                                                            options={booleanList}
+                                                            variant=label-hidden
                                                             value={param.value}
+                                                            name={param.name}
                                                             label={param.label}
                                                             disabled={param.readOnly}>
-                                        </lightning-input>
+                                        </lightning-combobox>                        
                                     </template>
-                                </template>
-                            </div>
-                        </td>
-                    </tr>
-                </template>            
-            </tbody>
-        </table>     
-         
-        <footer class="slds-modal__footer" style="min-width: 1100px;">
-            <button class="slds-button slds-button_brand" onclick={handleSaveClick}>{label.Save}</button>
-        </footer>
+                                    <template if:false={param.isBoolean}>
+                                        <template if:true={param.isListString}>
+                                            <lightning-dual-listbox name={param.name}
+                                                                    label={param.label}
+                                                                    source-label={label.Available}
+                                                                    selected-label={label.Selected}
+                                                                    options={objNamesList}
+                                                                    onchange={handleParamUpdate}
+                                                                    variant=label-hidden
+                                                                    value={param.listValues}
+                                                                    size=4
+                                                                    disabled={param.readOnly}>
+                                            </lightning-dual-listbox>
+                                        </template>
+                                        <template if:false={param.isListString}>
+                                            <lightning-input type={param.type} 
+                                                                variant="label-hidden"
+                                                                name={param.name} 
+                                                                onchange={handleParamUpdate}
+                                                                placeholder={param.placeHolder}
+                                                                value={param.value}
+                                                                label={param.label}
+                                                                disabled={param.readOnly}>
+                                            </lightning-input>
+                                        </template>
+                                    </template>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>            
+                </tbody>
+            </table>     
+            
+            <footer class="slds-modal__footer" style="min-width: 1100px;">
+                <button class="slds-button slds-button_brand" onclick={handleSaveClick}>{label.Save}</button>
+            </footer>
+        </lightning-card>
     </template>   
+
+    <!-- ---------------------------------------------------------------------------------- -->
+    <!-- The modal view for the CREATE ACTION WIZARD                                        -->
+    <!-- ---------------------------------------------------------------------------------- -->
+    <c-simpli-u-i-list-views-action-create-wizard-modal show-modal={showCreateActionWizardModal}
+                                                        onfinished={handleCreateActionFinished}
+                                                        oncancelled={handleCreateActionClose}>
+    </c-simpli-u-i-list-views-action-create-wizard-modal>
 
 </template>

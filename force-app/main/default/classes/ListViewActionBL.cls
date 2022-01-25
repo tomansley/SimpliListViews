@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-17-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 01-25-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-31-2020   tom@ansleyllc.com   Initial Version
@@ -50,6 +50,25 @@ public with sharing class ListViewActionBL {
                     && String.isEmpty(action.Object_Type__c))
                 action.addError('For mass create actions, if using a specific list view name the object type must be provided.');
 
+            if (String.isEmpty(action.Apex_Class_Name__c))
+            {
+                action.addError('An apex class is required and must extend simpli_lv.ListViewAction');
+            } else {
+                
+                if (action.Apex_Class_Name__c != 'ListViewActionNull'
+                    && action.Apex_Class_Name__c != 'ListViewActionPDF'
+                    && action.Apex_Class_Name__c != 'ListViewActionMassCreate')
+                {
+                    try {
+                        Type t = HelperSchema.getClassType(action.Apex_Class_Name__c);
+                        ListViewAction lvLogic = (ListViewAction) t.newInstance();
+                    } catch (Exception e) {
+                        System.debug(LoggingLevel.DEBUG, ListViewException.getExtendedString(e));
+                        action.addError('The apex class does not exist or implement simpli_lv.ListViewAction (' + action.Apex_Class_Name__c + ')');
+                    }
+                }
+            }
+    
         }
 
     }

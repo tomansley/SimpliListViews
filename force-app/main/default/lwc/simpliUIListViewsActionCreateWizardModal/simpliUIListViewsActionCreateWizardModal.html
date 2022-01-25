@@ -1,0 +1,711 @@
+<!-- sldsValidatorIgnore -->
+<!--
+  @description       : 
+  @author            : tom@ansleyllc.com
+  @last modified on  : 01-25-2022
+  @last modified by  : tom@ansleyllc.com
+-->
+<template>
+    <template if:true={showModal}>
+        <div>
+            <template if:true={spinner}>
+                <lightning-spinner alternative-text="Loading" class="pageSpinnerHolder"></lightning-spinner>
+            </template>
+        
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container modalBody" style="align-items: center; min-width: 700px;">
+                    <template if:true={spinner}>
+                        <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
+                    </template>
+                    <header class="slds-modal__header" style="min-width: 700px;">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close" onclick={handleClose}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" variant="warning"></lightning-icon>
+                            <span class="slds-assistive-text">{label.Close}</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate" style="padding-bottom: 10px;">Create Action Wizard - {headerLabel}</h2>
+                        <lightning-progress-indicator current-step={currentStep} type="base">
+                            <lightning-progress-step label="Basic Action Details" value="1"></lightning-progress-step>
+                            <lightning-progress-step label="Enhanced Action Details" value="2"></lightning-progress-step>
+                            <lightning-progress-step label="Accessibility" value="3"></lightning-progress-step>
+                            <lightning-progress-step label="Review and Save" value="4"></lightning-progress-step>
+                        </lightning-progress-indicator>
+
+                    </header>
+                    <div class="scroll slds-modal__content slds-var-p-around_medium" id="modal-content-id-1" style="min-width: 700px; height: 500px;">
+
+                        <!-- --------------------------------------- -->
+                        <!-- STEP ONE - BASIC ACTION DETAILS         -->
+                        <!-- --------------------------------------- -->
+                        <template if:true={isStepOne}>
+                            <lightning-combobox name="action_record_type"
+                                                label="Core or Custom Action"
+                                                field-level-help="Will the action be used in core or custom list views?"
+                                                value={selectedActionRecordType}
+                                                placeholder="Is this action for core or custom list views"
+                                                options={actionRecordTypes}
+                                                onchange={handleActionRecordTypeSelected}
+                                                style="padding-top: 10px;"
+                                                required>
+                            </lightning-combobox>
+                            <lightning-combobox name="action_type"
+                                                label="Action Type"
+                                                field-level-help="What kind of processing will the action be performing?"
+                                                value={selectedActionType}
+                                                placeholder="Select Action Type"
+                                                options={actionTypes}
+                                                onchange={handleActionTypeSelected}
+                                                required
+                                                style="padding-top: 10px;">
+                            </lightning-combobox>
+                            <template if:true={hasActionType}>
+                                <template if:true={showSubType}>
+                                    <lightning-combobox name="action_subtype"
+                                                        label="Action Subtype"
+                                                        value={selectedActionSubType}
+                                                        placeholder="Select Action Subtype"
+                                                        options={actionSubTypes}
+                                                        onchange={handleActionSubTypeSelected}
+                                                        required 
+                                                        style="padding-top: 10px;">
+                                    </lightning-combobox>
+                                </template>
+                                <lightning-input type="text" 
+                                                label="Action Label" 
+                                                value={selectedActionLabel}
+                                                placeholder="Enter action label here"
+                                                field-level-help="The text the user will see in the actions dropdown" 
+                                                onchange={handleActionLabelSelected}
+                                                required 
+                                                minlength="3"
+                                                style="padding-top: 10px;">
+                                </lightning-input>
+                                <lightning-combobox name="action_is_active"
+                                                    label="Is action immediately available?"
+                                                    field-level-help="Indicates whether the action is immediately available to users"
+                                                    value={selectedActionIsActive}
+                                                    placeholder="Select Yes or No"
+                                                    options={booleanList}
+                                                    onchange={handleActionIsActiveSelected}
+                                                    required
+                                                    style="padding-top: 10px;">
+                                </lightning-combobox>
+                            </template>
+                        </template>
+                        
+                        <!-- --------------------------------------- -->
+                        <!-- STEP TWO - SPECIFIC ACTION DETAILS      -->
+                        <!-- --------------------------------------- -->
+                        <template if:true={isStepTwo}>
+
+                            <!-- HYPERLINKS -->
+                            <template if:true={isHyperlink}>
+                                <lightning-input type="text" 
+                                                label="Hyperlink URL" 
+                                                placeholder="Enter hyperlink URL here"
+                                                field-level-help="The URL can be relative. Substitutions can also be added. i.e. /lightning/r/Account/$recordId$/view/" 
+                                                onchange={handleActionParameterAdded}
+                                                data-param-name="hyperlinkURL"
+                                                required 
+                                                style="padding-top: 10px; padding-bottom: 20px;">
+                                </lightning-input>
+
+                                <lightning-layout horizontal-align="spread">
+
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Param 1 Name" 
+                                                        placeholder="Enter param name here"
+                                                        field-level-help="The param name corresponds to the substitution name on the URL i.e. the param name for $recordId$ would be - recordId" 
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="hyperlinkSubParamName1"
+                                                        minlength="2"
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Param 1 Field" 
+                                                        placeholder="Enter param API field name here"
+                                                        field-level-help="The param field holds the object field API name on the list view that the data comes from. i.e. AccountId"
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="hyperlinkSubParamField1"
+                                                        minlength="2"
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+
+                                </lightning-layout>
+
+                                <lightning-layout horizontal-align="spread">
+
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Param 2 Name" 
+                                                        placeholder="Enter param name here"
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="hyperlinkSubParamName2"
+                                                        minlength="2"
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Param 2 Field" 
+                                                        placeholder="Enter param API field name here"
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="hyperlinkSubParamField2"
+                                                        minlength="2"
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+
+                                </lightning-layout>
+
+                            </template>
+
+                            <!-- SEND EMAIL CLASSIC -->
+                            <template if:true={isSendEmailClassic}>
+                                <lightning-layout horizontal-align="spread">
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Email API Field Name" 
+                                                        placeholder="Enter field name here"
+                                                        field-level-help="Specifies the list view objects field name which holds the email address that the email should be sent to. If this value is not provided fields with name 'Email' or 'Email__c' are used as default." 
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="sendEmailClassicFieldName"
+                                                        minlength="2"
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                            </template>
+
+                            <!-- SEND EMAIL TEMPLATE -->
+                            <template if:true={isSendEmailTemplate}>
+                                <lightning-layout horizontal-align="spread">
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Email Template Folder" 
+                                                        placeholder="Enter template folder name here"
+                                                        field-level-help="Specifies the folder name that holds the email templates to be made available to the user." 
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="sendEmailTemplateFolderName"
+                                                        minlength="2"
+                                                        required
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+
+                                <lightning-layout horizontal-align="spread">
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="What Id Field" 
+                                                        field-level-help="Specifies the list view field to use as the What Id when sending the email. This is not a required field but can be useful for providing more data in the email. The field should hold an Id pointing to another object"
+                                                        placeholder="Enter API field name here"
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="sendEmailTemplateWhatIdField"
+                                                        minlength="2"
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+                                </lightning-layout> 
+                            </template>
+
+                            <!-- AUTO-LAUNCHED FLOW -->
+                            <template if:true={isLaunchFlow}>
+                                <lightning-layout horizontal-align="spread">
+                                    
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Flow API Name" 
+                                                        placeholder="Enter flow API name here"
+                                                        field-level-help="Specifies the API name of the flow to be automatically launched." 
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="launchFlowAPIName"
+                                                        minlength="2"
+                                                        required
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                            </template>
+
+                            <!-- SCREEN FLOW -->
+                            <template if:true={isScreenFlow}>
+
+                                <lightning-layout horizontal-align="spread">                                    
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Screen Flow API Name" 
+                                                        placeholder="Enter screen flow API name here"
+                                                        field-level-help="Specifies the API name of the flow to be automatically launched." 
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="screenFlowAPIName"
+                                                        minlength="2"
+                                                        required
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+
+                                <lightning-layout horizontal-align="spread">
+
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Flow Frame Height" 
+                                                        field-level-help="Specifies the frame height of the popup window which displays the screen flow."
+                                                        placeholder="Enter frame height here"
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="screenFlowFrameHeight"
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Flow Frame Width" 
+                                                        field-level-help="Specifies the frame width of the popup window which displays the screen flow"
+                                                        placeholder="Enter API field name here"
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="screenFlowFrameWidth"
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+
+                                </lightning-layout>
+                            </template>
+
+                            <!-- CRUD OPERATIONS -->
+                            <template if:true={isManageData}>
+                                
+                                <template if:true={isManageMassUpdate}>
+
+                                    <lightning-layout horizontal-align="spread">
+
+                                        <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                            <lightning-input type="text" 
+                                                            label="Field Label" 
+                                                            field-level-help="The label that will be displayed to the user."
+                                                            onchange={handleActionParameterAdded}
+                                                            data-param-name="manageDataMassUpdateLabel"
+                                                            data-param-row-index="1"
+                                                            required
+                                                            style="padding-top: 10px;">
+                                            </lightning-input>
+                                        </lightning-layout-item>
+    
+                                        <lightning-layout-item flexibility="grow">
+                                            <lightning-input type="text" 
+                                                            label="API Name" 
+                                                            field-level-help="The API name of the field that will be updated."
+                                                            onchange={handleActionParameterAdded}
+                                                            data-param-name="manageDataMassUpdateField"
+                                                            data-param-row-index="1"
+                                                            required
+                                                            style="padding-top: 10px;">
+                                            </lightning-input>
+                                        </lightning-layout-item>
+    
+                                        <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                            <c-simpli-u-i-list-views-picklist type="picklist"
+                                                                                row-id="1"
+                                                                                sfdc-id=""
+                                                                                label="Field Type"
+                                                                                object-api-name="List_View_Action_Parameter__c" 
+                                                                                selected-value="" 
+                                                                                pick-list-field-api-name="simpli_lv__Type__c"
+                                                                                onpicklistchange={handleActionParameterAdded}
+                                                                                variant=standard
+                                                                                required=true
+                                                                                field-style="padding-top: 10px;"
+                                                                                field-level-help="The type of the field. This is used to identify the field widget that is displayed to the user.">
+                                            </c-simpli-u-i-list-views-picklist>
+                                        </lightning-layout-item>
+    
+                                        <lightning-layout-item flexibility="grow">
+                                            <lightning-combobox name="display_order"
+                                                                label="Display Order"
+                                                                placeholder="--None--"
+                                                                field-level-help="The order in which the field should be displayed relative to the other fields. -1 = Not Displayed, 1 Displayed Higher Than 2"
+                                                                options={displayOrderList}
+                                                                onchange={handleActionParameterAdded}
+                                                                data-param-name="manageDataMassUpdateOrder"
+                                                                data-param-row-index="1"
+                                                                required
+                                                                style="padding-top: 10px;">
+                                            </lightning-combobox>
+                                        </lightning-layout-item>
+    
+                                        <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                            <lightning-input type="text" 
+                                                            label="Default Value" 
+                                                            field-level-help="The default value of the field."
+                                                            onchange={handleActionParameterAdded}
+                                                            data-param-name="manageDataMassUpdateDefault"
+                                                            data-param-row-index="1"
+                                                            style="padding-top: 10px;">
+                                            </lightning-input>
+                                        </lightning-layout-item>
+    
+                                    </lightning-layout>
+    
+                                    <template for:each={massUpdateRowIndexes} for:item="rowIndex">
+                                        <lightning-layout key={rowIndex} horizontal-align="spread">
+
+                                            <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                                <lightning-input type="text" 
+                                                                onchange={handleActionParameterAdded}
+                                                                data-param-name="manageDataMassUpdateLabel"
+                                                                data-param-row-index={rowIndex}
+                                                                style="padding-top: 10px;"
+                                                                variant="label-hidden">
+                                                </lightning-input>
+                                            </lightning-layout-item>
+        
+                                            <lightning-layout-item flexibility="grow">
+                                                <lightning-input type="text" 
+                                                                onchange={handleActionParameterAdded}
+                                                                data-param-name="manageDataMassUpdateField"
+                                                                data-param-row-index={rowIndex}
+                                                                style="padding-top: 10px;"
+                                                                variant="label-hidden">
+                                                </lightning-input>
+                                            </lightning-layout-item>
+        
+                                            <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                                <c-simpli-u-i-list-views-picklist type="picklist"
+                                                                                    row-id={rowIndex}
+                                                                                    sfdc-id=""
+                                                                                    label="Field Type"
+                                                                                    object-api-name="List_View_Action_Parameter__c" 
+                                                                                    selected-value="" 
+                                                                                    pick-list-field-api-name="simpli_lv__Type__c"
+                                                                                    onpicklistchange={handleActionParameterAdded}
+                                                                                    variant="label-hidden"
+                                                                                    required=true
+                                                                                    field-style="padding-top: 10px;">
+                                                </c-simpli-u-i-list-views-picklist>
+                                            </lightning-layout-item>
+        
+                                            <lightning-layout-item flexibility="grow">
+                                                <lightning-combobox name="display_order"
+                                                                    placeholder="--None--"
+                                                                    options={displayOrderList}
+                                                                    onchange={handleActionParameterAdded}
+                                                                    data-param-name="manageDataMassUpdateOrder"
+                                                                    data-param-row-index={rowIndex}
+                                                                    style="padding-top: 10px;">
+                                                </lightning-combobox>
+                                            </lightning-layout-item>
+        
+                                            <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                                <lightning-input type="text" 
+                                                                onchange={handleActionParameterAdded}
+                                                                data-param-name="manageDataMassUpdateDefault"
+                                                                data-param-row-index={rowIndex}
+                                                                style="padding-top: 10px;"
+                                                                variant="label-hidden">
+                                                </lightning-input>
+                                            </lightning-layout-item>
+        
+                                        </lightning-layout>
+                                    </template>    
+
+                                    <lightning-layout horizontal-align="spread">        
+                                        <lightning-layout-item flexibility="grow" padding="horizontal-small">                              
+                                            <div style="text-align: center; padding-top: 45px;">    
+                                                Note: if more parameters are needed they can be added by going to the newly created action and creating a parameter directly.
+                                            </div>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+
+                                </template>
+                            
+                                <template if:true={isManageCreate}>
+                                    <lightning-layout horizontal-align="spread">                                    
+                                        <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                            <lightning-input type="text" 
+                                                            label="Owner API Field Name" 
+                                                            placeholder="Enter owner API field name here"
+                                                            field-level-help="Specifies a field on the new object that should be stamped with the current user. Ensure the field is a lookup to the User object." 
+                                                            onchange={handleActionParameterAdded}
+                                                            data-param-name="manageDataCreateOwnerField"
+                                                            style="padding-top: 10px;">
+                                            </lightning-input>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                    <lightning-layout horizontal-align="spread">        
+                                        <lightning-layout-item flexibility="grow" padding="horizontal-small">                              
+                                            <div style="text-align: center; padding-top: 45px;">    
+                                                Note: if the action is performed in a related list view component the parent Id is automatically placed on to the record at the join field specified.
+                                            </div>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </template>
+                            
+                                <template if:true={isManageMassCreate}>
+                                    <lightning-layout horizontal-align="spread">                                    
+                                        <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                            <lightning-input type="text" 
+                                                            label="List View API Name" 
+                                                            placeholder="Enter list view API name here"
+                                                            field-level-help="Specifies the API name of the list view to use for the mass create screen. If no name is provided the current list view is used." 
+                                                            onchange={handleActionParameterAdded}
+                                                            data-param-name="manageDataMassCreateListViewName"
+                                                            style="padding-top: 10px;">
+                                            </lightning-input>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </template>
+                            
+                                <template if:true={isManageEdit}>
+                                    <div style="text-align: center; padding-top: 45px;">
+                                        There are no enhanced settings for this action.
+                                    </div>
+                                </template>
+                            
+                                <template if:true={isManageEditAll}>
+                                    <div style="text-align: center; padding-top: 45px;">
+                                        There are no enhanced settings for this action.
+                                    </div>
+                                </template>
+                            
+                                <template if:true={isManageClone}>
+                                    <div style="text-align: center; padding-top: 45px;">
+                                        There are no enhanced settings for this action.
+                                    </div>
+                                </template>
+                            
+                                <template if:true={isManageDelete}>
+                                    <div style="text-align: center; padding-top: 45px;">
+                                        There are no enhanced settings for this action.
+                                    </div>
+                                </template>
+                            
+                            </template>
+
+                            <!-- SAVE TO PDF -->
+                            <template if:true={isSaveToPDF}>
+                                <div style="text-align: center; padding-top: 45px;">
+                                    There are no enhanced settings for this action.
+                                </div>
+                            </template>
+
+                            <!-- CUSTOM APEX CLASS -->
+                            <template if:true={isCustom}>
+                                <lightning-layout horizontal-align="spread">                                    
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Custom Apex Class Name" 
+                                                        placeholder="Enter class name here"
+                                                        field-level-help="Specifies the custom apex class that holds all processing logic and will be called. This class must implement the simpli_lv.ListViewAction interface." 
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="customApexClassName"
+                                                        minlength="2"
+                                                        required
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                            </template>                       
+                        
+                        </template>
+                        
+                        <!-- --------------------------------------- -->
+                        <!-- STEP THREE - ACCESSIBILITY              -->
+                        <!-- --------------------------------------- -->
+                        <template if:true={isStepThree}>
+                            <lightning-combobox name="action_has_object"
+                                                label="Is action specific to an object?"
+                                                field-level-help="For example, is the action only to be displayed for the Account object? If a custom action is being created an object is required."
+                                                value={selectedActionHasObject}
+                                                disabled={selectedActionHasObjectDisabled}
+                                                placeholder="Select Yes or No"
+                                                options={booleanList}
+                                                onchange={handleActionHasObjectSelected}
+                                                required 
+                                                style="padding-top: 10px;">
+                            </lightning-combobox>
+
+                            <template if:true={actionHasObject}>
+                                <lightning-input type="text" 
+                                                label="Object Type" 
+                                                field-level-help="For example Account, Opportunity, Case, Custom__c etc."
+                                                value={selectedActionObjectType}
+                                                onchange={handleActionObjectTypeSelected}
+                                                placeholder="Enter the object API name here" 
+                                                required 
+                                                style="padding-top: 10px;">
+                                </lightning-input>
+                            </template>
+
+                            <lightning-combobox name="action_has_component"
+                                                label="Is action specific to a lightning component?"
+                                                value={selectedActionHasComponent}
+                                                placeholder="Select Yes or No"
+                                                options={booleanList}
+                                                onchange={handleActionHasComponentSelected}
+                                                required 
+                                                style="padding-top: 10px;">
+                            </lightning-combobox>
+
+                            <template if:true={actionHasComponent}>
+                                <lightning-input type="text" 
+                                                label="Component API Name" 
+                                                field-level-help="The API name of the lightning component that this action is available for"
+                                                value={selectedActionComponentName}
+                                                onchange={handleActionComponentNameSelected}
+                                                placeholder="Enter the component API name here" 
+                                                required 
+                                                style="padding-top: 10px;">
+                                </lightning-input>
+                            </template>
+
+                            <lightning-combobox name="action_record_visible"
+                                                label="Record Select Visibility"
+                                                field-level-help="How many records need to be selected for the action to become visible?"
+                                                value={selectedActionRecordVisible}
+                                                options={recVisibleList}
+                                                onchange={handleActionRecordVisibleSelected}
+                                                required 
+                                                style="padding-top: 10px;">
+                            </lightning-combobox>
+
+                            <lightning-dual-listbox name="action_user_permissions"
+                                                    source-label="Available"
+                                                    selected-label="Chosen"
+                                                    label="User Permissions"
+                                                    field-level-help="Should the action only be displayed if the user has specific permissions?"
+                                                    options={userPermissionsList}
+                                                    onchange={handleActionUserPermissionsSelected}
+                                                    variant="label-stacked"
+                                                    value={selectedActionUserPermissions}
+                                                    size=4
+                                                    style="padding-top: 10px;">
+                            </lightning-dual-listbox>
+
+                        </template>
+                        
+                        <!-- --------------------------------------- -->
+                        <!-- STEP FOUR - REVIEW AND SAVE            -->
+                        <!-- --------------------------------------- -->
+                        <template if:true={isStepFour}>
+
+                            <div style="font-size: medium;">Basic Details -</div>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Label</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{selectedActionLabel}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Type</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{selectedActionType}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Subtype</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{selectedActionSubType}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Core or Custom</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{selectedActionRecordType}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Immediately Active</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{strIsActive}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+
+                            <div style="font-size: medium; padding-top: 25px;">Accessibility -</div>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Action For Specific Object</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{strActionHasObject}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Object Type</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{selectedActionObjectType}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Specific To Lightning Component</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{strSpecificToLtn}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Lightning Component Name</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{selectedActionComponentName}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Record Select Visibility</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{selectedActionRecordVisible}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout horizontal-align="spread" style="padding-top: 10px;">
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div style="font-weight:bold;">Specific User Permissions</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item style="width: 50%;" padding="horizontal-small">
+                                    <div>{selectedActionUserPermissions}</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </template>
+                        
+                    </div>
+                    
+                    <footer class="slds-modal__footer" style="min-width: 700px;">
+                        <lightning-button label="Cancel" variant="brand" onclick={handleCancelClick}></lightning-button>
+                        <template if:true={isEnablePrev}>
+                            <lightning-button label="Back" variant="brand" onclick={handlePrev} style="padding-left: 5px;"></lightning-button>
+                        </template>
+                        <template if:true={isEnableNext}>
+                            <lightning-button label="Next" variant="brand" onclick={handleNext} style="padding-left: 5px;"></lightning-button>
+                        </template>
+                        <template if:true={isEnableSave}>
+                            <lightning-button label="Save" variant="brand" onclick={handleSave} style="padding-left: 5px;"></lightning-button>
+                        </template>
+                    </footer>
+
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+</template>

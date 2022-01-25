@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-14-2022
+ * @last modified on  : 01-25-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -9,9 +9,6 @@
 **/
 public with sharing class ListViewAdminController {
     
-    public static final String SUCCESS = 'success';
-    public static final String FAILED = 'failed';
-
     @AuraEnabled
     public static String importConfigJSON(String configStr)
     {
@@ -480,17 +477,17 @@ public with sharing class ListViewAdminController {
     @AuraEnabled
     public static String scheduleRefreshJob()
     {
-        String response = SUCCESS;
+        String response = ListViewActionHelper.SUCCESS;
 
         try {
 
             Boolean result = HelperScheduler.scheduleRefreshJob();
 
             if (!result)
-                response = FAILED;
+                response = ListViewActionHelper.FAILED;
 
         } catch (Exception e) {
-            response = FAILED;
+            response = ListViewActionHelper.FAILED;
         }
 
         return response;
@@ -508,7 +505,7 @@ public with sharing class ListViewAdminController {
         try {
             jobId = Database.executebatch(b, 40);
         } catch (Exception e) {
-            jobId = FAILED;
+            jobId = ListViewActionHelper.FAILED;
             String message = 'Exception during ListViewAdminController.cleanListViews()  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createFutureUsageError(message); 
         }
@@ -582,6 +579,41 @@ public with sharing class ListViewAdminController {
         ListViewErrorHelper.processLogs(true);
 
         return objNames;
+    }
+
+    @AuraEnabled
+    public static String createAction(String actionFields)
+    {
+        System.debug(LoggingLevel.FINE, 'Starting ListViewAdminController.createAction(' + actionFields + ')');
+        String debug = '\n\n----- Action Create Request -----\n';
+        String response = '';
+
+        List<Object> untypesValues = (List<Object>) JSON.deserializeUntyped(actionFields);
+        Map<String, String> actionValues = new Map<String, String>();
+        for (Object untypedValue: untypesValues)
+        {
+            List<Object> values = (List<Object>) untypedValue;
+            String fieldName = (String) values[0];
+            if (fieldName != 'actionUserPermissions')
+            {
+                actionValues.put(fieldName, (String) values[1]);
+                debug += fieldName + ' - ' + (String) values[1] + '\n';
+            } else {
+                if (values[1] instanceof List<Object>)
+                {
+                    String fieldValue = HelperString.getStringFromList((List<Object>) values[1], ';');
+                    actionValues.put(fieldName, fieldValue);
+                    debug += fieldName + ' - ' + fieldValue + '\n';
+                } 
+            }
+        }
+
+        response = ListViewActionHelper.createAction(actionValues);
+        
+        System.debug(LoggingLevel.FINE, debug);
+        ListViewErrorHelper.addLog('ListViewAdminController(createAction)', debug + '\n\n' + response);
+
+        return response;
     }
 
 }
