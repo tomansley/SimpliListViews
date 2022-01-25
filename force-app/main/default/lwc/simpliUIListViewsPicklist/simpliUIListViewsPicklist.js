@@ -22,7 +22,10 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     @api sourceLabel = 'Available';   //label displayed above the AVAILABLE options.
     @api selectedLabel = 'Selected';  //label displayed above the SELECTED options.
     @api size = 5;                    //the number of options to display if we are displaying the multi-picklist
-                 
+    @api required = undefined;        //whether the picklist is required or not.
+    @api fieldLevelHelp = '';         //field level help.
+    @api fieldStyle = '';
+
     @track compName;
     @track value;
     recordTypeIdValue;
