@@ -148,7 +148,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                     this.dispatchEvent(new CustomEvent('processed'));
                 
                 } else {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', message, false)); 
+                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', message, false)); 
                     this.spinner = false;
                     return;
                 }

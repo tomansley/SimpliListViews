@@ -77,7 +77,7 @@ export default class SimpliUIListViewsEmailTemplateModal extends LightningElemen
 
                 if (this.templateList.length === 0)
                 {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'No Email Templates Available', 'No email templates available in the specified email folder(' + this.folderName + ')', false)); 
+                    this.dispatchEvent(SLVHelper.createToast('error', '', 'No Email Templates Available', 'No email templates available in the specified email folder(' + this.folderName + ')', false)); 
                     this.spinnerOff();
                     return;
                 }

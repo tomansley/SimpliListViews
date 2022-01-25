@@ -249,7 +249,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         if (this.pageName === '')
         {
-            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Configuration Error', 'A page/component name must be provided for all simpli list view components.', false)); 
+            this.dispatchEvent(SLVHelper.createToast('error', '', 'List View Configuration Error', 'A page/component name must be provided for all simpli list view components.', false)); 
             return;
         }
         console.log('Starting simpliUIListViews.renderedCallback for ' + this.pageName);
@@ -308,7 +308,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 if (this.singleListViewObject === '' || this.singleListViewApiName === '')
                 {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Single List View Configuration Error', 'If using Single List View mode the list view object and API name must be provided.', false)); 
+                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Single List View Configuration Error', 'If using Single List View mode the list view object and API name must be provided.', false)); 
                     this.spinnerOff('renderedCallback');
                     return;
                 } else {
@@ -324,7 +324,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 if (this.singleListViewObject === '' || this.singleListViewApiName === '' || this.joinFieldName === '')
                 {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Related List View Configuration Error', 'If using Related List View mode the list view object, list view API name and join field name must be provided.', false)); 
+                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Related List View Configuration Error', 'If using Related List View mode the list view object, list view API name and join field name must be provided.', false)); 
                     this.spinnerOff('renderedCallback');
                     return;
                 } else {
@@ -615,7 +615,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         try {
             console.log(this.pageName + ' CALLOUT - getListViewData - ' + this.calloutCount++);
-            let listViewDataResult = await getListViewData({pageName: this.pageName, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset, textSearchStr: this.textSearchText });
+            let listViewDataResult = await getListViewData({pageName: this.pageName, compType: this.mode, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset, textSearchStr: this.textSearchText });
             this.handleListViewDataPage(listViewDataResult);
         } catch(error) {
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Data', 'There was an error retrieving the list view data. Please see an administrator', true));
@@ -1202,7 +1202,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.isPinned = false;
             } else {
                 console.log('List view unpinning NOT successful for ' + this.pageName);
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator', false)); 
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator', false)); 
             }
         })
         .catch(error => {
@@ -1316,7 +1316,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                     //else send an ERROR toast.
                     } else {
-                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error processing the list view. Please see an administrator', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the list view. Please see an administrator', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick1');
                     }
                 })
@@ -1347,7 +1347,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                     //else send an ERROR toast.
                     } else {
-                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick4');
                     }
                 })
@@ -1531,7 +1531,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             if (this.selectedRecordIds.size > 1)
             {
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'Multiple rows cannot be selected for this action', false)); 
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Processing Action', 'Multiple rows cannot be selected for this action', false)); 
             } else {
 
                 //go through the action parameters checking for field substitutions
@@ -1550,7 +1550,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                                                                             if (row === undefined)
                                                                             {
-                                                                                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'A row must be selected for this action', false)); 
+                                                                                this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Processing Action', 'A row must be selected for this action', false)); 
                                                                                 hyperlink = '';
 
                                                                             } else if (param.value === 'Id')
@@ -1636,7 +1636,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         {
 
             if (this.selectedRecordIds.size !== 1) {    
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'A single row must be selected for cloning', false)); 
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Processing Action', 'A single row must be selected for cloning', false)); 
             } else {
                 console.log('We are cloning the following id - ' + selectedRowId + ' for ' + this.pageName);
 
@@ -1658,7 +1658,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         {
 
             if (this.selectedRecordIds.size !== 1) {      
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'A single row must be selected for editing', false)); 
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Processing Action', 'A single row must be selected for editing', false)); 
             } else {
 
                 console.log('We are editing the following id - ' + selectedRowId + ' for ' + this.pageName);
@@ -1683,7 +1683,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('We are editing all records for ' + this.pageName);
 
             if (this.listViewDataRows.length > 101) {
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Too Many Rows!', 'Inline editing only available for up to 100 rows', false)); 
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Too Many Rows!', 'Inline editing only available for up to 100 rows', false)); 
             } else {
                 this.setAllRowsEdited();
             }
@@ -1751,7 +1751,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else {
 
             if (this.selectedRecordIds.size === 0) {
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Processing Action', 'No rows selected for processing', false)); 
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Processing Action', 'No rows selected for processing', false)); 
                 this.dispatchEvent(new CustomEvent('processclick'));
             
             } else {

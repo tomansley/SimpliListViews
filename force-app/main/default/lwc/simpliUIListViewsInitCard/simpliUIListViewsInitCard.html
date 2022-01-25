@@ -1,8 +1,8 @@
 <!--
   @description       : 
   @author            : tom.h.ansley@medtronic.com
-  @last modified on  : 12-12-2021
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 01-18-2022
+  @last modified by  : tom@ansleyllc.com
 -->
 <template>
     <template if:true={spinner}>
@@ -11,7 +11,7 @@
     
     <template if:false={showProgress}>
         <template if:false={isInitialized}>
-            <lightning-card>
+            <lightning-card title="Current Status">
                 <lightning-layout>
                     <lightning-layout-item padding="horizontal-small"> 
                         <div style="padding-left: 10px;">
@@ -38,7 +38,7 @@
 
         <template if:true={isInitialized}>
             <template if:true={alwaysDisplayed}>
-                <lightning-card>
+                <lightning-card title="Current Status">
                     <lightning-layout>
                         <lightning-layout-item padding="horizontal-small">
                             <div style="padding-left: 10px;">
@@ -65,7 +65,7 @@
         </template>
     </template>
     <template if:true={showProgress}>
-        <lightning-card>
+        <lightning-card title="Current Status">
             <c-simpli-u-i-list-views-init-progress-bar batch-id={apexBatchId}
                                                         working-text={label.Processing_Status}
                                                         complete-text={label.List_View_Processing_Complete}>

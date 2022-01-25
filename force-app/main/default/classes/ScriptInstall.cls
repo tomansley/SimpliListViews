@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-14-2022
+ * @last modified on  : 01-18-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -332,42 +332,42 @@ global with sharing class ScriptInstall implements InstallHandler {
                     if (action.Label__c == 'New' && action.Apex_Class_Name__c == 'ListViewActionNull')
                     {
                         action.Permissions__c = ListViewActionHelper.PERM_CREATE;
-                        action.Is_Active__c   = true;
+                        //action.Is_Active__c   = true;
                         action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
                         hasNew = true;
                     } else if (action.Label__c == 'Clone' && action.Apex_Class_Name__c == 'ListViewActionNull')
                     {
                         action.Permissions__c = ListViewActionHelper.PERM_CREATE;
-                        action.Is_Active__c   = true;
+                        //action.Is_Active__c   = true;
                         action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
                         hasClone = true;
                     } else if (action.Label__c == 'Edit' && action.Apex_Class_Name__c == 'ListViewActionNull')
                     {
                         action.Permissions__c = ListViewActionHelper.PERM_EDIT;
-                        action.Is_Active__c   = true;
+                        //action.Is_Active__c   = true;
                         action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
                         hasEdit = true;
                     } else if (action.Label__c == 'Edit All' && action.Apex_Class_Name__c == 'ListViewActionNull')
                     {
                         action.Permissions__c = ListViewActionHelper.PERM_EDIT;
-                        action.Is_Active__c   = true;
+                        //action.Is_Active__c   = true;
                         action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
                         hasEditAll = true;
                     } else if (action.Label__c == 'Delete' && action.Apex_Class_Name__c == 'ListViewActionDelete')
                     {
                         action.Permissions__c = ListViewActionHelper.PERM_EDIT;
-                        action.Is_Active__c   = true;
+                        //action.Is_Active__c   = true;
                         action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
                     } else if (action.Label__c == 'Update' && action.Apex_Class_Name__c == 'ListViewActionUpdate')
                     {
                         action.Permissions__c = ListViewActionHelper.PERM_EDIT;
-                        action.Is_Active__c   = true;
+                        //action.Is_Active__c   = true;
                         action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
                     } else if (action.Label__c == 'Set Close Lost' && action.Apex_Class_Name__c == 'ListViewActionOppsClose')
                     {
                         action.Permissions__c = ListViewActionHelper.PERM_EDIT;
-                        action.Is_Active__c   = true;
+                        //action.Is_Active__c   = true;
                         action.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
                     } else if (action.Label__c == 'Go To A Cool App' && action.Apex_Class_Name__c == 'ListViewActionNull')
                     {

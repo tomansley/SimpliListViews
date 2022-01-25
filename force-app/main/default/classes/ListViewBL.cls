@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-14-2022
+ * @last modified on  : 01-25-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -36,7 +36,7 @@ public with sharing class ListViewBL {
 
             if (String.isEmpty(lv.Custom_Apex_Class__c))
             {
-                lv.addError('A custom apex class is required and must extend ListViewAbstract');
+                lv.addError('A custom apex class is required and must extend simpli_lv.ListViewAbstract');
             } else {
                 try {
                     Type t = HelperSchema.getClassType(lv.Custom_Apex_Class__c);
