@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-10-2022
+ * @last modified on  : 01-25-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -22,7 +22,7 @@ private class ListViewCustomManualTest {
 
     static testMethod void getListViewDataTest() 
     {
-        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'simpli_lv__List_View_Config__c', 'ManualListView', '', '', '', -1, '');
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', ListViewHelper.MODE_APP, 'simpli_lv__List_View_Config__c', 'ManualListView', '', '', '', -1, '');
 
         System.assert(rows != null);
         System.assert(rows.getFieldMetaData() != null);

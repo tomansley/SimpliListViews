@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-31-2021
+ * @last modified on  : 01-21-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -19,6 +19,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
         List<SObject> dataRows = ListViewHelper.getCoreListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, this.isShell, offset, textSearchStr);
 
         RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData, ListViewHelper.offset, isShell);
+        rowData.setCompType(compType);
         if (lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE) != null && !String.isEmpty(lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE).getValue()))
             rowData.listView.rowLimit = Integer.valueOf(lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE).getValue());
         else

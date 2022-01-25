@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-10-2022
+ * @last modified on  : 01-25-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -407,7 +407,7 @@ private class ListViewHelperTest {
     static void CustomOpportunityConfigTest() {
 
         Test.startTest();
-            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Opportunity', 'CustomOpportunityExample', '', '', '', -1, '');
+            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', ListViewHelper.MODE_APP, 'Opportunity', 'CustomOpportunityExample', '', '', '', -1, '');
         Test.stopTest();
 
         //not complete yet as creating pricebook entries and products is a pain in the butt!

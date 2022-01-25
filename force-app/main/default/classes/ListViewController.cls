@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-17-2022
+ * @last modified on  : 01-21-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -508,9 +508,9 @@ public without sharing class ListViewController
     }
 
     @AuraEnabled
-    public static ListViewAbstract.RowsWrapper getListViewDataShell(String objectName, String listViewName, String joinFieldName, String joinData)
+    public static ListViewAbstract.RowsWrapper getListViewDataShell(String compType, String objectName, String listViewName, String joinFieldName, String joinData)
     {
-        ListViewAbstract.RowsWrapper rows = getListViewData(null, objectName, listViewName, null, joinFieldName, joinData, -1, true, '');
+        ListViewAbstract.RowsWrapper rows = getListViewData(null, compType, objectName, listViewName, null, joinFieldName, joinData, -1, true, '');
         
         //clone the only returned row and change its rowId
         ListViewAbstract.RowWrapper rowWrapper = rows.getRows()[0];
@@ -541,15 +541,16 @@ public without sharing class ListViewController
     }
 
     @AuraEnabled
-    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, String textSearchStr)
+    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String compType, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, String textSearchStr)
     {
-        return getListViewData(pageName, objectName, listViewName, sortData, joinFieldName, joinData, offset, false, textSearchStr);
+        return getListViewData(pageName, compType, objectName, listViewName, sortData, joinFieldName, joinData, offset, false, textSearchStr);
     }
 
     /**
     * @description Method to retrieve list view data based on user provided criteria.
     * @author tom@ansleyllc.com | 06-28-2021 
     * @param pageName the name of the lightning page that the list is being displayed on. This is used for list view config retrieval
+    * @param compType the type of the component the data is being retrieved for.
     * @param objectName the name of the list view object
     * @param listViewName the name of the list view
     * @param sortData the sorting information for the list view.
@@ -559,7 +560,7 @@ public without sharing class ListViewController
     * @param isShell indicates whether the request should only retrieve the rowwrapper without data or all the data
     * @return ListViewAbstract.RowsWrapper 
     **/
-    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, Boolean isShell, String textSearchStr)
+    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String compType, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, Boolean isShell, String textSearchStr)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ', ' + isShell + ', ' + textSearchStr + ')');
         
@@ -599,7 +600,7 @@ public without sharing class ListViewController
 
                     if (objType != objType2) //if we have join data that doesn't match return an empty shell. This can happen if we have multiple components that all have different join id types
                     {      
-                        rowData = getListViewData(pageName, objectName, listViewName, sortData, joinFieldName, '{"recordIds":""}', offset, true, '');
+                        rowData = getListViewData(pageName, compType, objectName, listViewName, sortData, joinFieldName, '{"recordIds":""}', offset, true, '');
                         rowData.clearRows();
                         return rowData;
                     }
@@ -687,6 +688,7 @@ public without sharing class ListViewController
             //create a new instance
             ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
             lvLogic.setIsShell(isShell);
+            lvLogic.setMode(compType);
 
             lvLogic.setTextSearchString(textSearchStr);
     

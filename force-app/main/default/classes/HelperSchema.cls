@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 01-08-2022
+ * @Last Modified On   : 01-21-2022
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -21,6 +21,11 @@ public with sharing class HelperSchema {
 	public static Map<String, Schema.SObjectType> objectDescribeByName = new Map<String, Schema.SObjectType>();
 	public static Map<String, Schema.SObjectType> objectDescribeByPrefix = new Map<String, Schema.SObjectType>();
 	public static Map<String, Map<String, Schema.SObjectField>> objectDescribeFieldsByObjectNameAndKey = new Map<String, Map<String, Schema.SObjectField>>();
+    public static Map<String, String> fieldLabels = new Map<String, String>();
+    public static Map<String, Boolean> validFieldNames = new Map<String, Boolean>();
+    public static Set<String> objectPermissions = new Set<String>();
+    public static Map<String, String> fieldLookupObjs = new Map<String, String>();
+    public static Map<String, String> fieldRelType = new Map<String, String>();
 
 	public static final String LABEL       = 'label';
     public static final String NAME        = 'name';
@@ -63,8 +68,16 @@ public with sharing class HelperSchema {
 	 */
 	public static String getFieldLookupObject(String obj, String field)
 	{
+		String objString = null;
 
-		initSObjectSchema(obj);
+        String key = obj + ':' + field;
+
+        objString = fieldLookupObjs.get(key);
+        if (!String.isEmpty(objString))
+        {
+            System.debug(LoggingLevel.DEBUG, 'USED CACHE(getFieldLookupObject)');
+            return objString;
+        }
 
 		Schema.SObjectField fieldSchema = getFieldByKey(obj, field, NAME);
 
@@ -73,14 +86,14 @@ public with sharing class HelperSchema {
 		Schema.DescribeFieldResult fDescribe = fieldSchema.getDescribe();
 
 		//if (fDescribe != null) throw new ListViewException('FDescribe - ' + fDescribe);
-
-		String objString = null;
 		
 		if (!fDescribe.getReferenceTo().isEmpty())
 			objString = fDescribe.getReferenceTo()[0].getDescribe().getName();
 		else {
 			objString = obj;
 		}
+
+        fieldLookupObjs.put(key, objString);
 
 		return objString;
 
@@ -89,36 +102,57 @@ public with sharing class HelperSchema {
     public static String getFieldRelationshipType(String obj, String field)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting getFieldRelationshipType(' + obj + ',' + field + ')');
+        String relType = null;
+        String key = obj + ':' + field;
+
+        relType = fieldRelType.get(key);
+        if (!String.isEmpty(relType))
+        {
+            System.debug(LoggingLevel.DEBUG, 'USED CACHE(getFieldRelationshipType)');
+            return relType;
+        }
 
         //see if there is a regular field name
         Schema.SObjectField sField = getFieldByKey(obj, field, NAME);
 
         if (sField != null)
-            return REL_TYPE_FIELD;
-
-        //see if there is a field with an Id at the end. i.e. ContactId
-        sField = getFieldByKey(obj, field + 'Id', NAME);
-
-        if (sField != null)
-            return REL_TYPE_CORE_ID;
-
-        //see if there is a lookup field name
-        sField = getFieldByKey(obj, field.replace('__r', '__c'), NAME);
-
-        if (sField != null)
-            return REL_TYPE_LOOKUP;
-
-        List<Schema.ChildRelationship> relationships = getObjectSchema(obj).getChildRelationships();
-
-        for (Schema.ChildRelationship relationship: relationships)
         {
-            if (relationship.getRelationshipName() == field)
+            relType = REL_TYPE_FIELD;
+        
+        } else { 
+
+            //see if there is a field with an Id at the end. i.e. ContactId
+            sField = getFieldByKey(obj, field + 'Id', NAME);
+
+            if (sField != null)
             {
-                return REL_TYPE_CHILD_REL;
+                relType = REL_TYPE_CORE_ID;
+            
+            } else {
+            
+                //see if there is a lookup field name
+                sField = getFieldByKey(obj, field.replace('__r', '__c'), NAME);
+
+                if (sField != null)
+                {
+                    relType = REL_TYPE_LOOKUP;
+                } else {
+                    List<Schema.ChildRelationship> relationships = getObjectSchema(obj).getChildRelationships();
+
+                    for (Schema.ChildRelationship relationship: relationships)
+                    {
+                        if (relationship.getRelationshipName() == field)
+                        {
+                            relType = REL_TYPE_CHILD_REL;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
-        return null;
+        fieldRelType.put(key, relType);
+        return relType;
 
     }
 
@@ -131,8 +165,6 @@ public with sharing class HelperSchema {
         System.debug(LoggingLevel.FINE, 'Starting getFieldDescribeResult(' + obj + ', ' + field + ')');
         Schema.DescribeFieldResult result = null;
         
-        initSObjectSchema(obj);
-
         //see if there is a regular field name
         Schema.SObjectField sField = getFieldByKey(obj, field, NAME);
 
@@ -202,11 +234,17 @@ public with sharing class HelperSchema {
 	public static Schema.DescribeSObjectResult getObjectSchema(String name)
 	{
         Schema.DescribeSObjectResult result = null;
-		initSObjectSchema(name);
         Schema.SObjectType objType = objectDescribeByName.get(name);
-        if (objType != null)
-            result = objType.getDescribe();
+        if (objType == null)
+        {
+            initSObjectSchema(name);
+            objType = objectDescribeByName.get(name);
+            if (objType != null)
+                result = objType.getDescribe();
         
+        } else {
+            result = objType.getDescribe();
+        }
         return result;
     }
     
@@ -231,11 +269,15 @@ public with sharing class HelperSchema {
     public static Boolean isObject(String objName)
     {
         Boolean isObject = false;
-		initSObjectSchema(objName);
 
-        if (objectDescribeByName.get(objName) != null)
+        if (objectDescribeByName.get(objName) == null)
+        {
+            initSObjectSchema(objName);
+            if (objectDescribeByName.get(objName) != null)
+                isObject = true;
+        } else {
             isObject = true;
-
+        }
         return isObject;
     }
 
@@ -378,11 +420,14 @@ public with sharing class HelperSchema {
 	public static Schema.SObjectField getFieldByKey(String obj, String key, String keyType)
 	{
 
-        //initialize if necessary
-		initSObjectSchema(obj);
-
 		//get the fields of the object in question
 		Map<String, Schema.SObjectField> fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
+
+        if (fieldsByKeyType == null)
+        {
+    		initSObjectSchema(obj);
+            fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
+        }
 
         //get the field by key
         Schema.SObjectField field = fieldsByKeyType.get(key.toLowerCase());
@@ -402,10 +447,16 @@ public with sharing class HelperSchema {
 	 */
 	public static Map<String, Schema.SObjectField> getFieldsForObject(String obj, String keyType)
 	{
-		//initialize if necessary
-		initSObjectSchema(obj);
+		//get the fields of the object in question
+		Map<String, Schema.SObjectField> fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
+
+        if (fieldsByKeyType == null)
+        {
+    		initSObjectSchema(obj);
+            fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
+        }
 		
-		return objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
+		return fieldsByKeyType;
 
     }
     
@@ -430,13 +481,18 @@ public with sharing class HelperSchema {
        System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.getSFDCFieldLabel('simpli_lv__List_View_Action_Parameter__c','List_View_Action__r.LastModifiedBy.Name)'));
 	 */
 	public static String getSFDCFieldLabel(String objName, String sfdcFieldName)
-	{
+	{        
         if (objName == null || sfdcFieldName == null) throw new ListViewException('An object (' + objName + ') and field (' + sfdcFieldName + ') name must be provided when using getSFDCFieldLabel() method');
         String label = '';
-		try {
 
-            //initialize if necessary
-            initSObjectSchema(objName);
+        String key = objName + ':' + sfdcFieldName;
+        try {
+            label = fieldLabels.get(key);
+            if (!String.isEmpty(label))
+            {
+                System.debug(LoggingLevel.DEBUG, 'USED CACHE(getSFDCFieldLabel)');
+                return label;
+            }
 
             //scrub the field of weird stuff like spaces and toLabel() etc.
 			sfdcFieldName = scrubFieldName(sfdcFieldName);
@@ -495,6 +551,7 @@ public with sharing class HelperSchema {
             label = '';
         }
 
+        fieldLabels.put(key, label);
         System.debug(LoggingLevel.DEBUG, 'Field label result for ' + objName + '/' + sfdcFieldName + ' is ' + label);
 		return label;
 	}
@@ -507,10 +564,17 @@ public with sharing class HelperSchema {
 	{
         if (objName == null || sfdcFieldName == null) return false;
         Boolean isValid = false;
+        String key = objName + ':' + sfdcFieldName;
 		try {
 
-            //initialize if necessary
-            initSObjectSchema(objName);
+            isValid = HelperSchema.validFieldNames.get(key);
+            if (isValid != null) 
+            {
+                System.debug(LoggingLevel.DEBUG, 'USED CACHE(isValidSFDCFieldName)');
+                return isValid;
+            } else {
+                isValid = false;
+            }
 
             //scrub the field of weird stuff like spaces and toLabel() etc.
 			sfdcFieldName = scrubFieldName(sfdcFieldName);
@@ -569,6 +633,7 @@ public with sharing class HelperSchema {
             isValid = false;
         }
 
+        validFieldNames.put(key, isValid);
         System.debug(LoggingLevel.FINE, 'Field validation result for ' + objName + '/' + sfdcFieldName + ' is ' + isValid);
 		return isValid;
 		
@@ -807,6 +872,13 @@ public with sharing class HelperSchema {
 
     public static void checkObjectPermissions(String objAPIName, String action)
     {
+        String key = objAPIName + ':' + action;
+        if (HelperSchema.objectPermissions.contains(key)) 
+        {
+            System.debug(LoggingLevel.DEBUG, 'USED CACHE(checkObjectPermissions)');
+            return;
+        }
+
         if (objAPIName == 'Simpli_lv__List_View__c')
         { 
             if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View__c');
@@ -847,6 +919,8 @@ public with sharing class HelperSchema {
             else throw new ListViewException('No permission check for ' + objAPIName + ' with action - ' + action);
             
         }
+
+        objectPermissions.add(key);
     }
 
 	public static String scrubFieldNameForSOQL(String fieldName)

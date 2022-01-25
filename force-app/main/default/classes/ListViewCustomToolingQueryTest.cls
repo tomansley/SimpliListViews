@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-10-2022
+ * @last modified on  : 01-25-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -37,7 +37,7 @@ global with sharing class ListViewCustomToolingQueryTest {
 
             Test.setMock(HttpCalloutMock.class, new ListViewCustomToolingQueryTest.ListViewCustomToolingQueryTest_CalloutMock());
 
-            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'ApexLog', 'ApexLogs', '', '', '', -1, '');
+            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', ListViewHelper.MODE_APP, 'ApexLog', 'ApexLogs', '', '', '', -1, '');
 
         Test.stopTest();
 

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-14-2022
+ * @last modified on  : 01-25-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -242,7 +242,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(listviews, null);
         System.assert(listviews.size() > 0);
 
-        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'simpli_lv__AllAccounts', '', '', '', -1, '');
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', ListViewHelper.MODE_APP, 'Account', 'simpli_lv__AllAccounts', '', '', '', -1, '');
 
         System.assertNotEquals(rows, null);
         System.assertNotEquals(rows.getFieldMetaData(), null);
@@ -436,7 +436,7 @@ global class ListViewControllerTest {
         HelperTest.createCoreListViews();
         Account acct = HelperTest.insertAccount('List View Account');
 
-        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewDataShell('Account', 'simpli_lv__AllAccounts', '', '');
+        ListViewAbstract.RowsWrapper rows = ListViewController.getListViewDataShell(ListViewHelper.MODE_APP, 'Account', 'simpli_lv__AllAccounts', '', '');
 
         System.assertNotEquals(rows, null);
         System.assert(rows.getRowCount() > 0);
@@ -451,7 +451,7 @@ global class ListViewControllerTest {
 
         Test.setFixedSearchResults(accIds);
         Test.startTest();
-            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Account', 'simpli_lv__AllAccounts', '', '', '', -1, 'Ansley');
+            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', ListViewHelper.MODE_APP, 'Account', 'simpli_lv__AllAccounts', '', '', '', -1, 'Ansley');
         Test.stopTest();
 
         System.assertNotEquals(rows, null);
@@ -485,7 +485,7 @@ global class ListViewControllerTest {
         cont = HelperTest.insertContact(acct, 'Secondly', 'LastName', 'tom@testerson.com');
 
         Test.startTest();
-            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', 'Contact', 'simpli_lv__AllContacts', '', 'AccountId', '{"recordIds":"' + acct.Id + '","objectType":"Account","uniqueComponentId":"Example_7_Account_List_View:439820"}', -1, '');
+            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('', ListViewHelper.MODE_APP, 'Contact', 'simpli_lv__AllContacts', '', 'AccountId', '{"recordIds":"' + acct.Id + '","objectType":"Account","uniqueComponentId":"Example_7_Account_List_View:439820"}', -1, '');
         Test.stopTest();
 
         System.assert(rows.getRowCount() > 0);
@@ -498,7 +498,7 @@ global class ListViewControllerTest {
         HelperTest.insertAccount('Ansley LLC');
 
         Test.startTest();
-            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('Test_Page_Name', 'Account', 'simpli_lv__AllAccounts', '[[0,[0,"Industry",true]]]', '', '', -1, '');
+            ListViewAbstract.RowsWrapper rows = ListViewController.getListViewData('Test_Page_Name', ListViewHelper.MODE_APP, 'Account', 'simpli_lv__AllAccounts', '[[0,[0,"Industry",true]]]', '', '', -1, '');
         Test.stopTest();
 
         System.assert(rows.getRowCount() > 0);
@@ -534,7 +534,7 @@ global class ListViewControllerTest {
         HelperTest.insertAccount('Ansley LLC');
         
         //this passes in a sorting order so it automatically saves it as well. Useful for testing GET functionality
-        ListViewController.getListViewData('Test_Page_Name', 'Account', 'simpli_lv__AllAccounts', '[[0,[0,"Industry",true]]]', '', '', -1, '');
+        ListViewController.getListViewData('Test_Page_Name', ListViewHelper.MODE_APP, 'Account', 'simpli_lv__AllAccounts', '[[0,[0,"Industry",true]]]', '', '', -1, '');
 
         Test.startTest();
             String configsJSON = ListViewController.getUserSortConfigs('Test_Page_Name');

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-17-2022
+ * @last modified on  : 01-21-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -28,6 +28,7 @@ public with sharing abstract class ListViewAbstract {
     public Integer offset = -1;                                       //holds the offset value if we need to page data into the list view.
     public Boolean isShell = false;                                   //indicates whether the request should only retrieve the rowwrapper without data or all the data
     public String textSearchStr = '';                                 //holds the text search if the user entered one for a SOSL query
+    public String compType = '';                                      //indicates the mode of the component calling for data.
 
     //----------------------------------------------------------------------------------
     // Method to be overridden
@@ -71,6 +72,11 @@ public with sharing abstract class ListViewAbstract {
     public void setTextSearchString(String textSearchStr)
     {
         this.textSearchStr = textSearchStr;
+    }
+
+    public void setMode(String compType)
+    {
+        this.compType = compType;
     }
 
     public void setIsShell(Boolean isShell)
@@ -188,6 +194,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isEdited;
         public Boolean isDefaultSort = false;
         private ListViewConfigWrapper lvConfig = null;
+        public String compType = '';
         
         public RowsWrapper(List_View__c listView, ListViewConfigWrapper lvConfig)
         {
@@ -274,6 +281,11 @@ public with sharing abstract class ListViewAbstract {
         public void clearRows()
         {
             rows.clear();
+        }
+
+        public void setCompType(String compType)
+        {
+            this.compType = compType;
         }
 
         public void addRow(RowWrapper row)
@@ -554,6 +566,8 @@ public with sharing abstract class ListViewAbstract {
 
         private String getSplitColumn(Integer index)
         {
+            if (parentWrapper.compType != ListViewHelper.MODE_SPLIT) return ''; //to reduce time for processing.
+
             String value = '';
             ListViewParam splitColumns = parentWrapper.getListViewConfig().getParameter(ListViewHelper.PARAM_SPLIT_COLUMNS);
 
@@ -630,6 +644,8 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getDataAsCSVString()
         {
+            if (parentWrapper.compType == ListViewHelper.MODE_SPLIT) return ''; //to reduce time for processing.
+
             String dataStr = '';
 
             if (!this.getIsTotals())
