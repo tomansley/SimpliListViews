@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-16-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 01-26-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -677,8 +677,6 @@ global with sharing class ListViewHelper
         Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
         debug += 'orgWideExcObjs size - ' + orgWideExcObjs.size() + '\n';
 
-        //HelperSchema.checkListViewAccessible();
-
         if (isInit)
         {
             //------------------------------------
@@ -690,7 +688,7 @@ global with sharing class ListViewHelper
                                                     AND Object_Name__c NOT IN :pageWideExcObjs
                                                     AND SubType__c != :SUBTYPE_TOOLING
                                                     GROUP BY Object_Name__c 
-                                                    LIMIT 2000]; //limit for security review. No other reason
+                                                    LIMIT 5000]; //limit for security review. No other reason
 
 
             for (AggregateResult result: aggListViewObjects)
@@ -699,13 +697,25 @@ global with sharing class ListViewHelper
 
                 System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
 
-                Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objAPIName);
-                if (objDesc != null)
-                {
-                    String objLabel = objDesc.getLabel();
+                String objLabel = (String) Cache.Org.get(CacheObjectLabels.class, CacheAbstract.PARTITION + objAPIName);
+                if (!String.isEmpty(objLabel))
                     listViewObjects.put(objAPIName, objLabel);
-                }
             }
+
+            //------------------------------------
+            //TOOLING LIST VIEWS (FRESH)
+            //------------------------------------
+            List<List_View__c> toolingListViews = [SELECT Object_Name__c, 
+                                                          Label__c
+                                                    FROM List_View__c 
+                                                    WHERE Object_Name__c NOT IN :orgWideExcObjs 
+                                                    AND Object_Name__c NOT IN :pageWideExcObjs
+                                                    AND SubType__c = :SUBTYPE_TOOLING
+                                                    LIMIT 5000]; //limit for security review. No other reason
+
+
+            for (List_View__c lv: toolingListViews)
+                    listViewObjects.put(lv.Object_Name__c, lv.Label__c);
 
         } else {
 

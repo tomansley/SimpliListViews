@@ -238,7 +238,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         //if the user recently changed a core list view this should do an immediate update. 
         //Only the last modified list view is processed.
-        updateChangedListViews();
+        //updateChangedListViews();                           <-- Stopped this for the moment as it takes time and not so much value
     }
     
     /*

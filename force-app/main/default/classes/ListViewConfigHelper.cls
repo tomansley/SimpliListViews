@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 01-11-2022
+ * @Last Modified On   : 01-26-2022
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -87,12 +87,15 @@ public with sharing class ListViewConfigHelper {
 
                 HelperDatabase.updateRecord(param);
 
-                //update cache
+                //update session cache
                 orgWideConfigParams.put(settingName, value);
 
                 break;
             }
         }
+
+        //force org cache update
+        Cache.Org.remove(CacheAbstract.PARTITION + ALL + ':' + ALL);
 
     }
 
@@ -174,6 +177,9 @@ public with sharing class ListViewConfigHelper {
         orgWideConfig = null;
         populateOrgWideConfig();
 
+        //force org cache update
+        Cache.Org.remove(CacheAbstract.PARTITION + ALL + ':' + ALL);
+
         return '';
     }
 
@@ -249,6 +255,9 @@ public with sharing class ListViewConfigHelper {
 
             HelperDatabase.upsertRecords(params);
 
+            //force org cache update
+            Cache.Org.remove(CacheAbstract.PARTITION + objectName + ':' + listViewName);
+
             System.debug(LoggingLevel.FINE, 'Finished upserting param!');
 
         }
@@ -273,6 +282,10 @@ public with sharing class ListViewConfigHelper {
 
         System.debug(LoggingLevel.DEBUG, 'ADDING CONDITION - ' + condition);
         HelperDatabase.insertRecord(condition);
+
+        //force org cache update
+        Cache.Org.remove(CacheAbstract.PARTITION + objectName + ':' + listViewName);
+
     }
 
     public static void deleteListViewCondition(String id)
@@ -305,15 +318,17 @@ public with sharing class ListViewConfigHelper {
 
         return paramValue;
     }
+
+    public static List_View_Config__c getListViewConfig(String objectName, String listViewName) 
+    {
+        return (List_View_Config__c) Cache.Org.get(CacheListViewConfig.class, CacheAbstract.PARTITION + objectName + ':' + listViewName);
+    }
     
     /*
-     * Method to retrieve the latest list view configuration. The method first looks at the cache
-     * to see if it has already been retrieved. If not it goes and gets it. After retrieving it then
-     * checks against default configuration params to ensure all values have been set appropriately
      * 
        delete [SELECT Id FROM List_View_Config__c WHERE CreatedDate > 2021-10-12T12:00:00Z];
      */
-    public static List_View_Config__c getListViewConfig(String objectName, String listViewName) 
+    public static List_View_Config__c getListViewConfigCache(String objectName, String listViewName) 
     {
         System.debug(LoggingLEvel.FINE, 'Starting getListViewConfig(' + objectName + ', ' + listViewName + ')');
 
