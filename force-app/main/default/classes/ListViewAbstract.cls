@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-21-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 01-26-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -1203,7 +1203,7 @@ public with sharing abstract class ListViewAbstract {
         public String getFieldObjLabel()
         {
             if (!String.isEmpty(parentObjType))
-                return HelperSchema.getObjectLabel(parentObjType);
+                return (String) Cache.Org.get(CacheObjectLabels.class, CacheAbstract.PARTITION + parentObjType);
             else
                 return '';
         }

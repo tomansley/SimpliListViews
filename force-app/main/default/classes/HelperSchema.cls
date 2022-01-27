@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom.h.ansley@medtronic.com
- * @Last Modified On   : 01-21-2022
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 01-27-2022
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -162,6 +162,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Schema.DescribeFieldResult getFieldDescribeResult(String obj, String field)
 	{
+
         System.debug(LoggingLevel.FINE, 'Starting getFieldDescribeResult(' + obj + ', ' + field + ')');
         Schema.DescribeFieldResult result = null;
         
@@ -237,11 +238,10 @@ public with sharing class HelperSchema {
         Schema.SObjectType objType = objectDescribeByName.get(name);
         if (objType == null)
         {
-            initSObjectSchema(name);
+            initSObjectSchema(name, false);
             objType = objectDescribeByName.get(name);
             if (objType != null)
-                result = objType.getDescribe();
-        
+                result = objType.getDescribe();        
         } else {
             result = objType.getDescribe();
         }
@@ -253,7 +253,7 @@ public with sharing class HelperSchema {
 		return getObjectSchema(objName).getLabelPlural();
     }
     
-	public static String getObjectLabel(String objName)
+	public static String getObjectLabelCache(String objName)
 	{
         Schema.DescribeSObjectResult result = getObjectSchema(objName);
         if (result != null)
@@ -272,7 +272,7 @@ public with sharing class HelperSchema {
 
         if (objectDescribeByName.get(objName) == null)
         {
-            initSObjectSchema(objName);
+            initSObjectSchema(objName, false);
             if (objectDescribeByName.get(objName) != null)
                 isObject = true;
         } else {
@@ -419,13 +419,19 @@ public with sharing class HelperSchema {
 	 */
 	public static Schema.SObjectField getFieldByKey(String obj, String key, String keyType)
 	{
-
 		//get the fields of the object in question
 		Map<String, Schema.SObjectField> fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
 
+        //if we cannot find the data we initialize and try again.....this is to reduce load
         if (fieldsByKeyType == null)
         {
-    		initSObjectSchema(obj);
+            initSObjectFieldSchema(obj, keyType);
+            fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
+        }
+
+        if (fieldsByKeyType == null)
+        {
+    		initSObjectSchema(obj, true);
             fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
         }
 
@@ -447,12 +453,14 @@ public with sharing class HelperSchema {
 	 */
 	public static Map<String, Schema.SObjectField> getFieldsForObject(String obj, String keyType)
 	{
+        initSObjectFieldSchema(obj, keyType);
+
 		//get the fields of the object in question
 		Map<String, Schema.SObjectField> fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
 
         if (fieldsByKeyType == null)
         {
-    		initSObjectSchema(obj);
+    		initSObjectSchema(obj, true);
             fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
         }
 		
@@ -585,6 +593,7 @@ public with sharing class HelperSchema {
 
             String objType = objName;
             Schema.DescribeSObjectResult objDescribe = HelperSchema.getObjectSchema(objType);
+            objType = objDescribe.getName(); //it could have changed if we are working with a domain. i.e. it could go from List_View_Config_Condition__c --> simpli_lv__List_View_Config_Condition__c
 
             while (fieldHierarchy.size() > 1) {
 
@@ -695,8 +704,6 @@ public with sharing class HelperSchema {
             SObject currentObj = obj;
             
             String objType = getObjectType(currentObj);
-
-            Schema.DescribeSObjectResult objDescribe = HelperSchema.getObjectSchema(objType);
 
 			for (String field: fieldHierarchy)
 			{
@@ -1135,10 +1142,40 @@ public with sharing class HelperSchema {
 		for(String s:describe.keyset())
 			objectDescribeByPrefix.put(describe.get(s).getDescribe().getKeyPrefix(), describe.get(s));
 	}
-    
-    private static void initSObjectSchema(String obj)
+
+    private static void initSObjectFieldSchema(String obj, String keyType)
     {
-        initSObjectSchema(obj, true);
+        Schema.SObjectType objSchema = Schema.getGlobalDescribe().get(obj);
+        if (objSchema != null && objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType) == null)
+        {
+            System.debug(LoggingLevel.FINE, 'Found schema with name - ' + obj);
+
+
+            List<Schema.SObjectField> fields = objSchema.getDescribe().fields.getMap().values();
+
+            Map<String,Schema.SObjectField> fieldsByLabel = new Map<String,Schema.SObjectField>();
+            Map<String,Schema.SObjectField> fieldsByName = new Map<String,Schema.SObjectField>();
+
+            for (Schema.SObjectField objField: fields)
+            {
+                fieldsByName.put(objField.getDescribe().getName().toLowerCase(), objField);
+                fieldsByLabel.put(objField.getDescribe().getLabel().toLowerCase(), objField);
+            }
+            objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + LABEL, fieldsByLabel);
+            objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + NAME, fieldsByName);
+
+            //if schema contain "simpli_lv" then remove and try again (this is the hack)
+            if (obj.contains(DOMAIN_NAME))
+            {
+                objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + LABEL, fieldsByLabel);
+                objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + NAME, fieldsByName);
+            }
+        }
+    }
+    
+    private static void initSObjectSchema(String obj, Boolean includeFields)
+    {
+        initSObjectSchema(obj, true, includeFields);
     }
 
 	/*
@@ -1149,7 +1186,7 @@ public with sharing class HelperSchema {
      * HelperSchema.initSObjectSchema('simpli_lv__List_View__c');
      * HelperSchema.initSObjectSchema('');
 	 */
-	private static void initSObjectSchema(String obj, Boolean allowRecurring)
+	private static void initSObjectSchema(String obj, Boolean allowRecurring, Boolean includeFields)
 	{
 		//if this object has not been described yet get the data
 		if (objectDescribeByName.get(obj) == null)
@@ -1161,31 +1198,17 @@ public with sharing class HelperSchema {
 				System.debug(LoggingLevel.FINE, 'Found schema with name - ' + obj);
                 objectDescribeByName.put(obj, objSchema);
                 
-                List<Schema.SObjectField> fields = objSchema.getDescribe().fields.getMap().values();
-
-                Map<String,Schema.SObjectField> fieldsByLabel = new Map<String,Schema.SObjectField>();
-                Map<String,Schema.SObjectField> fieldsByName = new Map<String,Schema.SObjectField>();
-
-                for (Schema.SObjectField objField: fields)
+                if (obj.contains(DOMAIN_NAME))
+                    objectDescribeByName.put(obj.removeStart(DOMAIN_NAME), objSchema);
+                    
+                if (includeFields)
                 {
-                    fieldsByName.put(objField.getDescribe().getName().toLowerCase(), objField);
-                    fieldsByLabel.put(objField.getDescribe().getLabel().toLowerCase(), objField);
+                    initSObjectFieldSchema(obj, LABEL);
                 }
-				objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + LABEL, fieldsByLabel);
-				objectDescribeFieldsByObjectNameAndKey.put(obj + ':' + NAME, fieldsByName);
-
-				//if schema contain "simpli_lv" then remove and try again (this is the hack)
-				if (obj.contains(DOMAIN_NAME))
-				{
-					objectDescribeByName.put(obj.removeStart(DOMAIN_NAME), objSchema);
-    
-                    objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + LABEL, fieldsByLabel);
-                    objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + NAME, fieldsByName);
-				}
 
 			} else if (allowRecurring) {
 				System.debug(LoggingLevel.FINE, 'NO schema with name - ' + obj);
-				initSObjectSchema(DOMAIN_NAME + obj, false);
+				initSObjectSchema(DOMAIN_NAME + obj, false, includeFields);
 			}
 		}
 		

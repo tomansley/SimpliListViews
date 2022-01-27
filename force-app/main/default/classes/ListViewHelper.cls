@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-16-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 01-27-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -409,6 +409,7 @@ global with sharing class ListViewHelper
         System.debug(LoggingLEvel.DEBUG, 'Starting updateListViews(' + listviews + ')');
         Map<String, List_View__c> updatedListViews = new Map<String, List_View__c>();
         Map<String, List_View_Config__c> simpliListViewConfigs = new Map<String, List_View_Config__c>(); 
+        Set<String> objectNames = new Set<String>(); //used to remove all list views that have been updated in the cache
 
         for (ListView listView: listviews)
         {
@@ -448,6 +449,8 @@ global with sharing class ListViewHelper
                 simpliListView.Core_ListView_Query__c   = (String) jsonResponse.get('query');
                 simpliListView.Core_ListView_Columns__c = JSON.serialize(jsonResponse.get('columns'));
                 simpliListView.RecordTypeId             = ListViewHelper.coreRTId;
+
+                objectNames.add(simpliListView.Object_Name__c);
 
                 User usr = UserHelper.getUserDetails(listView.CreatedById);
                 if (usr == null || !usr.IsActive || (usr.FirstName == 'Automated' && usr.LastName == 'Process'))
@@ -501,6 +504,12 @@ global with sharing class ListViewHelper
 
         HelperDatabase.upsertRecords(updatedListViews.values(), 'simpli_lv__Primary_Key__c', true);
         HelperDatabase.upsertRecords(simpliListViewConfigs.values(), 'simpli_lv__Primary_Key__c', true);           
+
+        //remove list views for user from cache
+        CacheListViews.remove(CacheListViews.LOAD_TYPE_TYPE + CacheAbstract.SPLITTER + UserInfo.getUserId() + CacheAbstract.SPLITTER + CacheListViews.LOAD_TYPE_OBJ);
+        CacheListViews.remove(CacheListViews.LOAD_TYPE_TYPE + CacheAbstract.SPLITTER + UserInfo.getUserId() + CacheAbstract.SPLITTER + CacheListViews.LOAD_TYPE_TYPE);
+        for (String objName: objectNames)
+            CacheListViews.remove(CacheListViews.LOAD_TYPE_OBJ + CacheAbstract.SPLITTER + UserInfo.getUserId() + CacheAbstract.SPLITTER + objName);
 
         return true;
     }
@@ -677,8 +686,6 @@ global with sharing class ListViewHelper
         Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
         debug += 'orgWideExcObjs size - ' + orgWideExcObjs.size() + '\n';
 
-        //HelperSchema.checkListViewAccessible();
-
         if (isInit)
         {
             //------------------------------------
@@ -690,7 +697,7 @@ global with sharing class ListViewHelper
                                                     AND Object_Name__c NOT IN :pageWideExcObjs
                                                     AND SubType__c != :SUBTYPE_TOOLING
                                                     GROUP BY Object_Name__c 
-                                                    LIMIT 2000]; //limit for security review. No other reason
+                                                    LIMIT 5000]; //limit for security review. No other reason
 
 
             for (AggregateResult result: aggListViewObjects)
@@ -699,13 +706,25 @@ global with sharing class ListViewHelper
 
                 System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
 
-                Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objAPIName);
-                if (objDesc != null)
-                {
-                    String objLabel = objDesc.getLabel();
+                String objLabel = (String) Cache.Org.get(CacheObjectLabels.class, CacheAbstract.PARTITION + objAPIName);
+                if (!String.isEmpty(objLabel))
                     listViewObjects.put(objAPIName, objLabel);
-                }
             }
+
+            //------------------------------------
+            //TOOLING LIST VIEWS (FRESH)
+            //------------------------------------
+            List<List_View__c> toolingListViews = [SELECT Object_Name__c, 
+                                                          Label__c
+                                                    FROM List_View__c 
+                                                    WHERE Object_Name__c NOT IN :orgWideExcObjs 
+                                                    AND Object_Name__c NOT IN :pageWideExcObjs
+                                                    AND SubType__c = :SUBTYPE_TOOLING
+                                                    LIMIT 5000]; //limit for security review. No other reason
+
+
+            for (List_View__c lv: toolingListViews)
+                    listViewObjects.put(lv.Object_Name__c, lv.Label__c);
 
         } else {
 
@@ -788,7 +807,19 @@ global with sharing class ListViewHelper
 
     public static Map<Id, List_View__c> getListViewsByType(String type, Boolean checkVisibility)
     {
-        System.debug(LoggingLevel.FINE, 'Called getListViewsByType(type ' + type);
+        if (checkVisibility)
+            return (Map<Id, List_View__c>) CacheListViews.get(CacheListViews.LOAD_TYPE_TYPE + 
+                                                                CacheAbstract.SPLITTER + 
+                                                                UserInfo.getUserId() + 
+                                                                CacheAbstract.SPLITTER + 
+                                                                type);
+        else
+            return getListViewsByTypeCache(type, false);
+    }
+
+    public static Map<Id, List_View__c> getListViewsByTypeCache(String type, Boolean checkVisibility)
+    {
+        System.debug(LoggingLevel.FINE, 'Called getListViewsByTypeCache(type ' + type);
 
         Set<Id> rtIds = new Set<Id>();
         if (type == TYPE_ALL || type == TYPE_CUSTOM)
@@ -892,6 +923,15 @@ global with sharing class ListViewHelper
      */
     public static Map<String, List_View__c> getListViewsByObject(String objAPIName)
     {
+        return (Map<String, List_View__c>) CacheListViews.get(CacheListViews.LOAD_TYPE_OBJ + 
+                                                                CacheAbstract.SPLITTER + 
+                                                                UserInfo.getUserId() +
+                                                                CacheAbstract.SPLITTER + 
+                                                                objAPIName);
+    }
+
+    public static Map<String, List_View__c> getListViewsByObjectCache(String objAPIName)
+    {
 
         System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
 
@@ -942,6 +982,7 @@ global with sharing class ListViewHelper
 
     /*
      * Method to get a specific list view given its object and list view API names
+     * This method cannot be cached because the list view API names can be longer than 50 chars
      */
     public static Map<Id, List_View__c> getListViews(String objAPIName, String listViewAPIName)
     {

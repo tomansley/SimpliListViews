@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 01-26-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -14,39 +14,38 @@ public with sharing class ListViewConfigDescriptions {
     public static String TYPE_COMPONENT  = 'Component';
     public static String TYPE_LIST_VIEW  = 'List View';
 
-    public static Map<String, List_View_Config_Description__mdt> descriptions = null;
-
-    private static void populateDescriptions()
+    public static String getLongDescriptionCache(String name)
     {
-        if (descriptions == null)
+        List<List_View_Config_Description__mdt> descs = (List<List_View_Config_Description__mdt>) HelperMetadata.getMetaData('List View Config Description');
+        for (List_View_Config_Description__mdt dsc: descs)
         {
-            List<SObject> descs = HelperMetadata.getMetaData('List View Config Description');
-            descriptions = new Map<String, List_View_Config_Description__mdt>();
-            for (SObject dsc: descs)
-                descriptions.put(((List_View_Config_Description__mdt) dsc).MasterLabel, (List_View_Config_Description__mdt) dsc);
+            if (name == dsc.MasterLabel)
+                return dsc.Long_Description__c;
         }
+        return '';
     }
 
     public static String getLongDescription(String name)
     {
-        populateDescriptions();
-        if (descriptions.get(name) != null)
-            return descriptions.get(name).Long_Description__c;
-        else 
-            return '';
+        return (String) Cache.Org.get(CacheConfigDescription.class, CacheAbstract.PARTITION + name);
+    }
+
+    public static List<List_View_Config_Description__mdt> getDescriptionsCache(String type)
+    {
+        List<List_View_Config_Description__mdt> response = new List<List_View_Config_Description__mdt>();
+
+        List<List_View_Config_Description__mdt> descs = (List<List_View_Config_Description__mdt>) HelperMetadata.getMetaData('List View Config Description');
+        for (List_View_Config_Description__mdt dsc: descs)
+        {
+            if (dsc.Type__c.contains(type) || type == ListViewConfigDescriptions.TYPE_ALL)
+                response.add(dsc);
+        }
+        return response;
     }
 
     public static List<List_View_Config_Description__mdt> getDescriptions(String type)
     {
-        populateDescriptions();
-        List<List_View_Config_Description__mdt> descs = new List<List_View_Config_Description__mdt>();
-        for (List_View_Config_Description__mdt dsc: descriptions.values())
-        {
-            if (dsc.Type__c.contains(type) || type == TYPE_ALL)
-                descs.add(dsc);
-        }
-
-        return descs;
+        return (List<List_View_Config_Description__mdt>) Cache.Org.get(CacheConfigDescriptions.class, CacheAbstract.PARTITION + type);
     }
 
 }

@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 01-11-2022
+ * @Last Modified On   : 01-27-2022
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -16,8 +16,7 @@
 **/
 public with sharing class ListViewConfigHelper {
 
-    private static Map<String,Object> orgWideConfigParams           = null;
-    private static List_View_Config__c orgWideConfig                = null;
+    private static Map<String,Object> orgWideConfigParams = null; //convenience variable to easily access param values
     private static final String ALL = 'All';
 
     public static final String DEBUG = 'Debug';
@@ -34,19 +33,23 @@ public with sharing class ListViewConfigHelper {
     // ORG WIDE PARAM METHODS
     //=======================================================================
 
+    private static void resetCache(String objectName, String listViewName)
+    {
+        orgWideConfigParams = null;
+        CacheListViewConfig.remove(objectName, listViewName);
+    }
+
     /*
      * Method to populate the cache.
      */
-    private static void populateOrgWideConfig() 
+    private static void populateOrgWideConfigParams() 
     {
-        if (orgWideConfig == null)
+        if (orgWideConfigParams == null)
         {
 
             orgWideConfigParams = new Map<String,Object>();
 
             List_View_Config__c config = getListViewConfig(ALL, ALL);
-
-            orgWideConfig = config;
 
             for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
                 orgWideConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
@@ -70,7 +73,6 @@ public with sharing class ListViewConfigHelper {
 
     public static void setOrgWideConfigParam(String settingName, String value)
     {
-        populateOrgWideConfig();
 
         List_View_Config__c config = getListViewConfig(ALL, ALL);
 
@@ -87,12 +89,12 @@ public with sharing class ListViewConfigHelper {
 
                 HelperDatabase.updateRecord(param);
 
-                //update cache
-                orgWideConfigParams.put(settingName, value);
-
                 break;
             }
         }
+
+        //force org cache update
+        resetCache(ALL, ALL);
 
     }
 
@@ -103,7 +105,7 @@ public with sharing class ListViewConfigHelper {
     **/
     public static Map<String,Object> getOrgWideConfigParams()
     {
-        populateOrgWideConfig();
+        populateOrgWideConfigParams();
 
         return orgWideConfigParams;
     }
@@ -114,7 +116,7 @@ public with sharing class ListViewConfigHelper {
      */
     public static String getOrgWideConfigParam(String settingName, String defaultValue)
     {
-        populateOrgWideConfig();
+        populateOrgWideConfigParams();
 
         String value = defaultValue;
         if (orgWideConfigParams.get(settingName) != null)
@@ -130,7 +132,7 @@ public with sharing class ListViewConfigHelper {
      */
     public static String getOrgWideConfigParam(String settingName)
     {
-        populateOrgWideConfig();
+        populateOrgWideConfigParams();
 
         return (String) orgWideConfigParams.get(settingName);
     }
@@ -171,8 +173,8 @@ public with sharing class ListViewConfigHelper {
 
         update paramDetails.values();
 
-        orgWideConfig = null;
-        populateOrgWideConfig();
+        //force org cache update
+        resetCache(ALL, ALL);
 
         return '';
     }
@@ -249,6 +251,9 @@ public with sharing class ListViewConfigHelper {
 
             HelperDatabase.upsertRecords(params);
 
+            //force org cache update
+            resetCache(objectName, listViewName);
+
             System.debug(LoggingLevel.FINE, 'Finished upserting param!');
 
         }
@@ -273,6 +278,10 @@ public with sharing class ListViewConfigHelper {
 
         System.debug(LoggingLevel.DEBUG, 'ADDING CONDITION - ' + condition);
         HelperDatabase.insertRecord(condition);
+
+        //force org cache update
+        resetCache(objectName, listViewName);
+
     }
 
     public static void deleteListViewCondition(String id)
@@ -305,15 +314,17 @@ public with sharing class ListViewConfigHelper {
 
         return paramValue;
     }
+
+    public static List_View_Config__c getListViewConfig(String objectName, String listViewName) 
+    {
+        return (List_View_Config__c) CacheListViewConfig.get(objectName, listViewName);
+    }
     
     /*
-     * Method to retrieve the latest list view configuration. The method first looks at the cache
-     * to see if it has already been retrieved. If not it goes and gets it. After retrieving it then
-     * checks against default configuration params to ensure all values have been set appropriately
      * 
        delete [SELECT Id FROM List_View_Config__c WHERE CreatedDate > 2021-10-12T12:00:00Z];
      */
-    public static List_View_Config__c getListViewConfig(String objectName, String listViewName) 
+    public static List_View_Config__c getListViewConfigCache(String objectName, String listViewName) 
     {
         System.debug(LoggingLEvel.FINE, 'Starting getListViewConfig(' + objectName + ', ' + listViewName + ')');
 
