@@ -1167,6 +1167,7 @@ public with sharing class HelperSchema {
             //if schema contain "simpli_lv" then remove and try again (this is the hack)
             if (obj.contains(DOMAIN_NAME))
             {
+                objectDescribeByName.put(obj.removeStart(DOMAIN_NAME), objSchema);
                 objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + LABEL, fieldsByLabel);
                 objectDescribeFieldsByObjectNameAndKey.put(obj.removeStart(DOMAIN_NAME) + ':' + NAME, fieldsByName);
             }

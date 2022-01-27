@@ -89,12 +89,15 @@ public with sharing class ListViewConfigHelper {
 
                 HelperDatabase.updateRecord(param);
 
+                //update session cache
+                orgWideConfigParams.put(settingName, value);
                 break;
             }
         }
 
         //force org cache update
         resetCache(ALL, ALL);
+
 
     }
 
@@ -176,6 +179,9 @@ public with sharing class ListViewConfigHelper {
         //force org cache update
         resetCache(ALL, ALL);
 
+        //force org cache update
+        Cache.Org.remove(CacheAbstract.PARTITION + ALL + ':' + ALL);
+
         return '';
     }
 
@@ -255,7 +261,6 @@ public with sharing class ListViewConfigHelper {
             resetCache(objectName, listViewName);
 
             System.debug(LoggingLevel.FINE, 'Finished upserting param!');
-
         }
 
         return errorStr;
