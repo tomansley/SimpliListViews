@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-06-2021
+ * @last modified on  : 02-01-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -37,21 +37,10 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
         Database.QueryLocator locator = null;
         try {
 
-            //never get the excluded objects
-            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
-            Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
-            
-            if (!orgWideExcObjs.isEmpty())
-                query += ' AND SObjectType NOT IN :orgWideExcObjs';
-
-            if (listViewIds != null && listViewIds.size() > 0)
-                query += ' AND Id IN :listViewIds';
-
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
 
             String debug = 'SOQL - ' + query;
-            debug += 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ',');
             
             System.debug(LoggingLevel.DEBUG, debug);
             ListViewErrorHelper.addLog('ListViewPreProcessBatch(start)', debug);
@@ -75,6 +64,7 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
 	{
         try {        
             SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
+
             List<ListView> listViews = (List<ListView>) dec.getRecords();
 
         } catch (Exception e) {
