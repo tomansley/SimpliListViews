@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-26-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-29-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-10-2021   tom@ansleyllc.com   Initial Version
@@ -27,9 +27,9 @@ public with sharing class ListViewConfigDescriptions {
 
     public static String getLongDescription(String name)
     {
-        return (String) Cache.Org.get(CacheConfigDescription.class, CacheAbstract.PARTITION + name);
+        return CacheConfigDescription.get(name);
     }
-
+    
     public static List<List_View_Config_Description__mdt> getDescriptionsCache(String type)
     {
         List<List_View_Config_Description__mdt> response = new List<List_View_Config_Description__mdt>();
@@ -45,7 +45,7 @@ public with sharing class ListViewConfigDescriptions {
 
     public static List<List_View_Config_Description__mdt> getDescriptions(String type)
     {
-        return (List<List_View_Config_Description__mdt>) Cache.Org.get(CacheConfigDescriptions.class, CacheAbstract.PARTITION + type);
+        return CacheConfigDescriptions.get(type);
     }
 
 }

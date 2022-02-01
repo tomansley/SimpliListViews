@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-27-2022
+ * @last modified on  : 01-31-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -254,7 +254,7 @@ global with sharing class ListViewHelper
 
     public static Map<Id, ListView> getChangedListViews(Integer lapsedMinutes)
     {
-        return getChangedListViews(null, null, lapsedMinutes);
+        return getChangedListViews(null, UserInfo.getUserId(), lapsedMinutes);
     }
 
     /*
@@ -266,73 +266,117 @@ global with sharing class ListViewHelper
         return getChangedListViews(1, userId, null);
     }
 
-    private static Map<Id, ListView> getChangedListViews(Integer recLimit, Id modifiedById, Integer minutesBack)
+    /**
+    * @description Method to get core list views based on provided criteria.
+    * @author tom@ansleyllc.com | 01-28-2022 
+    * @param type the following types are currently implemented - ByObject, ById, ModifiedBy
+    * @param values the criteria values based on the type.
+    * @return List<ListView> all list views which match the provided criteria with the org excluded list views removed as well.
+
+        ListViewHelper.getChangedListViews(10);
+        ListViewHelper.getLastChangedListViewForUser(UserInfo.getUserId());
+        
+    **/
+    private static List<ListView> getCoreListViews(String type, Map<String, Object> values)
     {
         Integer soqlLimit = 5000;
-        if (recLimit != null)
-            soqlLimit = recLimit;
 
-        String soql = 'SELECT Id, ' + 
-                             'Name, ' + 
-                             'SObjectType, ' + 
-                             'DeveloperName, ' + 
-                             'LastModifiedById, ' +
-                             'NamespacePrefix ' + 
-                        'FROM ListView ' + 
-                        'WHERE ';
+        Set<Id> ids = null;
+        String soql = 'SELECT Id, ' +
+                             'Name, ' +
+                             'SObjectType, ' +
+                             'DeveloperName, ' +
+                             'NamespacePrefix, ' +
+                             'CreatedById ' +
+                        'FROM ListView ';
 
-        if (modifiedById != null)
-            soql += 'LastModifiedById = \'' + modifiedById + '\' AND ';
+        //Handle all values passed in
+        if (type == 'ByObject')
+        {
+            soql += 'WHERE SObjectType = \'' + (String) values.get('ObjectName') + '\' ';
 
-        if (minutesBack != null)
-            soql += 'LastModifiedDate > ' + System.now().addMinutes(minutesBack) + ' AND ';
+        } else if (type == 'ById')
+        {
+            ids = (Set<Id>) values.get('Ids');
+            soql += 'WHERE Id IN :ids ';
 
-        soql = soql.removeEnd('AND ');
+        } else if (type == 'ModifiedBy')
+        {
+            System.debug(LoggingLevel.DEBUG, 'VALUES - ' + values);
+            soql += 'WHERE LastModifiedById = \'' + (Id) values.get('modifiedBy') + '\' ';
+            
+            if (values.get('minutesBack') != null)
+            {
+                Integer minBack = -((Integer) values.get('minutesBack'));
+                DateTime dt = System.now().addMinutes(minBack);
+                soql += 'AND LastModifiedDate > ' + HelperDate.getSOQLDateTime(dt) + ' ';
+            }
+
+            if (values.get('limit') != null)
+                soqlLimit = (Integer) values.get('limit');    
+        } else {
+            throw new ListViewException('A valid type(ByObject, ById, ModifiedBy) must be provided - ' + type);
+        }
+
+        //always exclude list views to be excluded by admin param
+        List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews').split('\\|');
+
+        if (excStrings.size() == 1 && excStrings[0] != '') {
+
+            soql += ' AND (NOT DeveloperName LIKE \'%' + excStrings[0] + '%\') ';
+        
+        } else if (excStrings.size() > 1)  {
+            soql += ' AND (';
+            for (String excString: excStrings)
+                soql += '(NOT DeveloperName LIKE \'%' + excString + '%\') OR ';
+            soql = soql.removeEnd(' OR ') + ') ';
+        }
 
         soql += 'ORDER BY LastModifiedDate DESC ';
 
         soql += 'LIMIT ' + soqlLimit;
 
-        List<SObject> listViews = Database.query(soql);
+        System.debug(LoggingLevel.DEBUG, 'Final getCoreListViews SOQL - ' + soql);
 
+        List<ListView> listViews = Database.query(soql);
+
+        //get the CORE list views.
         SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, listViews);
-        Map<Id, ListView> listViewsById = new Map<Id, ListView>( (List<ListView>) dec.getRecords());
+        
+        return (List<ListView>) dec.getRecords();
+    }
+
+    @TestVisible
+    private static Map<Id, ListView> getChangedListViews(Integer recLimit, Id modifiedById, Integer minutesBack)
+    {
+        System.debug(LoggingLevel.DEBUG, 'MIN BACK - ' + minutesBack);
+
+        Map<String, Object> values = new Map<String, Object>();
+        values.put('limit', recLimit);
+        values.put('modifiedBy', modifiedById);
+        values.put('minutesBack', minutesBack);
+
+        Map<Id, ListView> listViewsById = new Map<Id, ListView>(getCoreListViews('ModifiedBy', values));
+
         return listViewsById;
 
     }
 
-    public static List<ListView> getCoreListViews(Set<Id> lvIds)
-    {
-        //get the CORE list views.
-        SObjectAccessDecision dec = 
-            Security.stripInaccessible(AccessType.READABLE,
-                [SELECT Id, 
-                        Name, 
-                        SObjectType, 
-                        DeveloperName, 
-                        NamespacePrefix, 
-                        CreatedById 
-                 FROM ListView 
-                 WHERE Id IN :lvIds]);
-        
-        return (List<ListView>) dec.getRecords();
-    }
-
+    @TestVisible
     private static List<ListView> getCoreListViews(String objectName)
     {
-        //get the CORE list views.
-        SObjectAccessDecision dec = 
-            Security.stripInaccessible(AccessType.READABLE,
-                [SELECT Id, 
-                        Name, 
-                        SObjectType, 
-                        DeveloperName, 
-                        NamespacePrefix, 
-                        CreatedById 
-                 FROM ListView 
-                 WHERE SObjectType = :objectName]);
+        Map<String, Object> values = new Map<String, Object>();
+        values.put('ObjectName', objectName);
         
-        return (List<ListView>) dec.getRecords();
+        return getCoreListViews('ByObject', values);
+    }
+
+    public static List<ListView> getCoreListViews(Set<Id> lvIds)
+    {
+        Map<String, Object> values = new Map<String, Object>();
+        values.put('Ids', lvIds);
+        
+        return getCoreListViews('ById', values);
     }
 
     /*
@@ -504,12 +548,6 @@ global with sharing class ListViewHelper
 
         HelperDatabase.upsertRecords(updatedListViews.values(), 'simpli_lv__Primary_Key__c', true);
         HelperDatabase.upsertRecords(simpliListViewConfigs.values(), 'simpli_lv__Primary_Key__c', true);           
-
-        //remove list views for user from cache
-        CacheListViews.remove(CacheListViews.LOAD_TYPE_TYPE + CacheAbstract.SPLITTER + UserInfo.getUserId() + CacheAbstract.SPLITTER + CacheListViews.LOAD_TYPE_OBJ);
-        CacheListViews.remove(CacheListViews.LOAD_TYPE_TYPE + CacheAbstract.SPLITTER + UserInfo.getUserId() + CacheAbstract.SPLITTER + CacheListViews.LOAD_TYPE_TYPE);
-        for (String objName: objectNames)
-            CacheListViews.remove(CacheListViews.LOAD_TYPE_OBJ + CacheAbstract.SPLITTER + UserInfo.getUserId() + CacheAbstract.SPLITTER + objName);
 
         return true;
     }
@@ -706,7 +744,7 @@ global with sharing class ListViewHelper
 
                 System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
 
-                String objLabel = (String) Cache.Org.get(CacheObjectLabels.class, CacheAbstract.PARTITION + objAPIName);
+                String objLabel = (String) CacheObjectLabels.get(objAPIName);
                 if (!String.isEmpty(objLabel))
                     listViewObjects.put(objAPIName, objLabel);
             }
@@ -808,13 +846,15 @@ global with sharing class ListViewHelper
     public static Map<Id, List_View__c> getListViewsByType(String type, Boolean checkVisibility)
     {
         if (checkVisibility)
-            return (Map<Id, List_View__c>) CacheListViews.get(CacheListViews.LOAD_TYPE_TYPE + 
-                                                                CacheAbstract.SPLITTER + 
-                                                                UserInfo.getUserId() + 
-                                                                CacheAbstract.SPLITTER + 
+        {
+            return (Map<Id, List_View__c>) CacheListViews.get(CacheListViews.LOAD_TYPE_TYPE +
+                                                                CacheHelper.SPLITTER +
+                                                                UserInfo.getUserId().removeStart('005') +
+                                                                CacheHelper.SPLITTER +
                                                                 type);
-        else
+        } else {
             return getListViewsByTypeCache(type, false);
+        }
     }
 
     public static Map<Id, List_View__c> getListViewsByTypeCache(String type, Boolean checkVisibility)
@@ -917,17 +957,14 @@ global with sharing class ListViewHelper
         return listviewsById;
     }
 
-    /*
-     * Method to get all list views for a provided object.
-     * The map is returned as follows - (API Name, List View)
-     */
     public static Map<String, List_View__c> getListViewsByObject(String objAPIName)
     {
-        return (Map<String, List_View__c>) CacheListViews.get(CacheListViews.LOAD_TYPE_OBJ + 
-                                                                CacheAbstract.SPLITTER + 
-                                                                UserInfo.getUserId() +
-                                                                CacheAbstract.SPLITTER + 
+        return (Map<String, List_View__c>) CacheListViews.get(CacheListViews.LOAD_TYPE_OBJ +
+                                                                CacheHelper.SPLITTER +
+                                                                UserInfo.getUserId().removeStart('005') +
+                                                                CacheHelper.SPLITTER +
                                                                 objAPIName);
+
     }
 
     public static Map<String, List_View__c> getListViewsByObjectCache(String objAPIName)
@@ -2081,6 +2118,14 @@ global with sharing class ListViewHelper
         param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
         param.Parameter_Label__c  = 'Scheduled Refresh Job';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'ExcludedListViews';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c  = '';
+        param.Parameter_Label__c  = 'Excluded List Views';
         params.add(param);
 
         HelperDatabase.insertRecords(params);

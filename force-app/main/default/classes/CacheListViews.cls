@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-27-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-29-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class CacheListViews {
 
@@ -11,32 +11,36 @@ public with sharing class CacheListViews {
 
     public static Object get(String key)
     {
-        key = CacheAbstract.getValidKey(key);
-    	System.debug(LoggingLevel.DEBUG, 'CacheListViews.get(' + key + ')');    	
-        Object result = Cache.Org.get(CacheAbstract.PARTITION + key);
-        if (result == null)
-        {
-            result = getData(key);
-            Cache.Org.put(CacheAbstract.PARTITION + key, result, 300);    
+        Object result = null;
+        List<String> keys = key.split(CacheHelper.SPLITTER); //get the keys as full strings
+        key = CacheHelper.getValidKey(key); //remove invalid chars from key
+    	System.debug(LoggingLevel.DEBUG, 'CacheListViews.get(' + key + ')');    
+        if (key.length() < 50) //stupid restriction on key size!!
+        {	
+            result = CacheHelper.PARTITION.get(key);
+            if (result == null)
+            {
+                result = getData(keys);
+                CacheHelper.PARTITION.put(key, result, 300);    
+            }
+        } else {
+            result = getData(keys);
         }
-
         return result;
     }
 
     public static void remove(String key)
     {
-        key = CacheAbstract.getValidKey(key);
+        key = CacheHelper.getValidKey(key);
     	System.debug(LoggingLevel.DEBUG, 'CacheListViews.remove(' + key + ')');    	
-        Cache.org.remove(CacheAbstract.PARTITION + key);
+        CacheHelper.PARTITION.remove(key);
     }
 
     /*
 	 * Implement the Cache.CacheBuilder interface
 	 */
-    private static Object getData(String key) 
+    private static Object getData(List<String> keys) 
     {
-        List<String> keys = key.split(CacheAbstract.SPLITTER);
-
         String loadType = keys[0]; //either Name, Object or Type
         String userId   = keys[1];
 
@@ -49,7 +53,6 @@ public with sharing class CacheListViews {
             return ListViewHelper.getListViewsByTypeCache(keys[2], true); 
         else 
             throw new ListViewException('Cannot determine visible list views load type');
-    	
     }
 
 }

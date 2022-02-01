@@ -1,33 +1,43 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-27-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-29-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
 **/
 public with sharing class CacheListViewConfig {
 
-    public static Object get(String objectName, String listViewName)
+    public static List_View_Config__c get(String objectName, String listViewName)
     {
-        String key = CacheAbstract.getValidKey(objectName + CacheAbstract.SPLITTER + listViewName);
-    	System.debug(LoggingLevel.DEBUG, 'CacheListViews.get(' + key + ')');    	
-        Object result = Cache.Org.get(CacheAbstract.PARTITION + key);
-        if (result == null)
-        {
-            result = getData(objectName, listViewName);
-            Cache.Org.put(CacheAbstract.PARTITION + key, result, 300);    
-        }
+        List_View_Config__c result = null;
 
+        String key = CacheHelper.getValidKey(objectName + CacheHelper.SPLITTER + listViewName);
+    	System.debug(LoggingLevel.DEBUG, 'CacheListViews.get(' + key + ')');    	
+        if (key.length() < 50) //stupid restriction on key size!!
+        {	
+            result = (List_View_Config__c) CacheHelper.PARTITION.get(key);
+            if (result == null)
+            {
+                System.debug(LoggingLevel.DEBUG, 'RESULT IS NULL');
+                result = getData(objectName, listViewName);
+                System.debug(LoggingLevel.DEBUG, 'RESULT IS NOW ' + result);
+                CacheHelper.PARTITION.put(key, result);    
+            } else {
+                System.debug(LoggingLevel.DEBUG, 'RESULT NOT NULL - ' + result);
+            }
+        } else {
+            result = getData(objectName, listViewName);
+        }
         return result;
     }
 
     public static void remove(String objectName, String listViewName)
     {
-        String key = CacheAbstract.getValidKey(objectName + CacheAbstract.SPLITTER + listViewName);
+        String key = CacheHelper.getValidKey(objectName + CacheHelper.SPLITTER + listViewName);
     	System.debug(LoggingLevel.DEBUG, 'CacheListViews.remove(' + key + ')');    	
-        Cache.org.remove(CacheAbstract.PARTITION + key);
+        CacheHelper.PARTITION.remove(key);
     }
 
-    private static Object getData(String objectName, String listViewName) 
+    private static List_View_Config__c getData(String objectName, String listViewName) 
     {
         return ListViewConfigHelper.getListViewConfigCache(objectName, listViewName); 
     }

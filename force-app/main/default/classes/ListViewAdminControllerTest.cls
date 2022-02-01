@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-25-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-29-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   07-18-2021   tom@ansleyllc.com   Initial Version
@@ -301,7 +301,7 @@ global class ListViewAdminControllerTest {
 
             System.assertEquals('All', config.getObject());
             System.assertEquals('All', config.getName());
-            System.assertEquals(20, config.getParameters().size());
+            System.assertEquals(21, config.getParameters().size());
 
             ListViewAbstract.ListViewParam param = config.getParameters()[0];
             System.assertNotEquals(param.getReadOnly(), null);

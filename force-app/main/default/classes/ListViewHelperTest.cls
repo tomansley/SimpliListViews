@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-25-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 01-29-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   11-19-2020   tom@ansleyllc.com   Initial Version
@@ -24,6 +24,43 @@ private class ListViewHelperTest {
 
         HelperTest.insertOpportunityLineItem(opp1, pe, 1, 1200);
         HelperTest.insertOpportunityLineItem(opp2, pe, 2, 2900);
+    }
+
+    @IsTest
+    static void getChangedListViewsTest()
+    {
+        Test.startTest();
+          Map<Id, ListView> lvs = ListViewHelper.getChangedListViews(1, UserInfo.getUserId(), 9);
+        Test.stopTest();
+
+        System.assert(lvs != null);
+    }
+
+    @IsTest
+    static void getCoreListViewsByObjectTest()
+    {
+        Test.startTest();
+            List<ListView> lvs = ListViewHelper.getCoreListViews('Account');
+        Test.stopTest();
+
+        System.assert(lvs != null);
+        System.assertNotEquals(0, lvs.size());
+        
+    }
+
+    @IsTest
+    static void getCoreListViewsByIdsTest()
+    {
+        Set<Id> lvIds = new Set<Id>();
+        List<ListView> acctlvs = ListViewHelper.getCoreListViews('Account');
+        lvIds.add(acctlvs[0].Id);
+
+        Test.startTest();
+            List<ListView> lvs = ListViewHelper.getCoreListViews(lvIds);
+        Test.stopTest();
+
+        System.assert(lvs != null);
+        System.assertNotEquals(0, lvs.size());
     }
 
     @IsTest

@@ -1,13 +1,13 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-27-2022
+ * @last modified on  : 01-28-2022
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing abstract class CacheAbstract implements Cache.CacheBuilder {
 
     public static final String PARTITION = 'simpli_lv.SimpliListViewsCache.';
-    public static final String SPLITTER  = 'ZZZ'; //has to be alphanumeric
+    public static final String SPLITTER  = 'ZZ'; //has to be alphanumeric
 
     abstract public Object doLoad(String request);
 
