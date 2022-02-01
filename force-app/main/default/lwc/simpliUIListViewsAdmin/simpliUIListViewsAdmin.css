@@ -1,3 +1,17 @@
 .pageSpinnerHolder{
     position: absolute;
 }
+
+.divided {
+    display: flex;
+    align-items: center;
+}
+
+.divider {
+    flex-grow: 1;
+    border-bottom: 1px solid #e0e0e0;
+    margin-left: 2%;
+    margin-right: 2%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}

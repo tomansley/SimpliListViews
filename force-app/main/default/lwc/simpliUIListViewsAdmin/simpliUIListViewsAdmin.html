@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 01-20-2022
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 02-01-2022
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom@ansleyllc.com   Initial Version
@@ -65,19 +65,19 @@
                 </lightning-card>
             </template>
 
-            <br/>
+            <p class="divided"><span class="divider"></span></p>
 
             <c-simpli-u-i-list-views-export-import oncreated={handleConfigCreated}>
             </c-simpli-u-i-list-views-export-import>
 
-            <br/>
+            <p class="divided"><span class="divider"></span></p>
 
             <template if:true={hasConfig}>
                 <c-simpli-u-i-list-views-schedule-job time-period="minutely"
                                                     onupdated={handleScheduleJobRefreshed}>
                 </c-simpli-u-i-list-views-schedule-job>
 
-                <br/>
+                <p class="divided"><span class="divider"></span></p>
 
                 <lightning-layout>
                     <lightning-layout-item padding="horizontal-small"> 
@@ -98,6 +98,30 @@
                     </lightning-layout-item>
                     <lightning-layout-item padding="horizontal-small" >
                         <lightning-button variant="brand" label="Create Action" title="Create Action" icon-name="action:clone" class="slds-var-m-left_x-small" onclick={handleCreateActionClicked}></lightning-button>
+                    </lightning-layout-item>
+                </lightning-layout>
+
+                <p class="divided"><span class="divider"></span></p>
+
+                <lightning-layout>
+                    <lightning-layout-item padding="horizontal-small"> 
+                        <div style="padding-left: 10px;">
+                            <lightning-icon icon-name="standard:resource_absence" 
+                                            alternative-text=""
+                                            title="">
+                            </lightning-icon>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
+                        <div>
+                            Clear Cache
+                            <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
+                                Clear the cache here. Users may notice a slight performance degradation for a short period while the cache is rebuilt.
+                            </div>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item padding="horizontal-small" >
+                        <lightning-button variant="brand" label="Clear" title="Clear" icon-name="action:refresh" class="slds-var-m-left_x-small" onclick={handleClearCacheClick}></lightning-button>
                     </lightning-layout-item>
                 </lightning-layout>
 

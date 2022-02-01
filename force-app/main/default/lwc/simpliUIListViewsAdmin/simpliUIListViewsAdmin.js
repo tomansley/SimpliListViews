@@ -22,6 +22,7 @@ import getOrgWideConfig from '@salesforce/apex/ListViewAdminController.getOrgWid
 import saveOrgWideConfig from '@salesforce/apex/ListViewAdminController.saveOrgWideConfig';
 import getObjectNames from '@salesforce/apex/ListViewAdminController.getObjectNames';
 import cleanListViews from '@salesforce/apex/ListViewAdminController.cleanListViews';
+import clearCache from '@salesforce/apex/ListViewAdminController.clearCache';
 
 export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningElement) {
 
@@ -232,6 +233,23 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         {
             this.spinnerOff();
         }
+    }
+
+    handleClearCacheClick() {
+        this.spinnerOn();
+        console.log('Listview clear cache button clicked');
+
+        console.log('simpliUIListViewsAdmin CALLOUT - clearCache - ' + this.calloutCount++);
+        clearCache({ })
+        .then(result => {
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'Simpli List Views Cache Cleared', '', false)); 
+            this.spinnerOff();
+        })
+        .catch(error => {
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error clearing the cache - ', true)); 
+            this.spinnerOff();
+        });
+
     }
 
     handleImportExportEvent(event) {

@@ -1,14 +1,26 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-25-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 02-01-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   07-07-2021   tom@ansleyllc.com   Initial Version
 **/
 public with sharing class ListViewAdminController {
-    
+
+    public static final String SUCCESS = 'success';
+
+    @AuraEnabled
+    public static String clearCache()
+    {
+        String response = SUCCESS;
+
+        CacheHelper.clearCache(null);
+
+        return response;
+    }
+
     @AuraEnabled
     public static String importConfigJSON(String configStr)
     {
@@ -477,7 +489,7 @@ public with sharing class ListViewAdminController {
     @AuraEnabled
     public static String scheduleRefreshJob()
     {
-        String response = ListViewActionHelper.SUCCESS;
+        String response = SUCCESS;
 
         try {
 
