@@ -30,11 +30,12 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
     @track parameters = new Map();      //holds the map of field/value parameter data
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
     @track objNamesList = undefined;
-    @track isInitialized = false;       //indicates whether the list views have been initialized for the first time or not.
-    @track showProgress = false;        //indicates whether the progress bar should be displayed
-    @track showCleanProgress = false;   //indicates whether the cleaning job progress bar should be displayed
+    @track isInitialized = false;               //indicates whether the list views have been initialized for the first time or not.
+    @track showProgress = false;                //indicates whether the progress bar should be displayed
+    @track showCleanProgress = false;           //indicates whether the cleaning job progress bar should be displayed
     @track showCreateActionWizardModal = false; //indicates whether the create action wizard modal should be displayed
-    @track batchId = '';                //indicates the batch Id of the list view batch process.
+    @track batchId = '';                        //indicates the batch Id of the list view batch process.
+    @track excListViewsStrChanged = false;      //indicates that the excluded list views str has changed.
 
     get booleanList() {
         return [
@@ -103,54 +104,65 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
 
         this.spinnerOn();
 
-        var resultStr;
-        var valuesMap = new Map();
-        var strValuesMap;
-
-
-        //get all the externally named values into a JSON string
-        for (let [k, v] of this.parameters) {
-            console.log('Adding key/value pair - (' + k + ',' + v + ')');
-            valuesMap.set(k, v);
+        let isConfirmed = true;
+        if (this.excListViewsStrChanged === true)
+        {
+            isConfirmed = confirm("The Excluded List Views parameter was updated. This will force deletion of those core simpli list views that match the provided value.\n\n Click to confirm or cancel to go back!");
         }
 
-        strValuesMap = JSON.stringify( Array.from(valuesMap) );
-        console.log('Field/Value  - ' + strValuesMap);
+        if (isConfirmed === true) {
 
-        console.log('simpliUIListViewsAdmin CALLOUT - saveOrgWideConfig - ' + this.calloutCount++);
-        saveOrgWideConfig({ paramStr: strValuesMap})
-            .then(result => {
-                resultStr = result;
+            var resultStr;
+            var valuesMap = new Map();
+            var strValuesMap;
 
-                //get the status
-                let status = resultStr.substring(0, resultStr.indexOf(':'));
-                
-                //get any associated message
-                let message = resultStr.substring(resultStr.indexOf(':')+1);
-                if (message === '' && status === 'Ok') {
-                    message = 'All configuration has been saved successfully.';
-                } else if (message === '' && status != 'Ok') {
-                    message = 'There was an error saving the configuration.';
-                }
 
-                if (status === 'Ok') {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Save Successful!', message, false)); 
-                    this.getConfig();
-                
-                } else {
-                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', message, false)); 
+            //get all the externally named values into a JSON string
+            for (let [k, v] of this.parameters) {
+                console.log('Adding key/value pair - (' + k + ',' + v + ')');
+                valuesMap.set(k, v);
+            }
+
+            strValuesMap = JSON.stringify( Array.from(valuesMap) );
+            console.log('Field/Value  - ' + strValuesMap);
+
+            console.log('simpliUIListViewsAdmin CALLOUT - saveOrgWideConfig - ' + this.calloutCount++);
+            saveOrgWideConfig({ paramStr: strValuesMap})
+                .then(result => {
+                    resultStr = result;
+
+                    //get the status
+                    let status = resultStr.substring(0, resultStr.indexOf(':'));
+                    
+                    //get any associated message
+                    let message = resultStr.substring(resultStr.indexOf(':')+1);
+                    if (message === '' && status === 'Ok') {
+                        message = 'All configuration has been saved successfully.';
+                    } else if (message === '' && status != 'Ok') {
+                        message = 'There was an error saving the configuration.';
+                    }
+
+                    if (status === 'Ok') {
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Save Successful!', message, false)); 
+                        this.getConfig();
+                    
+                    } else {
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', message, false)); 
+                        this.spinnerOff();
+                        return;
+                    }
+                })
+                .catch(error => {
+                    resultStr = undefined;
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error saving the admin config - ', true)); 
                     this.spinnerOff();
                     return;
-                }
-            })
-            .catch(error => {
-                resultStr = undefined;
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error saving the admin config - ', true)); 
-                this.spinnerOff();
-                return;
-        });
+            });
 
-        this.spinnerOff();
+        } else {
+            this.spinnerOff();
+        }
+
     }
 
     //called when a user clicks the button to refresh the list views.
@@ -192,6 +204,14 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         console.log('Handling Param Update (Name/Value) - ' + name + '/' + value );
 
         this.parameters.set(name, value);
+
+        if (name === 'ExcludedListViews')
+        {
+            if (value === '')
+                this.excListViewsStrChanged = false;
+            else
+                this.excListViewsStrChanged = true;
+        }
     }
 
     handleScheduleJobRefreshed(event) {

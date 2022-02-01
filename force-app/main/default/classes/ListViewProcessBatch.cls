@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-06-2021
+ * @last modified on  : 02-01-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -54,16 +54,41 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
         Database.QueryLocator locator = null;
         try {
 
+            //------------------------------------------------------------------------
             //never get the excluded objects
+            //------------------------------------------------------------------------
             String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
             Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
             
             if (!orgWideExcObjs.isEmpty())
                 query += ' AND SObjectType NOT IN :orgWideExcObjs';
 
+
+            //------------------------------------------------------------------------
+            //always exclude list views to be excluded by admin param
+            //------------------------------------------------------------------------
+            List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews').split('\\|');
+
+            if (excStrings.size() == 1 && excStrings[0] != '') {
+
+                query += ' AND (NOT DeveloperName LIKE \'%' + excStrings[0] + '%\') ';
+            
+            } else if (excStrings.size() > 1)  {
+                query += ' AND (';
+                for (String excString: excStrings)
+                    query += '(NOT DeveloperName LIKE \'%' + excString + '%\') OR ';
+                query = query.removeEnd(' OR ') + ') ';
+            }
+
+            //------------------------------------------------------------------------
+            //if list view Ids have been provided then add them
+            //------------------------------------------------------------------------
             if (listViewIds != null && listViewIds.size() > 0)
                 query += ' AND Id IN :listViewIds';
 
+            //------------------------------------------------------------------------
+            //if we are querying for a specific period (scheduled update)
+            //------------------------------------------------------------------------
             if (processType == TYPE_PERIOD) {
                 
                 String refreshJobConfig = ListViewConfigHelper.getOrgWideConfigParam('RefreshJob');

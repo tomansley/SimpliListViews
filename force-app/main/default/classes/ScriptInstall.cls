@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-18-2022
+ * @last modified on  : 01-27-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -303,6 +303,18 @@ global with sharing class ScriptInstall implements InstallHandler {
                     param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
                     param.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
                     param.Parameter_Label__c  = 'Scheduled Refresh Job';
+                    orgParams.put(param.Parameter_Name__c, param);
+            
+                }
+
+                if (orgParams.get('ExcludedListViews') == null)
+                {
+                    List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                    param.List_View_Config__c = orgWideConfig.Id;
+                    param.Parameter_Name__c   = 'ExcludedListViews';
+                    param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+                    param.Parameter_Value__c  = '';
+                    param.Parameter_Label__c  = 'Excluded List Views';
                     orgParams.put(param.Parameter_Name__c, param);
             
                 }

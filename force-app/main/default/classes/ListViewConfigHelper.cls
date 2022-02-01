@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 01-27-2022
+ * @Last Modified On   : 01-31-2022
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -52,7 +52,12 @@ public with sharing class ListViewConfigHelper {
             List_View_Config__c config = getListViewConfig(ALL, ALL);
 
             for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
-                orgWideConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
+            {
+                if (String.isEmpty(param.Parameter_Value__c))
+                    orgWideConfigParams.put(param.Parameter_Name__c, '');
+                else
+                    orgWideConfigParams.put(param.Parameter_Name__c, param.Parameter_Value__c);
+            }
         }
 
     }
@@ -90,6 +95,8 @@ public with sharing class ListViewConfigHelper {
                 HelperDatabase.updateRecord(param);
 
                 //update session cache
+                if (orgWideConfigParams == null)
+                    orgWideConfigParams = new Map<String,Object>();
                 orgWideConfigParams.put(settingName, value);
                 break;
             }
@@ -136,8 +143,10 @@ public with sharing class ListViewConfigHelper {
     public static String getOrgWideConfigParam(String settingName)
     {
         populateOrgWideConfigParams();
-
-        return (String) orgWideConfigParams.get(settingName);
+        String value = (String) orgWideConfigParams.get(settingName);
+        if (value == null)
+            value = '';
+        return value;
     }
 
     public static String updateOrgWideParams(Map<String, Object> newParams)
@@ -179,10 +188,40 @@ public with sharing class ListViewConfigHelper {
         //force org cache update
         resetCache(ALL, ALL);
 
-        //force org cache update
-        Cache.Org.remove(CacheAbstract.PARTITION + ALL + ':' + ALL);
+        //if the excluded list views was changed we need to delete those list views that are to be excluded
+        if (newParams.get('ExcludedListViews') != null && ((String) newParams.get('ExcludedListViews') != ''))
+            deleteExcludedListViews();
 
         return '';
+    }
+
+    @TestVisible
+    private static void deleteExcludedListViews()
+    {
+        String soql = 'SELECT Id FROM List_View__c WHERE ';
+
+        List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews').split('\\|');
+
+        if (excStrings.size() > 0 && excStrings[0] != '')
+        {
+            for (String excString: excStrings)
+                soql += 'API_Name__c LIKE \'%' + excString + '%\' OR ';
+        }
+
+        soql = soql.removeEnd(' OR ');
+
+        System.debug(LoggingLevel.DEBUG, 'Final SOQL - ' + soql);
+
+        Map<String, Object> vars = new Map<String, Object>();
+        vars.put(HelperBatch.VAR_SOQL_STATEMENT, soql);
+        vars.put(HelperBatch.VAR_BATCH_SIZE, 40);
+        vars.put(HelperBatch.VAR_OPERATION, HelperBatch.OPER_DELETE);
+
+        HelperBatch job = new HelperBatch(vars);
+
+        if (!Test.isRunningTest())
+            Database.executeBatch(job);
+    
     }
 
 
@@ -322,7 +361,8 @@ public with sharing class ListViewConfigHelper {
 
     public static List_View_Config__c getListViewConfig(String objectName, String listViewName) 
     {
-        return (List_View_Config__c) CacheListViewConfig.get(objectName, listViewName);
+        List_View_Config__c config = CacheListViewConfig.get(objectName, listViewName);
+        return config;
     }
     
     /*
