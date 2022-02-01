@@ -3,8 +3,8 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 01-17-2022
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 02-01-2022
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
   1.0   08-03-2020   tom@ansleyllc.com   Initial Version
@@ -231,15 +231,15 @@
                             <template if:true={listViewData}>
                                 <template if:true={allowRefresh}>
                                     <lightning-layout-item  padding="horizontal-small">
-                                        <template if:true={isRefreshed}>
+                                        <template if:true={isRefreshing}>
                                             <lightning-button-icon title={label.Stop_Auto_Refresh} 
                                                                     size="medium" 
-                                                                    icon-name="utility:routing_offline" 
+                                                                    icon-name="utility:rotate" 
                                                                     onclick={handleAutoRefreshButtonClick}>
                                             </lightning-button-icon>
                                         </template>
-                                        <template if:false={isRefreshed}>
-                                            <lightning-button-icon title={label.Start_Auto_Refresh} 
+                                        <template if:false={isRefreshing}>
+                                            <lightning-button-icon title={label.Refresh} 
                                                                     size="medium" 
                                                                     icon-name="utility:refresh" 
                                                                     onclick={handleAutoRefreshButtonClick}>

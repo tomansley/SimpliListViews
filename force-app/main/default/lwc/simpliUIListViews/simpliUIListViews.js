@@ -25,7 +25,7 @@ import Go_To_Original from '@salesforce/label/c.Go_To_Original';
 import Unpin_List_View from '@salesforce/label/c.Unpin_List_View';
 import Pin_List_View from '@salesforce/label/c.Pin_List_View';
 import Stop_Auto_Refresh from '@salesforce/label/c.Stop_Auto_Refresh';
-import Start_Auto_Refresh from '@salesforce/label/c.Start_Auto_Refresh';
+import Refresh from '@salesforce/label/c.Refresh';
 import List_View_Admin from '@salesforce/label/c.List_View_Admin';
 import Sort_By from '@salesforce/label/c.Sort_By';
 import Save_All_Data from '@salesforce/label/c.Save_All_Data';
@@ -171,7 +171,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isPinned = false;            //identifies whether this list view and object have been pinned.
     @track pinnedListView = undefined;  //the list view that is pinned if there is a pinned list view.
     @track pinnedObject = undefined;    //the object that is pinned if there is a pinned list view.
-    @track isRefreshed = false;         //identifies whether this list views data is being refreshed at intervals.
+    @track isRefreshing = false;        //identifies whether this list views data is being refreshed AT INTERVALS.
+    @track refreshTime = Date.now();    //the timestamp for when the data was refreshed.
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
     @track dataSpinner = false;         //identifies if the DATA spinner should be displayed or not.
     @track firstListViewGet = true;     //indicates whether this is the first time the list views are being retrieved.
@@ -226,8 +227,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     label = { Rows, Selected, Select_Action, Export_All, Export_Selected, Loading, Select_Object, Object, 
               Select_List_View, List_View, Go_To_Original, Unpin_List_View, Pin_List_View, Stop_Auto_Refresh, 
-              Start_Auto_Refresh, List_View_Admin, Sort_By, Save_All_Data, Reset_All_Data, Save_Row_Data, 
-              Search_List_Dot };
+              Refresh, List_View_Admin, Sort_By, Save_All_Data, Reset_All_Data, Save_Row_Data, Search_List_Dot };
 
     /*
      * Method which gets called when the class is being instantiated
@@ -621,6 +621,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Data', 'There was an error retrieving the list view data. Please see an administrator', true));
         }
 
+        this.refreshTime = Date.now();
+
         this.spinnerOff('getListViewDataPage');
 
     }
@@ -782,7 +784,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 //if we have no list views to display then either the object name is bad or the user does not have access to the object.
                 if (this.listViewList.length === 0)
                 {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Error Retrieving Object List Views', 'No list views available as the user does not have access to this object.', false));
+                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Retrieving Object List Views', 'No list views available as the user does not have access to this object.', false));
                 } else if (this.urlListView != undefined) {
                     this.selectedListView = this.urlListView;
                     this.selectedListViewExportName = this.selectedListView + '.csv';
@@ -919,46 +921,57 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         console.log('Refreshing data for ' + this.pageName);
 
-        if (this.isRefreshed) {
+        if (this.isRefreshing) {
 
-            this.refreshAllListViewData();            
-
-            if (this.refreshRate === '')
-            {
-                console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(RefreshRate) - ' + this.calloutCount++);
-                getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'RefreshRate'})
-                .then(result => {
-                    this.refreshRate = result * 1000;  //change to milliseconds                  
-                })
-                .catch(error => {
-                    this.refreshRate = 25000 //if error then set to 25 secs.
-                });
-            }
-            var utcDate = new Date().toUTCString(); 
-            console.log('Refresh rate - ' + this.refreshRate + ' - ' + utcDate);
+            let mills = (Date.now() - this.refreshTime);
+            if (mills > 5000)
+                this.refreshAllListViewData();            
 
             //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
             //look at its use with setTimeout down the page!
-            setTimeout(this.handleAutoRefreshData.bind(this), this.refreshRate);
+            setTimeout(this.handleAutoRefreshData.bind(this), this.refreshRate * 1000); //change to milliseconds
 
         }
     }
 
-    handleAutoRefreshButtonClick(event) {
-        console.log('Auto refresh button clicked! for ' + this.pageName);
-        console.log('Refresh was set to ' + this.isRefreshed + ' for ' + this.pageName);
+    async handleAutoRefreshButtonClick(event) {
+        console.log('Refresh button clicked for ' + this.pageName);
+        console.log('Auto refresh was set to ' + this.isRefreshing + ' for ' + this.pageName);
+        console.log('Refresh time was ' + this.refreshTime + ' for ' + this.pageName);
 
-        this.isRefreshed = !this.isRefreshed;
+        let mills = (Date.now() - this.refreshTime);
 
-        if (this.isRefreshed === true)
+        //we are refreshing automatically and someone stops it.
+        if (this.isRefreshing === true)
         {
-            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Auto Refresh Started', 'List view refresh has been started. To stop refreshing click the refresh button again.', false)); 
-        } else {
-            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Auto Refresh Stopped', 'List view refresh has been stopped. To start refreshing click the refresh button again.', false));     
-        }
+            this.isRefreshing = false;
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'Auto Refresh Stopped', '', false));     
+            
+        //if someone has clicked the refresh button again within 5 seconds
+        } else if (mills < 5000 && this.isRefreshing === false)
+        {
+            this.isRefreshing = true;
 
-        this.handleAutoRefreshData();
-        console.log('Refresh now set to ' + this.isRefreshed + ' for ' + this.pageName);
+            //if we do not have the refresh rate then get it
+            if (this.refreshRate === '')
+            {
+                console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(RefreshRate) - ' + this.calloutCount++);
+                this.refreshRate = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'RefreshRate'});       
+            }
+
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'Auto Refresh Started', 'Refreshing every ' + this.refreshRate + 's', false)); 
+            console.log('Refresh now set to ' + this.isRefreshing + ' @ ' + this.refreshRate + 's for ' + this.pageName);
+            this.handleAutoRefreshData();
+
+        //if someone clicked the refresh button for the first time
+        } else {
+            this.refreshAllListViewData();            
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Refreshed', 'Click within 5 seconds of data loading to auto refresh.', false)); 
+        }
+    }
+
+    async getConfigParameter(paramName) {
+        return getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: paramName});
     }
 
     /*
@@ -1117,7 +1130,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.columnSortDataStr = '';
         this.columnSortData = new Map(); 
         this.modifiedText = '';
-        this.isRefreshed = false;
         this.textSearchText = '';
         console.log('Object selected - ' + this.selectedObject + ' for ' + this.pageName);
         this.getListViewsForObject();
@@ -1132,7 +1144,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('Old list view - ' + this.selectedListView + ' for ' + this.pageName);
         console.log('Sort data - ' + this.listViewSortData + ' for ' + this.pageName);
         this.spinnerOn('handleListViewChanged');
-        this.isRefreshed = false;
         this.textSearchText = '';
        
         //set the old column sort information into the list view sort data for caching otherwise it disappears.
@@ -1370,7 +1381,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     //if we have an error then send an ERROR toast.
                     if (result === 'failed')
                     {
-                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick6');
 
                     //else send a SUCCESS toast.
