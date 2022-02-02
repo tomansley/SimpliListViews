@@ -404,11 +404,18 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
 
         } else {
             let paramName = event.currentTarget.dataset.paramName;
-            
+            let fieldValue = event.target.value;
+            if (paramName === 'manageDataCreateRedirectField') //this field is a boolean so is handled differently
+            {
+                if (event.target.checked === true)
+                    fieldValue = 'true';
+                else
+                    fieldValue = 'false';
+            }
             if (event.currentTarget.dataset.paramRowIndex !== undefined)
                 paramName = paramName + event.currentTarget.dataset.paramRowIndex;
-            this.actionParams.set(paramName, event.target.value);
-            console.log('Action param name/value - ' + paramName + '/' + event.target.value);
+            this.actionParams.set(paramName, fieldValue);
+            console.log('Action param name/value - ' + paramName + '/' + fieldValue);
         }
     }
 

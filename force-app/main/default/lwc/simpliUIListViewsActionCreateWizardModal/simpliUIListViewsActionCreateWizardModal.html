@@ -2,7 +2,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 01-29-2022
+  @last modified on  : 02-01-2022
   @last modified by  : tom.h.ansley@medtronic.com
 -->
 <template>
@@ -436,6 +436,16 @@
                                                             onchange={handleActionParameterAdded}
                                                             data-param-name="manageDataCreateOwnerField"
                                                             style="padding-top: 10px;">
+                                            </lightning-input>
+                                        </lightning-layout-item>
+                                        <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                            <lightning-input type="checkbox" 
+                                                            label="Do Not Redirect" 
+                                                            field-level-help="Specifies whether the browser is redirected to the newly created record or not. Note that related list views never redirect." 
+                                                            onchange={handleActionParameterAdded}
+                                                            data-param-name="manageDataCreateRedirectField"
+                                                            style="padding-top: 10px;"
+                                                            variant=label-stacked>
                                             </lightning-input>
                                         </lightning-layout-item>
                                     </lightning-layout>
