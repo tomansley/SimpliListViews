@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-12-2021
+ * @last modified on  : 02-02-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -47,7 +47,7 @@ private class ListViewActionTest {
 
         Test.startTest();
         
-            List_View_Action__c deleteAction = ListViewActionHelper.getListViewActionByKey('Delete:null');
+            List_View_Action__c deleteAction = ListViewActionHelper.getListViewActionByKey('Delete:ListViewActionDelete:Core:null');
 
             String beforePrimaryKey = deleteAction.Primary_Key__c;
 
@@ -55,7 +55,7 @@ private class ListViewActionTest {
 
             HelperDatabase.updateRecord(deleteAction);
 
-            deleteAction = ListViewActionHelper.getListViewActionByKey('ChangedName:null');
+            deleteAction = ListViewActionHelper.getListViewActionByKey('ChangedName:ListViewActionDelete:Core:null');
 
         Test.stopTest();
 

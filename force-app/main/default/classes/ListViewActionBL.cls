@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-25-2022
+ * @last modified on  : 02-02-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -9,6 +9,7 @@
 **/
 public with sharing class ListViewActionBL {
     
+    private static final Set<String> bogusClassNames = new Set<String>{'ListViewActionNull', 'ListViewActionPDF', 'ListViewActionMassCreate', 'ListViewActionCreate', 'ListViewActionClone', 'ListViewActionEdit', 'ListViewActionEditAll', 'ListViewActionHyperLink' };
     /*
      * Method to set the primary key of the action based on the following -
      */
@@ -17,6 +18,7 @@ public with sharing class ListViewActionBL {
         for (List_View_Action__c newRecord: newRecords)
         {
             newRecord.Primary_Key__c = ListViewActionHelper.getPrimaryKey(newRecord);
+            System.debug('Action pkey - ' + newRecord.Primary_Key__c);
         }
     }
 
@@ -55,9 +57,7 @@ public with sharing class ListViewActionBL {
                 action.addError('An apex class is required and must extend simpli_lv.ListViewAction');
             } else {
                 
-                if (action.Apex_Class_Name__c != 'ListViewActionNull'
-                    && action.Apex_Class_Name__c != 'ListViewActionPDF'
-                    && action.Apex_Class_Name__c != 'ListViewActionMassCreate')
+                if (!bogusClassNames.contains(action.Apex_Class_Name__c))
                 {
                     try {
                         Type t = HelperSchema.getClassType(action.Apex_Class_Name__c);

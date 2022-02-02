@@ -1609,20 +1609,25 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.showFlowModal = true;
 
         //------------------------------------------------------
-        //NEW
+        //CREATE/NEW
         //------------------------------------------------------
-        } else if (this.selectedAction.label === 'New')
+        } else if (this.selectedAction.className === 'ListViewActionCreate')
         {
+            let navLocation = 'DETAIL';
+
             var defaultValues = {};
             if (this.isModeRelated)
             {
                 defaultValues[this.joinFieldName] = this.recordId;
+                navLocation = 'RELATED_LIST';
             }
 
             //go through the action parameters checking for field substitutions
             this.selectedAction.allParameters.forEach(param => {
                 if (param.aPIName === 'UserField')
                     defaultValues[param.value] = currentUserId;
+                if (param.aPIName === 'NoRedirect' && param.value === 'true')
+                    navLocation = 'RELATED_LIST';
             });
 
             defaultValues = encodeDefaultFieldValues(defaultValues);
@@ -1636,6 +1641,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 state: {
                     useRecordTypeCheck: 1,
                     defaultFieldValues: defaultValues,
+                    navigationLocation: navLocation,
                 }
             });
             
@@ -1643,7 +1649,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         //CLONE
         //------------------------------------------------------
-        } else if (this.selectedAction.label === 'Clone')
+        } else if (this.selectedAction.className === 'ListViewActionClone')
         {
 
             if (this.selectedRecordIds.size !== 1) {    
@@ -1665,7 +1671,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         //EDIT
         //------------------------------------------------------
-        } else if (this.selectedAction.label === 'Edit')
+        } else if (this.selectedAction.className === 'ListViewActionEdit')
         {
 
             if (this.selectedRecordIds.size !== 1) {      
@@ -1688,7 +1694,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         //EDIT All
         //------------------------------------------------------
-        } else if (this.selectedAction.label === 'Edit All')
+        } else if (this.selectedAction.className === 'ListViewActionEditAll')
         {
 
             console.log('We are editing all records for ' + this.pageName);

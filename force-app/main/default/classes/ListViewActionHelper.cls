@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-24-2022
+ * @last modified on  : 02-02-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -40,7 +40,10 @@ public with sharing class ListViewActionHelper {
 
     public static String getPrimaryKey(List_View_Action__c action)
     {
-        return action.Label__c.deleteWhitespace() + ':' + action.Object_Type__c;
+        String recTypeStr = 'Core';
+        if (action.RecordTypeId == customRTId)
+            recTypeStr = 'Custom';
+        return action.Label__c.deleteWhitespace() + ':' + action.Apex_Class_Name__c + ':' + recTypeStr + ':' + action.Object_Type__c;
     }
 
     public static String createAction(Map<String, String> actionFields)

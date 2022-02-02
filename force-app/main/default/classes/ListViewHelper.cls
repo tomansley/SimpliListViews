@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-31-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 02-01-2022
+ * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -1759,7 +1759,7 @@ global with sharing class ListViewHelper
         List<List_View_Action__c> actions = new List<List_View_Action__c>();
 
         List_View_Action__c orgNewAction = new List_View_Action__c();
-        orgNewAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        orgNewAction.Apex_Class_Name__c  = 'ListViewActionCreate';
         orgNewAction.Label__c            = 'New';
         orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgNewAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
@@ -1769,7 +1769,7 @@ global with sharing class ListViewHelper
         actions.add(orgNewAction);
 
         List_View_Action__c orgCloneAction = new List_View_Action__c();
-        orgCloneAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        orgCloneAction.Apex_Class_Name__c  = 'ListViewActionClone';
         orgCloneAction.Label__c            = 'Clone';
         orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgCloneAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
@@ -1779,7 +1779,7 @@ global with sharing class ListViewHelper
         actions.add(orgCloneAction);
 
         List_View_Action__c orgEditAction = new List_View_Action__c();
-        orgEditAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        orgEditAction.Apex_Class_Name__c  = 'ListViewActionEdit';
         orgEditAction.Label__c            = 'Edit';
         orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgEditAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
@@ -1789,7 +1789,7 @@ global with sharing class ListViewHelper
         actions.add(orgEditAction);
 
         List_View_Action__c orgEditAllAction = new List_View_Action__c();
-        orgEditAllAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        orgEditAllAction.Apex_Class_Name__c  = 'ListViewActionEditAll';
         orgEditAllAction.Label__c            = 'Edit All';
         orgEditAllAction.RecordTypeId        = ListViewActionHelper.coreRTId;
 		orgEditAllAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
@@ -1831,7 +1831,7 @@ global with sharing class ListViewHelper
         actions.add(oppsCloseUpdateAction);
 
         List_View_Action__c hyperAction = new List_View_Action__c();
-        hyperAction.Apex_Class_Name__c  = 'ListViewActionNull';
+        hyperAction.Apex_Class_Name__c  = 'ListViewActionHyperLink';
         hyperAction.Label__c            = 'Go To A Cool App';
         hyperAction.Object_Type__c      = 'simpli_lv__List_View__c';
         hyperAction.Is_Hyperlink__c     = true;
