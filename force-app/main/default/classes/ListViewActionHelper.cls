@@ -80,7 +80,7 @@ public with sharing class ListViewActionHelper {
 
             if (actionType == 'HyperLink')
             {
-                action.Apex_Class_Name__c = 'ListViewActionNull';
+                action.Apex_Class_Name__c = 'ListViewActionHyperLink';
                 action.Is_Hyperlink__c = true;
                 
                 actionParams.add(createActionParameter('URL', 'URL', 'url', -1, actionFields.get('hyperlinkURL')));
@@ -146,19 +146,25 @@ public with sharing class ListViewActionHelper {
     
                 if (actionSubType == 'Create')
                 {
-                    action.Apex_Class_Name__c = 'ListViewActionNull';
+                    action.Apex_Class_Name__c = 'ListViewActionCreate';
+                    
+                    if (!String.isEmpty(actionFields.get('manageDataCreateOwnerField')))
+                    actionParams.add(createActionParameter('UserField', 'UserField', ListViewHelper.TYPE_STRING, -1, actionFields.get('manageDataCreateOwnerField')));
+
+                    if (!String.isEmpty(actionFields.get('manageDataCreateRedirectField')))
+                        actionParams.add(createActionParameter('NoRedirect', 'NoRedirect', ListViewHelper.TYPE_BOOLEAN, -1, actionFields.get('manageDataCreateRedirectField')));
 
                 } else if (actionSubType == 'Edit')
                 {
-                    action.Apex_Class_Name__c = 'ListViewActionNull';
+                    action.Apex_Class_Name__c = 'ListViewActionEdit';
 
                 } else if (actionSubType == 'EditAll')
                 {
-                    action.Apex_Class_Name__c = 'ListViewActionNull';
+                    action.Apex_Class_Name__c = 'ListViewActionEditAll';
 
                 } else if (actionSubType == 'Clone')
                 {
-                    action.Apex_Class_Name__c = 'ListViewActionNull';
+                    action.Apex_Class_Name__c = 'ListViewActionClone';
 
                 } else if (actionSubType == 'Delete')
                 {
