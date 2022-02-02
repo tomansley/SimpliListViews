@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-01-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 02-02-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   07-18-2021   tom@ansleyllc.com   Initial Version
@@ -36,7 +36,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('HyperlinkTest-Active-Core:Account');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('HyperlinkTest-Active-Core:ListViewActionHyperLink:Core:Account');
 
         System.assert(action != null);
         System.assertEquals(2, action.List_View_Action_Parameters__r.size());
@@ -83,7 +83,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('EmailClassicTest-Inactive-Custom:Opportunity');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('EmailClassicTest-Inactive-Custom:ListViewActionEmail:Custom:Opportunity');
 
         System.assert(action != null);
     }
@@ -108,7 +108,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('SendEmailFromTemplateTest-Active-Core:null');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('SendEmailFromTemplateTest-Active-Core:ListViewActionEmail:Core:null');
 
         System.assert(action != null);
     }
@@ -133,7 +133,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('AutoLaunchTest:null');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('AutoLaunchTest:ListViewActionFlow:Core:null');
 
         System.assert(action != null);
     }
@@ -158,7 +158,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('ScreenFlowTest:Opportunity');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('ScreenFlowTest:ListViewActionFlow:Core:Opportunity');
 
         System.assert(action != null);
     }
@@ -183,7 +183,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('CreateRecordTest:Account');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('CreateRecordTest:ListViewActionCreate:Custom:Account');
 
         System.assert(action != null);
     }
@@ -208,7 +208,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('MassCreateTest:null');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('MassCreateTest:ListViewActionMassCreate:Core:null');
 
         System.assert(action != null);
     }
@@ -233,7 +233,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('MassUpdateTest:Account');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('MassUpdateTest:ListViewActionUpdate:Core:Account');
 
         System.assert(action != null);
     }
@@ -258,7 +258,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('SaveToPDFTest:null');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('SaveToPDFTest:ListViewActionPDF:Core:null');
 
         System.assert(action != null);
         System.assertEquals('ListViewActionPDF', action.Apex_Class_Name__c);
@@ -284,7 +284,7 @@ global class ListViewAdminControllerTest {
         System.assertEquals('success', response);
         System.assertEquals(actionsSize+1, actionsSize2);
 
-        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('CustomActionTest:null');
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('CustomActionTest:ListViewActionUpdate:Core:null');
 
         System.assert(action != null);
         System.assertEquals('ListViewActionUpdate', action.Apex_Class_Name__c);

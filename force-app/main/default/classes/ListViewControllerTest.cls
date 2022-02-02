@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-29-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 02-02-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   08-06-2020   tom@ansleyllc.com   Initial Version
@@ -215,7 +215,7 @@ global class ListViewControllerTest {
         Account acct = HelperTest.insertAccount('Test Acct for getListViewActionAndDataTest');
 
         Test.startTest();
-            ListViewAbstract.ActionWrapper action = ListViewController.getListViewActionAndData('Update:Account', '["' + acct.Id + '"]');
+            ListViewAbstract.ActionWrapper action = ListViewController.getListViewActionAndData('Update:ListViewActionUpdate:Core:Account', '["' + acct.Id + '"]');
         Test.stopTest();
 
         System.assertEquals('Update', action.getLabel());
@@ -352,7 +352,7 @@ global class ListViewControllerTest {
         System.assert(actions.size() > 0);
         
 
-        ListViewAbstract.ActionWrapper action = ListViewController.getListViewAction('Update:Account');
+        ListViewAbstract.ActionWrapper action = ListViewController.getListViewAction('Update:ListViewActionUpdate:Core:Account');
         System.assertNotEquals(action.getLabel(), null);
         System.assertNotEquals(action.getObjectType(), null);
         System.assertNotEquals(action.getHasDisplayParameters(), null);
@@ -391,7 +391,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(actionParam.getIsURL(), null);
         
 
-        String result = ListViewController.processAction('Delete:null', '["' + acct.Id + '"]', '[]');
+        String result = ListViewController.processAction('Delete:ListViewActionDelete:Core:null', '["' + acct.Id + '"]', '[]');
 
         System.assert(result.startsWith(ListViewAction.RESULT_OK));
 

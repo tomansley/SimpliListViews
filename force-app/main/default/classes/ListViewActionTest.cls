@@ -21,7 +21,7 @@ private class ListViewActionTest {
     {
 
         Test.startTest();
-            List_View_Action__c updateAction = ListViewActionHelper.getListViewActionByKey('Update:Account');
+            List_View_Action__c updateAction = ListViewActionHelper.getListViewActionByKey('Update:ListViewActionUpdate:Core:Account');
             System.assert(updateAction.List_View_Action_Parameters__r != null);
             System.assert(updateAction.List_View_Action_Parameters__r.size() == 2);
 
@@ -69,7 +69,7 @@ private class ListViewActionTest {
 
         Test.startTest();
 
-            String result = ListViewController.processAction('Delete:null', '["' + acct.Id + '"]', '[]');
+            String result = ListViewController.processAction('Delete:ListViewActionDelete:Core:null', '["' + acct.Id + '"]', '[]');
 
         Test.stopTest();
 
@@ -83,7 +83,7 @@ private class ListViewActionTest {
 
         Test.startTest();
 
-            String result = ListViewController.processAction('Update:Account', '["' + acct.Id + '"]', '[["Industry","Relaxation"],["Name","Grand Hotel"]]');
+            String result = ListViewController.processAction('Update:ListViewActionUpdate:Core:Account', '["' + acct.Id + '"]', '[["Industry","Relaxation"],["Name","Grand Hotel"]]');
 
         Test.stopTest();
 
@@ -98,7 +98,7 @@ private class ListViewActionTest {
 
         Test.startTest();
 
-            String result = ListViewController.processAction('SetCloseLost:Opportunity', '["' + opp.Id + '"]', '[["CloseDate","2020-05-04"]]');
+            String result = ListViewController.processAction('SetCloseLost:ListViewActionOppsClose:Core:Opportunity', '["' + opp.Id + '"]', '[["CloseDate","2020-05-04"]]');
 
         Test.stopTest();
 
@@ -125,7 +125,7 @@ private class ListViewActionTest {
         
         Test.startTest();
         
-            String result = ListViewController.processAction('SendEmail:Contact', '["' + cont.Id + '"]', '[["Subject","Test Subject"],["Body","<p>This is the <b>email </b>body</p>"]]');
+            String result = ListViewController.processAction('SendEmail:ListViewActionEmail:Core:Contact', '["' + cont.Id + '"]', '[["Subject","Test Subject"],["Body","<p>This is the <b>email </b>body</p>"]]');
 
         Test.stopTest();
 
