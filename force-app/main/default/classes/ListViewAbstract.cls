@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-29-2022
+ * @last modified on  : 02-01-2022
  * @last modified by  : tom.h.ansley@medtronic.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2021,11 +2021,15 @@ public with sharing abstract class ListViewAbstract {
 
             } else if (getIsBoolean()) 
             {
-                if (((Boolean) defaultValue) == false)
-                    strValue = 'false';        //if boolean value is FALSE then send NOTHING
-                else 
-                    strValue = 'true';
-            
+                if (defaultValue instanceof Boolean) 
+                {
+                    if (((Boolean) defaultValue) == false)
+                        strValue = 'false';        //if boolean value is FALSE then send NOTHING
+                    else 
+                        strValue = 'true';
+                } else {
+                    strValue = String.valueOf(defaultValue);
+                }                    
             } else if (getIsDateTime()) {
                 //in case of tooling API value is datetime but comes in as a string so we need to check
                 if (defaultValue instanceof DateTime) 
@@ -2084,10 +2088,18 @@ public with sharing abstract class ListViewAbstract {
                     
                 } else if (getIsBoolean()) 
                 {
-                    if (((Boolean) defaultValue) == false)
-                        uiStr = null;        //if boolean value is FALSE then send NOTHING
-                    else 
-                        uiStr = 'true';
+                    if (defaultValue instanceof Boolean) 
+                    {
+                        if (((Boolean) defaultValue) == false)
+                            uiStr = null;        //if boolean value is FALSE then send NOTHING
+                        else 
+                            uiStr = 'true';
+                    } else {
+                        if (String.valueOf(defaultValue) == 'false')
+                            uiStr = null;
+                        else 
+                            uiStr = 'true';
+                    }
                 }
             }
             System.debug(LoggingLevel.FINE, 'getUIValue - ' + this.getType() + ' - ' + uiStr );
