@@ -956,7 +956,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.refreshRate === '')
             {
                 console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(RefreshRate) - ' + this.calloutCount++);
-                this.refreshRate = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'RefreshRate'});       
+                this.refreshRate = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'RefreshRate'});    
+                if (this.refreshRate === undefined || this.refreshRate === null || this.refreshRate === '') {
+                    this.refreshRate = '45'; //default to 45s if nothing returned
+                }   
             }
 
             this.dispatchEvent(SLVHelper.createToast('success', '', 'Auto Refresh Started', 'Refreshing every ' + this.refreshRate + 's', false)); 
