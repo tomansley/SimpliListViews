@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 01-31-2022
+ * @Last Modified On   : 02-03-2022
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -17,7 +17,7 @@
 public with sharing class ListViewConfigHelper {
 
     private static Map<String,Object> orgWideConfigParams = null; //convenience variable to easily access param values
-    private static final String ALL = 'All';
+    public static final String ALL = 'All';
 
     public static final String DEBUG = 'Debug';
 
@@ -33,9 +33,11 @@ public with sharing class ListViewConfigHelper {
     // ORG WIDE PARAM METHODS
     //=======================================================================
 
+    @TestVisible
     private static void resetCache(String objectName, String listViewName)
     {
-        orgWideConfigParams = null;
+        if (objectName == ALL && listViewName == ALL)
+            orgWideConfigParams = null;
         CacheListViewConfig.remove(objectName, listViewName);
     }
 
