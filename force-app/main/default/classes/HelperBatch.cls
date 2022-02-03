@@ -115,7 +115,7 @@ public with sharing class HelperBatch implements Database.AllowsCallouts, Databa
         if (operation == OPER_INSERT) 
         {
 
-            Database.SaveResult[] saveResults = Database.insert(scope, false);
+            Database.SaveResult[] saveResults = HelperDatabase.insertRecordsWithResults(scope, false);
 
             for (Database.SaveResult sr: saveResults) {
                 if (!sr.isSuccess()) debug += 'Insert failed - ' + sr.getErrors()[0] + ' - ' + sr.getErrors()[0].getFields() + '\n';
@@ -133,7 +133,7 @@ public with sharing class HelperBatch implements Database.AllowsCallouts, Databa
                 }
             }
 
-            Database.SaveResult[] saveResults = Database.update(scope, false);
+            Database.SaveResult[] saveResults = HelperDatabase.updateRecordsWithResults(scope, false);
 
             for (Database.SaveResult sr: saveResults) {
                 if (!sr.isSuccess()) debug += 'Update failed - ' + sr.getErrors()[0] + ' - ' + sr.getErrors()[0].getFields() + '\n';
@@ -142,7 +142,7 @@ public with sharing class HelperBatch implements Database.AllowsCallouts, Databa
 
         } else if (operation == OPER_DELETE) {
 
-            Database.DeleteResult[] deleteResults = Database.delete(scope, false);
+            Database.DeleteResult[] deleteResults = HelperDatabase.deleteRecordsWithResults(scope, false);
             for (Database.DeleteResult dr: deleteResults) {
                 if (!dr.isSuccess()) debug += 'Update failed - ' + dr.getErrors()[0] + ' - ' + dr.getErrors()[0].getFields() + '\n';
             }

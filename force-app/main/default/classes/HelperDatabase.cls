@@ -1,8 +1,8 @@
 /**
  * @description       : Helper class to aid in the handling of DML transactions
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-11-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 02-02-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
@@ -103,6 +103,20 @@ public with sharing class HelperDatabase {
         return data;
     }
 
+    public static List<Database.SaveResult> insertRecordsWithResults(List<SObject> data, Boolean allOrNone) 
+    {
+        List<Database.SaveResult> results = new List<Database.SaveResult>();
+
+        if (data != null && data.size() > 0)
+        {
+            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.CREATABLE, data);
+
+            results = Database.insert(dec.getRecords(), allOrNone);
+        }
+
+        return results;
+    }
+
 
     //--------------------------------------------------------------------------------------------------------------------------
     // UPDATE
@@ -138,6 +152,20 @@ public with sharing class HelperDatabase {
 
         data = dec.getRecords();
 
+    }
+
+    public static List<Database.SaveResult> updateRecordsWithResults(List<SObject> data, Boolean allOrNone) 
+    {
+        List<Database.SaveResult> results = new List<Database.SaveResult>();
+
+        if (data != null && data.size() > 0)
+        {
+            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.UPDATABLE, data);
+
+            results = Database.update(dec.getRecords(), allOrNone);
+        }
+
+        return results;
     }
 
 
@@ -238,6 +266,21 @@ public with sharing class HelperDatabase {
         HelperSchema.checkObjectPermissions(objAPIName, HelperSchema.DELETABLE);
 
         Database.delete(data, allOrNone);
+    }
+
+    public static List<Database.DeleteResult> deleteRecordsWithResults(List<SObject> data, Boolean allOrNone) 
+    {
+        List<Database.DeleteResult> results = new List<Database.DeleteResult>();
+
+        if (data != null && data.size() > 0)
+        {
+            String objAPIName = HelperSchema.getObjectType(data[0]);
+            HelperSchema.checkObjectPermissions(objAPIName, HelperSchema.DELETABLE);
+
+            results = Database.delete(data, allOrNone);
+        }
+
+        return results;
     }
 
     public static void deleteRecord(SObject data, String objAPIName) 
