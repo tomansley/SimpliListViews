@@ -41,15 +41,14 @@ public with sharing class HelperBatch implements Database.AllowsCallouts, Databa
 
     public static final String OPER_UPDATE = 'update';
     public static final String OPER_DELETE = 'delete';
-    public static final String OPER_INSERT = 'insert';
 
     private String query = 'SELECT Id FROM $$SObjectType$$'; //the query used to retrieve data for each batch job.
     private String debug = null; //holds debugging inforamtion during processing
     private String sObjType = null; //the SObject type that will be processed. This is the API name of the custom object
     private Integer batchSize = 200; //the number of records processed per batch
-    private String operation = OPER_UPDATE; //the operation that is being performed on the records
+    private String operation = OPER_UPDATE; //the operation that is being performed on the records. Defaulted to "update"
     private Boolean hardDelete = false; //determine whether we should delete records from recycle bin.
-    private Map < String, Object > fieldValues = new Map < String, Object > (); //API field names and their corresponding values that will be updated in all processed records.
+    private Map<String, Object> fieldValues = new Map<String, Object>(); //API field names and their corresponding values that will be updated in all processed records.
 
     public static final String VAR_OBJECT_TYPE = 'Object Type';
     public static final String VAR_SOQL_STATEMENT = 'SOQL Statement';
@@ -112,16 +111,7 @@ public with sharing class HelperBatch implements Database.AllowsCallouts, Databa
         debug += ' SOQL Statement - ' + query + '\n\n';
         debug += ' Operation      - ' + operation + '\n\n';
 
-        if (operation == OPER_INSERT) 
-        {
-
-            Database.SaveResult[] saveResults = HelperDatabase.insertRecordsWithResults(scope, false);
-
-            for (Database.SaveResult sr: saveResults) {
-                if (!sr.isSuccess()) debug += 'Insert failed - ' + sr.getErrors()[0] + ' - ' + sr.getErrors()[0].getFields() + '\n';
-            }
-
-        } else if (operation == OPER_UPDATE) {
+        if (operation == OPER_UPDATE) {
 
             //set field values if there are any
             if (fieldValues.size() > 0) {
@@ -147,11 +137,8 @@ public with sharing class HelperBatch implements Database.AllowsCallouts, Databa
                 if (!dr.isSuccess()) debug += 'Update failed - ' + dr.getErrors()[0] + ' - ' + dr.getErrors()[0].getFields() + '\n';
             }
 
-        }
-
-        if (hardDelete) 
-        {
-            Database.emptyRecycleBin(scope);
+            if (hardDelete) 
+                Database.emptyRecycleBin(scope);
         }
 
         debug += '---------------------------------------------------------------------------------\n\n';

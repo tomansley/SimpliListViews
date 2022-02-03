@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-14-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 02-03-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-07-2020   tom@ansleyllc.com   Initial Version
@@ -15,7 +15,7 @@ public with sharing class HelperTest {
 
     public static Pricebook2 pricebook = null;
 
-    public static Account insertAccount(String name)
+    public static Account createAccount(String name)
     {
 		Account acc = new Account(Name = name);
 		acc.BillingStreet = '2334 N. Michigan Avenue, Suite 1500';
@@ -25,6 +25,13 @@ public with sharing class HelperTest {
         acc.BillingCountry = 'USA';
         acc.AnnualRevenue = 125000;
         acc.Industry = 'Telecommunications';
+		
+		return acc;
+    }
+    
+    public static Account insertAccount(String name)
+    {
+		Account acc = createAccount(name);
         acc = (Account) HelperDatabase.insertRecord(acc);
 		
 		return acc;
