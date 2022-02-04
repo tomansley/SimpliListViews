@@ -1645,7 +1645,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     useRecordTypeCheck: 1,
                     defaultFieldValues: defaultValues,
                     navigationLocation: navLocation,
-                }
+                } 
             });
             
 
