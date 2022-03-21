@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 02-03-2022
+ * @last modified on  : 03-21-2022
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class CacheHelper {
@@ -36,18 +36,20 @@ public with sharing class CacheHelper {
         return debug;
     }
 
-    /*
-        CacheHelper.clearCache(null);
-    */
     public static void clearCache(String containsStr)
     {
         Cache.OrgPartition orgPartition = Cache.Org.getPartition(PARTITION_NAME);
         Set<String> keys = orgPartition.getKeys();
         for (String key: keys)
         {
-            if (String.isEmpty(containsStr) || keys.contains(containsStr))
+            if (key.length() < 50 && (String.isEmpty(containsStr) || keys.contains(containsStr)))
                 orgPartition.remove(key);
         }
+    }
+
+    public static void clearAllCache()
+    {
+        clearCache(null);
     }
 
     public static Set<String> getCacheKeys()

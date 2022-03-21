@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-29-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 03-21-2022
+ * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class CacheConfigDescriptions {
 
@@ -33,7 +33,8 @@ public with sharing class CacheConfigDescriptions {
     {
         key = PREFIX + CacheHelper.getValidKey(key);
     	System.debug(LoggingLevel.DEBUG, 'CacheConfigDescriptions.remove(' + key + ')');    	
-        CacheHelper.PARTITION.remove(key);
+        if (key.length() < 50)
+            CacheHelper.PARTITION.remove(key);
     }
 
     /*

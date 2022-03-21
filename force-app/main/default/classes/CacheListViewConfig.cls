@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-29-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 03-21-2022
+ * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class CacheListViewConfig {
 
@@ -34,7 +34,8 @@ public with sharing class CacheListViewConfig {
     {
         String key = CacheHelper.getValidKey(objectName + CacheHelper.SPLITTER + listViewName);
     	System.debug(LoggingLevel.DEBUG, 'CacheListViews.remove(' + key + ')');    	
-        CacheHelper.PARTITION.remove(key);
+        if (key.length() < 50)
+            CacheHelper.PARTITION.remove(key);
     }
 
     private static List_View_Config__c getData(String objectName, String listViewName) 

@@ -1,14 +1,20 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-29-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 03-21-2022
+ * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class CacheListViews {
 
     public static final String LOAD_TYPE_OBJ  = 'Object';
     public static final String LOAD_TYPE_TYPE = 'Type';
 
+    /*
+     * The key is split as follows - 
+     *  1. Load Type (Object or Type)
+        2. User Id (15 char)
+        3. Object API Name
+     */
     public static Object get(String key)
     {
         Object result = null;
@@ -21,7 +27,7 @@ public with sharing class CacheListViews {
             if (result == null)
             {
                 result = getData(keys);
-                CacheHelper.PARTITION.put(key, result, 300);    
+                CacheHelper.PARTITION.put(key, result);    
             }
         } else {
             result = getData(keys);
@@ -33,7 +39,8 @@ public with sharing class CacheListViews {
     {
         key = CacheHelper.getValidKey(key);
     	System.debug(LoggingLevel.DEBUG, 'CacheListViews.remove(' + key + ')');    	
-        CacheHelper.PARTITION.remove(key);
+        if (key.length() < 50)
+            CacheHelper.PARTITION.remove(key);
     }
 
     /*
@@ -41,7 +48,7 @@ public with sharing class CacheListViews {
 	 */
     private static Object getData(List<String> keys) 
     {
-        String loadType = keys[0]; //either Name, Object or Type
+        String loadType = keys[0]; //either Object or Type
         String userId   = keys[1];
 
     	System.debug(LoggingLevel.DEBUG, 'loadType - ' + loadType);    	

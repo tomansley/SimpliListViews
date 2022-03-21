@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-21-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 02-08-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -283,6 +283,9 @@ public without sharing class ListViewController
         //update the list view
         Boolean result = ListViewHelper.updateListViewsFromObj(objectType);
 
+        //remove cache so that list views are refetched
+        CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
+
         ListViewErrorHelper.processLogs(true);
 
         return SUCCESS;
@@ -305,6 +308,9 @@ public without sharing class ListViewController
         //update the list view
         System.debug(LoggingLevel.FINE, 'A - ' + HelperLimits.getLimitsString());
         Boolean result = ListViewHelper.updateListViewsFromSLVIds(lvId);
+
+        //remove cache so that list views are refetched
+        CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
 
         ListViewErrorHelper.processLogs(true);
 
@@ -362,6 +368,9 @@ public without sharing class ListViewController
             String message = 'Exception during ListViewController.updateAllListViews()  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createFutureUsageError(message); 
         }
+
+        //remove cache so that list views are refetched
+        CacheHelper.clearAllCache();
 
         ListViewErrorHelper.processLogs(true);
 

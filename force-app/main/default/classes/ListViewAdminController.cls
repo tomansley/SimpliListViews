@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-01-2022
+ * @last modified on  : 02-08-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -16,7 +16,7 @@ public with sharing class ListViewAdminController {
     {
         String response = SUCCESS;
 
-        CacheHelper.clearCache(null);
+        CacheHelper.clearAllCache();
 
         return response;
     }

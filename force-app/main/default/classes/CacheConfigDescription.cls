@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-29-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 03-21-2022
+ * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class CacheConfigDescription {
 
@@ -33,7 +33,8 @@ public with sharing class CacheConfigDescription {
     {
         String storedKey = PREFIX + CacheHelper.getValidKey(key);
     	System.debug(LoggingLevel.DEBUG, 'CacheConfigDescription.remove(' + storedKey + ')');    	
-        CacheHelper.PARTITION.remove(storedKey);
+        if (key.length() < 50)
+            CacheHelper.PARTITION.remove(storedKey);
     }
 
     /*
