@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 01-27-2022
+ * @Last Modified On   : 03-22-2022
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -158,7 +158,7 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method to return a describe result for a given object and field.
-       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getFieldDescribeResult('Contact','Child_Object__c'));  
+       System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getFieldDescribeResult('Account','simpli_lv__Test_Text_Rich__c'));  
 	 */
 	public static Schema.DescribeFieldResult getFieldDescribeResult(String obj, String field)
 	{
@@ -419,6 +419,7 @@ public with sharing class HelperSchema {
 	 */
 	public static Schema.SObjectField getFieldByKey(String obj, String key, String keyType)
 	{
+        System.debug(LoggingLevel.DEBUG, 'Starting getFieldByKey(' + obj + ', ' + key + ', ' + keyType + ')');
 		//get the fields of the object in question
 		Map<String, Schema.SObjectField> fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
 
@@ -485,7 +486,7 @@ public with sharing class HelperSchema {
     }
 
 	/*
-	 * Method to determine if a given object and field name is valid.
+	 * Method to retrieve the field label for a given object and API field name.
        System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.getSFDCFieldLabel('simpli_lv__List_View_Action_Parameter__c','List_View_Action__r.LastModifiedBy.Name)'));
 	 */
 	public static String getSFDCFieldLabel(String objName, String sfdcFieldName)
@@ -678,9 +679,9 @@ public with sharing class HelperSchema {
      *  value - the value of the field.
 
 	 * 
-	   Account acc = [SELECT Name, Owner.Name, Owner.Alias, Owner.Profile.Name FROM Account WHERE Name LIKE 'Burling%' LIMIT 1];
-	   HelperSchema.FieldData d = HelperSchema.getFieldData(acc, 'Owner.Alias');
-	   System.debug(LoggingLevel.FINE, 'Account Name - ' + d.name + ', ' + d.label + ', ' + d.type + ', ' + d.value);
+	   Account acc = [SELECT Name, Owner.Name, Owner.Alias, Owner.Profile.Name, Case__r.Status FROM Account WHERE Name LIKE 'Express%' LIMIT 1];
+	   HelperSchema.FieldData d = HelperSchema.getFieldData(acc, 'Case__r.Status');
+	   System.debug(LoggingLevel.FINE, 'Account Name - ' + d.name + ', ' + d.label + ', ' + d.getType() + ', ' + d.value);
 	 * 
      */
     public static FieldData getFieldData(SObject obj, String fieldName)
@@ -727,15 +728,23 @@ public with sharing class HelperSchema {
                     //if there is a field describe then get the label and set the data.
                     } else {
 
-                        if (fieldHierarchy.size() == 1)
+                        if (fieldHierarchy.size() == 1) {
 						    label = fieldDesc.getLabel();
-					    else
-						    label = objType + ' ' + fieldDesc.getLabel();
+					    
+                        //if we have a lookup field then determine if we add the object name to the label
+                        } else {
+                            String addObjName = ListViewConfigHelper.getOrgWideConfigParam('AddObjNameOnLookupLabels');
+                            if (addObjName == ListViewHelper.TTRUE)
+						        label = objType + ' ' + fieldDesc.getLabel();
+                        }
 
                         data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
 						data.parentObjType = getObjectType(currentObj);
                         data.objValueId = objValueId;
                         data.isEditable = fieldDesc.isUpdateable();
+
+                        if (fieldDesc.isHtmlFormatted())
+                            data.isHTML = true;
 					}
 					
 				//if we are not at the last field then get the fields object
@@ -1243,11 +1252,12 @@ public with sharing class HelperSchema {
         public String parentObjType    {get; set;}
         public String name             {get; set;}
         public String label            {get; set;}
-        public Schema.DisplayType type {get; set;}
+        private Schema.DisplayType type {get; set;}
         public Object value            {get; set;} //holds the string value. i.e. CreatedBy.Name = "Tom Ansley" 
-        public String objValueId          {get; set;} //holds the id value if its a lookup. i.e. CreatedBy.Name = 0053h000000xrj3AAA
+        public String objValueId       {get; set;} //holds the id value if its a lookup. i.e. CreatedBy.Name = 0053h000000xrj3AAA
         public Boolean isChildRel      {get; set;}
         public Boolean isEditable      {get; set;}
+        public Boolean isHTML          {get; set;} //identifies if its a rich text field
 
         public FieldData(String name, String label, Schema.DisplayType type, Object value, SObject objValue)
         {
@@ -1259,6 +1269,7 @@ public with sharing class HelperSchema {
             this.isChildRel    = false;
             this.isEditable    = false;
             this.parentObjType = '';
+            this.isHTML        = false;
         }
 
         public FieldData(String name, Object value)
@@ -1268,10 +1279,14 @@ public with sharing class HelperSchema {
             this.isChildRel    = false;
             this.isEditable    = false;
             this.parentObjType = '';
+            this.isHTML        = false;
         }
 
         public String getType() {
-            return type.name().toLowerCase();
+            if (isHTML)
+                return 'rich textarea';
+            else
+                return type.name().toLowerCase();
         }
 
         public String getDebugString()
@@ -1286,6 +1301,7 @@ public with sharing class HelperSchema {
             debug += 'objValueId    - ' + objValueId + '\n';
             debug += 'isChildRel    - ' + isChildRel + '\n';
             debug += 'isEditable    - ' + isEditable + '\n';
+            debug += 'isHTML        - ' + isHTML + '\n';
             debug += '----------------\n';
 
             return debug;

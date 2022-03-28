@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 02-01-2022
+  @last modified on  : 03-24-2022
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -441,7 +441,12 @@
                                                                             {fieldData.value}
                                                                         </div>
                                                                     </template>
-                                                                    <template if:true={fieldData.isLookup}>
+                                                                    <template if:true={fieldData.isRichTextArea}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                            <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                        </div>
+                                                                    </template>
+                                                                        <template if:true={fieldData.isLookup}>
                                                                         <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                             {fieldData.value}
                                                                         </div>
@@ -559,6 +564,11 @@
                                                                         {fieldData.value}
                                                                     </div>
                                                                 </template>
+                                                                <template if:true={fieldData.isRichTextArea}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                    </div>
+                                                                </template>
                                                                 <template if:true={fieldData.isTextArea}>
                                                                     <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         {fieldData.value}
@@ -644,6 +654,11 @@
                                                                 <template if:true={fieldData.isString}>
                                                                     <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name="input0" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                    </div>
+                                                                </template>
+                                                                <template if:true={fieldData.isRichTextArea}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isTextArea}>

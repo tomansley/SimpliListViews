@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-01-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 03-24-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -335,7 +335,7 @@ public with sharing abstract class ListViewAbstract {
         {
             return listView;
         }
-
+        
         /*
          * Method to retrieve the data in CSV format.
          */
@@ -365,7 +365,7 @@ public with sharing abstract class ListViewAbstract {
 
             for (FieldWrapper column: fieldMetaData)
             {
-                if (useAPINames == null || useAPINames.getValue() == 'false')
+                if (useAPINames == null || useAPINames.getValue() == ListViewHelper.FFALSE)
                     dataStr += '"' + column.label.replaceAll('"', '""') + '"' + ',';
                 else
                     dataStr += '"' + column.name.replaceAll('"', '""') + '"' + ',';
@@ -482,7 +482,7 @@ public with sharing abstract class ListViewAbstract {
         {
             return fields.get(apiName);
         }
-        
+                
         @AuraEnabled(cacheable=true)
         public String getRowId()
         {
@@ -891,6 +891,13 @@ public with sharing abstract class ListViewAbstract {
             return false;    
         }
 
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsRichTextArea()
+        {
+            if (this.type == ListViewHelper.TYPE_RICH_TEXTAREA) return true;
+            return false;    
+        }
+
         public Integer compareTo(Object compareTo) {
             ListViewColumn desc2 = (ListViewColumn) compareTo;
             return label.compareTo(desc2.label);
@@ -1099,9 +1106,9 @@ public with sharing abstract class ListViewAbstract {
             } else if (getIsBoolean()) 
             {
                 if (((Boolean) objValue) == false)
-                    strValue = 'false';        //if boolean value is FALSE then send NOTHING
+                    strValue = ListViewHelper.FFALSE;        //if boolean value is FALSE then send NOTHING
                 else 
-                    strValue = 'true';
+                    strValue = ListViewHelper.TTRUE;
             
             } else if (getIsDateTime()) {
                 //in case of tooling API value is datetime but comes in as a string so we need to check
@@ -1227,6 +1234,13 @@ public with sharing abstract class ListViewAbstract {
         }
         
         @AuraEnabled(cacheable=true)
+        public Boolean getIsRichTextArea()
+        {
+            if (this.type == ListViewHelper.TYPE_RICH_TEXTAREA) return true;
+            return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
         public Boolean getIsString()
         {
             if (this.type == ListViewHelper.TYPE_STRING) return true;
@@ -1277,7 +1291,7 @@ public with sharing abstract class ListViewAbstract {
                     if (((Boolean) objValue) == false)
                         uiStr = null;        //if boolean value is FALSE then send NOTHING
                     else 
-                        uiStr = 'true';
+                        uiStr = ListViewHelper.TTRUE;
                 } else {
                     uiStr = getValue();
                 }
@@ -1407,6 +1421,12 @@ public with sharing abstract class ListViewAbstract {
         {
             if (this.type == ListViewHelper.TYPE_EMAIL) return true;
             return false;    
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Integer getColumnIndex()
+        {
+            return columnIndex;    
         }
 
         public FieldWrapper cloneField(Boolean deleteFieldData)
@@ -2024,9 +2044,9 @@ public with sharing abstract class ListViewAbstract {
                 if (defaultValue instanceof Boolean) 
                 {
                     if (((Boolean) defaultValue) == false)
-                        strValue = 'false';        //if boolean value is FALSE then send NOTHING
+                        strValue = ListViewHelper.FFALSE;        //if boolean value is FALSE then send NOTHING
                     else 
-                        strValue = 'true';
+                        strValue = ListViewHelper.TTRUE;
                 } else {
                     strValue = String.valueOf(defaultValue);
                 }                    
@@ -2093,12 +2113,12 @@ public with sharing abstract class ListViewAbstract {
                         if (((Boolean) defaultValue) == false)
                             uiStr = null;        //if boolean value is FALSE then send NOTHING
                         else 
-                            uiStr = 'true';
+                            uiStr = ListViewHelper.TTRUE;
                     } else {
-                        if (String.valueOf(defaultValue) == 'false')
+                        if (String.valueOf(defaultValue) == ListViewHelper.FFALSE)
                             uiStr = null;
                         else 
-                            uiStr = 'true';
+                            uiStr = ListViewHelper.TTRUE;
                     }
                 }
             }
@@ -2135,6 +2155,13 @@ public with sharing abstract class ListViewAbstract {
                 return false;
             else    
                 return true;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsRichTextArea()
+        {
+            if (paramType == ListViewHelper.TYPE_RICH_TEXTAREA) return true;
+            return false;    
         }
 
         @AuraEnabled(cacheable=true)
