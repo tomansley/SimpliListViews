@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 01-18-2022
+  @last modified on  : 03-27-2022
   @last modified by  : tom@ansleyllc.com
 -->
 <template>
@@ -18,7 +18,7 @@
                 </lightning-icon>&nbsp;&nbsp;
             </div>
         </lightning-layout-item>
-        <lightning-layout-item style="width: 30%" padding="horizontal-small">
+        <lightning-layout-item style="width: 27%" padding="horizontal-small">
             <div class="slds-truncate">
                 {label.Schedule_Core_List_View_Refreshes}
                 <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
@@ -27,7 +27,7 @@
             </div>
         </lightning-layout-item>
 
-        <lightning-layout-item padding="horizontal-small">
+        <lightning-layout-item padding="horizontal-small" style="width: 12%">
             <lightning-combobox name="Time Period List"
                                 value={selectedTimePeriod}
                                 onchange={handleTimePeriodChange} 
@@ -39,7 +39,7 @@
         </lightning-layout-item>
 
         <template if:true={displayMonths}>
-            <lightning-layout-item padding="horizontal-small">
+            <lightning-layout-item padding="horizontal-small" style="width: 15%">
                 <lightning-combobox name="Month List"
                                     value={selectedMonth}
                                     onchange={periodValueChange} 
@@ -52,7 +52,7 @@
         </template>
 
         <template if:true={displayDays}>
-            <lightning-layout-item padding="horizontal-small">
+            <lightning-layout-item padding="horizontal-small" style="width: 15%">
                 <lightning-combobox name="Day List"
                                     value={selectedDay}
                                     onchange={periodValueChange} 
@@ -65,7 +65,7 @@
         </template>
 
         <template if:true={displayHours}>
-            <lightning-layout-item padding="horizontal-small">
+            <lightning-layout-item padding="horizontal-small" style="width: 15%">
                 <lightning-combobox name="Hour List"
                                     value={selectedHour}
                                     onchange={periodValueChange} 
@@ -78,7 +78,7 @@
         </template>
 
         <template if:true={displayMinutes}>
-            <lightning-layout-item padding="horizontal-small">
+            <lightning-layout-item padding="horizontal-small" style="width: 15%">
                 <lightning-combobox name="Minute List"
                                     value={selectedMinute}
                                     onchange={periodValueChange} 
@@ -91,7 +91,7 @@
         </template>
 
         <template if:true={displayXMinutes}>
-            <lightning-layout-item padding="horizontal-small" size="3">
+            <lightning-layout-item padding="horizontal-small" size="3" style="width: 15%">
                 <lightning-combobox name="X Minute List"
                                     value={selectedXMinutes}
                                     onchange={periodValueChange} 
