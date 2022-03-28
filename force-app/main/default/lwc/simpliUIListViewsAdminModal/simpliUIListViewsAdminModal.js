@@ -38,6 +38,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
          set listViewName(value) { this.lvName = value; this.getListViewConfig(); }
     @api listViewMode;                  //indicates the mode of the list view calling the admin page.
 
+    @track spinner = false;             //identifies if the spinner should be displayed or not.
     @track listViewConfig               //holds all configuration for the list view
     @track listViewColumns              //holds all column label information
     @track error                        //holds any error details.
@@ -277,6 +278,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         var resultStr;
         var valuesMap = new Map();
         var strParamsMap;
+        this.spinner = true;
 
         //if we are REMOVING we just need to pass the id of the condition
         if (action === 'remove') {
@@ -300,6 +302,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     variant: 'error',
                     mode: 'sticky'
                 }));
+                this.spinner = false;
                 return;
             } 
 
@@ -339,6 +342,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     this.getListViewConfig();
                     this.configChanged = true;
                     this.resetNewCondition();
+                    this.spinner = false;
 
                 } else {
                     this.dispatchEvent(new ShowToastEvent({
@@ -347,6 +351,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                         variant: 'error',
                         mode: 'sticky'
                     }));
+                    this.spinner = false;
                     return;
                 }
             })
@@ -360,6 +365,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     variant: 'error',
                     mode: 'sticky'
                 }));
+                this.spinner = false;
                 return;
         });
 

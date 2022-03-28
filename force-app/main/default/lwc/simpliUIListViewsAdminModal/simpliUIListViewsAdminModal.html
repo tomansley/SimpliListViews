@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 12-24-2021
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 03-28-2022
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom@ansleyllc.com   Initial Version
@@ -97,8 +97,11 @@
                         </lightning-tab>
 
                         <lightning-tab label={label.Highlighting}>
-                            <div class="scroll slds-modal__content slds-p-around_xx-small" id="modal-condition-content" style="min-width: 1100px; overflow: initial;">
-                                <table class="slds-table slds-table_bordered">
+                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-condition-content" style="min-width: 1100px; overflow: initial;">
+                                <template if:true={spinner}>
+                                    <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
+                                </template>
+                                    <table class="slds-table slds-table_bordered">
                                     <thead>
                                         <tr class="slds-line-height_reset">
                                             <th class="" scope="col">

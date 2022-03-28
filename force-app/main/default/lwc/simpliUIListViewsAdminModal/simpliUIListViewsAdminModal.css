@@ -3,3 +3,7 @@
     max-height: 62vh;
     overflow: auto;
 }
+
+.pageSpinnerHolder{
+    position: relative;
+}

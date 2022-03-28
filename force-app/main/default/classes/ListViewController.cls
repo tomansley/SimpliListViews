@@ -793,6 +793,7 @@ public without sharing class ListViewController
                                                           (String) mapValues.get('value'),
                                                           (String) mapValues.get('order'),
                                                           (String) mapValues.get('color'));
+                CacheListViewConfig.remove(objectName, listViewName);
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
                 String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')  ' + ListViewException.getExtendedString(e);
@@ -803,6 +804,7 @@ public without sharing class ListViewController
         {
             try {
                 ListViewConfigHelper.deleteListViewCondition(conditionData);
+                CacheListViewConfig.remove(objectName, listViewName);
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
                 String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')  ' + ListViewException.getExtendedString(e);
