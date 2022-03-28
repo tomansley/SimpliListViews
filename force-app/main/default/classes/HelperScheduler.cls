@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 12-06-2021
+ * @last modified on  : 03-28-2022
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperScheduler {
@@ -22,7 +22,7 @@ public with sharing class HelperScheduler {
                         ApexClass.Name,
                         Id 
                 FROM AsyncApexJob 
-                WHERE ApexClass.Name IN ('ListViewPostProcessBatch', 'ListViewProcessBatch', 'ListViewPreProcessBatch')
+                WHERE ApexClass.Name IN ('ListViewPostProcessBatch', 'ListViewProcessBatch', 'ListViewPreProcessBatch', 'ListViewCleanBatch')
                         AND Status NOT IN ('Completed', 'Scheduled')]);
 
         return (List<AsyncApexJob>) dec.getRecords();

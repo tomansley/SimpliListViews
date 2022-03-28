@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 02-08-2022
+ * @last modified on  : 03-28-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -126,7 +126,7 @@ public without sharing class ListViewController
         return isInitialized;
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<SelectOption> getObjectListViews(String objectName)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getObjectListViews(' + objectName + ')');

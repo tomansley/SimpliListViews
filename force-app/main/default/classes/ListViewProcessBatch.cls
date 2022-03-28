@@ -2,10 +2,10 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 02-01-2022
+ * @last modified on  : 03-28-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
- * Ver   Date         Author                       Modification
+ * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
  * 2.0   07-12-2021   tom@ansleyllc.com   Added setting of org wide config to identify that the list views have been initialized.
 **/
@@ -141,7 +141,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	global void execute(Database.BatchableContext BC, List<SObject> scope) 
 	{
         try {
-            ListViewHelper.updateListViews((List<ListView>) scope);
+            ListViewHelper.updateListViewsFromCore((List<ListView>) scope);
 
             ListViewErrorHelper.processLogs(false);
 
@@ -156,7 +156,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	{
         //delete all list views that are EXCLUDED from being displayed
         //but may have been created at another time
-        Database.executeBatch(new ListViewPostProcessBatch());
+        Database.executeBatch(new ListViewCleanBatch(), 40);
 	}
 	
 	global class ListViewProcessBatchException extends Exception { }

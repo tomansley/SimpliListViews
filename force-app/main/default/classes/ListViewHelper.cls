@@ -1,7 +1,7 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-01-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 03-28-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-05-2020   tom@ansleyllc.com   Initial Version
@@ -87,6 +87,9 @@ global with sharing class ListViewHelper
 
     public static final String QUERY_TYPE_SOQL = 'soql';
     public static final String QUERY_TYPE_SOSL = 'sosl';
+
+    public static final String TTRUE = 'true';
+    public static final String FFALSE = 'false';
 
     private static Boolean simpliLVsGetRetry = false;             //used to identify whether we are trying to perform a list view get retry with the "simpli_lv__" attached.
 
@@ -387,12 +390,26 @@ global with sharing class ListViewHelper
      */
     public static Boolean updateListViewsFromObj(String objectName)
     {
+        //get CORE list views
         List<ListView> coreListViews = getCoreListViews(objectName);
 
         if (coreListViews.size() > 50)
             return false;
 
-        return updateListViews(coreListViews);
+        //get SLV list views
+        Map<String, List_View__c> slvListViews = getListViewsByObjectCache(objectName, true);
+
+        //Remove valid core list views
+        for (ListView coreListView: coreListViews)
+            slvListViews.remove(coreListView.DeveloperName);
+
+        Boolean result = updateListViews(coreListViews);
+
+        //can only clean AFTER updating the list views.
+        ListViewHelper.cleanListViews(slvListViews.values());
+
+        CacheHelper.clearAllCache();
+        return result;
     }
 
     /*
@@ -441,6 +458,14 @@ global with sharing class ListViewHelper
         return updateListViews(coreListViews);
     }
 
+    public static Boolean updateListViewsFromCore(List<ListView> listviews)
+    {
+        if (listviews.size() > 50)
+            return false;
+
+        return updateListViews(listviews);
+    }
+
     /*
      * Method to update CUSTOM list views based on the CORE list views provided.
      * 
@@ -448,7 +473,7 @@ global with sharing class ListViewHelper
      * 
      * HANDLES CORE ONLY
      */
-    public static Boolean updateListViews(List<ListView> listviews)
+    private static Boolean updateListViews(List<ListView> listviews)
     {
         System.debug(LoggingLEvel.DEBUG, 'Starting updateListViews(' + listviews + ')');
         Map<String, List_View__c> updatedListViews = new Map<String, List_View__c>();
@@ -511,9 +536,9 @@ global with sharing class ListViewHelper
                     for (Integer index = 0; index < orderItems.size(); index++)
                     {
                         Map<String, Object> orderItemObj = (Map<String, Object>) orderItems.get(index);
-                        String direction = 'true';
+                        String direction = ListViewHelper.TTRUE;
                         if (orderItemObj.get('sortDirection') == 'descending')
-                            direction = 'false';
+                            direction = ListViewHelper.FFALSE;
 
                         orderStr += index + ':' + direction + ':' + orderItemObj.get('fieldNameOrPath') + ';';
                         System.debug(LoggingLevel.DEBUG, 'ORDER - ' + orderStr);
@@ -967,10 +992,15 @@ global with sharing class ListViewHelper
 
     }
 
-    public static Map<String, List_View__c> getListViewsByObjectCache(String objAPIName)
+    public static Map<String, List_View__c> getListViewsByObjectCache(String objAPIName, Boolean onlyCore)
     {
 
-        System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
+        System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName + ', onlyCore - ' + onlyCore);
+
+        Set<Id> rtIds = new Set<Id>();
+        rtIds.add(ListViewHelper.coreRTId);
+        if (!onlyCore)
+            rtIds.add(ListViewHelper.customRTId);
 
         //get list view data
         SObjectAccessDecision dec = 
@@ -1002,6 +1032,7 @@ global with sharing class ListViewHelper
                         Default_Sort_Order__c
                 FROM List_View__c
                 WHERE Object_Name__c = :objAPIName
+                    AND RecordTypeId IN :rtIds
                 ORDER BY Label__c]);
 
         Map<Id, List_View__c> listviews = new Map<Id, List_View__c>( (List<List_View__c>) dec.getRecords());
@@ -1153,7 +1184,7 @@ global with sharing class ListViewHelper
         selectStr = '';
         for (String field: selectFields)
         {
-            field = HelperSchema.scrubFieldNameForSOQL(field); //remove weird stuff like toLabel() etc.
+            //field = HelperSchema.scrubFieldNameForSOQL(field); //remove weird stuff like toLabel() etc.
             selectStr += field + ', ';
         }
         selectStr = selectStr.removeEnd(', ');
@@ -1163,10 +1194,14 @@ global with sharing class ListViewHelper
         //------------------------------------------------------
         if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
+            //if we already have a WHERE clause then place brackets around the entire clause so that it doesn't break when adding more logic.
             if (whereStr.containsIgnoreCase(' WHERE '))
-                whereStr += ' AND ' + joinFieldName + ' IN :joinRecordIds';
-            else
+            {
+                whereStr = whereStr.replace(' WHERE ', ' WHERE (');
+                whereStr += ') AND ' + joinFieldName + ' IN :joinRecordIds';
+            } else {
                 whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
+            }
         }
 
         //------------------------------------------------------
@@ -1265,7 +1300,7 @@ global with sharing class ListViewHelper
         String allRowsStr = '';
         if (offset == -1                                                   //Cannot use ALL ROWS with OFFSET
             && lvConfigParams.get('AllRows') != null                      //if we have AllRows variable
-            && lvConfigParams.get('AllRows') == 'true'                     //if AllRows = true
+            && lvConfigParams.get('AllRows') == ListViewHelper.TTRUE                     //if AllRows = true
             && lvConfigParams.get('ReturnSize') != null                    //if we have ReturnSize variable
             && (Integer.valueOf(lvConfigParams.get('ReturnSize')) < 750)) //if ReturnSize < 750
         {
@@ -1415,10 +1450,14 @@ global with sharing class ListViewHelper
 
         if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
-            if (whereStr.containsIgnoreCase('WHERE '))
-                whereStr += ' AND ' + joinFieldName + ' IN :joinRecordIds';
-            else
+            //if we already have a WHERE clause then place brackets around the entire clause so that it doesn't break when adding more logic.
+            if (whereStr.containsIgnoreCase(' WHERE '))
+            {
+                whereStr = whereStr.replace(' WHERE ', ' WHERE (');
+                whereStr += ') AND ' + joinFieldName + ' IN :joinRecordIds';
+            } else {
                 whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
+            }
         }
         debug += 'WHERE                           - ' + whereStr + '\n';
 
@@ -1520,7 +1559,7 @@ global with sharing class ListViewHelper
         String allRowsStr = '';
         if (offset == -1                                                   //Cannot use ALL ROWS with OFFSET
             && lvConfigParams.get('AllRows') != null                       //if we have AllRows variable
-            && lvConfigParams.get('AllRows') == 'true'                     //if AllRows = true
+            && lvConfigParams.get('AllRows') == ListViewHelper.TTRUE                     //if AllRows = true
             && lvConfigParams.get('ReturnSize') != null                    //if we have ReturnSize variable
             && (Integer.valueOf(lvConfigParams.get('ReturnSize')) < 750))  //if ReturnSize < 750
         {
@@ -1753,6 +1792,101 @@ global with sharing class ListViewHelper
         else
             return true;
     }
+
+	public static void cleanListViews(List<List_View__c> scope) 
+	{
+        String debug = '';
+        
+        try {        
+            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
+            List<List_View__c> listViews = (List<List_View__c>) dec.getRecords();
+            Map<String, List_View__c> deletedListViews = new Map<String, List_View__c>();
+            Map<String, List_View_Config__c> deletedLVConfigs = new Map<String, List_View_Config__c>();
+            List<List_View_Config_Condition__c> deletedLVConfigConds = new List<List_View_Config_Condition__c>();
+            List<List_View_Config_Parameter__c> deletedLVConfigParams = new List<List_View_Config_Parameter__c>();
+            List<List_View_User_Config__c> deletedUserConfigs = new List<List_View_User_Config__c>();
+
+            //get the set of core list view Ids
+            Set<Id> coreListViewIDs = HelperCollection.getIdFieldSet(listViews, 'Core_ListView_Id__c');
+
+            //get the associated core list views
+            List<ListView> coreListViews = ListViewHelper.getCoreListViews(coreListViewIDs);
+            //get map of core list views
+            Map<Id, ListView> coreListViewsById = new Map<Id, ListView>(coreListViews);
+
+            //go through SLV list views looking for ones that have deleted core list view Ids
+            for (List_View__c listView: listViews)
+            {
+                //if a core list view does not exist for the id then delete it
+                if (!coreListViewsById.containsKey(listView.Core_ListView_Id__c))
+                {
+                    deletedListViews.put(listView.Primary_Key__c, listView);
+                    debug += 'Deleting list view - ' + listView.Primary_Key__c + '\n';
+                }
+            }
+
+            //find all list view configs/conditions/parameters
+            if (deletedListViews.size() > 0)
+            {
+                //get all configs for the list views to be deleted
+                deletedLVConfigs = ListViewConfigHelper.getListViewConfigs(deletedListViews.keySet());
+                
+                for (List_View_Config__c lvConfig: deletedLVConfigs.values())
+                {
+                    debug += 'Deleting list view config - ' + lvConfig.Primary_Key__c + '\n';
+                
+                    deletedLVConfigConds.addAll(lvConfig.List_View_Config_Conditions__r);
+
+                    deletedLVConfigParams.addAll(lvConfig.List_View_Config_Parameters__r);
+                }
+            } else {
+                debug += 'No list views or configs deleted\n';
+            }
+
+            if (deletedLVConfigs.size() > 0)
+            {
+                //use primary keys to find the user configs
+                String userConfSOQL = 'SELECT Id, Name__c, Value__c, Primary_Key__c FROM List_View_User_Config__c WHERE ';
+                for (String tmpPKey: deletedLVConfigs.keySet())
+                {
+                    userConfSOQL += 'Name__c LIKE \'%' + tmpPKey + '%\' OR ';
+                    userConfSOQL += 'Primary_Key__c LIKE \'%' + tmpPKey + '%\' OR ';
+                    userConfSOQL += 'Value__c LIKE \'%' + tmpPKey + '%\' OR ';
+                }
+
+                userConfSOQL = userConfSOQL.removeEnd(' OR ');
+
+                System.debug(LoggingLevel.FINE, 'CONF SOQL - ' + userConfSOQL);
+                
+                SObjectAccessDecision dec2 = 
+                    Security.stripInaccessible(AccessType.READABLE,
+                        Database.query(userConfSOQL));
+
+                deletedUserConfigs = (List<List_View_User_Config__c>) dec2.getRecords();
+
+                for (List_View_User_Config__c userConfig: deletedUserConfigs)
+                    debug += 'Deleting user config - ' + userConfig.Name__c + '/' + userConfig.Value__c + '\n';
+
+            }
+
+
+            HelperDatabase.deleteRecords(deletedListViews.values(), 'simpli_lv__List_View__c');
+            HelperDatabase.deleteRecords(deletedLVConfigConds, 'simpli_lv__List_View_Config_Condition__c');
+            HelperDatabase.deleteRecords(deletedLVConfigParams, 'simpli_lv__List_View_Config_Parameter__c');
+            HelperDatabase.deleteRecords(deletedLVConfigs.values(), 'simpli_lv__List_View_Config__c');
+            HelperDatabase.deleteRecords(deletedUserConfigs, 'simpli_lv__List_View_User_Config__c');
+
+        } catch (Exception e) {
+            String message = 'Exception during ListViewHelper.cleanListViews()  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createNonFutureUsageError(message); 
+        }
+
+        System.debug(LoggingLevel.DEBUG, debug);
+        ListViewErrorHelper.addLog('ListViewHelper(cleanListViews)', debug);
+
+        ListViewErrorHelper.processLogs(false);
+
+	}
 
     public static List<List_View_Action__c> insertCoreActions()
     {
@@ -1988,7 +2122,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'DisplayActionsButton';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Actions Button';
         params.add(param);
 
@@ -1996,7 +2130,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'AllowAdmin';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Admin Button';
         params.add(param);
 
@@ -2004,7 +2138,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display List View Reprocessing Button';
         params.add(param);
 
@@ -2012,7 +2146,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'DisplayOriginalListViewButton';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Original List View Button';
         params.add(param);
 
@@ -2020,7 +2154,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'DisplaySelectedCount';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Selected Count';
         params.add(param);
 
@@ -2028,7 +2162,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'AllowDataExport';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Allow Data Export';
         params.add(param);
 
@@ -2036,7 +2170,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'AllowAutomaticDataRefresh';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Allow Automatic Data Refresh';
         params.add(param);
 
@@ -2044,7 +2178,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'DisplayRowCount';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Row Count';
         params.add(param);
 
@@ -2068,7 +2202,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'IsInitialized';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'false';
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
         param.Parameter_Label__c  = 'Is Initialized';
         params.add(param);
 
@@ -2076,7 +2210,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'AllowInlineEditing';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Allow Inline Editing';
         params.add(param);
 
@@ -2084,7 +2218,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'DisplayTextSearch';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Text Search';
         params.add(param);
 
@@ -2092,7 +2226,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'DisplayRecordPopovers';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'true';
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Record Popovers';
         params.add(param);
 
@@ -2108,7 +2242,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'Debug';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = 'false';
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
         param.Parameter_Label__c  = 'Debug';
         params.add(param);
 
@@ -2126,6 +2260,14 @@ global with sharing class ListViewHelper
         param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param.Parameter_Value__c  = '';
         param.Parameter_Label__c  = 'Excluded List Views';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'AddObjNameOnLookupLabels';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
+        param.Parameter_Label__c  = 'Add Object Name On Lookup Labels';
         params.add(param);
 
         HelperDatabase.insertRecords(params);

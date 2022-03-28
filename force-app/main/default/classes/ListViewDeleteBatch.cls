@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-12-2021
+ * @Last Modified On   : 03-22-2022
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -92,7 +92,7 @@ public with sharing class ListViewDeleteBatch implements Database.AllowsCallouts
         }
 
         //finally set isInitialized to true.
-        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', 'true');
+        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', ListViewHelper.TTRUE);
 
     }
     

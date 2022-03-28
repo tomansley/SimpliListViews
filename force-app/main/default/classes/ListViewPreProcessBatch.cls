@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 02-09-2022
+ * @last modified on  : 03-22-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -34,7 +34,7 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
         CacheHelper.clearAllCache();
         
         //finally set isInitialized to true.
-        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', 'false');
+        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', ListViewHelper.FFALSE);
 
         Database.QueryLocator locator = null;
         try {
