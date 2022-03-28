@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 02-03-2022
+ * @last modified on  : 03-22-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -359,7 +359,7 @@ public with sharing class HelperTest {
         param = new List_View_Config_Parameter__c();
 		param.Parameter_Name__c = 'AllRows';
 		param.Parameter_Type__c = ListViewHelper.TYPE_BOOLEAN;
-		param.Parameter_Value__c = 'false';
+		param.Parameter_Value__c = ListViewHelper.FFALSE;
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'All Rows';
         params.add(param);
