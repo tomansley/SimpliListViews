@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-21-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 03-22-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -115,7 +115,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = ListViewHelper.PARAM_EXPORT_HEADER_TYPE;
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'false';
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
             param.Parameter_Label__c  = 'Use API Names For File Export Headers';
             params.add(param);
         } else {
@@ -128,7 +128,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = ListViewHelper.PARAM_ALL_ROWS;
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'false';
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
             param.Parameter_Label__c  = 'Include All Rows';
             params.add(param);
         } else {
@@ -141,7 +141,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = ListViewHelper.PARAM_PDF_ORIENT_PORTRAIT;
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'PDF Print Uses Portrait Orientation';
             params.add(param);
         } else {
@@ -216,7 +216,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
          
                 if (d != null && !d.isChildRel)
-                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
+                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.getType()));
             }
             
         }
@@ -237,7 +237,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
          
                 if (d != null)
-                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
+                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.getType()));
             }
         }
 

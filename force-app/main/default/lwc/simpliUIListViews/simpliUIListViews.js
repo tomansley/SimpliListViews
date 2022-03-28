@@ -1354,7 +1354,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     //if we have an error then send an ERROR toast.
                     if (result === 'success')
                     {
-                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Updated Successfully', 'List view has been updated successfully.', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Updated Successfully', 'List views have been updated successfully.', false)); 
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
                         this.getListViewsForObject();
                         this.spinnerOff('handleProcessListViewsButtonClick3');

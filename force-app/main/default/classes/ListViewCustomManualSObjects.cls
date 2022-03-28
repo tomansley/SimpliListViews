@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-16-2021
+ * @last modified on  : 03-21-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -64,7 +64,7 @@ public with sharing class ListViewCustomManualSObjects { //extends ListViewCusto
                 HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
          
                 if (d != null && !d.isChildRel)
-                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.type.name().toLowerCase()));
+                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.getType()));
             }
             
         }
