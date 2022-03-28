@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-02-2022
+ * @last modified on  : 03-22-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -139,11 +139,11 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'IsInitialized';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'false';
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
             param.Parameter_Label__c  = 'Is Initialized';
             orgParams.put(param.Parameter_Name__c, param);
         } else {
-            orgParams.get('IsInitialized').Parameter_Value__c  = 'false'; //set to false for every upgrade so that the list views are initialized.
+            orgParams.get('IsInitialized').Parameter_Value__c  = ListViewHelper.FFALSE; //set to false for every upgrade so that the list views are initialized.
         }
 
         if (orgParams.get('DisplayActionsButton') == null)
@@ -152,7 +152,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'DisplayActionsButton';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Display Actions Button';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -163,7 +163,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'AllowAdmin';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Display Admin Button';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -174,7 +174,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Display List View Reprocessing Button';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -185,7 +185,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'DisplayOriginalListViewButton';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Display Original List View Button';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -196,7 +196,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'DisplaySelectedCount';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Display Selected Count';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -207,7 +207,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'AllowDataExport';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Allow Data Export';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -218,7 +218,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'AllowAutomaticDataRefresh';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Allow Automatic Data Refresh';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -251,7 +251,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'DisplayRowCount';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Display Row Count';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -262,7 +262,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'AllowInlineEditing';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Allow Inline Editing';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -273,7 +273,7 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'DisplayTextSearch';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Display Text Search';
             orgParams.put(param.Parameter_Name__c, param);
         }
@@ -284,10 +284,9 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'Debug';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'false';
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
             param.Parameter_Label__c  = 'Debug';
             orgParams.put(param.Parameter_Name__c, param);
-    
         }
 
         if (orgParams.get('DisplayRecordPopovers') == null)
@@ -296,10 +295,9 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.List_View_Config__c = orgWideConfig.Id;
             param.Parameter_Name__c   = 'DisplayRecordPopovers';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-            param.Parameter_Value__c  = 'true';
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Display Record Popovers';
             orgParams.put(param.Parameter_Name__c, param);
-    
         }
 
         if (orgParams.get('ExcludedRecordPopoverTypes') == null)
@@ -311,7 +309,6 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.Parameter_Value__c  = '';
             param.Parameter_Label__c  = 'Excluded Record Popover Types';
             orgParams.put(param.Parameter_Name__c, param);
-    
         }
 
         if (orgParams.get('RefreshJob') == null)
@@ -323,7 +320,6 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
             param.Parameter_Label__c  = 'Scheduled Refresh Job';
             orgParams.put(param.Parameter_Name__c, param);
-    
         }
 
         if (orgParams.get('ExcludedListViews') == null)
@@ -335,7 +331,17 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.Parameter_Value__c  = '';
             param.Parameter_Label__c  = 'Excluded List Views';
             orgParams.put(param.Parameter_Name__c, param);
-    
+        }
+
+        if (orgParams.get('AddObjNameOnLookupLabels') == null)
+        {
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = orgWideConfig.Id;
+            param.Parameter_Name__c   = 'AddObjNameOnLookupLabels';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Add Object Name On Lookup Labels';
+            orgParams.put(param.Parameter_Name__c, param);
         }
 
         HelperDatabase.upsertRecords(orgParams.values());
