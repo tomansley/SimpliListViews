@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-08-2022
+ * @last modified on  : 03-22-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -216,7 +216,7 @@ public with sharing class ListViewAdminController {
 
                             //if we are importing the is Initialized parameter for the global configs then automatically set to false!
                             if (newConfig.Primary_Key__c == 'All:All' && oldParam.Parameter_Name__c == 'IsInitialized')
-                                oldParam.Parameter_Value__c = 'false';
+                                oldParam.Parameter_Value__c = ListViewHelper.FFALSE;
                             
                             //check if the param already exists
                             Boolean paramExists = false;

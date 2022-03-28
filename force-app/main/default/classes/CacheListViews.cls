@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-21-2022
+ * @last modified on  : 03-27-2022
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class CacheListViews {
@@ -55,7 +55,7 @@ public with sharing class CacheListViews {
     	System.debug(LoggingLevel.DEBUG, 'userId   - ' + userId);    	
 
         if (loadType == LOAD_TYPE_OBJ)
-            return ListViewHelper.getListViewsByObjectCache(keys[2]); 
+            return ListViewHelper.getListViewsByObjectCache(keys[2], false); 
         else if (loadType == LOAD_TYPE_TYPE)
             return ListViewHelper.getListViewsByTypeCache(keys[2], true); 
         else 

@@ -18,7 +18,7 @@
     width: 100%;
     min-height: 80px;
     max-height: 67vh;
-    overflow: auto;
+    overflow-y: auto;
 }
 
 .relatedlistscrollwrapper {
@@ -61,6 +61,11 @@
     min-width: 20%;
 }
 
-thead th { position: sticky; top: 0; }
+thead th { 
+    position: sticky; 
+    top: 0; 
+}
 
-th { z-index: 1 }
+th { 
+    z-index: 1 
+}
