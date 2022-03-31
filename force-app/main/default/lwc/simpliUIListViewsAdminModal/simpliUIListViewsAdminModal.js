@@ -62,6 +62,14 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         ];
     }
 
+    get dateList() {
+        return [
+            { label: 'Today', value: 'Today' },
+            { label: 'Tomorrow', value: 'Tomorrow' },
+            { label: 'Yesterday', value: 'Yesterday' }
+        ];
+    }
+
     get operatorList() {
         if (this.newConditionColumn === undefined) {
             return [ ];

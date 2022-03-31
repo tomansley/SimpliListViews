@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 02-03-2022
+ * @Last Modified On   : 03-30-2022
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -26,6 +26,10 @@ public with sharing class ListViewConfigHelper {
     public static final String OPER_GREATER = 'Greater Than';
     public static final String OPER_LESS = 'Less Than';
     public static final String OPER_CONTAINS = 'Contains';
+
+    public static final String TODAY = 'Today';
+    public static final String TOMORROW = 'Tomorrow';
+    public static final String YESTERDAY = 'Yesterday';
 
     public static final Set<String> READ_ONLY_PARAMS = new Set<String>{'ListViewObjects', 'IsInitialized', 'RefreshJob'};
 
@@ -610,10 +614,16 @@ public with sharing class ListViewConfigHelper {
             if (condition.Operator__c == OPER_EQUAL) {
                 if (type == ListViewHelper.TYPE_DOUBLE) {
                     if (value == Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                } else if (type == ListViewHelper.TYPE_DATE) {
-                    if (HelperDate.convertMillisToDate((String) value) == Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                }else if (type == ListViewHelper.TYPE_DATE) {
+                    
+                    Date dte = getDateValue(condition.Value__c);
+                    if (HelperDate.convertMillisToDate((String) value) == dte) return condition.Highlight_Color__c;
+
                 } else if (type == ListViewHelper.TYPE_DATETIME) {
-                    if (HelperDate.convertMillisToDateTime((String) value) == DateTime.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                    
+                    DateTime dte = getDateTimeValue(condition.Value__c);
+                    if (HelperDate.convertMillisToDateTime((String) value) == dte) return condition.Highlight_Color__c;
+
                 } else if (type == ListViewHelper.TYPE_TIME) {
                     if (HelperDate.getTimeFromString((String) value) == HelperDate.getTimeFromString(condition.Value__c)) return condition.Highlight_Color__c;
                 } else if (String.valueOf(value) == condition.Value__c) return condition.Highlight_Color__c;
@@ -623,9 +633,15 @@ public with sharing class ListViewConfigHelper {
                 if (type == ListViewHelper.TYPE_DOUBLE) {
                     if (value != Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
                 } else if (type == ListViewHelper.TYPE_DATE) {
-                    if (HelperDate.convertMillisToDate((String) value) != Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                    
+                    Date dte = getDateValue(condition.Value__c);
+                    if (HelperDate.convertMillisToDate((String) value) != dte) return condition.Highlight_Color__c;
+
                 } else if (type == ListViewHelper.TYPE_DATETIME) {
-                    if (HelperDate.convertMillisToDateTime((String) value) != DateTime.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                    
+                    DateTime dte = getDateTimeValue(condition.Value__c);
+                    if (HelperDate.convertMillisToDateTime((String) value) != dte) return condition.Highlight_Color__c;
+
                 } else if (type == ListViewHelper.TYPE_TIME) {
                     if (HelperDate.getTimeFromString((String) value) != HelperDate.getTimeFromString(condition.Value__c)) return condition.Highlight_Color__c;
                 } else if (String.valueOf(value) != condition.Value__c) return condition.Highlight_Color__c;
@@ -646,9 +662,17 @@ public with sharing class ListViewConfigHelper {
                         || type == ListViewHelper.TYPE_NUMBER 
                         || type == ListViewHelper.TYPE_PERCENT) 
                         && Decimal.valueOf(String.valueOf(value)) > Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DATE && HelperDate.convertMillisToDate((String) value) > Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DATETIME && HelperDate.convertMillisToDateTime((String) value) > DateTime.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DOUBLE && Double.valueOf(value) > Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DATE) {
+                    
+                    Date dte = getDateValue(condition.Value__c);
+                    if (HelperDate.convertMillisToDate((String) value) > dte) return condition.Highlight_Color__c;
+
+                } else if (type == ListViewHelper.TYPE_DATETIME) {
+                    
+                    DateTime dte = getDateTimeValue(condition.Value__c);
+                    if (HelperDate.convertMillisToDateTime((String) value) > dte) return condition.Highlight_Color__c;
+
+                } else if (type == ListViewHelper.TYPE_DOUBLE && Double.valueOf(value) > Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
                 else if (type == ListViewHelper.TYPE_INTEGER && Integer.valueOf(value) > Integer.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
                 else if (type == ListViewHelper.TYPE_TIME && HelperDate.getTimeFromString((String) value) > HelperDate.getTimeFromString(condition.Value__c)) return condition.Highlight_Color__c;
         
@@ -668,9 +692,17 @@ public with sharing class ListViewConfigHelper {
                         || type == ListViewHelper.TYPE_NUMBER 
                         || type == ListViewHelper.TYPE_PERCENT) 
                         && Decimal.valueOf(String.valueOf(value)) < Decimal.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DATE && HelperDate.convertMillisToDate((String) value) < Date.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DATETIME && HelperDate.convertMillisToDateTime((String) value) < DateTime.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
-                else if (type == ListViewHelper.TYPE_DOUBLE && Double.valueOf(value) < Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
+                else if (type == ListViewHelper.TYPE_DATE) {
+                    
+                    Date dte = getDateValue(condition.Value__c);
+                    if (HelperDate.convertMillisToDate((String) value) < dte) return condition.Highlight_Color__c;
+
+                } else if (type == ListViewHelper.TYPE_DATETIME) {
+                    
+                    DateTime dte = getDateTimeValue(condition.Value__c);
+                    if (HelperDate.convertMillisToDateTime((String) value) < dte) return condition.Highlight_Color__c;
+
+                } else if (type == ListViewHelper.TYPE_DOUBLE && Double.valueOf(value) < Double.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
                 else if (type == ListViewHelper.TYPE_INTEGER && Integer.valueOf(value) < Integer.valueOf(condition.Value__c)) return condition.Highlight_Color__c;
                 else if (type == ListViewHelper.TYPE_TIME && HelperDate.getTimeFromString((String) value) < HelperDate.getTimeFromString(condition.Value__c)) return condition.Highlight_Color__c;
 
@@ -689,6 +721,36 @@ public with sharing class ListViewConfigHelper {
                 ListViewErrorHelper.createFutureUsageError(message); 
         }
         return '';
+    }
+
+    private static Date getDateValue(String condValue)
+    {
+        Date dte = null;
+        if (condValue == TODAY)
+            dte = System.today();
+        else if (condValue == TOMORROW)
+            dte = System.today().addDays(1);
+        else if (condValue == YESTERDAY)
+            dte = System.today().addDays(-1);
+        else 
+            dte = Date.valueOf(condValue);
+
+        return dte;
+    }
+
+    private static DateTime getDateTimeValue(String condValue)
+    {
+        DateTime dte = null;
+        if (condValue == TODAY)
+            dte = HelperDate.convertDateToDateTime(System.today());
+        else if (condValue == TOMORROW)
+            dte = HelperDate.convertDateToDateTime(System.today().addDays(1));
+        else if (condValue == YESTERDAY)
+            dte = HelperDate.convertDateToDateTime(System.today().addDays(-1));
+        else 
+            dte = DateTime.valueOf(condValue);
+
+        return dte;
     }
 
 }
