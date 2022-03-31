@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-22-2022
+ * @last modified on  : 03-31-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -281,8 +281,11 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             if (!hidden)
             {
-                FieldWrapper field = new FieldWrapper((String) columnData.get('label'), 
-                                                      (String) columnData.get('type'),
+
+                HelperSchema.FieldData fieldData = HelperSchema.getFieldData(dataRows[0], fieldName);
+
+                FieldWrapper field = new FieldWrapper(fieldData.label, 
+                                                      fieldData.getType(),
                                                       fieldName,
                                                       columnIndex);
 
@@ -313,7 +316,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             System.debug(LoggingLevel.FINE, 'FIELDS - ' + fields);
 
             //get the object type we are working with
-            String objType = HelperSchema.getObjectType(dataRows[0]);
+            //String objType = HelperSchema.getObjectType(dataRows[0]);
 
             for (String fieldName: fields)
             {
