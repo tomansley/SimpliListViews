@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom.h.ansley@medtronic.com
-  @last modified on  : 01-11-2022
+  @last modified on  : 03-28-2022
   @last modified by  : tom@ansleyllc.com
 -->
 <template>    
@@ -14,13 +14,15 @@
                 </lightning-icon>
             </div>
         </lightning-layout-item>
-        <lightning-layout-item alignment-bump="right" flexibility="grow" padding="horizontal-small"> 
+        <lightning-layout-item style="width: 27%" padding="horizontal-small"> 
             <div>
                 {label.Import_Export}
                 <div class="slds-wrap" style="white-space: normal; font-size: 0.75em;">
                     {label.Import_Export_Verbage}
                 </div>
             </div>
+        </lightning-layout-item>
+        <lightning-layout-item alignment-bump="left"> <!-- SPACE BETWEEN LABEL AND BUTTONS -->
         </lightning-layout-item>
         <lightning-layout-item padding="horizontal-small" >
             <a style="background-color: #0176D3; color: white; padding: 7px 30px; border-radius: 4px; text-align: center; text-decoration: none; display: inline-block;" download="export.slv" type='application/json' onclick={handleExportButtonClick}>
