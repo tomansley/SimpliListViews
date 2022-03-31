@@ -1,3 +1,7 @@
 .modalBody {
     position: relative;
 }
+
+.pageSpinnerHolder{
+    position: relative;
+}
