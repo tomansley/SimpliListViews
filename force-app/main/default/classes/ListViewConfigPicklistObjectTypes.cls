@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-11-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 04-07-2022
+ * @last modified by  : tom@ansleyllc.com
 **/
 public class ListViewConfigPicklistObjectTypes extends VisualEditor.DynamicPickList{
 
@@ -30,6 +30,8 @@ public class ListViewConfigPicklistObjectTypes extends VisualEditor.DynamicPickL
 
         for (String apiName: objectAPINames)
             configPicklist.addRow(new VisualEditor.DataRow(apiName, apiName));
+
+        configPicklist.addRow(new VisualEditor.DataRow('', '')); //adding space to remove issue where no value provided and page not able to save.
 
         return configPicklist;
     }
