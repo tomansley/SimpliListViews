@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 04-10-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -9,16 +9,23 @@
 **/
 public with sharing class HelperREST {
 
+    public static String sessionId = null;
+
     /*
      * Hack to get the session Id in Lightning - https://salesforce.stackexchange.com/questions/110515/getting-session-id-in-lightning
      */
     public static String getSessionIdFromVFPage(PageReference visualforcePage){
-        String content = visualforcePage.getContent().toString();
-        
-        Integer startStr = content.indexOf('Start') + 'Start_Of_Session_Id'.length();
-        Integer endStr   = content.indexOf('End');
+        if (sessionId == null)
+        {
+            String content = visualforcePage.getContent().toString();
+            
+            Integer startStr = content.indexOf('Start') + 'Start_Of_Session_Id'.length();
+            Integer endStr   = content.indexOf('End');
 
-        return content.substring(startStr, endStr);
+            sessionId = content.substring(startStr, endStr);
+        }
+        
+        return sessionId;
     }
     
     /*
