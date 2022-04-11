@@ -6,13 +6,13 @@ global with sharing class HelperMetadata implements Metadata.DeployCallback {
     global static Map<String, List_View_Metadata_Type_Name__mdt> metadataTypes = new Map<String, List_View_Metadata_Type_Name__mdt>();
 
     /*
-     * Method which, given the name of the meta data to be retrieved returns the list of meta data.
+     * Method which, given the name of the meta data to be retrieved returns the list of CUSTOM metadata.
      * Note that this method returns the data in no specific order. Also, the name that should be 
      * provided to retrieve the meta data comes from the List_View_Metadata_Type_Name__mdt table. The label
      * should be provided. All fields in the table are returned.
        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperMetadata.getMetaData('List View Config Description'));
      */
-    global static List<SObject> getMetaData(String name)
+    public static List<SObject> getCustomMetaData(String name)
     {
         if (metadataTypes.get(name) == null)
         {
@@ -36,57 +36,17 @@ global with sharing class HelperMetadata implements Metadata.DeployCallback {
         
         return metaData;
     }
-        
+      
     /*
      * DEPRECATED
-     * 
-     * Method which, given the name of the meta data to be retrieved and the MasterLabel of the 
-     * particular metadata row returns the single meta data record if there is a match. Note that 
-     * the name that should be provided to retrieve the meta data comes from the 
-     * List_View_Metadata_Type_Name__mdt table. The label should be provided. All fields in the table are returned.
      */
-    global static SObject getMetaData(String name, String masterlabel)
-    {
-        /*
-        SObject record = null;
-        
-        List<SObject> metaData = getMetaData(name);
-        
-        for (SObject obj: metaData)
-        {
-            if (obj.get('MasterLabel') == masterLabel)
-            {
-                record = obj;
-                break;
-            }
-        }
-        
-        return record;
-        */
-        return null;
-    }
+    global static List<SObject> getMetaData(String name) { return null; }
+    global static SObject getMetaData(String name, String masterlabel) { return null; }
+    global static String getOrgWideSettingValue(String name, String valueIfNull) { return null; }
+    global static void setOrgWideSettingValue(String recordName, String value) { }
+    public void handleResult(Metadata.DeployResult result, Metadata.DeployCallbackContext context) { }
     
-    /*
-     * DEPRECATED
-     */
-    global static String getOrgWideSettingValue(String name, String valueIfNull)
-    {
-        return null;
-    }
-        
-    /*
-     * DEPRECATED
-     */
-    global static void setOrgWideSettingValue(String recordName, String value)
-    {
-    }
 
-    /*
-     * DEPRECATED
-     */
-    public void handleResult(Metadata.DeployResult result, Metadata.DeployCallbackContext context) {
-    }
-    
     global class HelperMetadataException extends Exception { }
 
 }

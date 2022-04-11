@@ -52,14 +52,14 @@ public with sharing class HelperREST {
         if (body != null)
             req.setBody(body);
             
-        System.debug(LoggingLevel.DEBUG, 'REQUEST - ' + req);
-        System.debug(LoggingLevel.DEBUG, 'REQUEST BODY - ' + body);
+        System.debug(LoggingLevel.DEBUG, 'REQUEST HEADER - ' + req);
+        System.debug(LoggingLevel.DEBUG, 'REQUEST BODY   - ' + body);
         
         Http h = new Http();
         HttpResponse res = h.send(req);
 
-        System.debug(LoggingLevel.DEBUG, 'RESPONSE - ' + res);
-        System.debug(LoggingLevel.DEBUG, 'RESPONSE BODY - ' + res.getBody());
+        System.debug(LoggingLevel.DEBUG, 'RESPONSE HEADER - ' + res);
+        System.debug(LoggingLevel.DEBUG, 'RESPONSE BODY   - ' + res.getBody());
 
         return res.getBody();
     }
