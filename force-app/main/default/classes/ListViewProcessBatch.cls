@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-28-2022
+ * @last modified on  : 04-06-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -55,14 +55,27 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
         try {
 
             //------------------------------------------------------------------------
-            //never get the excluded objects
+            //if there are included objects then only process those
             //------------------------------------------------------------------------
-            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
-            Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
+            String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
+            Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
             
-            if (!orgWideExcObjs.isEmpty())
-                query += ' AND SObjectType NOT IN :orgWideExcObjs';
+            if (!orgWideIncObjs.isEmpty())
+            {
+                query += ' AND SObjectType IN :orgWideIncObjs';
+            
+            //only worry about excluded objects if there are no included objects
+            } else { 
 
+                //------------------------------------------------------------------------
+                //never get the excluded objects
+                //------------------------------------------------------------------------
+                String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
+                Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
+                
+                if (!orgWideExcObjs.isEmpty())
+                    query += ' AND SObjectType NOT IN :orgWideExcObjs';
+            }
 
             //------------------------------------------------------------------------
             //always exclude list views to be excluded by admin param
