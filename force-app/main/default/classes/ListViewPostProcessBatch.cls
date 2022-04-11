@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 03-22-2022
+ * @Last Modified On   : 04-06-2022
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -50,6 +50,8 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
                 query += ' WHERE Object_Name__c IN :orgWideExcObjs';
             else
                 query += ' WHERE Object_Name__c = \'FAKENAME\''; //make sure nothing gets deleted.
+
+            query += ' AND RecordType.Name = \'Core\''; //only delete CORE list views.
 
             if (Test.isRunningTest())
                 query += ' LIMIT 1';
