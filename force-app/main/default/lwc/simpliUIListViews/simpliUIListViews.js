@@ -1932,6 +1932,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         if (rowData !== undefined)
         {
+            this.spinnerOn('handleRowDataSave');
             let rowDataStr = JSON.stringify( Array.from(rowData)); //map objects cannot be stringified
             console.log('SAVE RESULT - ' + rowDataStr);
 
@@ -1943,6 +1944,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             })
             .catch(error => {
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the record. Please see an administrator', true)); 
+                this.spinnerOff('handleRowDataSave');
             });
         }
     }     
@@ -1952,7 +1954,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      */
      handleAllRowDataSave(event)
     {
-
+        this.spinnerOn('handleAllRowDataSave');
         let rowData = this.updatedRowData; //map of maps
 
         if (rowData !== undefined)
@@ -1991,6 +1993,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             })
             .catch(error => {
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the records. Please see an administrator', true)); 
+                this.spinnerOff('handleAllRowDataSave');
             });
         }
 
