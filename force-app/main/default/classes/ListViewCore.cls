@@ -279,7 +279,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
             String fieldName = (String) columnData.get('fieldNameOrPath');
             Boolean hidden   = (Boolean) columnData.get('hidden');
 
-            if (!hidden)
+            if (dataRows.size() > 0 && !hidden)
             {
 
                 HelperSchema.FieldData fieldData = HelperSchema.getFieldData(dataRows[0], fieldName);

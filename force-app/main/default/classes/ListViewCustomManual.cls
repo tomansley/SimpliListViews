@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-22-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 04-04-2022
+ * @last modified by  : 
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -245,7 +245,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         List<Object> columns = new List<Object>();
         Boolean addColumn = true;
 
-        //set the CORE SFDC COLUMN meta data into the rows wrapper
+        //set the COLUMN meta data into the rows wrapper
         Integer columnIndex = 1;
         for (Object column: allColumns)
         {
@@ -296,7 +296,9 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             //this for loop ONLY GOES THROUGH NONE CHILD FIELDS
             for (FieldWrapper columnMetaData: rows.getFieldMetaData())
             {
-                if (normalFields.keySet().contains(columnMetaData.name.substringBefore('.')))
+                //if its either a CORE field. i.e. Opportunity.Name or a lookup field i.e. Opportunity.Account.Name
+                //has to be done this way as CORE fields could come in blank but we need to still identify them so that we can inline edit them
+                if (!columnMetaData.name.contains('.') || normalFields.keySet().contains(columnMetaData.name.substringBefore('.')))
                 {
                     HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnMetaData.name);
     
@@ -310,6 +312,10 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                           fieldData.parentObjType);
 
                     field.setIsEditable(fieldData.isEditable);
+
+                    //also set the editable state into the column data
+                    if (rows.getFieldMetaData(field.getName()) != null)
+                        rows.getFieldMetaData(field.getName()).setIsEditable(fieldData.isEditable);
 
                     //if field metadata shows its a lookup and the lookup records id is available then set it
                     if (fieldData.objValueId != null)
