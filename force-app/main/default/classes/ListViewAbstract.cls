@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-24-2022
+ * @last modified on  : 04-12-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -653,7 +653,15 @@ public with sharing abstract class ListViewAbstract {
                 //get the field data. We make sure to escape delimiter
                 for (FieldWrapper fieldData: getFields())
                 {
-                    dataStr += '"' + fieldData.getValue().replaceAll('"', '""') + '"' + ',';
+                    if (fieldData.getIsDateTime() && fieldData.getFieldObject() != null)
+                    {
+                        dataStr += '"' + ((DateTime) fieldData.getFieldObject()).format() + '"' + ',';
+                    } else if (fieldData.getIsDate() && fieldData.getFieldObject() != null)
+                    {
+                        dataStr += '"' + ((Date) fieldData.getFieldObject()).format() + '"' + ',';
+                    } else {
+                        dataStr += '"' + fieldData.getValue().replaceAll('"', '""') + '"' + ',';
+                    }
                 }
 
                 dataStr = dataStr.removeEnd(',') + '\n';
@@ -1151,6 +1159,11 @@ public with sharing abstract class ListViewAbstract {
         public void setValue(Object objValue)
         {
             this.objValue = objValue;
+        }
+
+        public Object getFieldObject()
+        {
+            return this.objValue;
         }
 
         @AuraEnabled(cacheable=true)
