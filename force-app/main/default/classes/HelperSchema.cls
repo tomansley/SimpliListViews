@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 03-22-2022
+ * @Last Modified On   : 04-13-2022
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -68,7 +68,9 @@ public with sharing class HelperSchema {
 	 */
 	public static String getFieldLookupObject(String obj, String field)
 	{
-		String objString = null;
+        System.debug(LoggingLevel.DEBUG, 'Starting getFieldLookupObject(' + obj + ',' + field + ')');
+
+        String objString = null;
 
         String key = obj + ':' + field;
 
@@ -102,6 +104,9 @@ public with sharing class HelperSchema {
     public static String getFieldRelationshipType(String obj, String field)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting getFieldRelationshipType(' + obj + ',' + field + ')');
+        
+        obj = obj.replace('__r', '__c');
+
         String relType = null;
         String key = obj + ':' + field;
 
@@ -416,6 +421,7 @@ public with sharing class HelperSchema {
 	/*
 	 * Method which, given an object API name and a field label or name returns the schema of the field.
       System.debug(LoggingLevel.FINE, 'Field Data - ' + HelperSchema.getFieldByKey('Account', 'LastModifiedBy', HelperSchema.NAME));
+      System.debug(LoggingLevel.FINE, 'Field Data - ' + HelperSchema.getFieldByKey('Account', 'LastModifiedBy', HelperSchema.NAME));
 	 */
 	public static Schema.SObjectField getFieldByKey(String obj, String key, String keyType)
 	{
@@ -435,6 +441,9 @@ public with sharing class HelperSchema {
     		initSObjectSchema(obj, true);
             fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
         }
+
+        if (fieldsByKeyType == null)
+            throw new ListViewException('Cannot find field ' + key + ' for object of type ' + obj);
 
         //get the field by key
         Schema.SObjectField field = fieldsByKeyType.get(key.toLowerCase());
@@ -487,7 +496,7 @@ public with sharing class HelperSchema {
 
 	/*
 	 * Method to retrieve the field label for a given object and API field name.
-       System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.getSFDCFieldLabel('simpli_lv__List_View_Action_Parameter__c','List_View_Action__r.LastModifiedBy.Name)'));
+       System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.getSFDCFieldLabel('simpli_lv__List_View_Action_Parameter__c','List_View_Action__r.LastModifiedBy.Name'));
 	 */
 	public static String getSFDCFieldLabel(String objName, String sfdcFieldName)
 	{        
@@ -535,11 +544,11 @@ public with sharing class HelperSchema {
         
                 } else if (relType == REL_TYPE_CORE_ID)
                 { 
-                    objType = getFieldLookupObject(objType, currentField + 'Id');
+                    objType = getFieldLookupObject(objType.replace('__r', '__c'), currentField + 'Id');
 
                 } else if (relType == REL_TYPE_LOOKUP)
                 {
-                    objType = getFieldLookupObject(objType, currentField.removeEnd('__r') + '__c');
+                    objType = getFieldLookupObject(objType.replace('__r', '__c'), currentField.removeEnd('__r') + '__c');
   
                 } else {
                     objType = currentField;
