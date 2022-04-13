@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-16-2021
+ * @last modified on  : 04-13-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -80,7 +80,8 @@ public with sharing class HelperSchemaTest {
         System.assertEquals('field', HelperSchema.getFieldRelationshipType('Product2','ProductCode'));
 
         System.assertEquals('Product Code', HelperSchema.getSFDCFieldLabel('Opportunity','OpportunityLineItems.Product2.ProductCode'));
-
+        System.assertEquals('Full Name', HelperSchema.getSFDCFieldLabel('simpli_lv__List_View_Action_Parameter__c','List_View_Action__r.LastModifiedBy.Name'));
+        
     }
 
     @IsTest

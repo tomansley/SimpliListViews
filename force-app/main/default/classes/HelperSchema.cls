@@ -29,7 +29,7 @@ public with sharing class HelperSchema {
 
 	public static final String LABEL       = 'label';
     public static final String NAME        = 'name';
-    public static final String DOMAIN_NAME = 'simpli_lv__';
+    public static final String DOMAIN_NAME = [SELECT NamespacePrefix FROM Organization].NamespacePrefix + '__';
 
     public static final String ACCESSIBLE  = 'accessible';
     public static final String CREATABLE   = 'creatable';
@@ -442,9 +442,6 @@ public with sharing class HelperSchema {
             fieldsByKeyType = objectDescribeFieldsByObjectNameAndKey.get(obj + ':' + keyType);
         }
 
-        if (fieldsByKeyType == null)
-            throw new ListViewException('Cannot find field ' + key + ' for object of type ' + obj);
-
         //get the field by key
         Schema.SObjectField field = fieldsByKeyType.get(key.toLowerCase());
 
@@ -497,6 +494,7 @@ public with sharing class HelperSchema {
 	/*
 	 * Method to retrieve the field label for a given object and API field name.
        System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.getSFDCFieldLabel('simpli_lv__List_View_Action_Parameter__c','List_View_Action__r.LastModifiedBy.Name'));
+       System.debug(LoggingLevel.DEBUG, 'Result ' + HelperSchema.getSFDCFieldLabel('Account','User.Alias'));
 	 */
 	public static String getSFDCFieldLabel(String objName, String sfdcFieldName)
 	{        
@@ -737,15 +735,12 @@ public with sharing class HelperSchema {
                     //if there is a field describe then get the label and set the data.
                     } else {
 
-                        if (fieldHierarchy.size() == 1) {
-						    label = fieldDesc.getLabel();
+					    label = fieldDesc.getLabel();
 					    
                         //if we have a lookup field then determine if we add the object name to the label
-                        } else {
-                            String addObjName = ListViewConfigHelper.getOrgWideConfigParam('AddObjNameOnLookupLabels');
-                            if (addObjName == ListViewHelper.TTRUE)
-						        label = objType + ' ' + fieldDesc.getLabel();
-                        }
+                        String addObjName = ListViewConfigHelper.getOrgWideConfigParam('AddObjNameOnLookupLabels');
+                        if (addObjName == ListViewHelper.TTRUE)
+                            label = objType + ' ' + fieldDesc.getLabel();
 
                         data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
 						data.parentObjType = getObjectType(currentObj);
