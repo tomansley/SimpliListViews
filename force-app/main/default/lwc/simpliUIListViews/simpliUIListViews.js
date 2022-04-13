@@ -859,7 +859,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleMessage(message) {
 
         this.receivedMessage = message;
-        console.log(this.pageName + ' received a message from ' + this.receivedMessage.uniqueComponentId + ' for ' + this.pageName);
+        console.log(this.uniqueComponentId + ' received a message from ' + this.receivedMessage.uniqueComponentId + ' for ' + this.pageName);
 
         if (this.receivedMessage.uniqueComponentId == this.uniqueComponentId)
         {
@@ -1395,7 +1395,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         //this.isInitialized = false;
                         //this.showProgress = true;
 
-                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Processing', 'List view processing has started for ALL list views. You MUST do a full page refresh after completion to see changes.', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Processing', 'List view processing has started for all list views. You must do a full page refresh after completion to see changes.', false)); 
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
                         this.spinnerOff('handleProcessListViewsButtonClick7');
                     }
