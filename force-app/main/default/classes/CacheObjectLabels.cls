@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-21-2022
+ * @last modified on  : 04-14-2022
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class CacheObjectLabels {
@@ -15,7 +15,7 @@ public with sharing class CacheObjectLabels {
         String storedKey = PREFIX + CacheHelper.getValidKey(key); //add prefix and remove invalid chars from key
     	System.debug(LoggingLevel.DEBUG, 'CacheObjectLabels.get(' + storedKey + ')');    
 
-        if (key.length() < 50) //stupid restriction on key size!!
+        if (storedKey.length() < 50) //stupid restriction on key size!!
         {	
             result = (String) CacheHelper.PARTITION.get(storedKey);
             if (result == null)
