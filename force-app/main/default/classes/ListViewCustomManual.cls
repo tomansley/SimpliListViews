@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-04-2022
- * @last modified by  : 
+ * @last modified on  : 04-18-2022
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -269,6 +269,9 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             columns.add(column);            
             columnIndex++;
         }
+
+        if (dataRows == null)
+            return rows;
 
         System.debug(LoggingLevel.FINE, 'SObject row count - ' + dataRows.size());
         //for each row of data

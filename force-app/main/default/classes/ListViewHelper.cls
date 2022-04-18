@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-28-2022
+ * @last modified on  : 04-18-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1374,7 +1374,6 @@ global with sharing class ListViewHelper
             objectRows = Database.query(soql);
         } catch (Exception e) {
             ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getCustomListViewData(' + soql + ')  ' + ListViewException.getExtendedString(e));
-            throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         
         return objectRows;
@@ -1392,6 +1391,9 @@ global with sharing class ListViewHelper
         return getSOQLQuery(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
     }
 
+    /*
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + ListViewHelper.getSOQLQuery('SELECT Name, v2sales__V2_Path_Stage_Name__c, v2sales__V2_Action_Name__c, v2sales__Is_Completed__c, v2sales__Is_Opp_At_Stage__c FROM v2sales__V2_Action_Instance__c WHERE v2sales__Is_Opp_At_Stage__c = true', null, new List<ListViewHelper.ColumnSortData>(), '', new Set<String>(), true, -1));
+     */
     public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
 
@@ -1451,9 +1453,9 @@ global with sharing class ListViewHelper
         if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
             //if we already have a WHERE clause then place brackets around the entire clause so that it doesn't break when adding more logic.
-            if (whereStr.containsIgnoreCase(' WHERE '))
+            if (whereStr.containsIgnoreCase('WHERE '))
             {
-                whereStr = whereStr.replace(' WHERE ', ' WHERE (');
+                whereStr = whereStr.replace('WHERE ', ' WHERE (');
                 whereStr += ') AND ' + joinFieldName + ' IN :joinRecordIds';
             } else {
                 whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
