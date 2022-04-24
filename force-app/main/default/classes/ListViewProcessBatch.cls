@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 04-06-2022
+ * @last modified on  : 04-24-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -59,6 +59,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             //------------------------------------------------------------------------
             String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
             Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
+            Set<String> orgWideExcObjs = new Set<String>();
             
             if (!orgWideIncObjs.isEmpty())
             {
@@ -71,7 +72,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                 //never get the excluded objects
                 //------------------------------------------------------------------------
                 String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
-                Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
+                orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
                 
                 if (!orgWideExcObjs.isEmpty())
                     query += ' AND SObjectType NOT IN :orgWideExcObjs';
@@ -134,7 +135,9 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                 query += ' LIMIT 1';
 
             String debug = 'SOQL - ' + query;
-            debug += 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ',');
+            debug += 'Inc Objs - ' + HelperString.getStringFromSet(orgWideIncObjs, ',') + '\n';
+            debug += 'Exc Objs - ' + HelperString.getStringFromSet(orgWideExcObjs, ',') + '\n';
+            debug += 'Exc LVs - ' + HelperString.getStringFromList(excStrings, ',') + '\n';
             
             ListViewErrorHelper.addLog('ListViewProcessBatch(start)', debug);
 
