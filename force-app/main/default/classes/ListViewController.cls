@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-28-2022
+ * @last modified on  : 04-12-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -599,6 +599,7 @@ public without sharing class ListViewController
                     String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
 
                     String objType2 = '';
+
                     //this is crazy. In order to get any one value from a set
                     //I have to iterate over it and break at the first value!!
                     for (String recordId: joinRecordIds)
@@ -606,7 +607,7 @@ public without sharing class ListViewController
                         objType2 = HelperSchema.getObjectTypeFromId(recordId);
                         break;
                     }
-
+                    
                     if (objType != objType2) //if we have join data that doesn't match return an empty shell. This can happen if we have multiple components that all have different join id types
                     {      
                         rowData = getListViewData(pageName, compType, objectName, listViewName, sortData, joinFieldName, '{"recordIds":""}', offset, true, '');
