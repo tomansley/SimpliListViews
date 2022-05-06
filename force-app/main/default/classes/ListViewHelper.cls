@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-18-2022
+ * @last modified on  : 05-06-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2092,8 +2092,7 @@ global with sharing class ListViewHelper
         config.List_View_Label__c   = 'Org Wide Configuration';
         config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
         
-        if (HelperSchema.checkObjectCreateable('List_View_Config__c', true))
-            insert config;
+        config = (List_View_Config__c) HelperDatabase.insertRecord(config);
 
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
         List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
