@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 03-31-2022
+  @last modified on  : 05-11-2022
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -32,7 +32,7 @@
             <lightning-card>
                 <template if:true={hasMainTitle}>
                     <template if:true={isModeApp}>
-                        <div slot="title">
+                        <div slot="title" style="padding:0px;">
                             {mainTitle}
                         </div>
                     </template>
