@@ -108,7 +108,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
 
         //get all the non-displayed parameters into the request data map
         this.listViewAction.nonDisplayParameters.forEach(element => { 
-            this.requestDataMap.set(element.label, element.value);
+            this.requestDataMap.set(element.aPIName, element.value);
         });        
 
         //get all the externally named values into a JSON string
