@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-12-2022
+ * @last modified on  : 05-16-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -16,7 +16,7 @@
 public with sharing abstract class ListViewAbstract {
     
     public static Set<String> validTotalColumns = new Set<String>{ListViewHelper.TYPE_INTEGER, ListViewHelper.TYPE_DECIMAL, ListViewHelper.TYPE_CURRENCY, ListViewHelper.TYPE_DOUBLE, ListViewHelper.TYPE_NUMBER};
-    public static Set<String> validNameColumnNames = new Set<String>{'Name', 'CaseNumber'}; //holds the list of column names that if found will produce a link to the record.
+    public static Set<String> validNameColumnNames = new Set<String>{'Name', 'CaseNumber', 'Task_Name__c'}; //holds the list of column names that if found will produce a link to the record.
 
     public String listviewMode = null;                                //holds the mode that the list view is being displayed as. NULL = any mode
     public List_View__c listview = null;                              //holds the list view record associated with this request.
