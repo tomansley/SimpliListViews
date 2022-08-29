@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-21-2022
+ * @last modified on  : 06-30-2022
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperString {
@@ -63,5 +63,10 @@ public with sharing class HelperString {
         dataStr = dataStr.removeEnd(splitChar);
 
         return dataStr;
+    }
+
+    public static void debug(Object obj, String label)
+    {
+        System.debug(LoggingLevel.DEBUG, label + ' - ' + JSON.serialize(obj));
     }
 }

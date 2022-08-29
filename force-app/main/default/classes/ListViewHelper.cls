@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 05-06-2022
+ * @last modified on  : 08-26-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1123,7 +1123,7 @@ global with sharing class ListViewHelper
         if (String.isEmpty(soslTextSearchStr))
             return getCoreListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
         else
-            return getSOSLListViewData(soslTextSearchStr, listview, lvConfig, sortData, offset);
+            return getSOSLListViewData(soslTextSearchStr, listview, lvConfig, sortData, joinFieldName, joinRecordIds, offset);
     }
 
     public static List<SObject> getCoreListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
@@ -1361,7 +1361,7 @@ global with sharing class ListViewHelper
         if (String.isEmpty(soslTextSearchStr)) {
             return getCustomListViewData(listview, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
         } else
-            return getSOSLListViewData(soslTextSearchStr, listview, lvConfig, sortData, offset);
+            return getSOSLListViewData(soslTextSearchStr, listview, lvConfig, sortData, joinFieldName, joinRecordIds, offset);
     }
 
     public static List<SObject> getCustomListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
@@ -1587,9 +1587,9 @@ global with sharing class ListViewHelper
     // SOSL
     //===============================================================================
 
-    public static List<SObject> getSOSLListViewData(String textSearchStr, List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, Integer offset)
+    public static List<SObject> getSOSLListViewData(String textSearchStr, List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Integer offset)
     {
-        String sosl = getSOSLQuery(listview, lvConfig, sortData, textSearchStr, offset);
+        String sosl = getSOSLQuery(listview, lvConfig, sortData, textSearchStr, offset, joinFieldName, joinRecordIds);
         
         //get rows of data from query
         List<SObject> objectRows = null;
@@ -1604,7 +1604,7 @@ global with sharing class ListViewHelper
 
     }
 
-    public static String getSOSLQuery(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String soslTextString, Integer offset)
+    public static String getSOSLQuery(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String soslTextString, Integer offset, String joinFieldName, Set<String> joinRecordIds)
     {
         if (!canPerformSOSLQuery(listview))
             throw new ListViewException('Cannot perform a text search against this custom list view due to subqueries within SELECT statement.');
@@ -1614,6 +1614,11 @@ global with sharing class ListViewHelper
         debug += 'soql                            - ' + soql + '\n';
         debug += 'lvConfig                        - ' + lvConfig + '\n';
         debug += 'sortData                        - ' + sortData + '\n';
+        debug += 'joinFieldName                   - ' + joinFieldName + '\n';
+
+        if (joinRecordIds != null)
+            debug += 'joinRecordIds Size - ' + joinRecordIds.size() + '\n';
+        debug += 'joinRecordIds                   - ' + joinRecordIds + '\n\n';
 
         Map<String, String> lvConfigParams = new Map<String, String>();
         if (lvConfig != null) //there might not be config yet for this list view
@@ -1679,6 +1684,18 @@ global with sharing class ListViewHelper
             whereStr = whereStr.substringBeforeLast(' ORDER BY ');
         debug += 'WHERE                           - ' + whereStr + '\n';
 
+        if (joinFieldName != '' && joinRecordIds?.size() > 0)
+        {
+            //if we already have a WHERE clause then place brackets around the entire clause so that it doesn't break when adding more logic.
+            if (whereStr.containsIgnoreCase('WHERE '))
+            {
+                whereStr = whereStr.replace('WHERE ', ' WHERE (');
+                whereStr += ') AND ' + joinFieldName + ' IN :joinRecordIds';
+            } else {
+                whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
+            }
+        }
+        debug += 'WHERE                           - ' + whereStr + '\n';
 
         //ORDER BY
         String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ').substringBeforeLast(' LIMIT ');
