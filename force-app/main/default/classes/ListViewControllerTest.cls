@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-28-2022
+ * @last modified on  : 08-29-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -286,6 +286,7 @@ global class ListViewControllerTest {
         ListViewAbstract.FieldWrapper field = row.getFields()[0];
         System.assertNotEquals(field, null);
         System.assertNotEquals(field.getLabel(), null);
+        System.assert(!String.isEmpty(field.getPrettyValue()));
         System.assertNotEquals(field.getName(), null);
         System.assertNotEquals(field.getSortIndex(), null);
         System.assertNotEquals(field.getSortIndexDisplay(), null);
