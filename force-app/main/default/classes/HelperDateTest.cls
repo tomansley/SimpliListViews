@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 08-29-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -21,5 +21,9 @@ private class HelperDateTest {
 	{
 		String result = HelperDate.getBatchJobScheduleString(HelperDate.MINUTE, 10);
         System.assert(!String.isEmpty(result));
+
+        String tme = HelperDate.getStringFromTime(System.now().time());
+        System.assert(!String.isEmpty(tme));
+
 	}
 }

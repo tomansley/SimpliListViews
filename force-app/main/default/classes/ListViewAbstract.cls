@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 05-16-2022
+ * @last modified on  : 08-17-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1096,6 +1096,23 @@ public with sharing abstract class ListViewAbstract {
                 this.type = ListViewHelper.TYPE_STRING;
             else 
                 this.type = type;
+        }
+
+        /*
+         * Method to return a pretty human readable version of the value.
+         */
+        @AuraEnabled(cacheable=true)
+        public String getPrettyValue()
+        {
+            if (getFieldObject() instanceof Date && getIsDate())
+                return ((Date) getFieldObject()).format();
+            else if (getFieldObject() instanceof DateTime && getIsDateTime())
+                return ((DateTime) getFieldObject()).format();
+            else if (getFieldObject() instanceof Time && getIsTime()) {
+                Time tm = ((Time) objValue);
+                return HelperDate.getStringFromTime(tm);
+            }else
+                return getValue();
         }
 
         @AuraEnabled(cacheable=true)

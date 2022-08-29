@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 08-17-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -33,6 +33,21 @@ public with sharing class HelperDate {
                                 Integer.valueOf(timeStr.substring(3, 5)),
                                 Integer.valueOf(timeStr.substring(6, 8)), 
                                 0);
+    }
+
+    public static String getStringFromTime(Time tm)
+    {
+        Integer hour = tm.hour();
+        Integer min = tm.minute();
+        Integer sec = tm.second();
+
+        String hourStr = '';
+        if (hour < 10) hourStr = '0' + hour; else hourStr = String.valueOf(hour);
+        String minStr = '';
+        if (min < 10) minStr = '0' + min; else minStr = String.valueOf(min);
+        String secStr = '';
+        if (sec < 10) secStr = '0' + sec; else secStr = String.valueOf(sec);
+        return hourStr + ':' + minStr + ':' + secStr;
     }
 
     public static DateTime convertMillisToDateTime(String millis)
