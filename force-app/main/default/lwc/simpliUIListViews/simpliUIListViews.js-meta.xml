@@ -9,10 +9,12 @@
         <target>lightning__UtilityBar</target>
         <target>lightning__Tab</target>
         <target>lightning__FlowScreen</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
     </targets>
     <!-- Configuring the design attributes -->
     <targetConfigs>
-        <targetConfig targets="lightning__UtilityBar,lightning__RecordPage,lightning__HomePage,lightning__AppPage">
+        <targetConfig targets="lightning__UtilityBar,lightning__RecordPage,lightning__HomePage,lightning__AppPage,lightningCommunity__Default">
             <property name="pageName" type="String" default="My_Component_Name" required="true" label="Component Name" description="Unique string used to identify the list view component and its corresponding user configuration. Names should NEVER be changed."/>
             <property name="mode" type="String" datasource="App Page,Single List View,Related List View,Split View" required="true" default="App Page" label="Component Mode" description="Indicates the mode the component should be displayed in."/>
             <property name="singleListViewObject" type="String" default="" required="false" label="Single List View Object" datasource="apex://simpli_lv.ListViewConfigPicklistObjectTypes" description="The list view object to use if displaying the component in SINGLE list view mode."/>        
