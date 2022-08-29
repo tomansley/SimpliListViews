@@ -411,7 +411,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleComponentConfig() {
 
         try {
-            console.log('Component configs retrieved successfully - ' + this.componentConfig + ' for ' + this.pageName);
+            console.log('Component configs retrieved successfully - ' + JSON.stringify(this.componentConfig) + ' for ' + this.pageName);
             console.log('Component config size - ' + this.componentConfig.length + ' for ' + this.pageName);
 
             let pinnedListView = this.componentConfig.pinnedListView;
@@ -751,6 +751,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             console.log('Object IS in the object list for ' + this.pageName);
                             this.selectedObject = this.pinnedObject;
                             this.getListViewsForObject();
+                        } else {
+                            this.spinner = false; //cannot use spinnerOff() here as we might be initializing
                         }
                         this.pinnedObject = undefined;
                     } else if (this.isInitializing === false) {
@@ -1242,29 +1244,87 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         event.preventDefault();
         event.stopPropagation();
         
-        //if we are opening a up a new window then use the whole URL as is.
-        if (target === '_blank')
-        {
-            // Navigate to a URL
-            this[NavigationMixin.Navigate]({
-                type: 'standard__webPage',
-                attributes: {
-                    url: event.target.href
-                }
-            },
-            true);
+        this.invokeWorkspaceAPI('isConsoleNavigation').then(isConsole => {
+            if (isConsole) {
+                this.invokeWorkspaceAPI('getFocusedTabInfo').then(focusedTab => {
 
-        //if we are using the same window then get the Id of the URL
-        } else {
-            // Navigate to record page
-            this[NavigationMixin.Navigate]({
-                type: 'standard__recordPage',
-                attributes: {
-                    recordId: chars[5],
-                    actionName: 'view',
-                },
-            });
-        }
+                    if (focusedTab !== undefined && focusedTab.tabId !== undefined)
+                    {
+                        this.invokeWorkspaceAPI('openSubtab', {
+                        parentTabId: focusedTab.tabId,
+                        recordId: chars[5],
+                        focus: true
+                        }).then(tabId => {
+                            console.log("Newly opened tab id - ", tabId);
+                        });
+                    
+                    } else {
+
+                        // Navigate to record page
+                        this[NavigationMixin.Navigate]({
+                            type: 'standard__recordPage',
+                            attributes: {
+                                recordId: chars[5],
+                                actionName: 'view',
+                            },
+                        });
+
+                    }
+                });
+                
+            } else {
+
+                //if we are opening a up a new window then use the whole URL as is.
+                if (target === '_blank')
+                {
+                    // Navigate to a URL
+                    this[NavigationMixin.Navigate]({
+                        type: 'standard__webPage',
+                        attributes: {
+                            url: event.target.href
+                        }
+                    },
+                    true);
+
+                //if we are using the same window then get the Id of the URL
+                } else {
+                    // Navigate to record page
+                    this[NavigationMixin.Navigate]({
+                        type: 'standard__recordPage',
+                        attributes: {
+                            recordId: chars[5],
+                            actionName: 'view',
+                        },
+                    });
+                }
+
+            }
+        });
+
+    }
+
+    invokeWorkspaceAPI(methodName, methodArgs) {
+        return new Promise((resolve, reject) => {
+          const apiEvent = new CustomEvent("internalapievent", {
+            bubbles: true,
+            composed: true,
+            cancelable: false,
+            detail: {
+              category: "workspaceAPI",
+              methodName: methodName,
+              methodArgs: methodArgs,
+              callback: (err, response) => {
+                if (err) {
+                    return reject(err);
+                } else {
+                    return resolve(response);
+                }
+              }
+            }
+          });
+     
+          window.dispatchEvent(apiEvent);
+        });
     }
 
     dataSpinnerOn() {
@@ -1646,6 +1706,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     defaultFieldValues: defaultValues,
                     navigationLocation: navLocation,
                 } 
+            }).then(result => {
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false)); 
+                this.refreshAllListViewData();
+            })
+            .catch(error => {
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the record. Please see an administrator', true)); 
+                this.spinnerOff('handleRowDataSave');
             });
             
 
@@ -2239,7 +2306,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 for (var i = 0; i < row.fields.length; i++) {
                     var field = row.fields[i];
-                    bodyRow.push(field.value);
+                    if (field.isDate || field.isDateTime || field.isTime) {
+                        bodyRow.push(field.prettyValue);
+                    } else {
+                        bodyRow.push(field.value);
+                    }
                 }
                 body.push(bodyRow)
             }
