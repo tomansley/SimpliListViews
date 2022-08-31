@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-26-2022
+ * @last modified on  : 08-31-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -762,6 +762,10 @@ global with sharing class ListViewHelper
                                                     GROUP BY Object_Name__c 
                                                     LIMIT 5000]; //limit for security review. No other reason
 
+            //get object labels from cache
+            String jsonLabels = (String) CacheObjectLabels.get(CacheObjectLabels.ALL_OBJECTS);
+            Map<String, String> cacheLabels = (Map<String, String>) JSON.deserialize(jsonLabels, Map<String, String>.class);
+
 
             for (AggregateResult result: aggListViewObjects)
             {
@@ -769,7 +773,7 @@ global with sharing class ListViewHelper
 
                 System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName);
 
-                String objLabel = (String) CacheObjectLabels.get(objAPIName);
+                String objLabel = cacheLabels.get(objAPIName);
                 if (!String.isEmpty(objLabel))
                     listViewObjects.put(objAPIName, objLabel);
             }

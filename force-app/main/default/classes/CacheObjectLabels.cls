@@ -1,12 +1,13 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-14-2022
+ * @last modified on  : 08-31-2022
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class CacheObjectLabels {
 
     private static final String PREFIX = 'Label' + CacheHelper.SPLITTER;
+    public static final String ALL_OBJECTS = 'AllObjects';
 
     public static String get(String key)
     {
@@ -42,7 +43,10 @@ public with sharing class CacheObjectLabels {
 	 */
     private static String getData(String key) 
     {
-        return HelperSchema.getObjectLabelCache(key);
+        if (key == ALL_OBJECTS)
+            return JSON.serialize(HelperSchema.getAllObjectNames());
+        else
+            return HelperSchema.getObjectLabelCache(key);
     }
 
 }
