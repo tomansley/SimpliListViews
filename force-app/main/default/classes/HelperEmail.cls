@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-28-2022
+ * @last modified on  : 08-29-2022
  * @last modified by  : tom@ansleyllc.com
  * 1.0   04-01-2020   tom@ansleyllc.com   Initial Version
  * 2.0   01-06-2022   tom@ansleyllc.com   Added getEmailTemplate(), getEmailTemplates(), sendEmailsFromTemplate() methods.
@@ -20,7 +20,6 @@ public with sharing class HelperEmail {
                         Description,
                         DeveloperName,
                         Encoding,
-                        EnhancedLetterheadId,
                         FolderId,
                         FolderName,
                         HtmlValue,
