@@ -958,7 +958,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.refreshRate === '')
             {
                 console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(RefreshRate) - ' + this.calloutCount++);
-                this.refreshRate = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'RefreshRate'});    
+                this.refreshRate = await this.getConfigParameter('RefreshRate');    
                 if (this.refreshRate === undefined || this.refreshRate === null || this.refreshRate === '') {
                     this.refreshRate = '45'; //default to 45s if nothing returned
                 }   
@@ -1809,10 +1809,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('We are generating a PDF for ' + this.pageName);
 
             console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(PDFTheme) - ' + this.calloutCount++);
-            var theme = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'PDFTheme'});
+            var theme = await this.getConfigParameter('PDFTheme');
 
             console.log(this.pageName + ' CALLOUT - updateAllListViews(PDFOrientationPortrait) - ' + this.calloutCount++);
-            var orientation = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'PDFOrientationPortrait'});
+            var orientation = await this.getConfigParameter('PDFOrientationPortrait');
 
             if (orientation == 'false') //true = portrait, false = landscape
                 orientation = 'landscape';
@@ -1915,10 +1915,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     /*
      * Method called after the admin modal dialog is closed.
      */
-    processAdminModal(event) {   
+    async processAdminModal(event) {   
         this.showAdminModal = false;
 
         if (event.detail === true) {
+            this.refreshRate = await this.getConfigParameter('RefreshRate');    
+
+            this.handleComponentConfig();
+
             refreshApex(this.wiredListViewConfigResult);
             this.refreshAllListViewData();
         }
@@ -1962,6 +1966,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     element.isEdited = true;      
                 }
             });        
+        } else {
+            this.dispatchEvent(SLVHelper.createToast('info', '', 'Editing Not Available', 'Inline editing is not available for this list view.', false)); 
         }
     }
 
