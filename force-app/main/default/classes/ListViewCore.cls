@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-31-2022
+ * @last modified on  : 08-31-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -406,7 +406,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 System.debug(LoggingLevel.FINE, 'Field - ' + field);
 
-                if (ListViewAbstract.validNameColumnNames.contains(fieldData.name)             //if we have the name of the object
+                if ((ListViewAbstract.validNameColumnNames.contains(fieldData.name)             //if we have the name of the object
+                    || parentObjType == 'Task' && fieldData.name == 'Subject')
                     && fieldData.objValue != null        //if we have field data.
                     && fieldData.value != null)  //if we have a display value
                 {

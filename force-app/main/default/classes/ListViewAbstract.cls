@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-17-2022
+ * @last modified on  : 08-31-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1211,7 +1211,7 @@ public with sharing abstract class ListViewAbstract {
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/setup/ApexDebugLogDetail/page?address=%2Fp%2Fsetup%2Flayout%2FApexDebugLogDetailEdit%2Fd%3Fapex_log_id%3D' + String.valueOf(objValue);
             else if (parentObjType == 'ApexClassOrTrigger')
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + objValueId;
-                else if (parentObjType == 'CustomObject')
+            else if (parentObjType == 'CustomObject')
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + objValueId;
             else if (fieldObj != null)
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldObj.get('Id')) + '/view';
