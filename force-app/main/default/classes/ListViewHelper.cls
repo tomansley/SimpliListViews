@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-31-2022
+ * @last modified on  : 09-24-2022
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -19,6 +19,7 @@
  * 9.0   08-18-2021   tom@ansleyllc.com   Added TYPE_COMBOBOX. Added CampaignMember config
  * 10    12-15-2021   tom@ansleyllc.com   Removed old methods for checking object accessibility.
  * 11    12-15-2021   tom@ansleyllc.com   Pulled out creating types due to different methods for handling types with package names etc.
+ * 12    09-24-2022   tom@ansleyllc.com   Added SOQL SLV substitution for current user.
  **/
 global with sharing class ListViewHelper 
 {
@@ -1465,6 +1466,11 @@ global with sharing class ListViewHelper
                 whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
             }
         }
+
+        //SLV substitutions
+        if (whereStr.contains('$$CURRENT_USER$$'))
+            whereStr = whereStr.replace('$$CURRENT_USER$$', '\'' + UserInfo.getUserId() + '\'');
+
         debug += 'WHERE                           - ' + whereStr + '\n';
 
 
