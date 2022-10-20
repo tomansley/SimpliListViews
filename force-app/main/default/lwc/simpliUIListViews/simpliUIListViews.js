@@ -32,6 +32,7 @@ import Save_All_Data from '@salesforce/label/c.Save_All_Data';
 import Reset_All_Data from '@salesforce/label/c.Reset_All_Data';
 import Save_Row_Data from '@salesforce/label/c.Save_Row_Data';
 import Search_List_Dot from '@salesforce/label/c.Search_List_Dot';
+import Reset_Row_Data from '@salesforce/label/c.Reset_Row_Data';
 
 //------------------------ METHODS ------------------------
 import hasModifyAll from '@salesforce/apex/ListViewController.hasModifyAll';
@@ -185,6 +186,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track headerCanWrap = false;       //indicates whether the header row can wrap
     @track calloutCount = 1;            //indicates the number of callouts made for this component
 
+    @track showQuickDataModal = false;  //indicates whether the quick data modal should be displayed
+    @track quickDataHeading = 'Test Heading'; 
+    @track quickDataFieldType = 'richtext';
+    @track quickDataFieldLabel = 'Field Label';
+    @track quickDataRowId;
+    @track quickDataFieldValue;
+    @track quickDataFieldName;
+    @track quickDataComponentId;      //the HTML field name that called the quick data modal. Used to set the focus back on the component
+    @track quickDataOldFieldValue;
+
     @track offset = -1;
     @track rowLimit = -1;
     @track refreshRate = '';            //the refresh rate in seconds if the list view is auto refreshing.
@@ -229,7 +240,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     label = { Rows, Selected, Select_Action, Export_All, Export_Selected, Loading, Select_Object, Object, 
               Select_List_View, List_View, Go_To_Original, Unpin_List_View, Pin_List_View, Stop_Auto_Refresh, 
-              Refresh, List_View_Admin, Sort_By, Save_All_Data, Reset_All_Data, Save_Row_Data, Search_List_Dot };
+              Refresh, List_View_Admin, Sort_By, Save_All_Data, Reset_All_Data, Save_Row_Data, Search_List_Dot,
+              Reset_Row_Data };
 
     /*
      * Method which gets called when the class is being instantiated
@@ -416,7 +428,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleComponentConfig() {
 
         try {
-            console.log('Component configs retrieved successfully - ' + this.componentConfig + ' for ' + this.pageName);
+            console.log('Component configs retrieved successfully - ' + JSON.stringify(this.componentConfig) + ' for ' + this.pageName);
             console.log('Component config size - ' + this.componentConfig.length + ' for ' + this.pageName);
 
             let pinnedListView = this.componentConfig.pinnedListView;
@@ -757,7 +769,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             this.selectedObject = this.pinnedObject;
                             this.getListViewsForObject();
                         } else {
-                            this.spinnerOff('getObjectsList');
+                            this.spinner = false; //cannot use spinnerOff() here as we might be initializing
                         }
                         this.pinnedObject = undefined;
                     } else if (this.isInitializing === false) {
@@ -963,7 +975,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.refreshRate === '')
             {
                 console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(RefreshRate) - ' + this.calloutCount++);
-                this.refreshRate = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'RefreshRate'});    
+                this.refreshRate = await this.getConfigParameter('RefreshRate');    
                 if (this.refreshRate === undefined || this.refreshRate === null || this.refreshRate === '') {
                     this.refreshRate = '45'; //default to 45s if nothing returned
                 }   
@@ -1721,24 +1733,24 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             defaultValues = encodeDefaultFieldValues(defaultValues);
 
             try {
-            this[NavigationMixin.Navigate]({
-                type: 'standard__objectPage',
-                attributes: {
-                    objectApiName: this.selectedObject,
-                    actionName: 'new',
-                },
-                state: {
-                    useRecordTypeCheck: 1,
-                    defaultFieldValues: defaultValues,
-                    navigationLocation: navLocation,
-                } 
-            }).then(result => {
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false)); 
-                this.refreshAllListViewData();
-            });
-        } catch(e) {
-            console.log('EXCEPTION THROWN - ' + JSON.stringify(e));
-        }
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__objectPage',
+                    attributes: {
+                        objectApiName: this.selectedObject,
+                        actionName: 'new',
+                    },
+                    state: {
+                        useRecordTypeCheck: 1,
+                        defaultFieldValues: defaultValues,
+                        navigationLocation: navLocation,
+                    } 
+                }).then(result => {
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false)); 
+                    this.refreshAllListViewData();
+                });
+            } catch(e) {
+                console.log('EXCEPTION THROWN - ' + JSON.stringify(e));
+            }
 
         //------------------------------------------------------
         //CLONE
@@ -1833,14 +1845,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('We are generating a PDF for ' + this.pageName);
 
             console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(PDFTheme) - ' + this.calloutCount++);
-            var theme = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'PDFTheme'});
+            var theme = await this.getConfigParameter('PDFTheme');
             if (theme === undefined || theme === null || theme === '') {
                 theme = 'striped'; //default to striped if nothing returned
             }   
 
 
             console.log(this.pageName + ' CALLOUT - updateAllListViews(PDFOrientationPortrait) - ' + this.calloutCount++);
-            var orientation = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'PDFOrientationPortrait'});
+            var orientation = await this.getConfigParameter('PDFOrientationPortrait');
             if (orientation === undefined || orientation === null || orientation === '') {
                 orientation = 'true'; //default to striped if nothing returned
             } else if (orientation == 'false') { //true = portrait, false = landscape
@@ -1945,10 +1957,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     /*
      * Method called after the admin modal dialog is closed.
      */
-    processAdminModal(event) {   
+    async processAdminModal(event) {   
         this.showAdminModal = false;
 
         if (event.detail === true) {
+            this.refreshRate = await this.getConfigParameter('RefreshRate');    
+
+            this.handleComponentConfig();
+
             refreshApex(this.wiredListViewConfigResult);
             this.refreshAllListViewData();
         }
@@ -1992,6 +2008,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     element.isEdited = true;      
                 }
             });        
+        } else {
+            this.dispatchEvent(SLVHelper.createToast('info', '', 'Editing Not Available', 'Inline editing is not available for this list view.', false)); 
         }
     }
 
@@ -2185,6 +2203,78 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         rowData.set(fieldName, fieldValue);
 
     }
+
+    //-------------------------------------------------------------------------------------------
+    //QUICK DATA
+    //-------------------------------------------------------------------------------------------
+
+    handleQuickDataClicked(event) {
+        this.handleQuickDataDisplay(event);
+    }
+
+    handleQuickDataKeyDown(event) {
+        var keyCode = event.keyCode;
+        if(keyCode === 32 || keyCode === 13) this.handleQuickDataDisplay(event); //if space or enter then quick display
+    }
+
+    handleQuickDataDisplay(event) {
+
+        this.quickDataHeading       = 'Test Heading'; 
+        this.quickDataFieldLabel    = 'Field Label';
+        this.quickDataRowId         = event.currentTarget.dataset.rowId;
+        this.quickDataFieldType     = event.currentTarget.dataset.type
+        this.quickDataFieldValue    = event.target.value;
+        this.quickDataFieldName     = event.currentTarget.dataset.field;
+        this.quickDataComponentId   = event.target.name;
+        this.quickDataOldFieldValue = event.target.value;
+        this.showQuickDataModal = true;
+    }
+
+    handleQuickDataCancelled() {
+        this.showQuickDataModal = false;
+        setTimeout(()=>this.setQuickDataComponentFocus(this.quickDataOldFieldValue), 200);
+    }
+
+    setQuickDataComponentFocus(fieldValue) {
+        this.template.querySelectorAll('lightning-input').forEach(element=>{
+            if (element.name === this.quickDataComponentId)
+            {
+                element.focus();
+                if (fieldValue !== undefined) {
+                    element.value = fieldValue;
+                }
+            }
+        });
+    }
+
+    handleQuickDataChange(event) {
+
+        this.showQuickDataModal = false;
+
+        let rowId = event.detail.fieldDataId;
+        let fieldValue = event.detail.value
+        let fieldName = event.detail.fieldName;
+        console.log('fieldValue - ' + fieldValue + ' for ' + this.pageName);
+        console.log('rowId - ' + rowId + ' for ' + this.pageName);
+        console.log('fieldName - ' + fieldName + ' for ' + this.pageName);
+
+        let rowData = this.updatedRowData.get(rowId);
+
+        if (rowData === undefined)
+        {
+            rowData = new Map();
+            this.updatedRowData.set(rowId, rowData);
+        }
+
+        rowData.set(fieldName, fieldValue);
+
+        setTimeout(()=>this.setQuickDataComponentFocus(fieldValue), 200);
+    }
+
+
+    //-------------------------------------------------------------------------------------------
+    //TEXT SEARCH
+    //-------------------------------------------------------------------------------------------
 
     handleTextSearchChange(event) {
         this.textSearchText = event.target.value;
