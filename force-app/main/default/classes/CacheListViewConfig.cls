@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-21-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 10-16-2022
+ * @last modified by  : 
 **/
 public with sharing class CacheListViewConfig {
 
@@ -20,7 +20,8 @@ public with sharing class CacheListViewConfig {
                 System.debug(LoggingLevel.DEBUG, 'RESULT IS NULL');
                 result = getData(objectName, listViewName);
                 System.debug(LoggingLevel.DEBUG, 'RESULT IS NOW ' + result);
-                CacheHelper.PARTITION.put(key, result);    
+                if (result != null)
+                    CacheHelper.PARTITION.put(key, result);    
             } else {
                 System.debug(LoggingLevel.DEBUG, 'RESULT NOT NULL - ' + result);
             }

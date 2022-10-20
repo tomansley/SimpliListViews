@@ -1,8 +1,8 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-08-2021
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 10-16-2022
+ * @last modified by  : 
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
@@ -47,6 +47,34 @@ public with sharing class ListViewUserConfigHelper {
     }
 
     /*
+     * Method which retrieves, for the currently running user, all list view configuration
+     * for the user. The returned map has a key which is the component name. Each value for
+     * a given component name holds a map where the key is the name of the config and the
+     * value is the config record itself. 
+     */
+    public static List_View_User_Config__c getCurrentUserConfigByName(String compName, String configName) 
+    {
+        String primaryKey = compName + ':' + configName + ':' + UserInfo.getUserId();
+
+        HelperString.debug(primaryKey, 'Primary Key ');
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Ltn_Component_Name__c,
+                        Name__c,
+                        Primary_Key__c,
+                        User__c,
+                        Value__c
+                 FROM List_View_User_Config__c
+                 WHERE Primary_Key__c = :primaryKey]);
+
+        List<List_View_User_Config__c> configs = (List<List_View_User_Config__c>) dec.getRecords();
+
+        if (configs.isEmpty()) return null;
+
+        return configs[0];
+    }
+
+    /*
      * Method which, given a component name and a config name returns the associated value.
      */
     public static List_View_User_Config__c getCurrentUserConfig(String compName, String configName)
@@ -70,6 +98,14 @@ public with sharing class ListViewUserConfigHelper {
      */
     public static List<List_View_User_Config__c> getCurrentUserCompSortConfigs(String compName)
     {
+        return getCurrentUserCompConfigs(compName, 'sortOrder');
+    }
+
+    /*
+     * Method which, given a component name returns all the CURRENT USERS sort configuration for the component
+     */
+    public static List<List_View_User_Config__c> getCurrentUserCompConfigs(String compName, String nameContains)
+    {
         if (currentUsersConfigs == null)
             getCurrentUserConfigs();
 
@@ -80,7 +116,7 @@ public with sharing class ListViewUserConfigHelper {
         List<List_View_User_Config__c> sortConfigs = new List<List_View_User_Config__c>();
         for (List_View_User_Config__c config: compConfig.values())
         {
-            if (config.Name__c.contains('sortOrder'))
+            if (config.Name__c.contains(nameContains))
                 sortConfigs.add(config);
         }
 

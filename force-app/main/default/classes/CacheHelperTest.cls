@@ -72,13 +72,8 @@ private class CacheHelperTest {
             System.assertEquals('', objLabel);
 
             String excStr = '';
-            try {
-                List_View_Config__c config = CacheListViewConfig.get('This is a very long object API name that I could think of', 'This is also a very long list view name that I could think of');
-            } catch(Exception e) {
-                excStr = e.getMessage();
-            }
-
-            System.assert(excStr.contains('No list view config was found with name -'));
+            List_View_Config__c config = CacheListViewConfig.get('This is a very long object API name that I could think of', 'This is also a very long list view name that I could think of');
+            System.assertEquals(null, config);
 
             CacheListViewConfig.remove('This is a very long object API name that I could think of', 'This is also a very long list view name that I could think of');
 

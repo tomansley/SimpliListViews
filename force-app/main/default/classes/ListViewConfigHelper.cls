@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 03-30-2022
+ * @Last Modified By   : 
+ * @Last Modified On   : 10-16-2022
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -356,12 +356,14 @@ public with sharing class ListViewConfigHelper {
 
         String paramValue = null;
         List_View_Config__c config = getListViewConfig(objectName, listViewName);
-        for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
+        if (config != null)
         {
-            if (param.Parameter_Name__c == paramName)
-                paramValue = param.Parameter_Value__c;
-        }   
-
+            for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
+            {
+                if (param.Parameter_Name__c == paramName)
+                    paramValue = param.Parameter_Value__c;
+            }   
+        }
         return paramValue;
     }
 
@@ -412,7 +414,8 @@ public with sharing class ListViewConfigHelper {
             if (objectName == 'All' && listViewName == 'All')
                 throw new ListViewException('Global config not found. Go to the admin page and either import a config file or create a new config');
             else
-                throw new ListViewException('No list view config was found with name - ' + listViewName + ' and object - ' + objectName);
+                return null;
+                //throw new ListViewException('No list view config was found with name - ' + listViewName + ' and object - ' + objectName);
         }
         System.debug(LoggingLevel.FINE, 'Returning configs - ' + configs);
         return configs[0];
