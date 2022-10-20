@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 04-12-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 10-16-2022
+ * @last modified by  : 
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -267,6 +267,78 @@ public without sharing class ListViewController
             ListViewUserConfigHelper.updateCurrentUserConfigValue(compName, configName, value);
         } catch (Exception e) {
             String message = 'Exception during ListViewController.updateUserConfig(' + compName + ',' + configName + ',' + value + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createFutureUsageError(message); 
+            return 'There was an error during user configuration update';
+        }
+
+        ListViewErrorHelper.processLogs(true);
+
+        return SUCCESS;
+    }
+
+    /*
+     * Method to update a specific list view for a user with given column width data.
+     */
+    @AuraEnabled
+    public static String updateUserConfigListViewWidth(String compName, String configName, String columnIndex, String width)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateUserConfigListViewWidth(' + compName + ', ' + configName + ',' + columnIndex + ',' + width + ')');
+        try {
+
+            //get existing config if it exists.
+            List_View_User_Config__c widthConfig = ListViewUserConfigHelper.getCurrentUserConfigByName(compName, configName); 
+
+            String widthStr = '';
+
+            //if config exists then UPDATE
+            if (widthConfig != null)
+            {
+                //list width config example - 1:25;2:25;3:120;4:80
+                widthStr = widthConfig.Value__c;
+
+                //break up string into columns
+                List<String> columnWidthsStr = widthStr.split(';');
+                Map<Integer, String> widthsByIndex = new Map<Integer, String>();
+                Boolean hasValue = false;
+                for (String columnWidthStr: columnWidthsStr)
+                {
+                    //update individual column width data if it exists
+                    List<String> values = columnWidthStr.split(':');
+                    if (values[0] == columnIndex) //value[0] = column index
+                    {
+                        hasValue = true;
+                        widthsByIndex.put(Integer.valueOf(values[0]), width);
+                    } else {
+                        widthsByIndex.put(Integer.valueOf(values[0]), values[1]);
+                    }
+                }
+
+                //add column and width if the column index doesn't already exist
+                if (!hasValue)
+                    widthsByIndex.put(Integer.valueOf(columnIndex), width);
+
+                //go through map and sort
+                List<Integer> columnIndexes = new List<Integer>(widthsByIndex.keySet());
+                columnIndexes.sort();
+
+                //go through map and recreate string
+                widthStr = '';
+                for (Integer tmpColumnIndex: columnIndexes)
+                {
+                    String tmpWidth = widthsByIndex.get(tmpColumnIndex);
+
+                    widthStr += tmpColumnIndex + ':' + tmpWidth + ';';
+                }
+                
+            //else INSERT new data
+            } else {
+                widthStr = columnIndex + ':' + width;
+            }
+
+            ListViewUserConfigHelper.updateCurrentUserConfigValue(compName, configName, widthStr);
+
+        } catch (Exception e) {
+            String message = 'Exception during ListViewController.updateUserConfigListViewWidth(' + compName + ',' + configName + ',' + columnIndex + ',' + width + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createFutureUsageError(message); 
             return 'There was an error during user configuration update';
         }
@@ -699,7 +771,7 @@ public without sharing class ListViewController
             ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
             lvLogic.setIsShell(isShell);
             lvLogic.setMode(compType);
-
+            lvLogic.setPageName(pageName);
             lvLogic.setTextSearchString(textSearchStr);
     
             //set all request information into the apex processing class.

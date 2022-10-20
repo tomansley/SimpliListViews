@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-31-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 10-16-2022
+ * @last modified by  : 
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -18,7 +18,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
     {
         List<SObject> dataRows = ListViewHelper.getCoreListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, this.isShell, offset, textSearchStr);
 
-        RowsWrapper rowData = handleRowsToWrapper(dataRows, listView, lvConfig, columnSortData, ListViewHelper.offset, isShell);
+        RowsWrapper rowData = handleRowsToWrapper(pageName, dataRows, listView, lvConfig, columnSortData, ListViewHelper.offset, isShell);
         rowData.setCompType(compType);
         if (lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE) != null && !String.isEmpty(lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE).getValue()))
             rowData.listView.rowLimit = Integer.valueOf(lvConfig.getParameter(ListViewHelper.PARAM_RETURN_SIZE).getValue());
@@ -248,7 +248,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
         * Method to take a list of SObjects retrieved using a listviews query and convert the
         * rows into something that front end lightning components can handle.
         */
-    private static ListViewAbstract.RowsWrapper handleRowsToWrapper(List<SObject> dataRows, 
+    private static ListViewAbstract.RowsWrapper handleRowsToWrapper(String pageName,
+                                                                    List<SObject> dataRows, 
                                                                     List_View__c listView, 
                                                                     ListViewConfigWrapper lvConfig,
                                                                     List<ListViewHelper.ColumnSortData> sortData,
@@ -350,6 +351,25 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 columnIndex++;
                 
             }
+        }
+
+        //get all preset column widths
+        List_View_User_Config__c columnWidths = ListViewUserConfigHelper.getCurrentUserConfigByName(pageName, 'columnWidths:' + listView.Primary_Key__c);
+        Map<Integer, String> widthsByIndex = new Map<Integer, String>();
+        if (columnWidths != null && !String.isEmpty(columnWidths.Value__c))
+        {
+            List<String> columnWidthsStr = columnWidths.Value__c.split(';');  
+
+            for (String columnWidthStr: columnWidthsStr)
+            {
+                List<String> values = columnWidthStr.split(':');
+                widthsByIndex.put(Integer.valueOf(values[0]), values[1]);
+            }
+
+            for (ListViewAbstract.FieldWrapper column: rows.getFieldMetaData())
+            {
+                column.columnWidth = widthsByIndex.get(column.columnIndex);
+            }    
         }
 
         //for each row of data

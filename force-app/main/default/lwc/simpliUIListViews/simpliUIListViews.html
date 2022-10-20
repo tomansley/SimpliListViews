@@ -3,8 +3,8 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 05-11-2022
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 10-16-2022
+  @last modified by  : 
   Modifications Log 
   Ver   Date         Author              Modification
   1.0   08-03-2020   tom@ansleyllc.com   Initial Version
@@ -297,7 +297,8 @@
                                     <template for:each={listViewData.fieldMetaData} for:item="field">
                                         <th key={field.label} 
                                             class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc" 
-                                            scope="col">
+                                            scope="col"
+                                            width={field.columnWidth}>
 
                                             <!-- -------------------- -->
                                             <!-- SORTING              -->
@@ -344,7 +345,7 @@
                                             </div>
                                             <div class="slds-resizable">
                                                 <input type="range" min="20" max="1000" class="slds-assistive-text" id={field.label} tabindex="0" />
-                                                <span class="slds-resizable__handle" onmousedown={calculateWidth}>
+                                                <span class="slds-resizable__handle" onmousedown={calculateWidth} data-index={field.columnIndex}>
                                                     <span class="slds-resizable__divider"></span>
                                                 </span>
                                             </div>
@@ -658,12 +659,12 @@
                                                                 </template>
                                                                 <template if:true={fieldData.isRichTextArea}>
                                                                     <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                        <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isTextArea}>
                                                                     <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name="input01" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isDate}>
@@ -898,5 +899,19 @@
                                                   what-id-field={emailTemplateWhatIdField}
                                                   onclose={handleEmailTemplateModalClose}>
     </c-simpli-u-i-list-views-email-template-modal>
+
+    <!-- ---------------------------------------------------------------------------------- -->
+    <!-- The modal view when a rich-text-field is edited                                    -->
+    <!-- ---------------------------------------------------------------------------------- -->
+    <c-simpli-u-i-list-views-quick-data-modal show-modal={showQuickDataModal}
+                                                heading={quickDataHeading}
+                                                field-type={quickDataFieldType}
+                                                field-name={quickDataFieldName}
+                                                field-label={quickDataFieldLabel}
+                                                field-data-id={quickDataRowId}
+                                                field-value={quickDataFieldValue}
+                                                oncancel={handleQuickDataCancelled}
+                                                onok={handleQuickDataChange}>
+    </c-simpli-u-i-list-views-quick-data-modal>
 
 </template>

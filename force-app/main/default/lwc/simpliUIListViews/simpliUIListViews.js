@@ -46,6 +46,7 @@ import updateObjectListViews from '@salesforce/apex/ListViewController.updateObj
 import getComponentConfig from '@salesforce/apex/ListViewController.getComponentConfig';
 import getUserSortConfigs from '@salesforce/apex/ListViewController.getUserSortConfigs';
 import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConfig';
+import updateUserConfigListViewWidth from '@salesforce/apex/ListViewController.updateUserConfigListViewWidth';
 import isValidListViewDataRequest from '@salesforce/apex/ListViewController.isValidListViewDataRequest';
 import updateRecord from '@salesforce/apex/ListViewController.updateRecord';
 import updateRecords from '@salesforce/apex/ListViewController.updateRecords';
@@ -201,6 +202,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track mouseStart;
     @track oldWidth;
     @track parentObj;
+    @track mouseDownColumn;
 
     //for handling sorting
     @track listViewSortData = new Map();
@@ -404,6 +406,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         } else {
             console.log('No page initialization needed for ' + this.pageName);
+            if (this.componentConfig !== undefined) {
+                this.spinner = false; //cannot use method as initialization
+            }
         }
         console.log('Finished renderedCallback for ' + this.pageName);
     }
@@ -411,7 +416,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleComponentConfig() {
 
         try {
-            console.log('Component configs retrieved successfully - ' + JSON.stringify(this.componentConfig) + ' for ' + this.pageName);
+            console.log('Component configs retrieved successfully - ' + this.componentConfig + ' for ' + this.pageName);
             console.log('Component config size - ' + this.componentConfig.length + ' for ' + this.pageName);
 
             let pinnedListView = this.componentConfig.pinnedListView;
@@ -752,7 +757,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             this.selectedObject = this.pinnedObject;
                             this.getListViewsForObject();
                         } else {
-                            this.spinner = false; //cannot use spinnerOff() here as we might be initializing
+                            this.spinnerOff('getObjectsList');
                         }
                         this.pinnedObject = undefined;
                     } else if (this.isInitializing === false) {
@@ -958,7 +963,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.refreshRate === '')
             {
                 console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(RefreshRate) - ' + this.calloutCount++);
-                this.refreshRate = await this.getConfigParameter('RefreshRate');    
+                this.refreshRate = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'RefreshRate'});    
                 if (this.refreshRate === undefined || this.refreshRate === null || this.refreshRate === '') {
                     this.refreshRate = '45'; //default to 45s if nothing returned
                 }   
@@ -1473,6 +1478,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * Called when a user tries to change the width of a column.
      */
     calculateWidth(event) {
+        this.mouseDownColumn = event.currentTarget.dataset.index;
         var childObj = event.target
         var parObj = childObj.parentNode;
         while(parObj.tagName != 'TH') {
@@ -1506,7 +1512,26 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.parentObj.style.width = newWidth+'px';
 
         this.mouseStart = undefined;
+
+        this.saveColumnWidth(newWidth, this.mouseDownColumn);
     };
+
+    /*
+     * Method to send the new column width back for saving.
+     */
+    saveColumnWidth(newWidth, columnIndex) {
+        console.log(this.pageName + ' CALLOUT - updateUserConfigListViewWidth(columnWidth) - ' + this.calloutCount++);
+
+        let configName = 'columnWidths:' + this.selectedObject + ':' + this.selectedListView;
+        updateUserConfigListViewWidth({compName: this.pageName, configName: configName, columnIndex: columnIndex, width: newWidth })
+        .then(result => {
+            //this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Width Saved', 'List view width successfully saved.', false)); 
+        })
+        .catch(error => {
+            //this.dispatchEvent(SLVHelper.createToast('error', error, 'Width Save Error', 'There was an error during user configuration update. Please see an administrator', true)); 
+        });
+
+    }
 
     /*
      * Method that gets fired when a user clicks on one of the column headings to have that column
@@ -1695,6 +1720,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             defaultValues = encodeDefaultFieldValues(defaultValues);
 
+            try {
             this[NavigationMixin.Navigate]({
                 type: 'standard__objectPage',
                 attributes: {
@@ -1709,12 +1735,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }).then(result => {
                 this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false)); 
                 this.refreshAllListViewData();
-            })
-            .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the record. Please see an administrator', true)); 
-                this.spinnerOff('handleRowDataSave');
             });
-            
+        } catch(e) {
+            console.log('EXCEPTION THROWN - ' + JSON.stringify(e));
+        }
 
         //------------------------------------------------------
         //CLONE
@@ -1809,13 +1833,19 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('We are generating a PDF for ' + this.pageName);
 
             console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(PDFTheme) - ' + this.calloutCount++);
-            var theme = await this.getConfigParameter('PDFTheme');
+            var theme = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'PDFTheme'});
+            if (theme === undefined || theme === null || theme === '') {
+                theme = 'striped'; //default to striped if nothing returned
+            }   
+
 
             console.log(this.pageName + ' CALLOUT - updateAllListViews(PDFOrientationPortrait) - ' + this.calloutCount++);
-            var orientation = await this.getConfigParameter('PDFOrientationPortrait');
-
-            if (orientation == 'false') //true = portrait, false = landscape
+            var orientation = await getListViewConfigParameter({objectName: this.selectedObject, listViewName: this.selectedListView, paramName: 'PDFOrientationPortrait'});
+            if (orientation === undefined || orientation === null || orientation === '') {
+                orientation = 'true'; //default to striped if nothing returned
+            } else if (orientation == 'false') { //true = portrait, false = landscape
                 orientation = 'landscape';
+            }
 
             const { jsPDF } = window.jspdf;
             var doc = new jsPDF(orientation); 
@@ -1915,14 +1945,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     /*
      * Method called after the admin modal dialog is closed.
      */
-    async processAdminModal(event) {   
+    processAdminModal(event) {   
         this.showAdminModal = false;
 
         if (event.detail === true) {
-            this.refreshRate = await this.getConfigParameter('RefreshRate');    
-
-            this.handleComponentConfig();
-
             refreshApex(this.wiredListViewConfigResult);
             this.refreshAllListViewData();
         }
@@ -1966,8 +1992,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     element.isEdited = true;      
                 }
             });        
-        } else {
-            this.dispatchEvent(SLVHelper.createToast('info', '', 'Editing Not Available', 'Inline editing is not available for this list view.', false)); 
         }
     }
 

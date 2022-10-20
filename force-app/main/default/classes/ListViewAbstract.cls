@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-31-2022
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 10-16-2022
+ * @last modified by  : 
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -29,6 +29,7 @@ public with sharing abstract class ListViewAbstract {
     public Boolean isShell = false;                                   //indicates whether the request should only retrieve the rowwrapper without data or all the data
     public String textSearchStr = '';                                 //holds the text search if the user entered one for a SOSL query
     public String compType = '';                                      //indicates the mode of the component calling for data.
+    public String pageName = '';                                      //holds the page component name that this list view is associated with
 
     //----------------------------------------------------------------------------------
     // Method to be overridden
@@ -77,6 +78,11 @@ public with sharing abstract class ListViewAbstract {
     public void setMode(String compType)
     {
         this.compType = compType;
+    }
+
+    public void setPageName(String pageName)
+    {
+        this.pageName = pageName;
     }
 
     public void setIsShell(Boolean isShell)
@@ -754,6 +760,7 @@ public with sharing abstract class ListViewAbstract {
         public String label;
         public String name;
         public String type;
+        public String width;
 
         public ListViewColumn(String label, String name, String type)
         {
@@ -765,6 +772,7 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getLabel()
         {
+            if (label == null) return '';
             return label;
         }
 
@@ -778,6 +786,20 @@ public with sharing abstract class ListViewAbstract {
         public String getType()
         {
             return type;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getHasWidth()
+        {
+            if (String.isEmpty(width)) return false;
+
+            return true;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getWidth()
+        {
+            return width + 'px';
         }
 
         @AuraEnabled(cacheable=true)
@@ -908,7 +930,7 @@ public with sharing abstract class ListViewAbstract {
 
         public Integer compareTo(Object compareTo) {
             ListViewColumn desc2 = (ListViewColumn) compareTo;
-            return label.compareTo(desc2.label);
+            return this.getLabel().compareTo(desc2.getLabel());
         }
     }
 
@@ -937,6 +959,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isEditable;     //identifies whether the field can be edited inline.
         public String parentObjType;   //the API name of the object that this field looks up to
         public Boolean isTotalsRow;    //identifies whether the row this field is a part of is a totals row.
+        public String columnWidth;     //indicates the preset column width.
 
         public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
         {
@@ -994,6 +1017,12 @@ public with sharing abstract class ListViewAbstract {
         public void setKey(String rowId)
         {
             key = rowId + ':' + String.valueOf(this.columnIndex);
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public String getColumnWidth()
+        {
+            return columnWidth;
         }
         
         @AuraEnabled(cacheable=true)
