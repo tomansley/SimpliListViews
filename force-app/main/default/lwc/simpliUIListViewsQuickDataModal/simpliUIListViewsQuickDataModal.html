@@ -1,0 +1,51 @@
+<!-- sldsValidatorIgnore -->
+<template>
+    <template if:true={showModal}>
+        <div>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container modalBody" style="align-items: center;">
+                    <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1" style="overflow: auto; min-height: 50px; max-height: 400px; border-width: 1px; border-right-style: solid; border-left-style: solid;">
+                        <template if:true={isTextArea}>
+                            <div style="padding-left:10px; font-size:medium; text-align:center; height:150px">
+                                <div class="slds-form-element__control slds-grow textarea-container">
+                                    <textarea onchange={handleFieldUpdate} 
+                                              class="slds-textarea" 
+                                              name="fieldValue" 
+                                              style="height: 150px; width: 800px">
+                                        {fieldValue}
+                                    </textarea>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:true={isRichText}>
+                            <div class="slds-form-element__control slds-grow textarea-container">
+                                <lightning-input-rich-text  value={fieldValue}
+                                                            onchange={handleFieldUpdate}
+                                                            style="height: 150px; width: 800px">
+                                </lightning-input-rich-text>
+                            </div>
+                        </template>
+                        <template if:true={isString}>
+                            <div style="padding-left:10px; font-size:medium; text-align:center;">
+                                <lightning-input onchange={handleFieldUpdate}
+                                                name="fieldValue"
+                                                value={fieldValue}
+                                                label={fieldLabel}
+                                                variant="label-inline"
+                                                required>
+                                </lightning-input>
+                        </div>
+                        </template>
+                        <div style="padding: 5px; display: grid;text-align: right;">
+                            <div>
+                                <button class="slds-button slds-button_neutral" onclick={handleCancelClick}>{cancelLabel}</button>
+                                <button class="slds-button slds-button_brand" onclick={handleOkClick}>{okLabel}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+</template>
