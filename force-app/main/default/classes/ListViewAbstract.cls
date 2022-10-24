@@ -1022,7 +1022,10 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getColumnWidth()
         {
-            return columnWidth;
+            if (!String.isEmpty(columnWidth))
+                return 'width: ' + columnWidth + 'px;';
+            else
+                return '';
         }
         
         @AuraEnabled(cacheable=true)

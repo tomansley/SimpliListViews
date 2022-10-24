@@ -672,6 +672,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.listViewDataRows = this.listViewDataRows.concat(listViewDataResult.rows);
         }
 
+        let oldDataRowsSize = this.listViewDataRowsSize;
         //update the data rows size.
         this.listViewDataRowsSize = this.listViewDataRows.length;  
 
@@ -696,8 +697,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //if we have not reached our max limit
         if (this.listViewDataRows.length < listViewDataResult.listView.rowLimit)
         {
-            //if the offset has not changed then we are done.
-            if (this.offset === listViewDataResult.listView.offset)
+            //if the offset has not changed or the row size has not changed then we are done.
+            if (this.offset === listViewDataResult.listView.offset || oldDataRowsSize === this.listViewDataRowsSize)
             {
                 this.dataSpinnerOff();
 
@@ -1487,7 +1488,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     }
 
     /*
-     * Called when a user tries to change the width of a column.
+     * Called DURING the operation of a user changing the column width.
      */
     calculateWidth(event) {
         this.mouseDownColumn = event.currentTarget.dataset.index;
@@ -1509,17 +1510,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     };
 
     /*
-     * Called when a user tries to change the width of a column.
+     * Called when a user FINISHES changing the column width.
      */
     setNewWidth(event) {
 
         if (this.mouseStart === undefined) return;
 
-        var childObj = event.target
-        var parObj = childObj.parentNode;
-        while(parObj.tagName != 'TH') {
-            parObj = parObj.parentNode;
-        }
         var newWidth = event.clientX- parseFloat(this.mouseStart)+parseFloat(this.oldWidth);
         this.parentObj.style.width = newWidth+'px';
 

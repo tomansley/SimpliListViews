@@ -298,7 +298,7 @@
                                         <th key={field.label} 
                                             class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc" 
                                             scope="col"
-                                            width={field.columnWidth}>
+                                            style={field.columnWidth}>
 
                                             <!-- -------------------- -->
                                             <!-- SORTING              -->
@@ -444,7 +444,7 @@
                                                                     </template>
                                                                     <template if:true={fieldData.isRichTextArea}>
                                                                         <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                            <lightning-formatted-rich-text value={fieldData.value}  id={rowData.rowId} data-label={fieldData.label} ondblclick={setRowEdited}></lightning-formatted-rich-text>
                                                                         </div>
                                                                     </template>
                                                                         <template if:true={fieldData.isLookup}>
