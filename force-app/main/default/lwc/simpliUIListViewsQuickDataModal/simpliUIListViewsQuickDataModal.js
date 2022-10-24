@@ -45,12 +45,15 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
     }
 
     setComponentFocus() {
-        if (this.isRichText) {
-            this.template.querySelector('lightning-input-rich-text').focus();
-        } else if (this.isTextArea) {
-            this.template.querySelector('textarea').focus();
-        } else if (this.isString) {
-            this.template.querySelector('lightning-input').focus();
+        if (this.isInitialized)
+        {
+            if (this.isRichText) {
+                this.template.querySelector('lightning-input-rich-text').focus();
+            } else if (this.isTextArea) {
+                this.template.querySelector('textarea').focus();
+            } else if (this.isString) {
+                this.template.querySelector('lightning-input').focus();
+            }
         }
     }
 
