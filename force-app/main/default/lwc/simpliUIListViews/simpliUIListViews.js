@@ -434,13 +434,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             let pinnedListView = this.componentConfig.pinnedListView;
             console.log('Pinned list view string - ' + pinnedListView);
 
-            if (this.toBool(this.componentConfig.AllowAdmin) === false) { 
+            if (this.toBool(this.componentConfig.AllowAdmin) === true) { 
                 if (this.hasModifyAll === true)
                     this.allowAdmin = true;
                 else
                     this.allowAdmin = false;
-            }
-            else if (this.toBool(this.componentConfig.AllowAdmin) === true) { this.allowAdmin = true; }
+            } else if (this.toBool(this.componentConfig.AllowAdmin) === false) { this.allowAdmin = false; }
             if (this.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
             if (this.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
             if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
