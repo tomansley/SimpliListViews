@@ -1183,8 +1183,11 @@ global with sharing class ListViewHelper
             selectFields.addAll(lvConfigParams.get(PARAM_ADD_FIELDS).split(','));
 
         //IsDeleted
-        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted'))
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted') && !selectFields.contains(' IsDeleted'))
             selectFields.add('IsDeleted');
+
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'RecordTypeId') && !selectFields.contains(' RecordTypeId'))
+            selectFields.add('RecordTypeId');
 
         selectStr = '';
         for (String field: selectFields)
@@ -1437,6 +1440,10 @@ global with sharing class ListViewHelper
         String selectStr = soql.substringBefore(' FROM ' + objectName + ' WHERE');
         if (selectStr == soql) //not sure this is needed.
             selectStr = soql.substringBefore(' FROM ' + objectName);
+
+        if (HelperSchema.isValidSFDCFieldName(objectName, 'RecordTypeId') && !selectStr.contains('RecordTypeId'))
+            selectStr = selectStr + ', RecordTypeId';
+
         debug += 'SELECT                          - ' + selectStr + '\n';
 
         //SCOPE
@@ -1665,10 +1672,13 @@ global with sharing class ListViewHelper
             selectFields.addAll(lvConfigParams.get(PARAM_ADD_FIELDS).split(','));
 
         //IsDeleted
-        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted'))
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted') && !selectFields.contains(' IsDeleted'))
             selectFields.add('IsDeleted');
 
-            selectStr = '';
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'RecordTypeId') && !selectFields.contains(' RecordTypeId'))
+            selectFields.add('RecordTypeId');
+
+        selectStr = '';
         for (String field: selectFields)
         {
             field = HelperSchema.scrubFieldNameForSOQL(field); //remove weird stuff like toLabel() etc.

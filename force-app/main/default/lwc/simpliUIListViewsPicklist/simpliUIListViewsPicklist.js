@@ -1,9 +1,7 @@
 /* eslint-disable no-console */
 import { LightningElement, track, wire, api } from 'lwc';
 import { getPicklistValuesByRecordType } from 'lightning/uiObjectInfoApi';
-import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import { CurrentPageReference } from 'lightning/navigation';
-import getPicklistValues from '@salesforce/apex/ListViewController.getPicklistValues';
 
 //------------------------ LABELS ------------------------
 import None_Dash from '@salesforce/label/c.None_Dash';
@@ -25,6 +23,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     @api required = undefined;        //whether the picklist is required or not.
     @api fieldLevelHelp = '';         //field level help.
     @api fieldStyle = '';
+    @api recordTypeId;                //if a record type exists then it should be provided.
 
     @track compName;
     @track value;
@@ -77,52 +76,18 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         console.log('rowId - ' + this.rowId);
         console.log('sfdcId - ' + this.sfdcId);
         console.log('objectApiName    - ' + this.objectApiName);
+        console.log('recordTypeId    - ' + this.recordTypeId);
         console.log('pickListFieldApiName - ' + this.pickListFieldApiName);
 
     }
-
-    /*
-     * Method to retrieve object information, specifically record types so that picklist values can then be retrieved.
-     */
-    @wire(getObjectInfo, { objectApiName: '$objectApiName' })
-    getRecordTypeId({ error, data }) {
-        if (data) {
-            let response = data;
-            if(this.recordTypeId === undefined){
-                this.recordTypeId = response.defaultRecordTypeId;
-            }
-            console.log("Default Record Type Id", JSON.stringify(response.defaultRecordTypeId));
-        
-        } else if (error) {
-            console.log('Error Detected - ' + error.body.message);
-            console.log('Cannot get record type using UI Api so reverting to Apex schema');
-            
-            getPicklistValues({objectName: this.objectApiName, fieldName: this.pickListFieldApiName})
-            .then(result => {
-                console.log('getPicklistValues result - ' + JSON.stringify(result));
-
-                let tempOptions = [];
-                if (this.type === 'picklist') {
-                    tempOptions = [{ label: '--None--', value: "" }];
-                }
-
-                result.forEach(opt => tempOptions.push(opt));
-
-                this.options = tempOptions;
-
-            })
-            .catch(error => {
-                console.log('Error getting values from schema so bugging out - ' + error.body.message);
-                this.hasError = true;
-            });
-        }
-    }
-                     
+ 
     /*
      * Method to retrieve all object picklist values given its API name and record type.
      */
-    @wire(getPicklistValuesByRecordType, { recordTypeId: '$recordTypeId', objectApiName: '$objectApiName' })
+    @wire(getPicklistValuesByRecordType, { objectApiName: '$objectApiName', recordTypeId: '$recordTypeId' })
     wiredOptions({ error, data }) {
+        console.log('getPicklistValuesByRecordType Record type - ' + this.recordTypeId);
+        console.log('getPicklistValuesByRecordType objectApiName - ' + this.objectApiName);
         if (data) {
             let response = data;
 

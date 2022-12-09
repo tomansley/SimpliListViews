@@ -318,6 +318,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
             RowWrapper rowWrapper = new RowWrapper((String.valueOf(row.get('Id'))));
             rowWrapper.isDeleted = false;
+            rowWrapper.recordTypeId = HelperSchema.getRecordTypeId(row);
+
 
             //this for loop ONLY GOES THROUGH NONE CHILD FIELDS
             for (FieldWrapper columnMetaData: rows.getFieldMetaData())

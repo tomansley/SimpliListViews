@@ -52,6 +52,82 @@ public with sharing class HelperSchema {
         return describe;
     }
 
+    /*
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getHasRecordTypes('Account'));
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getHasRecordTypes('Opportunity'));
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getHasRecordTypes('Contact'));
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getHasRecordTypes('simpli_lv__List_View__c'));
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getHasRecordTypes('Task'));
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperSchema.getHasRecordTypes('Event'));
+     */
+    public static Boolean getHasRecordTypes(String obj)
+    {
+        Boolean result = false;
+        Schema.DescribeSObjectResult objSchema = getObjectSchema(obj);
+
+        for (Schema.RecordTypeInfo rtInfo: objSchema.getRecordTypeInfos())
+        {
+            if (rtInfo.isActive() && !rtInfo.isMaster())
+            {
+                result = true;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public static Id getMasterRecordType(String obj)
+    {
+        String recordTypeId = null;
+        Schema.DescribeSObjectResult objSchema = getObjectSchema(obj);
+
+        for (Schema.RecordTypeInfo rtInfo: objSchema.getRecordTypeInfos())
+        {
+            if (rtInfo.isActive() && rtInfo.isMaster())
+            {
+                recordTypeId = rtInfo.getRecordTypeId();
+                break;
+            }
+        }
+
+        return recordTypeId;
+    }
+
+    /*
+        HelperSchema.getRecordTypeId
+     */
+    public static String getRecordTypeId(SObject obj)
+    {
+        String recordTypeId = null;
+        String objApiName = obj.getSObjectType().getDescribe().getName();
+        Schema.DescribeSObjectResult objSchema = getObjectSchema(objApiName);
+
+        try {
+            if (getHasRecordTypes(objApiName))
+            {
+                recordTypeId = (String) obj.get('RecordTypeId');
+                System.debug(LoggingLevel.DEBUG, 'Using PROVIDED record type Id ' + recordTypeId);   
+                if (String.isEmpty(recordTypeId))
+                {
+                    recordTypeId = getMasterRecordType(objApiName);
+                    System.debug(LoggingLevel.DEBUG, 'Null record type so falling back to MASTER record type Id ' + recordTypeId);
+                }
+            } else {
+                recordTypeId = getMasterRecordType(objApiName);
+                System.debug(LoggingLevel.DEBUG, 'Using MASTER record type Id ' + recordTypeId);
+            }
+        } catch (Exception e) {
+            System.debug(LoggingLevel.DEBUG, 'Record type id field does not exist for ' + obj.getSObjectType().getDescribe().getName());
+            recordTypeId = getMasterRecordType(objApiName);
+            System.debug(LoggingLevel.DEBUG, 'Using MASTER record type Id ' + recordTypeId);
+        }
+
+        System.debug(LoggingLevel.DEBUG, 'Output recordTypeId - ' + recordTypeId);
+        return recordTypeId;
+
+    }
+
 	/*
 	 * Method to get an SObject's type from its Id.
 	 */
@@ -983,6 +1059,69 @@ public with sharing class HelperSchema {
 		
 		return lstPickvals;
 
+    }
+
+    /*
+        Found at https://glyntalkssalesforce.blogspot.com/2018/08/dependent-picklist-values-in-apex.html
+        HelperString.debug(HelperSchema.getDependentPicklistValues('Account', 'simpli_lv__Controlled_Picklist__c'), 'VALUES');
+     */
+    public static Map<Object,List<String>> getDependentPicklistValues(String sObjName, String fieldName)
+    {
+        return getDependentPicklistValues(Schema.getGlobalDescribe().get(sObjName).getDescribe().fields.getMap().get(fieldName));
+    }
+
+    //public static List<String> getDependentPicklistValues(String sObjName, String fieldName, String recordTypeId)
+    //{
+    //    return getDependentPicklistValues(Schema.getGlobalDescribe().get(sObjName).getDescribe().fields.getMap().get(fieldName));
+    //}
+
+    /*
+        Found at https://glyntalkssalesforce.blogspot.com/2018/08/dependent-picklist-values-in-apex.html
+     */
+    public static Map<Object,List<String>> getDependentPicklistValues(Schema.sObjectField dependToken)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Depend Token - ' + dependToken);
+        Schema.DescribeFieldResult depend = dependToken.getDescribe();
+        System.debug(LoggingLevel.DEBUG, 'Depend - ' + depend);
+        Schema.sObjectField controlToken = depend.getController();
+        System.debug(LoggingLevel.DEBUG, 'Control Token - ' + controlToken);
+        if (controlToken == null) return null;
+        Schema.DescribeFieldResult control = controlToken.getDescribe();
+        List<Schema.PicklistEntry> controlEntries =
+        (   control.getType() == Schema.DisplayType.Boolean
+        ?   null
+        :   control.getPicklistValues()
+        );
+
+        String base64map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        Map<Object,List<String>> dependentPicklistValues = new Map<Object,List<String>>();
+        for (Schema.PicklistEntry entry : depend.getPicklistValues()) 
+        {
+            if (entry.isActive())
+            {
+                System.debug(LoggingLevel.DEBUG, 'ENntry - ' + entry);
+                
+                List<String> base64chars = String.valueOf(((Map<String,Object>) JSON.deserializeUntyped(JSON.serialize(entry))).get('validFor')).split('');
+                for ( Integer index = 0; index < (controlEntries != null ? controlEntries.size() : 2); index++ )
+                {
+                    Object controlValue =
+                    (   controlEntries == null
+                    ?   (Object) (index == 1)
+                    :   (Object) (controlEntries[ index ].isActive() ? controlEntries[ index ].getLabel() : null)
+                    );
+                    Integer bitIndex = index / 6, bitShift = 5 - Math.mod( index, 6 );
+                    if  (   controlValue == null
+                        ||  (base64map.indexOf( base64chars[ bitIndex ] ) & (1 << bitShift)) == 0
+                        ) continue;
+                    if ( !dependentPicklistValues.containsKey( controlValue ) )
+                    {
+                        dependentPicklistValues.put( controlValue, new List<String>() );
+                    }
+                    dependentPicklistValues.get( controlValue ).add( entry.getLabel() );
+                }
+            }
+        }
+        return dependentPicklistValues;
     }
 
 

@@ -434,6 +434,7 @@ public with sharing abstract class ListViewAbstract {
         RowsWrapper parentWrapper;               //pointer to the parent wrapper
         public Map<String, FieldWrapper> fields; //the list of fields and values for the row
         public String sfdcId;                    //the SFDC record id
+        public String recordTypeId;              //the record type id if it exists
         public String rowId;                     //the SFDC record id + row # in dataset. i.e. 001ZZZZ:1. USed to identify rows on the UI
         public Boolean highlight;                //indicates whether the row should be highlighted due to conditions set by user
         public String highlightColor;            //the color the row should be set to if being highlighted.
@@ -500,6 +501,12 @@ public with sharing abstract class ListViewAbstract {
         public String getSalesforceId()
         {
             return sfdcId;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getRecordTypeId()
+        {
+            return recordTypeId;
         }
 
         @AuraEnabled(cacheable=true)
@@ -694,6 +701,7 @@ public with sharing abstract class ListViewAbstract {
             rowClone.isDeleted      = this.isDeleted;
             rowClone.isEdited       = this.isEdited;
             rowClone.isDisplayed    = this.isDisplayed;
+            rowClone.recordTypeId   = this.recordTypeId;
             rowClone.fields         = new Map<String, FieldWrapper>();
 
 
@@ -946,7 +954,7 @@ public with sharing abstract class ListViewAbstract {
         public Object objValue;        //the value as an Object
         public String objValueId;      //the id of the objValue record if it is a lookup
         public SObject fieldObj;       //the SObject associated with the field. Used when retrieving lookup information
-        public String type;
+        public String type;            //the type of the obj value
         public String urlStr;          //the URL that the field should display if one is available.
         public String urlTarget;       //identifies the target of the URL
         public String name;            //the short API name of the field. i.e. quantity
@@ -974,7 +982,6 @@ public with sharing abstract class ListViewAbstract {
             this.parentObjType = parentObjType;
             this.longName      = '';
             this.isTotalsRow   = false;
-
             this.setValue(objValue);
             this.setType(type); //must be below setValue() as it uses value to determine type in some cases.
             

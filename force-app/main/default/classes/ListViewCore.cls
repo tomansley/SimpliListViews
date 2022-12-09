@@ -383,6 +383,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
             else
                 rowWrapper.isDeleted = false;
 
+            rowWrapper.recordTypeId = HelperSchema.getRecordTypeId(row);
+
             rows.addRow(rowWrapper);
 
             //for each listview column
