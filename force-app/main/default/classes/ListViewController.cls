@@ -653,6 +653,7 @@ public without sharing class ListViewController
         Set<String> joinRecordIds = null;
         if (!String.isEmpty(joinFieldName) && !String.isEmpty(joinData))
         {
+            System.debug(LoggingLevel.DEBUG, 'We have join data and a join field');
             //check that we can actually act on the join data as it could be for another component.
             if (HelperSchema.isValidSFDCFieldName(objectName, joinFieldName))
             {
@@ -667,6 +668,8 @@ public without sharing class ListViewController
                     && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName)
                     && !joinFieldName.contains('.'))
                 {
+                    System.debug(LoggingLevel.DEBUG, 'joinRecordIds != 0, joinFieldName is NOT polymorphic, joinFieldName != contain "."');
+
                     //get the type of the join field lookup object.
                     String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
 
@@ -679,14 +682,26 @@ public without sharing class ListViewController
                         objType2 = HelperSchema.getObjectTypeFromId(recordId);
                         break;
                     }
-                    
-                    if (objType != objType2) //if we have join data that doesn't match return an empty shell. This can happen if we have multiple components that all have different join id types
+                    System.debug(LoggingLevel.DEBUG, 'First object type - ' + objType);
+                    System.debug(LoggingLevel.DEBUG, 'Second object type - ' + objType2);
+
+                    if (objType != objType2
+                        && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName)) //if we have join data that doesn't match return an empty shell. This can happen if we have multiple components that all have different join id types
                     {      
                         rowData = getListViewData(pageName, compType, objectName, listViewName, sortData, joinFieldName, '{"recordIds":""}', offset, true, '');
                         rowData.clearRows();
                         return rowData;
+                    } else {
+                        System.debug(LoggingLevel.DEBUG, 'Object types do not match');
                     }
+                } else {
+                    System.debug(LoggingLevel.DEBUG, 'joinRecordIds.size() - ' + joinRecordIds.size());
+                    System.debug(LoggingLevel.DEBUG, '!ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName) - ' + !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName));
+                    System.debug(LoggingLevel.DEBUG, '!joinFieldName.contains(\'.\') - ' + !joinFieldName.contains('.'));
+
                 }
+            } else {
+                System.debug(LoggingLevel.DEBUG, 'joinFieldName is not valid');
             }
         }
 

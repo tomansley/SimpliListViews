@@ -880,6 +880,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.receivedMessage = message;
         console.log(this.uniqueComponentId + ' received a message from ' + this.receivedMessage.uniqueComponentId + ' for ' + this.pageName);
 
+        console.log('message recordIds -' + this.receivedMessage.recordIds);
+        console.log('message objectType -' + this.receivedMessage.objectType);
+        console.log('message uniqueComponentId -' + this.receivedMessage.uniqueComponentId);
+
         if (this.receivedMessage.uniqueComponentId == this.uniqueComponentId)
         {
             return;
@@ -899,6 +903,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             return;
         }
 
+        console.log('selectedObject - ' + this.selectedObject);
+        console.log('isModeRelatedRecord - ' + this.isModeRelatedRecord);
+        console.log('joinFieldName - ' + this.joinFieldName);
         //if we have a list view selected AND if we have selected a specific list view to update
         if (this.selectedObject != undefined 
                 && this.joinFieldName != undefined 
