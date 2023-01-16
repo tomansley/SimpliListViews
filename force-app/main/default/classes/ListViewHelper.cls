@@ -1322,8 +1322,12 @@ global with sharing class ListViewHelper
         if (!whereStr.contains('USING SCOPE ')) //where clause might already contain the scope
         {
             if (!String.isEmpty(listview.Filter_Scope__c))
-                scopeStr += 'USING SCOPE ' + listview.Filter_Scope__c;
-            else
+            {
+                if (listview.Filter_Scope__c == 'Queue') //for queues the group Id is provided in the query so we just get everything
+                    scopeStr += 'USING SCOPE Everything';
+                else
+                    scopeStr += 'USING SCOPE ' + listview.Filter_Scope__c;
+            } else
                 scopeStr += 'USING SCOPE Everything';
         }
 
