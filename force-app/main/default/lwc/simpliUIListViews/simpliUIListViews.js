@@ -132,6 +132,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isModeRelated       = false;  //indicates whether the current mode is RELATED LIST VIEW
     @track isModeSingle        = false;  //indicates whether the current mode is SINGLE LIST VIEW
     @track isModeApp           = false;  //indicates whether the current mode is APP PAGE
+    @track isModeSingleObject  = false;  //indicates whether the current mode is SINGLE OBJECT. This displays list views from a single specified object
 
     @track listviewdropdownstyle   = 'regularlistviewdropdown';
     @track objectlistdropdownstyle = 'regularobjectlistdropdown';
@@ -318,6 +319,23 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.displayListViewNames = true;
                 this.getObjectsList();             
 
+            } else if (this.mode === 'Single Object List View') {
+
+                if (this.singleListViewObject === '')
+                {
+                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Single Object List View Configuration Error', 'If using Single Object List View mode the list view object must be provided.', false)); 
+                    this.spinnerOff('renderedCallback');
+                    return;
+                } else {
+
+                    this.isModeSingleObject = true;
+                    this.selectedObject     = this.singleListViewObject;
+                    this.displayObjectNames = false;
+                    this.displayListViewNames = true;
+
+                    this.getListViewsForObject();
+                }
+            
             } else if (this.mode === 'Single List View') {
 
                 if (this.singleListViewObject === '' || this.singleListViewApiName === '')
