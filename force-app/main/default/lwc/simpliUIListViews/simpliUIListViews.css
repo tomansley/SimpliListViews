@@ -12,6 +12,9 @@
 
 .pageSpinnerHolder{
     position: absolute;
+    min-height: 180px;
+    min-width: 180px;
+    z-index: 100;
 }
 
 .applistscrollwrapper {
