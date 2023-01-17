@@ -10,6 +10,9 @@ public with sharing class HelperProfile {
     private static Map<String, Profile> profilesById = null;
     private static Boolean hasModifyAll = null;
 
+    /*
+    System.debug(LoggingLevel.DEBUG, 'RESULT - ' + HelperProfile.hasModifyAll());
+    */
     public static Boolean hasModifyAll()
     {
         if (hasModifyAll == null)
