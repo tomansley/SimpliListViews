@@ -303,6 +303,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             //get component config
             console.log(this.pageName + ' CALLOUT - getComponentConfig - ' + this.calloutCount++);
             this.componentConfig = await getComponentConfig({compName: this.pageName });
+            this.hasModifyAll = await hasModifyAll({});
 
             this.handleComponentConfig();
 
@@ -453,12 +454,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             let pinnedListView = this.componentConfig.pinnedListView;
             console.log('Pinned list view string - ' + pinnedListView);
 
-            if (this.toBool(this.componentConfig.AllowAdmin) === true) { 
+            if (this.toBool(this.componentConfig.AllowAdmin) === false) { 
                 if (this.hasModifyAll === true)
                     this.allowAdmin = true;
                 else
                     this.allowAdmin = false;
-            } else if (this.toBool(this.componentConfig.AllowAdmin) === false) { this.allowAdmin = false; }
+            }            
             if (this.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
             if (this.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
             if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
@@ -558,17 +559,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @wire(MessageContext)
     messageContext;
     
-    
-    @wire (hasModifyAll, { })
-    wiredHasModifyAll({ error, data }) {
-        if (data) {
-            console.log(this.pageName + ' CALLOUT - hasModifyAll - ' + this.calloutCount++);
-            console.log('Is sys admin called successfully - ' + data + ' for ' + this.pageName);
-            this.hasModifyAll = data; 
-        } else if (error) { 
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
-        }
-    }
+
 
     handleInitializedCheck(event) {
         this.isInitialized = event.detail;

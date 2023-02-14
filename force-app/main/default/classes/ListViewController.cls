@@ -21,7 +21,7 @@ public without sharing class ListViewController
     public static final String SUCCESS = 'success';
     public static final String FAILED = 'failed';
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static Boolean hasModifyAll()
     {
         ListViewErrorHelper.processLogs(true);
