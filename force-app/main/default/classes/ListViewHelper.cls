@@ -1155,7 +1155,7 @@ global with sharing class ListViewHelper
         //---------------------------------------------------
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
-        String query = listview.Core_ListView_Query__c;
+        String query = listview.Core_ListView_Query__c.toUpperCase();
         String selectStr = query.substringBetween('SELECT ', ' FROM ');
         String objectName = query.substringAfterLast(' FROM ');
         if (objectName.contains(' '))
@@ -1183,11 +1183,11 @@ global with sharing class ListViewHelper
             selectFields.addAll(lvConfigParams.get(PARAM_ADD_FIELDS).split(','));
 
         //IsDeleted
-        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted') && !selectFields.contains(' IsDeleted'))
-            selectFields.add('IsDeleted');
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted') && !selectFields.contains(' ISDELETED'))
+            selectFields.add('ISDELETED');
 
-        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'RecordTypeId') && !selectFields.contains(' RecordTypeId'))
-            selectFields.add('RecordTypeId');
+        if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'RecordTypeId') && !selectFields.contains(' RECORDTYPEID'))
+            selectFields.add('RECORDTYPEID');
 
         selectStr = '';
         for (String field: selectFields)
@@ -1431,7 +1431,7 @@ global with sharing class ListViewHelper
         //---------------------------------------------------
         
         //SCRUB SOQL
-        soql = HelperString.scrubSOQL(soql);
+        soql = HelperString.scrubSOQL(soql).toUpperCase();
         
         //OBJECT NAME
         String objectName = soql.replaceAll('\\(.*?\\)', '').substringAfterLast(' FROM '); //get rid of everything inside brackets and then get expression after FROM
@@ -1445,8 +1445,8 @@ global with sharing class ListViewHelper
         if (selectStr == soql) //not sure this is needed.
             selectStr = soql.substringBefore(' FROM ' + objectName);
 
-        if (HelperSchema.isValidSFDCFieldName(objectName, 'RecordTypeId') && !selectStr.contains('RecordTypeId'))
-            selectStr = selectStr + ', RecordTypeId';
+        if (HelperSchema.isValidSFDCFieldName(objectName, 'RecordTypeId') && !selectStr.contains('RECORDTYPEID'))
+            selectStr = selectStr + ', RECORDTYPEID';
 
         debug += 'SELECT                          - ' + selectStr + '\n';
 
