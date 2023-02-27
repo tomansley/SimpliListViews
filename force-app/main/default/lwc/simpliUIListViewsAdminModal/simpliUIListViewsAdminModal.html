@@ -25,7 +25,7 @@
                         <h2 id="modal-heading-01" class="slds-text-heading_small slds-hyphenate">{listViewConfig.label} {label.List_View_Config}</h2>
                     </header>
 
-                    <lightning-tabset style="min-height: 400px;background-color: white;">
+                    <lightning-tabset style="background-color: white;">
                         <lightning-tab label={label.Settings}>
                             <div class="scroll slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1100px;">
                                 <table class="slds-table slds-table_bordered">
@@ -316,7 +316,7 @@
 
                     </lightning-tabset>
 
-                    <footer class="slds-modal__footer" style="min-width: 1100px;">
+                    <footer class="slds-modal__footer" style="min-width: 1100px;z-index:1">
                         <button class="slds-button slds-button_brand" onclick={handleUpdateClick}>{label.Update}</button>
                         <button class="slds-button slds-button_brand" disabled={closeDisabled} onclick={handleCloseClick}>{label.Close}</button>
                     </footer>
