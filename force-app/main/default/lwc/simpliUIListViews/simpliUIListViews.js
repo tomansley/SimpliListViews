@@ -655,6 +655,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     handleListViewDataPage(listViewDataResult) {
 
+        console.log('List View Query - ' + listViewDataResult.queryString);
         console.log('Starting refreshListViewData - ' + this.pageName + ' - ' + this.selectedObject + ' - ' + this.selectedListView + ' - ' + this.joinFieldName + ' - ' + this.offset + ' for ' + this.pageName);
         console.log('XXXXX columnSortDataStr - ' + this.columnSortDataStr + ' for ' + this.pageName);
         console.log('Selected list view - ' + this.selectedListView + ' for ' + this.pageName);

@@ -449,6 +449,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             }
         }
 
+        rows.queryString = ListViewHelper.LATEST_QUERY; //put the query used to get the data into the wrapper for use on the front end (debugging)
+
         System.debug(LoggingLevel.DEBUG, rows.getDebugString());
         System.debug(LoggingLevel.DEBUG, 'Ending ListViewCustomManual.handleRowsToWrapper - ' + (System.now().getTime() - startTime));
         return rows;

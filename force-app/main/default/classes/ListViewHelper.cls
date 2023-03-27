@@ -23,7 +23,7 @@
  **/
 global with sharing class ListViewHelper 
 {
-    
+    public static String LATEST_QUERY = '';
     public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
    
@@ -1348,6 +1348,9 @@ global with sharing class ListViewHelper
             throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
         }
         
+        //put the query string into a static variable for use across the app (for debugging purposes)
+        LATEST_QUERY = query;
+
         return objectRows;
 
     }
@@ -1600,6 +1603,9 @@ global with sharing class ListViewHelper
         System.debug(LoggingLevel.FINE, debug);
         ListViewErrorHelper.addLog('ListViewHelper(getSOQLQuery)', debug);
 
+        //put the query string into a static variable for use across the app (for debugging purposes)
+        LATEST_QUERY = soql;
+
         return soql;
     }
 
@@ -1807,6 +1813,9 @@ global with sharing class ListViewHelper
 
         System.debug(LoggingLevel.FINE, debug);
         ListViewErrorHelper.addLog('ListViewHelper(getSOSLQuery)', debug);
+
+        //put the query string into a static variable for use across the app (for debugging purposes)
+        LATEST_QUERY = sosl;
 
         return sosl;
     }

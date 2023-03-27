@@ -557,6 +557,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
         }
 
+        rows.queryString = ListViewHelper.LATEST_QUERY; //put the query used to get the data into the wrapper for use on the front end (debugging)
+
         System.debug(LoggingLevel.DEBUG, rows.getDebugString());
         System.debug(LoggingLevel.DEBUG, 'Ending ListViewCore.handleRowsToWrapper - ' + (System.now().getTime() - startTime));
         return rows;

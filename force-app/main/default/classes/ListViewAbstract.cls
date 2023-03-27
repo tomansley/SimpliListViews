@@ -201,6 +201,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isDefaultSort = false;
         private ListViewConfigWrapper lvConfig = null;
         public String compType = '';
+        public String queryString = ''; //the query string that was used to perform the query on the row data.
         
         public RowsWrapper(List_View__c listView, ListViewConfigWrapper lvConfig)
         {
@@ -232,6 +233,12 @@ public with sharing abstract class ListViewAbstract {
         public String getCoreListId()
         {
             return coreListId;
+        }
+
+        @AuraEnabled
+        public String getQueryString()
+        {
+            return queryString;
         }
 
         @AuraEnabled(cacheable=true)

@@ -173,6 +173,8 @@ public with sharing class ListViewCustomManualSObjects { //extends ListViewCusto
                 rowWrapper.calculateHighlighting(lvConfig.conditions);
         }
 
+        rows.queryString = ListViewHelper.LATEST_QUERY; //put the query used to get the data into the wrapper for use on the front end (debugging)
+
         System.debug(LoggingLevel.DEBUG, rows.getDebugString());
         System.debug(LoggingLevel.DEBUG, 'Ending ListViewCustomManualSObjects.handleRowsToWrapper - ' + (System.now().getTime() - startTime));
         return rows;
