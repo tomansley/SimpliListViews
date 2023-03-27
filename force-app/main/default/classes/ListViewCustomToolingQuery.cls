@@ -95,7 +95,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
         */
     private ListViewAbstract.RowsWrapper handleJSONToWrapper(String responseStr)
     {
-        System.debug(LoggingLevel.FINE, 'Starting ListViewCustomToolingQuery.handleJSONToWrapper - ' + System.now().getTime());
+        System.debug(LoggingLevel.FINE, 'Starting ListViewCustomToolingQuery.handleJSONToWrapper - ' + System.now().getTime() + ', Response - ' + responseStr);
         ListViewAbstract.RowsWrapper rows = new ListViewAbstract.RowsWrapper(listView, lvConfig);
         
         //------------------------------------------------------
@@ -324,7 +324,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
         }
 
-        //rows.queryString = ListViewHelper.LATEST_QUERY; //put the query used to get the data into the wrapper for use on the front end (debugging)
+        rows.queryString = ListViewHelper.LATEST_QUERY; //put the query used to get the data into the wrapper for use on the front end (debugging)
 
         System.debug(LoggingLevel.DEBUG, 'Ending ListViewCustomToolingQuery.handleJSONToWrapper - ' + System.now().getTime());
         return rows;
