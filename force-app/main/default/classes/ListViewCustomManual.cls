@@ -356,7 +356,10 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
                     System.debug(LoggingLevel.FINE, 'Field - ' + field);
 
-                    if (ListViewAbstract.validNameColumnNames.contains(field.getName()))  //if the name of the field is in the list identifying a link field
+                    if (ListViewAbstract.validNameColumnNames.contains(field.getName())
+                        || (field.objValue != null //if we have a lookup object
+                                && fieldData.value != null // AND a value
+                                && field.getName().toUpperCase().contains('.NAME')))  //if the name of the field is in the list identifying a link field
                     {
                         field.createURL();
                     }
