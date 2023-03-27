@@ -49,10 +49,10 @@
                                         <tbody>
                                             <template for:each={listViewAction.displayParameters} for:item="param">
                                                 <tr key={param.aPIName} class="slds-hint-parent" style="height: 41px; ">
-                                                    <th key={param.aPIName} class="" scope="col" style="width: 30%;">
+                                                    <th class="" scope="col" style="width: 30%;">
                                                         <div key={param.aPIName} class="slds-truncate" title={param.name}>{param.label}</div>
                                                     </th>
-                                                    <td key={param.aPIName} data-label={param.label} style="width: 70%;">
+                                                    <td data-label={param.label} style="width: 70%;">
                                                         <template if:true={param.isString}>
                                                             <div id={param.aPIName} class="slds-truncate" title={param.value}>
                                                                 <lightning-input data-type={param.type} data-field={param.aPIName} variant=label-hidden type="text" value={param.value} onblur={handleValueUpdate} placeholder={param.placeHolder}></lightning-input>
@@ -135,6 +135,7 @@
                                                                 <c-simpli-u-i-list-views-picklist type="picklist"
                                                                                                 row-id={param.aPIName} 
                                                                                                 sfdc-id=""
+                                                                                                record-type-id=""
                                                                                                 object-api-name={listViewAction.objectType} 
                                                                                                 selected-value={param.value}  
                                                                                                 pick-list-field-api-name={param.aPIName}
