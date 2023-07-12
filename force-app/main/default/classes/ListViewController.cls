@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-16-2022
- * @last modified by  : 
+ * @last modified on  : 07-12-2023
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -586,6 +586,26 @@ public without sharing class ListViewController
         ListViewErrorHelper.processLogs(true);
 
         return result;
+    }
+
+    /*
+     * Method which determines whether a list view data request is valid or not.
+     */
+    @AuraEnabled
+    public static String getListViewId(String objectName, String listViewName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewId(' + objectName + ', ' + listViewName + ')');
+        String id = '';
+
+        Map<Id, List_View__c> listView = ListViewHelper.getListViews(objectName, listViewName);
+
+        if (!listView.isEmpty())
+            id = listView.values()[0].Id;
+
+        System.debug(LoggingLevel.DEBUG, 'Leaving getListViewId - ' + id);
+        ListViewErrorHelper.processLogs(true);
+
+        return id;
     }
 
     @AuraEnabled
@@ -1172,18 +1192,12 @@ public without sharing class ListViewController
         public SelectOption(String value, String label) {
             this.value = value;
             this.label = label;
-            this.disabled = false;
-            this.escapeItem = false;
         }
 
         @AuraEnabled
         public String label { get;set; }
         @AuraEnabled
         public String value { get;set; }
-        @AuraEnabled
-        public Boolean disabled { get;set; }
-        @AuraEnabled
-        public Boolean escapeItem { get;set; }
 
         public Integer compareTo(Object compareTo) {
             SelectOption option2 = (SelectOption) compareTo;

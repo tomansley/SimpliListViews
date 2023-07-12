@@ -1,0 +1,50 @@
+<!--
+  @description       : 
+  @author            : tom@ansleyllc.com
+  @last modified on  : 07-12-2023
+  @last modified by  : tom@ansleyllc.com
+  Modifications Log 
+  Ver   Date         Author                       Modification
+  1.0   07-20-2021   tom@ansleyllc.com   Initial Version
+-->
+<template>
+    <div>
+        <div class="slds-form-element">
+            <div class="slds-form-element__control">
+                <div class="slds-combobox_container">
+                    <div id="box" class={boxClass} aria-expanded="true" aria-haspopup="listbox" role="combobox">
+                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                            <div class="slds-p-top_none">
+                                <lightning-input class={inputClass} 
+                                                    type="search" 
+                                                    id="input" 
+                                                    value={searchTerm}
+                                                    onclick={handleClick} 
+                                                    onblur={handleBlur} 
+                                                    onchange={onChange}
+                                                    variant="label-hidden" 
+                                                    autocomplete="off" 
+                                                    placeholder={label.Search_Dot}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <template if:true={options}>
+                            <div id="listbox-id-1" class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid" role="listbox">
+                                <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                    <template for:each={options} for:item="item">
+                                        <li key={item.value} onclick={onSelect} data-value={item.label} data-id={item.value} role="presentation">
+                                            <span class="slds-lookup__item-action slds-lookup__item-action--label" role="option">
+                                                <lightning-icon class="slds-icon slds-icon--small slds-icon-text-default" icon-name={iconName} alternative-text={selectedName} size="small" title={fieldObjName}></lightning-icon>
+                                                <span class="slds-truncate">{item.label}</span>
+                                            </span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

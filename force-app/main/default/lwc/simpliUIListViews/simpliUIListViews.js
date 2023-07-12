@@ -49,6 +49,7 @@ import getUserSortConfigs from '@salesforce/apex/ListViewController.getUserSortC
 import updateUserConfig from '@salesforce/apex/ListViewController.updateUserConfig';
 import updateUserConfigListViewWidth from '@salesforce/apex/ListViewController.updateUserConfigListViewWidth';
 import isValidListViewDataRequest from '@salesforce/apex/ListViewController.isValidListViewDataRequest';
+import getListViewId from '@salesforce/apex/ListViewController.getListViewId';
 import updateRecord from '@salesforce/apex/ListViewController.updateRecord';
 import updateRecords from '@salesforce/apex/ListViewController.updateRecords';
 import getListViewConfigParameter from '@salesforce/apex/ListViewController.getListViewConfigParameter';
@@ -75,6 +76,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api displayRecordPopovers      = false;        //config indicating whether record popovers should be displayed
     @api allowAdmin                 = false;        //indicates whether the admin button should display to the user
     @api displayActions             = false;
+    @api typeAheadListSearch        = false;        //indicates whether a straight combobox or typeahead text will be used when selecting list views
     @api displayReprocess           = false;
     @api displayURL                 = false;
     @api displayRowCount            = false;
@@ -146,6 +148,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track userSortConfigs;             //holds all user sort configuration for this named component.
     @track componentConfig;             //holds all user and org wide configuration for this named component.
     @track selectedListView;            //holds the selected list view name
+    @track selectedListViewId;          //holds the id of the selected list view record (used by typeahead only on initialization)
     @track massCreateListView;          //holds the list view to display in the mass create if an alternate list view is provided than the currently displayed list view.
     @track selectedListViewExportName;  //holds the selected list view name + .csv
     @track selectedObject;              //holds the selected object name
@@ -220,6 +223,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track listViewSortData = new Map();
     @track columnSortData = new Map();
     @track columnSortDataStr = '';
+
+    //for type-ahead functionality for searching list views
+    @track whereClause;
 
     //for handling edited records
     updatedRowData = new Map();
@@ -386,6 +392,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.allowInlineEditing    = false;
                 this.displayTextSearch     = false;
                 this.canDisplayTextSearch  = false;
+                this.typeAheadListSearch   = false;
                 this.displayActions        = false;
                 this.displayRecordPopovers = false;
                 this.allowRefresh          = false;
@@ -460,6 +467,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 else
                     this.allowAdmin = false;
             }            
+            if (this.toBool(this.componentConfig.TypeAheadListSearch) === true) { this.typeAheadListSearch = true; }
             if (this.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
             if (this.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
             if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
@@ -799,7 +807,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     async getListViewsForObject()
     {    
-        if (this.listViewListObject !== this.selectedObject) //only get the list views if its for a new object
+        if (this.listViewListObject !== this.selectedObject && this.typeAheadListSearch === false) //only get the list views if its for a new object and we are not doing type ahead
         {
             this.listViewListObject = this.selectedObject;
 
@@ -851,6 +859,46 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Object List Views', 'There was an error retrieving ' + this.selectedObject + ' list views data. This usually indicates the user does not have read access to the object. Please see an administrator if you believe this to be an error', true));
             });
 
+        //if we
+        } else if (this.typeAheadListSearch === true) {
+
+            if (this.pinnedListView != undefined && this.firstListViewGet === true) {
+
+                console.log('We have a pinned list view for ' + this.pageName);
+
+                //check for list view name validity (it could be a stale pinning)
+                await getListViewId({objectName: this.selectedObject, listViewName: this.pinnedListView })
+                .then(result => {
+                    console.log('Is valid list view request successful for ' + this.pageName);
+                    
+                    //if we have a valid list view name
+                    if (result !== '')
+                    {
+                        console.log('Found a list view with the pinned list view name for ' + this.pageName);
+                        this.selectedListView = this.pinnedListView;
+                        this.selectedListViewExportName = this.selectedListView + '.csv';
+                        this.selectedListViewId = result;
+                        this.whereClause = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+                        this.refreshAllListViewData();
+
+                    //if we do not then bail.
+                    } else {
+                        console.log('Did NOT find a list view with the pinned list view name for ' + this.pageName);
+                        this.isInitializing = false;     
+                        this.spinner = false; 
+                    }
+
+                    this.firstListViewGet = false;
+                }).catch(error => {
+                    this.spinnerOff('isValidListView');
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Checking For Valid List View', 'There was an error checking for a valid list view with name ' + this.pinnedListView + ' for object ' + this.selectedObject + '.', true));
+                });
+    
+            } else {
+                this.spinnerOff('getListViewsForObject');
+            }
+        } else {
+            this.spinner = false; //cannot use spinnerOff() here as we might be initializing
         }
     }
 
@@ -1161,8 +1209,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     handleObjectChange(event) {
         this.spinnerOn('handleObjectChange');
         this.selectedListView = undefined;
+        this.selectedListViewId = undefined;
         this.selectedListViewExportName = undefined;
         this.selectedObject = event.target.value;
+        this.whereClause = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
         this.listViewList = undefined;
         this.listViewData = undefined;
         this.listViewDataRows = undefined;
@@ -1194,8 +1244,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.listViewSortData.set(this.selectedObject + ':' + this.selectedListView, this.columnSortData);
         }
 
-        //set the new selected list view
+        //set the new selected list view (COMBO BOX)
         this.selectedListView = event.target.value;
+
+        //set the new selected list view (TYPE AHEAD)
+        if (event.detail.selectedValue !== undefined)
+            this.selectedListView = event.detail.selectedValue;
+
         console.log('New list view - ' + this.selectedListView + ' for ' + this.pageName);
         this.selectedListViewExportName = this.selectedListView + '.csv';
 

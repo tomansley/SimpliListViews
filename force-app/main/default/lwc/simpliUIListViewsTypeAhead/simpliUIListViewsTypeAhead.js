@@ -1,0 +1,213 @@
+/* eslint-disable no-console */
+/* eslint-disable @lwc/lwc/no-async-operation */
+
+import { api, LightningElement, track, wire } from 'lwc';
+import getRecordName from '@salesforce/apex/ListViewTypeAheadController.getRecordName';
+import search from '@salesforce/apex/ListViewTypeAheadController.search';
+
+//------------------------ LABELS ------------------------
+import Search_Dot from '@salesforce/label/c.Search_Dot';
+
+export default class SimpliUIListViewsTypeAhead extends LightningElement {
+
+    //THESE TWO TO BE REMOVED IF POSSIBLE
+    @api initialName = '';  //the initial string value of the field for display purposes only
+    @api initialId = '';    //the initial value of the field.
+
+    _fieldObjName;          //the API name of the object that the field is on that is being populated
+    @api set fieldObjName(value) 
+         {
+            if (value !== this._fieldObjName) {
+                this.searchTerm = '';
+                this.oldSearchTerm = '';
+            }
+            this._fieldObjName = value;
+         }
+         get fieldObjName() { 
+             return this._fieldObjName; 
+         }
+
+    _whereClause;           //any additional criteria (in SOQL format without WHERE keyword) to be applied when displaying values
+    @api set whereClause(value) 
+         {
+            if (value !== this._whereClause) {
+                this.searchTerm = '';
+                this.oldSearchTerm = '';
+            }
+            this._whereClause = value;
+         }
+         get whereClause() { 
+             return this._whereClause; 
+         }
+
+    _labelFieldName;           //the API name of the label field the lookup is populating. Used to create the unique key only
+    @api set labelFieldName(value) 
+         {
+            if (value !== this._labelFieldName) {
+                this.searchTerm = '';
+                this.oldSearchTerm = '';
+            }
+            this._labelFieldName = value;
+         }
+         get labelFieldName() { 
+             return this._labelFieldName; 
+         }
+
+    _keyFieldName;           //the API name of the labels associated key field.
+    @api set keyFieldName(value) 
+         {
+            if (value !== this._keyFieldName) {
+                this.searchTerm = '';
+                this.oldSearchTerm = '';
+            }
+            this._keyFieldName = value;
+         }
+         get keyFieldName() { 
+             return this._keyFieldName; 
+         }
+
+    @api iconName;          //the icon name used when displaying the options.
+
+    href;
+    searchTerm;
+    oldSearchTerm;
+    isInitialized = false; //identifies if the component has been initialized.
+    
+    uniqueKey;           //a key which is unique to this search component and passed back with the value once a selection has been made 
+    @track selectedName; //the string name of the selected record (used for display purposes only)
+    @track selectedId;   //the id of the selected record
+    @track options;      //the search values that are returned from the search
+    @track hasValue;
+    @track blurTimeout;  //used for indicating when the results should be displayed and when they shouldn't
+
+    //css
+    @track boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
+    @track inputClass = '';
+
+    label = { Search_Dot }
+
+    renderedCallback() {
+        if (this.isInitialized === false && this.whereClause !== undefined)
+        {
+            this.isInitialized = true;
+            console.log('In SimpliUIListViewsTypeAhead.renderedCallback');
+            console.log('initialName    - ' + this.initialName);
+            console.log('initialId      - ' + this.initialId);
+            console.log('fieldObjName   - ' + this.fieldObjName);
+            console.log('labelFieldName - ' + this.labelFieldName);
+            console.log('whereClause    - ' + this.whereClause);
+            this.uniqueKey = this.labelFieldName;
+            console.log('uniqueKey - ' + this.uniqueKey);
+
+            //if we have an initial value then set that as the chosen option.
+            if (this.initialId !== '' && this.initialName !== '')
+            {
+                this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
+                this.hasValue = true;    
+                this.selectedId = this.initialId;
+                this.selectedName = this.initialName;
+            
+            //if we do not have the name of the record to display then get it.
+            } else if (this.initialId !== undefined && this.initialId !== '' && this.initialName === '')
+            {
+                getRecordName({selectedId: this.initialId, objName: this.fieldObjName, labelFieldName : this.labelFieldName})
+                .then(result => {
+                    console.log('Get record name successful');
+                    console.log('Record name - ' + result);
+
+                    this.selectedName = result;
+                    this.searchTerm = this.selectedName;
+                    this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
+                    this.hasValue = true;    
+                    this.selectedId = this.initialId;
+                })
+                .catch(error => {
+                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+                });    
+
+            }
+
+            console.log('selectedName  - ' + this.selectedName);
+            console.log('selectedId    - ' + this.selectedId);
+        } else {
+            console.log('Inside typeahead renderedCallback');
+        }
+    }
+
+    /*
+     * Method called when the search term has been updated and the data is searched for.
+     */
+    @wire(search, {searchTerm : '$searchTerm', objName : '$fieldObjName', labelFieldName : '$labelFieldName', keyFieldName : '$keyFieldName', whereClause : '$whereClause'})
+    wiredRecords({ error, data }) {
+        if (data) {
+            this.options = data;
+           // console.log("Options - ", JSON.stringify(this.options));
+            if (this.options.length === 0)
+                this.options = undefined;
+        } else if (error) {
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+        }
+    }
+
+    /*
+     * Method that gets called when the user clicks on the search widget. In this case the search term gets set back to null
+     * and the available f
+     */
+    handleClick() {
+        console.log("In handleClick");
+        console.log('fieldObjName   - ' + this.fieldObjName);
+        console.log('labelFieldName - ' + this.labelFieldName);
+        console.log('whereClause    - ' + this.whereClause);
+
+        this.oldSearchTerm = this.searchTerm;
+        this.searchTerm = '';
+        this.inputClass = 'slds-has-focus';
+        this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus slds-is-open';
+
+    }
+
+    /*
+     * Method that gets called when the cursor moves AWAY from the search widget
+     */
+    handleBlur() {
+        console.log("In handleBlur");
+
+        if (this.searchTerm === '')
+            this.searchTerm = this.oldSearchTerm;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this.blurTimeout = setTimeout(() =>  {this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus'}, 300);
+    }
+
+    /*
+     * Method called when a selection is made from the drop down list
+     */
+    onSelect(event) {
+        console.log("In onSelect");
+        this.selectedId = event.currentTarget.dataset.id;
+        this.selectedName = event.currentTarget.dataset.value;
+        console.log('selectedId - ', this.selectedId);
+        console.log('selectedName - ', this.selectedName);
+        
+        //send selected value to parent and in return parent sends the value to @api rowId
+        let selectedValue = this.selectedId;
+        let field = this.labelFieldName;
+        this.searchTerm = this.selectedName;
+        this.dispatchEvent(new CustomEvent('valuechange', { detail: { selectedValue, field }, }));
+
+        if(this.blurTimeout) {
+            clearTimeout(this.blurTimeout);
+        }
+        this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
+        this.hasValue = true;
+    }
+
+    /*
+     * Method called when the search term is updated.
+     */
+    onChange(event) {
+        console.log("In onChange");
+        this.searchTerm = event.target.value;
+        console.log("searchTerm",this.searchTerm);
+    }
+
+}

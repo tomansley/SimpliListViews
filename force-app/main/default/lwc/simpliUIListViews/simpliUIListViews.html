@@ -3,8 +3,8 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 10-16-2022
-  @last modified by  : 
+  @last modified on  : 07-12-2023
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
   1.0   08-03-2020   tom@ansleyllc.com   Initial Version
@@ -71,14 +71,25 @@
                     <template if:true={displayListViewNames}>
                         <template if:true={selectedObject}>
                             <lightning-layout-item class={listviewdropdownstyle}>
-                                <lightning-combobox placeholder={label.Select_List_View} 
-                                                    label={label.List_View} 
-                                                    value={selectedListView} 
-                                                    onchange={handleListViewChanged} 
-                                                    options={listViewList}
-                                                    variant=label-hidden
-                                                    title={modifiedText}>
-                                </lightning-combobox>
+                                <template if:true={typeAheadListSearch}>
+                                    <c-simpli-u-i-list-views-type-ahead label-field-name="simpli_lv__Label__c"
+                                                                    key-field-name="simpli_lv__API_Name__c"
+                                                                    initial-id={selectedListViewId}
+                                                                    field-obj-name="simpli_lv__List_View__c"
+                                                                    where-clause={whereClause}
+                                                                    onvaluechange={handleListViewChanged}>
+                                    </c-simpli-u-i-list-views-type-ahead>
+                                </template>
+                                <template if:false={typeAheadListSearch}>
+                                    <lightning-combobox placeholder={label.Select_List_View} 
+                                                        label={label.List_View} 
+                                                        value={selectedListView} 
+                                                        onchange={handleListViewChanged} 
+                                                        options={listViewList}
+                                                        variant=label-hidden
+                                                        title={modifiedText}>
+                                    </lightning-combobox>
+                                </template>
                             </lightning-layout-item>
                         </template>
                     </template>
