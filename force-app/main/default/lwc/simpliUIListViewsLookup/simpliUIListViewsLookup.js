@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
 /* eslint-disable @lwc/lwc/no-async-operation */
 
-import search from '@salesforce/apex/ListViewLookupController.search';
 import { api, LightningElement, track, wire } from 'lwc';
+
 import getRecordName from '@salesforce/apex/ListViewLookupController.getRecordName';
+import search from '@salesforce/apex/ListViewLookupController.search';
 
 //------------------------ LABELS ------------------------
 import Search_Dot from '@salesforce/label/c.Search_Dot';
