@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-24-2022
+ * @last modified on  : 07-06-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1155,7 +1155,14 @@ global with sharing class ListViewHelper
         //---------------------------------------------------
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
-        String query = listview.Core_ListView_Query__c.toUpperCase();
+        
+        //first replace everything NOT within single quotes with upper case.
+        //this needs to be done as we want to use upper case to handle all the 
+        //SOQL stuff but everything between quotes is literal and must remain as it is.
+        String query = HelperString.toUpperCaseExceptLiterals(listview.Core_ListView_Query__c);
+        debug += 'Query after upper casing - ' + query + '\n';
+
+        //String query = listview.Core_ListView_Query__c.toUpperCase();
         String selectStr = query.substringBetween('SELECT ', ' FROM ');
         String objectName = query.substringAfterLast(' FROM ');
         if (objectName.contains(' '))
@@ -1433,8 +1440,11 @@ global with sharing class ListViewHelper
         // Parse out the query retrieved from the list view.
         //---------------------------------------------------
         
-        //SCRUB SOQL
-        soql = HelperString.scrubSOQL(soql).toUpperCase();
+        //SCRUB SOQL and replace everything NOT within single quotes with upper case.
+        //this needs to be done as we want to use upper case to handle all the 
+        //SOQL stuff but everything between quotes is literal and must remain as it is.
+        soql = HelperString.toUpperCaseExceptLiterals(HelperString.scrubSOQL(soql));
+        debug += 'Query after upper casing and scrubbing - ' + soql + '\n';
         
         //OBJECT NAME
         String objectName = soql.replaceAll('\\(.*?\\)', '').substringAfterLast(' FROM '); //get rid of everything inside brackets and then get expression after FROM
@@ -2279,6 +2289,14 @@ global with sharing class ListViewHelper
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Record Popovers';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'TypeAheadListSearch';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
+        param.Parameter_Label__c  = 'Use Type-Ahead For List View Search';
         params.add(param);
 
         param = new List_View_Config_Parameter__c();

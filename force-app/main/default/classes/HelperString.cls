@@ -1,10 +1,42 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 06-30-2022
+ * @last modified on  : 07-06-2023
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperString {
+
+    public static String toUpperCaseExceptLiterals(String oldSOQL)
+    {
+        boolean atEnd = false;
+
+        String newSOQL = '';
+        do {
+            Integer index = oldSOQL.indexOf('\'');
+            if (index == -1) {
+                //mark that we are at the end
+                atEnd = true;
+                //set the remainder of the query to upper case and add to new query
+                newSOQL += oldSOQL.toUpperCase();
+            } else {
+                //set all characters leading up to the single quote to uppercase and add to the new query 
+                newSOQL += oldSOQL.substring(0, index+1).toUpperCase();
+                //remove the characters leading up to the single quote from the original query
+                oldSOQL = oldSOQL.substring(index+1);
+
+                //get the index of the matching single quote
+                index = oldSOQL.indexOf('\'');
+                //add all characters leading up to the single quote to the new query 
+                newSOQL += oldSOQL.substring(0, index+1); //NOT UPPERCASE
+                //remove the characters leading up to the single quote from the original query
+                oldSOQL = oldSOQL.substring(index+1);
+
+            }
+
+        } while (!atEnd);
+
+        return newSOQL;
+    }
 
     public static String scrubSOQL(String soql)
     {
