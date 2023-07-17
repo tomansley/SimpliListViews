@@ -184,7 +184,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track dataSpinner = false;         //identifies if the DATA spinner should be displayed or not.
     @track firstListViewGet = true;     //indicates whether this is the first time the list views are being retrieved.
     @track canDisplayActions = false;   //indicates whether the page is in a position where the actions list is active
-    @track canPin = false;              //indicates whether pinning can occur. Only available for App Page and Split View.
+    @track canPin = false;              //indicates whether pinning can occur. Only available for App Page, Single Object List View and Split View.
     @track canDisplayTextSearch = false;//indicates whether text search can occur on this page.
     @track displayObjectNames = false;  //indicates whether the objects drop down can be displayed.
     @track displayListViewNames = false;//indicates whether the list view names drop down can be displayed.
@@ -337,10 +337,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     return;
                 } else {
 
-                    this.isModeSingleObject = true;
-                    this.selectedObject     = this.singleListViewObject;
-                    this.displayObjectNames = false;
+                    this.canPin               = true;
+                    this.isModeSingleObject   = true;
+                    this.selectedObject       = this.singleListViewObject;
+                    this.displayObjectNames   = false;
                     this.displayListViewNames = true;
+                    this.whereClauseList      = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
 
                     this.getListViewsForObject();
                 }

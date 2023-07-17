@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 07-13-2023
+  @last modified on  : 07-17-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -81,7 +81,7 @@
                     <!-- --------------------- -->
                     <template if:true={displayListViewNames}>
                         <template if:true={selectedObject}>
-                            <lightning-layout-item class={listviewdropdownstyle}>
+                            <lightning-layout-item class={listviewdropdownstyle} style="padding-left:10px;">
                                 <template if:true={typeAheadListSearch}>
                                     <c-simpli-u-i-list-views-type-ahead search-type="sobject"
                                                                         label-field-name="simpli_lv__Label__c"
