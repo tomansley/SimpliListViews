@@ -77,6 +77,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api allowAdmin                 = false;        //indicates whether the admin button should display to the user
     @api displayActions             = false;
     @api typeAheadListSearch        = false;        //indicates whether a straight combobox or typeahead text will be used when selecting list views
+    @api typeAheadObjectSearch      = false;        //indicates whether a straight combobox or typeahead text will be used when selecting objects
     @api displayReprocess           = false;
     @api displayURL                 = false;
     @api displayRowCount            = false;
@@ -225,7 +226,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track columnSortDataStr = '';
 
     //for type-ahead functionality for searching list views
-    @track whereClause;
+    @track whereClauseList;
+    @track whereClauseObject;
 
     //for handling edited records
     updatedRowData = new Map();
@@ -393,6 +395,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.displayTextSearch     = false;
                 this.canDisplayTextSearch  = false;
                 this.typeAheadListSearch   = false;
+                this.typeAheadObjectSearch = false;
                 this.displayActions        = false;
                 this.displayRecordPopovers = false;
                 this.allowRefresh          = false;
@@ -468,6 +471,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     this.allowAdmin = false;
             }            
             if (this.toBool(this.componentConfig.TypeAheadListSearch) === true) { this.typeAheadListSearch = true; }
+            if (this.toBool(this.componentConfig.TypeAheadObjectSearch) === true) { this.typeAheadObjectSearch = true; }
             if (this.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
             if (this.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
             if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
@@ -802,6 +806,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.spinnerOff('getObjectsList');
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Objects', 'There was an error retrieving the list view objects. Please see an administrator', true));
             });
+            
         }
     }
 
@@ -878,7 +883,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         this.selectedListView = this.pinnedListView;
                         this.selectedListViewExportName = this.selectedListView + '.csv';
                         this.selectedListViewId = result;
-                        this.whereClause = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+                        this.whereClauseList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
                         this.refreshAllListViewData();
 
                     //if we do not then bail.
@@ -1208,11 +1213,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      */
     handleObjectChange(event) {
         this.spinnerOn('handleObjectChange');
+
+        if (this.typeAheadObjectSearch === true) {
+            this.selectedObject = event.detail.selectedValue;
+        } else {
+            this.selectedObject = event.target.value;
+        }
         this.selectedListView = undefined;
         this.selectedListViewId = undefined;
         this.selectedListViewExportName = undefined;
-        this.selectedObject = event.target.value;
-        this.whereClause = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+        this.whereClauseList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
         this.listViewList = undefined;
         this.listViewData = undefined;
         this.listViewDataRows = undefined;

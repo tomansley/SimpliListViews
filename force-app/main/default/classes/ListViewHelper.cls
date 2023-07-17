@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-06-2023
+ * @last modified on  : 07-13-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2297,6 +2297,14 @@ global with sharing class ListViewHelper
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param.Parameter_Value__c  = ListViewHelper.FFALSE;
         param.Parameter_Label__c  = 'Use Type-Ahead For List View Search';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'TypeAheadObjectSearch';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
+        param.Parameter_Label__c  = 'Use Type-Ahead For Object Search';
         params.add(param);
 
         param = new List_View_Config_Parameter__c();

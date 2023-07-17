@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 07-12-2023
+  @last modified on  : 07-13-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -55,13 +55,24 @@
                     <!-- --------------------- -->
                     <template if:true={displayObjectNames}>
                         <lightning-layout-item class={objectlistdropdownstyle} padding="horizontal-small">
-                            <lightning-combobox placeholder={label.Select_Object} 
-                                                label={label.Object} 
-                                                value={selectedObject} 
-                                                onchange={handleObjectChange} 
-                                                options={objectList}
-                                                variant=label-hidden>
-                            </lightning-combobox>                        
+                            <template if:true={typeAheadObjectSearch}>
+                                <c-simpli-u-i-list-views-type-ahead search-type="schema" 
+                                                                    label-field-name="Label"
+                                                                    key-field-name="Name"
+                                                                    initial-id={selectedObject}
+                                                                    field-obj-name="SObject"
+                                                                    onvaluechange={handleObjectChange}>
+                                </c-simpli-u-i-list-views-type-ahead>
+                            </template>
+                            <template if:false={typeAheadObjectSearch}>
+                                <lightning-combobox placeholder={label.Select_Object} 
+                                                    label={label.Object} 
+                                                    value={selectedObject} 
+                                                    onchange={handleObjectChange} 
+                                                    options={objectList}
+                                                    variant=label-hidden>
+                                </lightning-combobox>                        
+                            </template>
                         </lightning-layout-item>
                     </template>
 
@@ -72,12 +83,13 @@
                         <template if:true={selectedObject}>
                             <lightning-layout-item class={listviewdropdownstyle}>
                                 <template if:true={typeAheadListSearch}>
-                                    <c-simpli-u-i-list-views-type-ahead label-field-name="simpli_lv__Label__c"
-                                                                    key-field-name="simpli_lv__API_Name__c"
-                                                                    initial-id={selectedListViewId}
-                                                                    field-obj-name="simpli_lv__List_View__c"
-                                                                    where-clause={whereClause}
-                                                                    onvaluechange={handleListViewChanged}>
+                                    <c-simpli-u-i-list-views-type-ahead search-type="sobject"
+                                                                        label-field-name="simpli_lv__Label__c"
+                                                                        key-field-name="simpli_lv__API_Name__c"
+                                                                        initial-id={selectedListViewId}
+                                                                        field-obj-name="simpli_lv__List_View__c"
+                                                                        where-clause={whereClauseList}
+                                                                        onvaluechange={handleListViewChanged}>
                                     </c-simpli-u-i-list-views-type-ahead>
                                 </template>
                                 <template if:false={typeAheadListSearch}>

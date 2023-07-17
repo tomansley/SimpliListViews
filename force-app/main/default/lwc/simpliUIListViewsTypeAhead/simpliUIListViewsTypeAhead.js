@@ -12,7 +12,33 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
 
     //THESE TWO TO BE REMOVED IF POSSIBLE
     @api initialName = '';  //the initial string value of the field for display purposes only
-    @api initialId = '';    //the initial value of the field.
+
+    _initialId;          //the initial value of the field.
+    @api set initialId(value) 
+         {
+            if (this.searchType === 'schema') {
+                this.searchTerm = value;
+            }
+            this._initialId = value;
+            this.search();
+         }
+         get initialId() { 
+             return this._initialId; 
+         }
+
+
+    _searchType;          //indicates the type of data being searched for. i.e. sobject, metadata, schema
+    @api set searchType(value) 
+         {
+            if (value !== this._searchType) {
+                this.searchTerm = '';
+                this.oldSearchTerm = '';
+            }
+            this._searchType = value;
+         }
+         get searchType() { 
+             return this._searchType; 
+         }
 
     _fieldObjName;          //the API name of the object that the field is on that is being populated
     @api set fieldObjName(value) 
@@ -35,6 +61,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
                 this.oldSearchTerm = '';
             }
             this._whereClause = value;
+            this.search();
          }
          get whereClause() { 
              return this._whereClause; 
@@ -66,10 +93,18 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
              return this._keyFieldName; 
          }
 
+    _searchTerm;           //the API name of the labels associated key field.
+    set searchTerm(value) 
+    {
+        this._searchTerm = value;
+    }
+    get searchTerm() { 
+        return this._searchTerm; 
+    }
+
     @api iconName;          //the icon name used when displaying the options.
 
     href;
-    searchTerm;
     oldSearchTerm;
     isInitialized = false; //identifies if the component has been initialized.
     
@@ -87,66 +122,86 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
     label = { Search_Dot }
 
     renderedCallback() {
-        if (this.isInitialized === false && this.whereClause !== undefined)
+        if (this.isInitialized === false)
         {
-            this.isInitialized = true;
-            console.log('In SimpliUIListViewsTypeAhead.renderedCallback');
-            console.log('initialName    - ' + this.initialName);
-            console.log('initialId      - ' + this.initialId);
-            console.log('fieldObjName   - ' + this.fieldObjName);
-            console.log('labelFieldName - ' + this.labelFieldName);
-            console.log('whereClause    - ' + this.whereClause);
-            this.uniqueKey = this.labelFieldName;
-            console.log('uniqueKey - ' + this.uniqueKey);
-
-            //if we have an initial value then set that as the chosen option.
-            if (this.initialId !== '' && this.initialName !== '')
+            if (this.searchType !== '' && this.searchType !== undefined)
             {
-                this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
-                this.hasValue = true;    
-                this.selectedId = this.initialId;
-                this.selectedName = this.initialName;
-            
-            //if we do not have the name of the record to display then get it.
-            } else if (this.initialId !== undefined && this.initialId !== '' && this.initialName === '')
-            {
-                getRecordName({selectedId: this.initialId, objName: this.fieldObjName, labelFieldName : this.labelFieldName})
-                .then(result => {
-                    console.log('Get record name successful');
-                    console.log('Record name - ' + result);
+                console.log('In SimpliUIListViewsTypeAhead.renderedCallback');
+                console.log('searchType     - ' + this.searchType);
+                console.log('initialName    - ' + this.initialName);
+                console.log('initialId      - ' + this.initialId);
+                console.log('fieldObjName   - ' + this.fieldObjName);
+                console.log('labelFieldName - ' + this.labelFieldName);
+                console.log('whereClause    - ' + this.whereClause);
+                this.uniqueKey = this.labelFieldName;
+                console.log('uniqueKey - ' + this.uniqueKey);
 
-                    this.selectedName = result;
-                    this.searchTerm = this.selectedName;
+                //if we have an initial value then set that as the chosen option.
+                if (this.initialId !== '' && this.initialName !== '')
+                {
                     this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
                     this.hasValue = true;    
                     this.selectedId = this.initialId;
-                })
-                .catch(error => {
-                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-                });    
+                    this.selectedName = this.initialName;
+                    this.isInitialized = true;
 
+                //if we do not have the name of the record to display then get it.
+                } else if (this.searchType === 'sobject' && this.initialId !== undefined && this.initialId !== '' && this.initialName === '')
+                {
+                    getRecordName({selectedId: this.initialId, objName: this.fieldObjName, labelFieldName : this.labelFieldName})
+                    .then(result => {
+                        console.log('Get record name successful');
+                        console.log('Record name - ' + result);
+
+                        this.selectedName = result;
+                        this.searchTerm = this.selectedName;
+                        this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
+                        this.hasValue = true;    
+                        this.selectedId = this.initialId;
+                        this.isInitialized = true;
+                    })
+                    .catch(error => {
+                        console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+                    });    
+                    this.isInitialized = true;
+                }
+
+                console.log('selectedName  - ' + this.selectedName);
+                console.log('selectedId    - ' + this.selectedId);
             }
-
-            console.log('selectedName  - ' + this.selectedName);
-            console.log('selectedId    - ' + this.selectedId);
         } else {
             console.log('Inside typeahead renderedCallback');
         }
     }
 
-    /*
-     * Method called when the search term has been updated and the data is searched for.
-     */
-    @wire(search, {searchTerm : '$searchTerm', objName : '$fieldObjName', labelFieldName : '$labelFieldName', keyFieldName : '$keyFieldName', whereClause : '$whereClause'})
-    wiredRecords({ error, data }) {
-        if (data) {
-            this.options = data;
-           // console.log("Options - ", JSON.stringify(this.options));
-            if (this.options.length === 0)
-                this.options = undefined;
-        } else if (error) {
-            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+    search() {
+
+        if ( (this.searchType === 'sobject' && this.whereClause !== undefined && this.labelFieldName !== undefined && this.keyFieldName !== undefined && this.fieldObjName != undefined)
+                ||
+             (this.searchType === 'schema' && this.fieldObjName !== undefined)
+                &&
+             this.searchTerm.length > 1)
+        {
+            console.log('Performing search - ' + this.searchType + ', ' + this.searchTerm + ', ' + this.fieldObjName + ', ' + this.labelFieldName + ', ' + this.keyFieldName + ', ' + this.whereClause)
+            search({searchType : this.searchType, searchTerm : this.searchTerm, objName : this.fieldObjName, labelFieldName : this.labelFieldName, keyFieldName : this.keyFieldName, whereClause : this.whereClause})
+            .then(result => {
+                console.log('searchType - ' + this.searchType);
+                console.log('fieldObjName - ' + this.fieldObjName);
+                console.log('result - ' + result);
+                this.options = result;
+            // console.log("Options - ", JSON.stringify(this.options));
+                if (this.options.length === 0)
+                    this.options = undefined;
+            })
+            .catch(error => {
+                console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
+            });    
+        
+        } else if (this.searchType === 'schema' && this.fieldObjName !== undefined)
+        {
+
         }
+
     }
 
     /*
@@ -163,7 +218,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
         this.searchTerm = '';
         this.inputClass = 'slds-has-focus';
         this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus slds-is-open';
-
+        this.search();
     }
 
     /*
@@ -207,6 +262,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
     onChange(event) {
         console.log("In onChange");
         this.searchTerm = event.target.value;
+        this.search();
         console.log("searchTerm",this.searchTerm);
     }
 
