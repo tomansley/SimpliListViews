@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-22-2022
+ * @last modified on  : 07-19-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -58,69 +58,82 @@ public with sharing abstract class ListViewCustomToolingAbstract extends ListVie
             params.add(param); //list returned with ALL params
         }
 
-        if (paramsByName.get('TotalColumns') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMNS) == null)
         {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'TotalColumns';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMNS;
             param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
             param.Parameter_Value__c  = '';
-            param.Parameter_Label__c  = 'Total Columns';
+            param.Parameter_Label__c  = ListViewHelper.PARAM_TOTAL_COLUMNS;
             params.add(param);
         } else {
             params.add(paramsByName.get('TotalColumns'));
         }
 
-        if (paramsByName.get('TotalColumnsColor') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) == null)
         {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'TotalColumnsColor';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
             param.Parameter_Type__c   = 'Color';
             param.Parameter_Value__c  = '';
-            param.Parameter_Label__c  = 'Total Column Color';
+            param.Parameter_Label__c  = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
             params.add(param);
         } else {
             params.add(paramsByName.get('TotalColumnsColor'));
         }
 
-        if (paramsByName.get('ReturnSize') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_RETURN_SIZE) == null)
         {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'ReturnSize';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_RETURN_SIZE;
             param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
             param.Parameter_Value__c  = '75';
             param.Parameter_Label__c  = 'Return Size';
             params.add(param);
         } else {
-            params.add(paramsByName.get('ReturnSize'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_RETURN_SIZE));
         }
         
-        if (paramsByName.get('RefreshRate') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_REFRESH_RATE) == null)
         {        
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'RefreshRate';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_REFRESH_RATE;
             param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
             param.Parameter_Value__c  = '45';
             param.Parameter_Label__c  = 'Refresh Rate';
             params.add(param);
         } else {
-            params.add(paramsByName.get('RefreshRate'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_REFRESH_RATE));
         }
 
-        if (paramsByName.get('ExportHeaderType') == null)
+        if (paramsByName.get(ListViewHelper.PARAM_SINGLE_CLICK_REFRESH) == null)
+        {        
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = ListViewHelper.PARAM_SINGLE_CLICK_REFRESH;
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Single Click For Automatic Data Refresh';
+            params.add(param);
+        } else {
+            params.add(paramsByName.get(ListViewHelper.PARAM_SINGLE_CLICK_REFRESH));
+        }
+
+        if (paramsByName.get(ListViewHelper.PARAM_EXPORT_HEADER_TYPE) == null)
         {      
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = config.Id;
-            param.Parameter_Name__c   = 'ExportHeaderType';
+            param.Parameter_Name__c   = ListViewHelper.PARAM_EXPORT_HEADER_TYPE;
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
             param.Parameter_Value__c  = ListViewHelper.FFALSE;
             param.Parameter_Label__c  = 'Use API Names For File Export Headers';
             params.add(param);
         } else {
-            params.add(paramsByName.get('ExportHeaderType'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_EXPORT_HEADER_TYPE));
         }
 
         return params;

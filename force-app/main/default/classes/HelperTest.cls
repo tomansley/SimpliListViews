@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-12-2023
+ * @last modified on  : 07-19-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -325,7 +325,7 @@ public with sharing class HelperTest {
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
 
 		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'TotalColumns';
+		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMNS;
 		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param.Parameter_Value__c = 'AnnualRevenue';
 		param.List_View_Config__c = config.Id;
@@ -333,7 +333,7 @@ public with sharing class HelperTest {
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'TotalColumnsColor';
+		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
 		param.Parameter_Type__c = 'Color';
 		param.Parameter_Value__c = '#E5F0FA';
 		param.List_View_Config__c = config.Id;
@@ -341,7 +341,7 @@ public with sharing class HelperTest {
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'ReturnSize';
+		param.Parameter_Name__c = ListViewHelper.PARAM_RETURN_SIZE;
 		param.Parameter_Type__c = ListViewHelper.TYPE_NUMBER;
 		param.Parameter_Value__c = '100';
 		param.List_View_Config__c = config.Id;
@@ -349,15 +349,23 @@ public with sharing class HelperTest {
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'RefreshRate';
+		param.Parameter_Name__c = ListViewHelper.PARAM_REFRESH_RATE;
 		param.Parameter_Type__c = ListViewHelper.TYPE_NUMBER;
 		param.Parameter_Value__c = '45';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'Refresh Rate';
         params.add(param);
-        
+
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'AllRows';
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = ListViewHelper.PARAM_SINGLE_CLICK_REFRESH;
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
+        param.Parameter_Label__c  = 'Single Click For Automatic Data Refresh';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = ListViewHelper.PARAM_ALL_ROWS;
 		param.Parameter_Type__c = ListViewHelper.TYPE_BOOLEAN;
 		param.Parameter_Value__c = ListViewHelper.FFALSE;
 		param.List_View_Config__c = config.Id;
@@ -365,7 +373,7 @@ public with sharing class HelperTest {
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
-        param.Parameter_Name__c   = 'PDFOrientationPortrait';
+        param.Parameter_Name__c   = ListViewHelper.PARAM_PDF_ORIENT_PORTRAIT;
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param.Parameter_Value__c  = 'true';
         param.List_View_Config__c = config.Id;
@@ -373,7 +381,7 @@ public with sharing class HelperTest {
         params.add(param);
 
         param = new List_View_Config_Parameter__c();
-        param.Parameter_Name__c   = 'PDFTheme';
+        param.Parameter_Name__c   = ListViewHelper.PARAM_PDF_THEME;
         param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
         param.Parameter_Value__c  = 'striped';
         param.List_View_Config__c = config.Id;

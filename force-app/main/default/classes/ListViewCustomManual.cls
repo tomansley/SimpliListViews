@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-31-2022
+ * @last modified on  : 07-19-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -79,6 +79,19 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             params.add(param);
         } else {
             params.add(paramsByName.get(ListViewHelper.PARAM_REFRESH_RATE));
+        }
+
+        if (paramsByName.get(ListViewHelper.PARAM_SINGLE_CLICK_REFRESH) == null)
+        {        
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = ListViewHelper.PARAM_SINGLE_CLICK_REFRESH;
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Single Click For Automatic Data Refresh';
+            params.add(param);
+        } else {
+            params.add(paramsByName.get(ListViewHelper.PARAM_SINGLE_CLICK_REFRESH));
         }
 
         if (paramsByName.get(ListViewHelper.PARAM_EXPORT_HEADER_TYPE) == null)

@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-13-2023
+ * @last modified on  : 07-19-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -68,16 +68,17 @@ global with sharing class ListViewHelper
     public static final String TYPE_INTEGER       = 'integer';
     public static final String TYPE_COMBOBOX      = 'combobox';
 
-    public static final String PARAM_ADD_FIELDS          = 'AdditionalFields';
-    public static final String PARAM_TOTAL_COLUMNS       = 'TotalColumns';
-    public static final String PARAM_RETURN_SIZE         = 'ReturnSize';
-    public static final String PARAM_REFRESH_RATE        = 'RefreshRate';
-    public static final String PARAM_TOTAL_COLUMN_COLOR  = 'TotalColumnsColor';
-    public static final String PARAM_EXPORT_HEADER_TYPE  = 'ExportHeaderType';
-    public static final String PARAM_ALL_ROWS            = 'AllRows';
-    public static final String PARAM_PDF_ORIENT_PORTRAIT = 'PDFOrientationPortrait';
-    public static final String PARAM_PDF_THEME           = 'PDFTheme';
-    public static final String PARAM_SPLIT_COLUMNS       = 'SplitColumns';
+    public static final String PARAM_ADD_FIELDS           = 'AdditionalFields';
+    public static final String PARAM_TOTAL_COLUMNS        = 'TotalColumns';
+    public static final String PARAM_RETURN_SIZE          = 'ReturnSize';
+    public static final String PARAM_REFRESH_RATE         = 'RefreshRate';
+    public static final String PARAM_SINGLE_CLICK_REFRESH = 'SingleClickAutoDataRefresh';
+    public static final String PARAM_TOTAL_COLUMN_COLOR   = 'TotalColumnsColor';
+    public static final String PARAM_EXPORT_HEADER_TYPE   = 'ExportHeaderType';
+    public static final String PARAM_ALL_ROWS             = 'AllRows';
+    public static final String PARAM_PDF_ORIENT_PORTRAIT  = 'PDFOrientationPortrait';
+    public static final String PARAM_PDF_THEME            = 'PDFTheme';
+    public static final String PARAM_SPLIT_COLUMNS        = 'SplitColumns';
 
     public static final String SUBTYPE_MANUAL = 'Manual';
     public static final String SUBTYPE_TOOLING = 'Tooling';

@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-16-2022
- * @last modified by  : 
+ * @last modified on  : 07-19-2023
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -1727,13 +1727,14 @@ public with sharing abstract class ListViewAbstract {
                 
                 //if we are in SPLIT mode then don't pass back the following params
                 } else if (listViewMode == ListViewHelper.MODE_SPLIT) {
-                    if (param.getName() != 'TotalColumns'
-                        && param.getName() != 'TotalColumnsColor'
-                        && param.getName() != 'RefreshRate'
-                        && param.getName() != 'ExportHeaderType'
-                        && param.getName() != 'AllRows'
-                        && param.getName() != 'PDFOrientationPortrait'
-                        && param.getName() != 'PDFTheme') {
+                    if (param.getName() != ListViewHelper.PARAM_TOTAL_COLUMNS
+                        && param.getName() != ListViewHelper.PARAM_TOTAL_COLUMN_COLOR
+                        && param.getName() != ListViewHelper.PARAM_REFRESH_RATE
+                        && param.getName() != ListViewHelper.PARAM_SINGLE_CLICK_REFRESH
+                        && param.getName() != ListViewHelper.PARAM_EXPORT_HEADER_TYPE
+                        && param.getName() != ListViewHelper.PARAM_ALL_ROWS
+                        && param.getName() != ListViewHelper.PARAM_PDF_ORIENT_PORTRAIT
+                        && param.getName() != ListViewHelper.PARAM_PDF_THEME) {
                         params.add(param);
                     }
                 } else {

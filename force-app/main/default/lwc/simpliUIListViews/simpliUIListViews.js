@@ -72,6 +72,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api joinFieldName              = '';           //if the component uses data coming in from the message channel this field identifies the lookup field to use that data for.
     @api useMessageChannel          = false;        //identifies if the message channel should be used or not. This is used when components should be passing data between each other for updates.
     @api allowRefresh               = false;        //config indicating whether the auto refresh checkbox is made available.
+    @api singleClickAutoRefresh     = undefined;    //whether clicking a single or double time starts the auto refresh.
     @api allowInlineEditing         = false;        //config indicating whether inline editing is available
     @api displayRecordPopovers      = false;        //config indicating whether record popovers should be displayed
     @api allowAdmin                 = false;        //indicates whether the admin button should display to the user
@@ -203,7 +204,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
     @track offset = -1;
     @track rowLimit = -1;
-    @track refreshRate = '';            //the refresh rate in seconds if the list view is auto refreshing.
+    @track refreshRate = '';                    //the refresh rate in seconds if the list view is auto refreshing.
 
     //for handling hover changes
     @track hoverSFDCId;
@@ -386,25 +387,25 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 }
             } else if (this.mode === 'Split View') {
 
-                this.canPin                = true;
-                this.isModeSplitView       = true;
-                this.displayListViewNames  = true;
-                this.headerCanWrap         = true;
-                this.hasMainTitle          = false;
-                this.displayRowCount       = false;
-                this.displaySelectedCount  = false;
-                this.allowInlineEditing    = false;
-                this.displayTextSearch     = false;
-                this.canDisplayTextSearch  = false;
-                this.typeAheadListSearch   = false;
-                this.typeAheadObjectSearch = false;
-                this.displayActions        = false;
-                this.displayRecordPopovers = false;
-                this.allowRefresh          = false;
-                this.displayURL            = false;
-                this.displayReprocess      = false;
-                this.listviewdropdownstyle = 'splitviewlistviewdropdown';
-                this.listwrapperstyle      = 'splitviewscrollwrapper';
+                this.canPin                 = true;
+                this.isModeSplitView        = true;
+                this.displayListViewNames   = true;
+                this.headerCanWrap          = true;
+                this.hasMainTitle           = false;
+                this.displayRowCount        = false;
+                this.displaySelectedCount   = false;
+                this.allowInlineEditing     = false;
+                this.displayTextSearch      = false;
+                this.canDisplayTextSearch   = false;
+                this.typeAheadListSearch    = false;
+                this.typeAheadObjectSearch  = false;
+                this.displayActions         = false;
+                this.displayRecordPopovers  = false;
+                this.allowRefresh           = false;
+                this.displayURL             = false;
+                this.displayReprocess       = false;
+                this.listviewdropdownstyle  = 'splitviewlistviewdropdown';
+                this.listwrapperstyle       = 'splitviewscrollwrapper';
                 //NO OBJECT
                 if (this.singleListViewObject === '')
                 {
@@ -1032,6 +1033,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('Auto refresh was set to ' + this.isRefreshing + ' for ' + this.pageName);
         console.log('Refresh time was ' + this.refreshTime + ' for ' + this.pageName);
 
+        //if we do not have the single/double click refresh setting then get it
+        if (this.singleClickAutoRefresh === undefined)
+        {
+            console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(SingleClickAutoDataRefresh) - ' + this.calloutCount++);
+            this.singleClickAutoRefresh = await this.getConfigParameter('SingleClickAutoDataRefresh');    
+            if (this.singleClickAutoRefresh === undefined || this.singleClickAutoRefresh === null || this.singleClickAutoRefresh === '') {
+                this.singleClickAutoRefresh = 'false';
+            }   
+        }
+
         let mills = (Date.now() - this.refreshTime);
 
         //we are refreshing automatically and someone stops it.
@@ -1041,7 +1052,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dispatchEvent(SLVHelper.createToast('success', '', 'Auto Refresh Stopped', '', false));     
             
         //if someone has clicked the refresh button again within 5 seconds
-        } else if (mills < 5000 && this.isRefreshing === false)
+        } else if (this.singleClickAutoRefresh === 'true' || (mills < 5000 && this.isRefreshing === false))
         {
             this.isRefreshing = true;
 
@@ -2043,6 +2054,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         if (event.detail === true) {
             this.refreshRate = await this.getConfigParameter('RefreshRate');    
+            this.singleClickAutoRefresh = await this.getConfigParameter('SingleClickAutoDataRefresh');    
 
             this.handleComponentConfig();
 
