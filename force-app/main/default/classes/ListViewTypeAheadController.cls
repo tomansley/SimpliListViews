@@ -10,6 +10,7 @@ public with sharing class ListViewTypeAheadController {
     public static List<ListViewController.SelectOption> search(String searchType, String searchTerm, String objName, String labelFieldName, String keyFieldName, String whereClause) 
     {
         if (searchTerm == null) searchTerm = '';
+        searchTerm = searchTerm.toLowerCase();
 
         List<ListViewController.SelectOption> options = new List<ListViewController.SelectOption>();
 
@@ -52,7 +53,7 @@ public with sharing class ListViewTypeAheadController {
                     String label = objMap.get(apiName);
                     if (searchTerm == '')
                         options.add(new ListViewController.SelectOption(apiName, label));         
-                    else if (label.contains(searchTerm))
+                    else if (label.toLowerCase().contains(searchTerm))
                         options.add(new ListViewController.SelectOption(apiName, label));         
 
                     if (options.size() > 30) break;
