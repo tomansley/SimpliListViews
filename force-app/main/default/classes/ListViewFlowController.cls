@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-22-2021
+ * @last modified on  : 07-26-2023
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class ListViewFlowController {
@@ -10,6 +10,8 @@ public with sharing class ListViewFlowController {
 
     public ListViewFlowController() {
         recordIds = ApexPages.currentPage().getParameters().get('recordIds');
+        if (recordIds == null)
+            recordIds = '';
 
         System.debug(LoggingLevel.FINE, 'Record Ids coming in - ' + recordIds);
         

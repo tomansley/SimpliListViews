@@ -1,7 +1,7 @@
 /**
  * @description       : Implementation of an action to start flows.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-08-2021
+ * @last modified on  : 07-26-2023
  * @last modified by  : tom@ansleyllc.com
  * Ver   Date         Author                       Modification
  * 1.0   08-29-2021   tom@ansleyllc.com   Initial Version
@@ -34,10 +34,13 @@ public with sharing class ListViewActionFlow extends ListViewAction {
                 namespace = flowName.substringBefore('__');
                 flowName = flowName.substringAfter('__');
             }
-            fieldValues.put(RECORD_IDS, recordIds);
+            if (recordIds != null && recordIds.size() > 0)
+                fieldValues.put(RECORD_IDS, recordIds);
 
             Flow.Interview flowInt = null;
-            if (String.isEmpty(namespace)) //flow name has NO namespace
+            if (String.isEmpty(namespace) && fieldValues.isEmpty()) //flow name has NO namespace
+                flowInt = Flow.Interview.createInterview(flowName, null);
+            else if (String.isEmpty(namespace) && !fieldValues.isEmpty()) //flow name has NO namespace
                 flowInt = Flow.Interview.createInterview(flowName, fieldValues);
             else //flow name HAS namespace
                 flowInt = Flow.Interview.createInterview(namespace, flowName, fieldValues);

@@ -72,7 +72,9 @@ export default class simpliUIListViewsFlow extends LightningElement {
             recordIdStr = recordIdStr.substring(0, recordIdStr.length-1);
         }
 
-        recordIdStr = '&recordIds=' + encodeURI(recordIdStr);
+        if (recordIdStr !== '')
+            recordIdStr = '&recordIds=' + encodeURI(recordIdStr);
+            
         let origin = '&origin=' + encodeURI(this.url);
         let finalURL = this.url + this.flowName + recordIdStr + origin;
 

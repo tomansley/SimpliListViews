@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 10-22-2021
+  @last modified on  : 07-26-2023
   @last modified by  : tom@ansleyllc.com
 -->
 <apex:page controller="ListViewFlowController" id="simpliUIListViewsFlow" showHeader="false" sidebar="false" lightningStylesheets="true">
@@ -39,7 +39,11 @@
                     $Lightning.createComponent("lightning:flow", {"onstatuschange": statusChange},
                         "screenFlow",
                         function (component) {
-                            component.startFlow("{!JSENCODE($CurrentPage.parameters.flowname)}", inputVariables);
+                            if (inputVariables[0].value === undefined) {
+                                component.startFlow("{!JSENCODE($CurrentPage.parameters.flowname)}", []);
+                            } else {
+                                component.startFlow("{!JSENCODE($CurrentPage.parameters.flowname)}", inputVariables);
+                            }
                         }
                     );
                 });
