@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-19-2023
+ * @last modified on  : 07-26-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1397,6 +1397,7 @@ global with sharing class ListViewHelper
             objectRows = Database.query(soql);
         } catch (Exception e) {
             ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getCustomListViewData(' + soql + ')  ' + ListViewException.getExtendedString(e));
+            throw e;
         }
         
         return objectRows;
