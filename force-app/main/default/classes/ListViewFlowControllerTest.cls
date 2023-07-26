@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-05-2021
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 07-26-2023
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   11-05-2020   tom@ansleyllc.com   Initial Version
@@ -26,6 +26,18 @@ global class ListViewFlowControllerTest {
         Test.stopTest();
 
         System.assert(controller.recordIds != null);
+
+    }
+
+    static testMethod void listViewFlowControllerNoRecordsTest() {
+
+        Test.startTest();
+
+        ListViewFlowController controller = new ListViewFlowController();
+
+        Test.stopTest();
+
+        System.assertEquals('', controller.recordIds);
 
     }
 

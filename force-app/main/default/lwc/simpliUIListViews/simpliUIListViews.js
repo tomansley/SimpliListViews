@@ -1971,22 +1971,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //------------------------------------------------------
         } else {
 
-            if (this.selectedRecordIds.size === 0) {
-                this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Processing Action', 'No rows selected for processing', false)); 
-                this.dispatchEvent(new CustomEvent('processclick'));
+            this.selectedRecordIdsStr = JSON.stringify( Array.from(this.selectedRecordIds));
+
+            this.selectedActionLabel = 'Label ' + this.selectedAction.label;               //   <-- This to be fixed.
             
-            } else {
-                this.selectedRecordIdsStr = JSON.stringify( Array.from(this.selectedRecordIds));
-
-                this.selectedActionLabel = 'Label ' + this.selectedAction.label;               //   <-- This to be fixed.
-                
-                console.log('Action Label selected - ' + this.selectedActionLabel + ' for ' + this.pageName);
-                console.log('Action name           - ' + this.selectedAction.value + ' for ' + this.pageName);
-                console.log('Action Record Ids     - ' + this.selectedRecordIdsStr + ' for ' + this.pageName);
-        
-                this.showActionModal = true;
-            }
-
+            console.log('Action Label selected - ' + this.selectedActionLabel + ' for ' + this.pageName);
+            console.log('Action name           - ' + this.selectedAction.value + ' for ' + this.pageName);
+            console.log('Action Record Ids     - ' + this.selectedRecordIdsStr + ' for ' + this.pageName);
+    
+            this.showActionModal = true;
         }
 
         this.resetActionComboBox();
