@@ -304,7 +304,7 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
             }
         })
         .catch(error => {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Action Create Error', 'There was a problem creating the action. Please see an administrator', true)); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Action Create Error', 'There was a problem creating the action.', true)); 
             this.spinnerOff();
         });
     }

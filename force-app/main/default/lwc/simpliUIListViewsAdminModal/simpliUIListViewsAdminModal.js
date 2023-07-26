@@ -160,7 +160,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 this.listViewConfig = undefined;
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Retrieving List View Config',
-                    message: 'There was an error retrieving the list view configuration. Please see an administrator - ' + error.body.message,
+                    message: 'There was an error retrieving the list view configuration - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));
@@ -183,7 +183,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             this.listViewColumns = undefined; 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Column Labels',
-                message: 'There was an error retrieving the list view column labels. Please see an administrator - ' + error.body.message + '\n\n' + error.body.stackTrace,
+                message: 'There was an error retrieving the list view column labels - ' + error.body.message + '\n\n' + error.body.stackTrace,
                 variant: 'error',
                 mode: 'sticky'
             }));
@@ -266,7 +266,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error processing the param changes. Please see an administrator - ' + error.body.message,
+                    message: 'There was an error processing the param changes - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));
@@ -369,7 +369,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error processing the condition changes. Please see an administrator - ' + error.body.message,
+                    message: 'There was an error processing the condition changes - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));

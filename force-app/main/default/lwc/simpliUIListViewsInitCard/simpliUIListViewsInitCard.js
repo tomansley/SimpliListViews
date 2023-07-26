@@ -86,7 +86,7 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
                 {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
-                        message: 'There was an error processing the list views. Please see an administrator.',
+                        message: 'There was an error processing the list views.',
                         variant: 'error',
                         mode: 'sticky'
                     }));
@@ -114,7 +114,7 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
                 console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error processing the list views. Please see an administrator - ' + error.body.message,
+                    message: 'There was an error processing the list views - ' + error.body.message,
                     variant: 'error',
                     mode: 'sticky'
                 }));

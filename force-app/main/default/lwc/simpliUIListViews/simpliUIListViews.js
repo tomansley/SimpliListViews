@@ -503,7 +503,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.isInitializing = false;
             }
         } catch(error) {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Config', 'There was an error retrieving the user config. Please see an administrator', true)); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Config', 'There was an error retrieving the user config.', true)); 
         };
 
     }
@@ -565,7 +565,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 }
             } 
         } catch(error) {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Sorting', 'There was an error retrieving the user sorting config. Please see an administrator', true)); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Sorting', 'There was an error retrieving the user sorting config.', true)); 
         };
     }
     /*
@@ -605,7 +605,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         } else if (error) { 
             this.objectActionList = undefined; 
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Actions', 'There was an error retrieving the list view actions. Please see an administrator', true)); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Actions', 'There was an error retrieving the list view actions.', true)); 
         }
     }
 
@@ -659,7 +659,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             let listViewDataResult = await getListViewData({pageName: this.pageName, compType: this.mode, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset, textSearchStr: this.textSearchText });
             this.handleListViewDataPage(listViewDataResult);
         } catch(error) {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Data', 'There was an error retrieving the list view data. Please see an administrator', true));
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Data', 'There was an error retrieving the list view data.', true));
         }
 
         this.refreshTime = Date.now();
@@ -807,7 +807,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             })
             .catch(error => {
                 this.spinnerOff('getObjectsList');
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Objects', 'There was an error retrieving the list view objects. Please see an administrator', true));
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Objects', 'There was an error retrieving the list view objects.', true));
             });
             
         }
@@ -864,7 +864,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             })
             .catch(error => {
                 this.spinnerOff('getListViewsForObject');
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Object List Views', 'There was an error retrieving ' + this.selectedObject + ' list views data. This usually indicates the user does not have read access to the object. Please see an administrator if you believe this to be an error', true));
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Object List Views', 'There was an error retrieving ' + this.selectedObject + ' list views data. This usually indicates the user does not have read access to the object. if you believe this to be an error', true));
             });
 
         //if we
@@ -1002,7 +1002,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     
             })
             .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list view. Please see an administrator', true)); 
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list view.', true)); 
             });
 
         } else {
@@ -1313,7 +1313,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Pinned', 'List view successfully pinned.', false)); 
         })
         .catch(error => {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Pinning Error', 'There was an error during user configuration update. Please see an administrator', true)); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Pinning Error', 'There was an error during user configuration update.', true)); 
         });
 
     }
@@ -1333,11 +1333,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.isPinned = false;
             } else {
                 console.log('List view unpinning NOT successful for ' + this.pageName);
-                this.dispatchEvent(SLVHelper.createToast('error', '', 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator', false)); 
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions.', false)); 
             }
         })
         .catch(error => {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions. Please see an administrator', true)); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Unpinning Error', 'There was a problem unpinning the list view. This might be due to user permissions.', true)); 
         });
     }
     
@@ -1505,12 +1505,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                     //else send an ERROR toast.
                     } else {
-                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the list view. Please see an administrator', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the list view.', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick1');
                     }
                 })
                 .catch(error => {
-                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list view. Please see an administrator', true)); 
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list view.', true)); 
                     this.spinnerOff('handleProcessListViewsButtonClick2');
                 });
 
@@ -1536,12 +1536,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                     //else send an ERROR toast.
                     } else {
-                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the ' + this.selectedObject + ' list views. Please see an administrator', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the ' + this.selectedObject + ' list views.', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick4');
                     }
                 })
                 .catch(error => {
-                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the ' + this.selectedObject + ' list views. Please see an administrator', true)); 
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the ' + this.selectedObject + ' list views.', true)); 
                     this.spinnerOff('handleProcessListViewsButtonClick5');
                 });
 
@@ -1559,7 +1559,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     //if we have an error then send an ERROR toast.
                     if (result === 'failed')
                     {
-                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the list views. Please see an administrator', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the list views.', false)); 
                         this.spinnerOff('handleProcessListViewsButtonClick6');
 
                     //else send a SUCCESS toast.
@@ -1576,7 +1576,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     }
                 })
                 .catch(error => {
-                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list views. Please see an administrator', true)); 
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the list views.', true)); 
                     this.spinnerOff('handleProcessListViewsButtonClick8');
                 });
 
@@ -1633,7 +1633,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             //this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Width Saved', 'List view width successfully saved.', false)); 
         })
         .catch(error => {
-            //this.dispatchEvent(SLVHelper.createToast('error', error, 'Width Save Error', 'There was an error during user configuration update. Please see an administrator', true)); 
+            //this.dispatchEvent(SLVHelper.createToast('error', error, 'Width Save Error', 'There was an error during user configuration update.', true)); 
         });
 
     }
@@ -2151,7 +2151,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.refreshAllListViewData();
             })
             .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the record. Please see an administrator', true)); 
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the record.', true)); 
                 this.spinnerOff('handleRowDataSave');
             });
         }
@@ -2200,7 +2200,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             })
             .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the records. Please see an administrator', true)); 
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the records.', true)); 
                 this.spinnerOff('handleAllRowDataSave');
             });
         }

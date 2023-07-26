@@ -151,7 +151,7 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
 
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Processing Error',
-                    message: 'There was an error loading the refresh job config. Please see an administrator - ' + errorStr,
+                    message: 'There was an error loading the refresh job config - ' + errorStr,
                     variant: 'error',
                     mode: 'sticky'
                 }));
@@ -275,7 +275,7 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
 
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Processing Error',
-                message: 'There was an error saving the refresh job config. Please see an administrator - ' + errorStr,
+                message: 'There was an error saving the refresh job config - ' + errorStr,
                 variant: 'error',
                 mode: 'sticky'
             }));
