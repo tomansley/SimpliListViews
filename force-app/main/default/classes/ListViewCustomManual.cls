@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-19-2023
+ * @last modified on  : 07-26-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -342,7 +342,6 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 if (!columnMetaData.name.contains('.') || normalFields.keySet().contains(columnMetaData.name.substringBefore('.')))
                 {
                     HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnMetaData.name);
-    
                     System.debug(LoggingLevel.FINE, 'None Child Field Parent Obj Type - ' + fieldData.parentObjType + ', Field Data Type - ' + fieldData.getType() + ', Value - ' + fieldData.value);
 
                     FieldWrapper field = new FieldWrapper(fieldData.label, 
@@ -368,8 +367,9 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                     }
 
                     System.debug(LoggingLevel.FINE, 'Field - ' + field);
-
-                    if (ListViewAbstract.validNameColumnNames.contains(field.getName())
+                    
+                    if (ListViewAbstract.validNameColumnNames.contains(field.getName().substringAfterLast('.'))
+                        || ListViewAbstract.validNameColumnNames.contains(field.getName())
                         || (field.objValue != null //if we have a lookup object
                                 && fieldData.value != null // AND a value
                                 && field.getName().toUpperCase().contains('.NAME')))  //if the name of the field is in the list identifying a link field

@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-14-2023
+ * @Last Modified On   : 07-26-2023
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -820,7 +820,7 @@ public with sharing class HelperSchema {
 
                         data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
 						data.parentObjType = getObjectType(currentObj);
-                        data.objValueId = objValueId;
+                        //data.objValueId = objValueId;
                         data.isEditable = fieldDesc.isUpdateable();
 
                         if (fieldDesc.isHtmlFormatted())
@@ -929,7 +929,6 @@ public with sharing class HelperSchema {
 				//if we are at the last field then get the value and return
 				if (fieldHierarchy.indexOf(field) == fieldHierarchy.size()-1)
 				{
-
                     System.debug(LoggingLevel.FINE, 'Field - ' + field);
                     System.debug(LoggingLevel.FINE, 'Value - ' + currentStructure.get(field));
                     System.debug(LoggingLevel.FINE, 'Parent Obj - ' + currentParentObjType);
@@ -1413,6 +1412,8 @@ public with sharing class HelperSchema {
             this.isEditable    = false;
             this.parentObjType = '';
             this.isHTML        = false;
+            if (objValue != null)
+                objValueId = String.valueOf(objValue.get('Id'));
         }
 
         public FieldData(String name, Object value)
