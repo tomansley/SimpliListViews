@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 01-27-2022
+  @last modified on  : 08-09-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -60,9 +60,21 @@
         <lightning-card title={label.Quick_Start} icon-name="standard:custom_notification">
             <div class="slds-var-m-around_medium">
                 <div style="padding-left: 20px;">
+                    <p style="padding-bottom: 10px; padding-top: 10px; font-weight:bold;">View All List Views In One Component</p>
                     <ol style="list-style-type:decimal; list-style-position: inside;">
-                        <li style="padding-bottom: 5px;"><b>Initialize List Views - </b>Click the refresh button above to process the list views if they have not been initialized.</li>
-                        <li style="padding-bottom: 5px;"><b>Go To Simpli List Views Examples App - </b>The home tab will be the "Everything Example" tab. The objects and list views will be displayed.</li>
+                        <li style="padding-bottom: 5px;">Initialize List Views - Go to the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Admin">Admin tab</a> in the SLV Admin app. Click the Refresh button and wait for initialization to complete</li>
+                        <li style="padding-bottom: 5px;">Go To Simpli List Views Examples App - The home tab will be the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Example_1">Everything Example</a> tab. The objects and list views will be displayed.</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="slds-var-m-around_medium">
+                <div style="padding-left: 20px;">
+                    <p style="padding-bottom: 10px; padding-top: 10px; font-weight:bold;">Add List View</p>
+                    <ol style="list-style-type:decimal; list-style-position: inside;">
+                        <li style="padding-bottom: 5px;">Create Standard List View - Go to any object and create a new list view. Add any columns etc. that need to be viewed</li>
+                        <li style="padding-bottom: 5px;">Reinitialize List Views - Go to the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Admin">Admin tab</a> in the SLV Admin app. Click the Refresh button and wait for updating to complete</li>
+                        <li style="padding-bottom: 5px;">Find List View In SLV Examples App - Go to the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Example_1">Everything Example</a> tab. Find the associated object and tab.</li>
+                        <li style="padding-bottom: 5px;">Update List View Functionality - Add column totals, highlighting, refresh rates etc. to make your list view awesome!</li>
                     </ol>
                 </div>
             </div>
@@ -240,6 +252,7 @@
                         <ol style="list-style-type:decimal; list-style-position: inside;">
                             <li style="padding-bottom: 5px;"><b>Sort Order - </b>Indicates the sort order that the user has selected for a given list view for a given page.</li>
                             <li style="padding-bottom: 5px;"><b>Pinned List View - </b>Identifies the list view that will automatically be displayed when the page is refreshed or initialized.</li>
+                            <li style="padding-bottom: 5px;"><b>Column Widths - </b>Identifies columns that have been explicitly set by the user so that on refresh the column width is maintained.</li>
                         </ol>
                     </div>
                     <br/>
