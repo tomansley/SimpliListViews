@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-26-2023
+ * @Last Modified On   : 07-27-2023
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -29,7 +29,7 @@ public with sharing class HelperSchema {
 
 	public static final String LABEL       = 'label';
     public static final String NAME        = 'name';
-    public static final String DOMAIN_NAME = [SELECT NamespacePrefix FROM Organization].NamespacePrefix + '__';
+    public static final String DOMAIN_NAME = [SELECT NamespacePrefix FROM Organization LIMIT 1].NamespacePrefix + '__';
 
     public static final String ACCESSIBLE  = 'accessible';
     public static final String CREATABLE   = 'creatable';
