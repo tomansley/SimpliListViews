@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 08-09-2023
+  @last modified on  : 08-10-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -24,7 +24,23 @@
 
         <c-simpli-u-i-list-views-init-card></c-simpli-u-i-list-views-init-card>
     
-        <lightning-card title={label.Feature_Overview} icon-name="standard:announcement">
+        <lightning-card>
+            <div class="slds-var-m-around_medium">
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:circle; list-style-position: inside;">
+                        <li style="padding-bottom: 5px;"><a href="#feature_overview">{label.Feature_Overview}</a></li>
+                        <li style="padding-bottom: 5px;"><a href="#quick_start">{label.Quick_Start}</a></li>
+                        <li style="padding-bottom: 5px;"><a href="#issues">{label.Issues_And_Questions}</a></li>
+                        <li style="padding-bottom: 5px;"><a href="#configuration">{label.Configuration}</a></li>
+                        <li style="padding-bottom: 5px;"><a href="#actions">Actions</a></li>
+                    </ol>
+                </div>
+            </div>
+        </lightning-card>
+
+        <br/>
+        
+        <lightning-card id="feature_overview" title={label.Feature_Overview} icon-name="standard:announcement">
             <div class="slds-var-m-around_medium">
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:circle; list-style-position: inside;">
@@ -57,13 +73,13 @@
 
         <br/>
         
-        <lightning-card title={label.Quick_Start} icon-name="standard:custom_notification">
+        <lightning-card id="quick_start" title={label.Quick_Start} icon-name="standard:custom_notification">
             <div class="slds-var-m-around_medium">
                 <div style="padding-left: 20px;">
                     <p style="padding-bottom: 10px; padding-top: 10px; font-weight:bold;">View All List Views In One Component</p>
                     <ol style="list-style-type:decimal; list-style-position: inside;">
                         <li style="padding-bottom: 5px;">Initialize List Views - Go to the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Admin">Admin tab</a> in the SLV Admin app. Click the Refresh button and wait for initialization to complete</li>
-                        <li style="padding-bottom: 5px;">Go To Simpli List Views Examples App - The home tab will be the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Example_1">Everything Example</a> tab. The objects and list views will be displayed.</li>
+                        <li style="padding-bottom: 5px;">Go to Simpli List Views Examples App - The home tab will be the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Example_1">Everything Example</a> tab. The objects and list views will be displayed.</li>
                     </ol>
                 </div>
             </div>
@@ -82,7 +98,7 @@
 
         <br/>
         
-        <lightning-card title={label.Issues_And_Questions} icon-name="standard:custom_notification">
+        <lightning-card id="issues" title={label.Issues_And_Questions} icon-name="standard:custom_notification">
             <div style="padding-left: 20px; padding-bottom: 20px; max-width:800px;" class="slds-var-m-around_medium">
                 <p>FAQs - <a target="_blank" href="https://github.com/tomansley/SimpliListViews/wiki/FAQ">go here</a></p>
                 <br/>
@@ -179,7 +195,7 @@
 
         <br/>
         
-        <lightning-card title={label.Configuration} icon-name="standard:settings">
+        <lightning-card id="configuration" title={label.Configuration} icon-name="standard:settings">
             <div class="slds-var-m-around_medium">
 
                 <p>There are 4 different levels of configuration that are available. Note that where a setting is available in different levels the org-wide overrides the component and list view settings.</p>
@@ -261,7 +277,7 @@
             </div>
         </lightning-card>
 
-        <br>
+        <br id="actions">
         
         <lightning-card title="Actions" icon-name="standard:invocable_action">
             <div class="slds-var-m-around_medium">
