@@ -124,6 +124,19 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
          get joinCriteria() { 
              return this.joinData; 
          }
+
+    @api set canReprocess(value) 
+        {
+            
+        }
+        get canReprocess() { 
+             if (this.displayReprocess && this.isCoreListView 
+                || this.displayReprocess && this.selectedObject == undefined && this.selectedListView == undefined && this.isInitialized === true)
+             {
+                return true;
+             }
+            return false;
+        }
  
     //---------------
     //TRACKED FIELDS
@@ -903,6 +916,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 });
     
             } else {
+                this.refreshTitle = 'Click to perform a refresh on all ' + this.selectedObject + ' list views';
+
                 this.spinnerOff('getListViewsForObject');
             }
         } else {
@@ -1096,7 +1111,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         });
 
 
-        var data = new Blob([dataStr]);
+        var data = new Blob([dataStr], { type: 'text/plain' });
         event.target.href = URL.createObjectURL(data);
 
     }
@@ -2111,9 +2126,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.isEdited = true;
             this.listViewData.isEdited = true;
             this.listViewDataRows.forEach(element => { 
-                if (element.isDeleted === false && element.rowId === rowId && element.isEditable)
+                if (element.rowId === rowId && element.isEditable)
                 {
-                    element.isEdited = true;      
+                    if (element.isDeleted === false) {
+                        element.isEdited = true;      
+                    } else {
+                        this.dispatchEvent(SLVHelper.createToast('warning', '', 'Warning', 'This row has already been deleted. No updates can be made.', false)); 
+                    }
                 }
             });        
         } else {
@@ -2141,12 +2160,23 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             updateRecord({rowId: rowId, rowData: rowDataStr})
             .then(result => {
                 this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false)); 
+
+                this.listViewDataRows.forEach(element => { 
+                    if (element.rowId === rowId)
+                    {
+                        element.isEdited = false;      
+                    }
+                });
+        
                 this.refreshAllListViewData();
             })
             .catch(error => {
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the record.', true)); 
                 this.spinnerOff('handleRowDataSave');
             });
+        } else {
+            this.dispatchEvent(SLVHelper.createToast('warning', '', 'Warning', 'There was no updated data to save.', false)); 
+            this.spinnerOff('handleAllRowDataSave');
         }
     }     
 
@@ -2160,42 +2190,48 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         if (rowData !== undefined)
         {
-            let rowDataStr = '{'
-              rowData.forEach((element, key) => { 
-                rowDataStr = rowDataStr + '"' + key + '":' + JSON.stringify( Array.from(element)) + ',';
-            });        
+            if (rowData.size > 0)
+            {
+                let rowDataStr = '{'
+                rowData.forEach((element, key) => { 
+                    rowDataStr = rowDataStr + '"' + key + '":' + JSON.stringify( Array.from(element)) + ',';
+                });        
 
-            rowDataStr = rowDataStr.slice(0, -1) + '}';
-              
-            console.log('SAVE RESULT - ' + rowDataStr + ' for ' + this.pageName);
+                rowDataStr = rowDataStr.slice(0, -1) + '}';
+                
+                console.log('SAVE RESULT - ' + rowDataStr + ' for ' + this.pageName);
 
-            console.log(this.pageName + ' CALLOUT - updateRecords - ' + this.calloutCount++);
-            updateRecords({rowData: rowDataStr})
-            .then(result => {
-                console.log('Save successful for ' + this.pageName);
-                let rowCount = 0;
-                if (this.updatedRowData !== undefined) {
-                    rowCount = this.updatedRowData.size;
-                }
-        
-                if (rowCount > 0) {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', rowCount + ' record(s) saved successfully.', false)); 
-                }
-                
-                this.refreshAllListViewData();
-                
-                this.listViewDataRows.forEach(element => { 
-                    element.isEdited = false;      
+                console.log(this.pageName + ' CALLOUT - updateRecords - ' + this.calloutCount++);
+                updateRecords({rowData: rowDataStr})
+                .then(result => {
+                    console.log('Save successful for ' + this.pageName);
+                    let rowCount = 0;
+                    if (this.updatedRowData !== undefined) {
+                        rowCount = this.updatedRowData.size;
+                    }
+            
+                    if (rowCount > 0) {
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', rowCount + ' record(s) saved successfully.', false)); 
+                    }
+                    
+                    this.refreshAllListViewData();
+                    
+                    this.listViewDataRows.forEach(element => { 
+                        element.isEdited = false;      
+                    });
+            
+                    this.updatedRowData = new Map();
+                    this.isEdited = false;
+
+                })
+                .catch(error => {
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the records.', true)); 
+                    this.spinnerOff('handleAllRowDataSave');
                 });
-        
-                this.updatedRowData = new Map();
-                this.isEdited = false;
-
-            })
-            .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the records.', true)); 
+            } else {
+                this.dispatchEvent(SLVHelper.createToast('warning', '', 'Warning', 'There was no updated data to save.', false)); 
                 this.spinnerOff('handleAllRowDataSave');
-            });
+            }
         }
 
     }
@@ -2314,6 +2350,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.quickDataComponentId   = event.target.name;
         this.quickDataOldFieldValue = event.target.value;
         this.showQuickDataModal = true;
+        console.log('------ Quick Data Logging ------');
+        console.log('QD Heading         - ' + this.quickDataHeading);
+        console.log('QD Field Label     - ' + this.quickDataFieldLabel);
+        console.log('QD Row Id          - ' + this.quickDataRowId);
+        console.log('QD Field Type      - ' + this.quickDataFieldType);
+        console.log('QD Old Field Value - ' + this.quickDataOldFieldValue);
+        console.log('QD Field Value     - ' + this.quickDataFieldValue);
+        console.log('QD Field Name      - ' + this.quickDataFieldName);
+        console.log('QD Component Id    - ' + this.quickDataComponentId);
+        console.log('QD Show Modal      - ' + this.showQuickDataModal);
     }
 
     handleQuickDataCancelled() {

@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 07-17-2023
+  @last modified on  : 11-03-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -139,16 +139,14 @@
                     <!-- ------------------------- -->
                     <!-- REFRESH BUTTON            -->
                     <!-- ------------------------- -->
-                    <template if:true={displayReprocess}>
-                        <template if:true={isCoreListView}>
-                            <lightning-layout-item>
-                                <lightning-button-icon title={refreshTitle} 
-                                                    size="medium" 
-                                                    icon-name="action:new_task" 
-                                                    onclick={handleProcessListViewsButtonClick}>
-                                </lightning-button-icon>
-                            </lightning-layout-item>
-                        </template>
+                    <template if:true={canReprocess}>
+                        <lightning-layout-item>
+                            <lightning-button-icon title={refreshTitle} 
+                                                size="medium" 
+                                                icon-name="action:new_task" 
+                                                onclick={handleProcessListViewsButtonClick}>
+                            </lightning-button-icon>
+                        </lightning-layout-item>
                     </template>
 
                     <!-- ------------------------- -->
