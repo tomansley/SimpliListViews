@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-17-2023
+ * @last modified on  : 11-16-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -301,7 +301,7 @@ global class ListViewAdminControllerTest {
 
             System.assertEquals('All', config.getObject());
             System.assertEquals('All', config.getName());
-            System.assertEquals(24, config.getParameters().size());
+            System.assertEquals(26, config.getParameters().size());
 
             ListViewAbstract.ListViewParam param = config.getParameters()[0];
             System.assertNotEquals(param.getReadOnly(), null);
