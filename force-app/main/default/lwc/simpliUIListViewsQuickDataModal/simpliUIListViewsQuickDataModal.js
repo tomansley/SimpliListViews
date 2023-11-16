@@ -9,7 +9,7 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
     @api cancelLabel;
     @api showModal;
     @api fieldValue;
-    @api fieldType = 'string';
+    @api fieldType = 'string'; 
     @api fieldName;
     @api fieldDataId;
 
@@ -19,6 +19,9 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
     @track isTextArea = false;
 
     renderedCallback() {
+        console.log('SimpliUIListViewsQuickDataModal.renderedCallback starting');
+        console.log('this.showModal - ' + this.showModal);
+        console.log('this.isInitialized - ' + this.isInitialized);
         if (this.showModal && !this.isInitialized)
         {
             if (this.cancelLabel === undefined)
@@ -41,6 +44,14 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
             this.isInitialized = true;
         }
         setTimeout(()=>this.setComponentFocus(), 200);
+        console.log('------ Quick Data Component Logging ------');
+        console.log('Heading       - ' + this.heading);
+        console.log('Field Label   - ' + this.fieldLabel);
+        console.log('Row Id        - ' + this.fieldDataId);
+        console.log('Field Type    - ' + this.fieldType);
+        console.log('Field Value   - ' + this.fieldValue);
+        console.log('Field Name    - ' + this.fieldName);
+        console.log('isInitialized - ' + this.isInitialized);
 
     }
 
@@ -57,14 +68,19 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
         }
     }
 
-    handleCancelClick(event) {
+    resetComponent() {
+        this.fieldValue = undefined;
         this.isInitialized = false;
+    }
+
+    handleCancelClick(event) {
         this.dispatchEvent(new CustomEvent('cancel', { detail: {value: undefined, fieldDataId: undefined}}));
+        this.resetComponent();
     }
 
     handleOkClick(event) {
-        this.isInitialized = false;
         this.dispatchEvent(new CustomEvent('ok', { detail: {value: this.fieldValue, fieldDataId: this.fieldDataId, fieldName: this.fieldName}}));
+        this.resetComponent();
     }
 
     handleFieldUpdate(event) {
