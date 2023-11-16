@@ -48,13 +48,32 @@ public with sharing class ListViewTypeAheadController {
             {
                 Map<String, String> objMap = HelperSchema.getAllObjectNames();
 
+                Boolean hasWhereClause = String.isBlank(whereClause) ? false : true;
+                Boolean isInc = null;
+                Set<String> objs =  null;
+
+                if (hasWhereClause)
+                {
+                    if (whereClause.contains('NOT IN'))
+                        isInc = false;
+                    else 
+                        isInc = true;
+
+                    objs =  HelperString.getSetFromString(whereClause.substringAfter('[').substringBefore(']').replace('\'', ''), ',', true);
+                }
+
                 for (String apiName : objMap.keySet())
                 {
-                    String label = objMap.get(apiName);
-                    if (searchTerm == '')
-                        options.add(new ListViewController.SelectOption(apiName, label));         
-                    else if (label.toLowerCase().contains(searchTerm))
-                        options.add(new ListViewController.SelectOption(apiName, label));         
+                    if (!hasWhereClause || (hasWhereClause 
+                    && ((isInc && objs.contains(apiName.toLowerCase()))
+                        || (!isInc && !objs.contains(apiName.toLowerCase())))))
+                    {
+                        String label = objMap.get(apiName);
+                        if (searchTerm == '')                        
+                            options.add(new ListViewController.SelectOption(apiName, label));
+                        else if (label.toLowerCase().contains(searchTerm))
+                            options.add(new ListViewController.SelectOption(apiName, label));         
+                    }
 
                     if (options.size() > 30) break;
                 }

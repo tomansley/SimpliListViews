@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-06-2023
+ * @last modified on  : 11-08-2023
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperString {
@@ -49,7 +49,7 @@ public with sharing class HelperString {
      * Method that takes a string that is to be split and a split char
      * and returns a set of strings.
      */
-    public static Set<String> getSetFromString(String data, String splitChar)
+    public static Set<String> getSetFromString(String data, String splitChar, Boolean setLowerCase)
     {
         Set<String> dataSet = new Set<String>();
         
@@ -58,7 +58,24 @@ public with sharing class HelperString {
 
         dataSet = new Set<String>(data.split(splitChar));
 
+        if (setLowerCase)
+        {
+            Set<String> tmpDataSet = new Set<String>();
+            for (String str: dataSet)
+                tmpDataSet.add(str.toLowerCase());
+            dataSet = tmpDataSet;
+        }
+
         return dataSet;
+    }
+
+    /*
+     * Method that takes a string that is to be split and a split char
+     * and returns a set of strings.
+     */
+    public static Set<String> getSetFromString(String data, String splitChar)
+    {
+        return getSetFromString(data, splitChar, false);
     }
 
     public static String getStringFromList(List<Object> data, String splitChar)

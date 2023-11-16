@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-03-2023
+  @last modified on  : 11-16-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -61,6 +61,7 @@
                                                                     key-field-name="Name"
                                                                     initial-id={selectedObject}
                                                                     field-obj-name="SObject"
+                                                                    where-clause={whereClauseObjectList}
                                                                     onvaluechange={handleObjectChange}>
                                 </c-simpli-u-i-list-views-type-ahead>
                             </template>
@@ -88,7 +89,7 @@
                                                                         key-field-name="simpli_lv__API_Name__c"
                                                                         initial-id={selectedListViewId}
                                                                         field-obj-name="simpli_lv__List_View__c"
-                                                                        where-clause={whereClauseList}
+                                                                        where-clause={whereClauseListViewList}
                                                                         onvaluechange={handleListViewChanged}>
                                     </c-simpli-u-i-list-views-type-ahead>
                                 </template>
@@ -296,15 +297,16 @@
         <template if:true={isInitialized}>
             <template if:true={listViewData}>
                 <template if:false={isModeSplitView}>
+
                     <div class={listwrapperstyle}>
-                        <table id="datatable" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" role="grid">
+                        <table id="datatable" class={tablestyle} role="grid">
 
                             <!-- ------------------------- -->
                             <!-- HEADER DATA               -->
                             <!-- ------------------------- -->
                             <thead style="position:relative">
                                 <tr class="slds-line-height_reset">
-                                    <th class="slds-text-align_right" scope="col" style="width:3.25rem">
+                                    <th class="slds-text-align_right" scope="col" style="width: 2rem;">
                                         <div class="slds-th__action slds-th__action_form">
                                             <div class="slds-checkbox">
                                                 <lightning-input type="checkbox" 
@@ -411,7 +413,7 @@
                                                 <!-- ---------------------- -->
                                                 <!-- ROW SELECTION CHECKBOX -->
                                                 <!-- ---------------------- -->
-                                                <td class="slds-text-align_right" style="width:3.25rem">
+                                                <td class="slds-text-align_right" style="width: 2rem;">
                                                     <div class="slds-checkbox">
                                                         <template if:false={rowData.isTotals}>
                                                             <lightning-input type="checkbox" 

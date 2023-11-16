@@ -19,15 +19,29 @@
 
 .applistscrollwrapper {
     width: 100%;
-    min-height: 80px;
-    max-height: 67vh;
-    overflow-y: auto;
+    overflow: scroll;
+}
+
+.tablehorizontalscroll {
+    width: max-content;
+}
+
+.tablenohorizontalscroll {
+
 }
 
 .relatedlistscrollwrapper {
     width: 100%;
     min-height: 80px;
     max-height: 300px;
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    overflow: auto;
+}
+
+.relatedlistdisplayallwrapper {
+    width: 100%;
+    min-height: 80px;
     border-bottom: 1px solid #ddd;
     border-left: 1px solid #ddd;
     overflow: auto;

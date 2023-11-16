@@ -73,6 +73,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api useMessageChannel          = false;        //identifies if the message channel should be used or not. This is used when components should be passing data between each other for updates.
     @api allowRefresh               = false;        //config indicating whether the auto refresh checkbox is made available.
     @api singleClickAutoRefresh     = undefined;    //whether clicking a single or double time starts the auto refresh.
+    @api allowHorizontalScrolling   = false;        //config indicating whether horizontal scrolling is available on the list view
+    @api displayAllRelatedRecords   = false;        //Related List View Mode Only: Indicates whether all records should be displayed or scrolling should be used.
     @api allowInlineEditing         = false;        //config indicating whether inline editing is available
     @api displayRecordPopovers      = false;        //config indicating whether record popovers should be displayed
     @api allowAdmin                 = false;        //indicates whether the admin button should display to the user
@@ -154,6 +156,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track listviewdropdownstyle   = 'regularlistviewdropdown';
     @track objectlistdropdownstyle = 'regularobjectlistdropdown';
     @track listwrapperstyle        = 'applistscrollwrapper';
+    @track tablestyle              = 'slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols tablenohorizontalscroll'; //the style applied to the list view table
     @track relatedRecordId;             //holds the record Id if set by the API.
     @track uniqueComponentId  = '';
     @track hasModifyAll       = false;  //indicates whether the current user is allowed to modify all data.
@@ -240,8 +243,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track columnSortDataStr = '';
 
     //for type-ahead functionality for searching list views
-    @track whereClauseList;
-    @track whereClauseObject;
+    @track whereClauseListViewList;
+    @track whereClauseObjectList;
 
     //for handling edited records
     updatedRowData = new Map();
@@ -335,6 +338,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             this.handleUserSortConfigs();
 
+            this.handleTypeAheadWhereClauses();
+
             if (this.mode === 'App Page') {
                 this.isModeApp            = true;
                 this.canPin               = true;
@@ -356,7 +361,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     this.selectedObject       = this.singleListViewObject;
                     this.displayObjectNames   = false;
                     this.displayListViewNames = true;
-                    this.whereClauseList      = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
 
                     this.getListViewsForObject();
                 }
@@ -386,7 +390,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     return;
                 } else {
                     this.isModeRelated    = true;
-                    this.listwrapperstyle = 'relatedlistscrollwrapper';
+                    if (this.displayAllRelatedRecords) {
+                        this.listwrapperstyle = 'relatedlistdisplayallwrapper';
+                    } else {
+                        this.listwrapperstyle = 'relatedlistscrollwrapper';
+                    }
                     this.selectedObject   = this.singleListViewObject;
                     this.selectedListView = this.singleListViewApiName;
 
@@ -498,10 +506,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
             if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
             if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
+            if (this.toBool(this.componentConfig.AllowHorizontalScrolling) === false) { this.allowHorizontalScrolling = false; }
+            if (this.toBool(this.componentConfig.DisplayAllRelatedRecords) === false) { this.displayAllRelatedRecords = false; }
             if (this.toBool(this.componentConfig.DisplayRecordPopovers) === false) { this.displayRecordPopovers = false; }
 
             this.excludedRecordPopoverTypes = this.excludedRecordPopoverTypes + this.componentConfig.ExcludedRecordPopoverTypes;
 
+            if (this.allowHorizontalScrolling === true) {
+                this.tablestyle = 'slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols tablehorizontalscroll'; //the style applied to the list view table
+            }
             //otherwise if they have a pinned list view then use it, if possible.
             if (pinnedListView != undefined && pinnedListView != '') {
                 this.isPinned = true;
@@ -581,6 +594,25 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Sorting', 'There was an error retrieving the user sorting config.', true)); 
         };
     }
+
+    handleTypeAheadWhereClauses() {
+
+        if (this.includedObjects !== null && this.includedObjects !== '') {
+            this.whereClauseObjectList = 'simpli_lv__Object_Name__c IN [' + "'" + this.includedObjects.split( "," ).join( "','" ) + "'" + ']';
+        } else if (this.excludedObjects !== null && this.excludedObjects !== '') {
+            this.whereClauseObjectList = 'simpli_lv__Object_Name__c NOT IN [' + "'" + this.excludedObjects.split( "," ).join( "','" ) + "'" + ']';
+        }
+
+
+        if (this.mode === 'Single Object List View' && this.singleListViewObject !== '')
+        {
+            this.whereClauseListViewList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+        }
+
+        console.log('whereClauseObjectList - ' + this.whereClauseObjectList);
+        console.log('whereClauseListViewList - ' + this.whereClauseListViewList);
+    }
+
     /*
      * Used for handling the message channel
      */
@@ -899,7 +931,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         this.selectedListView = this.pinnedListView;
                         this.selectedListViewExportName = this.selectedListView + '.csv';
                         this.selectedListViewId = result;
-                        this.whereClauseList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+                        this.whereClauseListViewList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
                         this.refreshAllListViewData();
 
                     //if we do not then bail.
@@ -1250,7 +1282,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.selectedListView = undefined;
         this.selectedListViewId = undefined;
         this.selectedListViewExportName = undefined;
-        this.whereClauseList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+        this.whereClauseListViewList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
         this.listViewList = undefined;
         this.listViewData = undefined;
         this.listViewDataRows = undefined;
@@ -1609,11 +1641,14 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         while(parObj.tagName != 'TH') {
             parObj = parObj.parentNode;
         }
-        console.log('Final tag name ' + parObj.tagName + ' for ' + this.pageName);
         var mouseStart=event.clientX;
         this.mouseStart = mouseStart;
         this.oldWidth = parObj.offsetWidth;
         this.parentObj = parObj;
+
+        console.log('Mouse start - ' + this.mouseStart);
+        console.log('Old Width - ' + this.oldWidth);
+
         // Stop text selection event
         if(event.stopPropagation) event.stopPropagation();
         if(event.preventDefault) event.preventDefault();
@@ -1628,9 +1663,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         if (this.mouseStart === undefined) return;
 
-        var newWidth = event.clientX- parseFloat(this.mouseStart)+parseFloat(this.oldWidth);
+        console.log('event.clientX - ' + event.clientX);
+        var newWidth = event.clientX - parseFloat(this.mouseStart)+parseFloat(this.oldWidth);
         this.parentObj.style.width = newWidth+'px';
 
+        console.log('New width - ' + newWidth);
         this.mouseStart = undefined;
 
         this.saveColumnWidth(newWidth, this.mouseDownColumn);
@@ -1645,10 +1682,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         let configName = 'columnWidths:' + this.selectedObject + ':' + this.selectedListView;
         updateUserConfigListViewWidth({compName: this.pageName, configName: configName, columnIndex: columnIndex, width: newWidth })
         .then(result => {
-            //this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Width Saved', 'List view width successfully saved.', false)); 
+            //this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Width Saved', 'List view width successfully saved.' + result, false)); 
         })
         .catch(error => {
-            //this.dispatchEvent(SLVHelper.createToast('error', error, 'Width Save Error', 'There was an error during user configuration update.', true)); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Width Save Error', 'There was an error during user configuration update.', true)); 
         });
 
     }

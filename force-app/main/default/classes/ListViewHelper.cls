@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-26-2023
+ * @last modified on  : 11-16-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2275,6 +2275,22 @@ global with sharing class ListViewHelper
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Allow Inline Editing';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'DisplayAllRelatedRecords';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
+        param.Parameter_Label__c  = 'Display All Related Records';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'AllowHorizontalScrolling';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
+        param.Parameter_Label__c  = 'Allow Horizontal Scrolling';
         params.add(param);
 
         param = new List_View_Config_Parameter__c();

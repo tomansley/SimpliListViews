@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-13-2023
+ * @last modified on  : 11-16-2023
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -264,6 +264,28 @@ global with sharing class ScriptInstall implements InstallHandler {
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
             param.Parameter_Value__c  = ListViewHelper.TTRUE;
             param.Parameter_Label__c  = 'Allow Inline Editing';
+            orgParams.put(param.Parameter_Name__c, param);
+        }
+
+        if (orgParams.get('AllowHorizontalScrolling') == null)
+        {
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = orgWideConfig.Id;
+            param.Parameter_Name__c   = 'AllowHorizontalScrolling';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Allow Horizontal Scrolling';
+            orgParams.put(param.Parameter_Name__c, param);
+        }
+
+        if (orgParams.get('DisplayAllRelatedRecords') == null)
+        {
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = orgWideConfig.Id;
+            param.Parameter_Name__c   = 'DisplayAllRelatedRecords';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Display All Related Records';
             orgParams.put(param.Parameter_Name__c, param);
         }
 
