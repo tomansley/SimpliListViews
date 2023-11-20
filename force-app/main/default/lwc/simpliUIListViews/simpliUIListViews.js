@@ -1144,8 +1144,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
 
         var data = new Blob([dataStr], { type: 'text/plain' });
-        event.target.href = URL.createObjectURL(data);
 
+        let downloadElement = document.createElement('a');
+        downloadElement.href = URL.createObjectURL(data);
+        downloadElement.setAttribute("download","download");
+        downloadElement.download = this.selectedListViewExportName;
+        downloadElement.click(); 
     }
 
     /*
@@ -1175,10 +1179,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                                 });
 
         //turn string into blob
-        var data = new Blob([dataStr]);
+        var data = new Blob([dataStr], { type: 'text/plain' });
 
-        //send blob to user.
-        event.target.href = URL.createObjectURL(data);
+        let downloadElement = document.createElement('a');
+        downloadElement.href = URL.createObjectURL(data);
+        downloadElement.setAttribute("download","download");
+        downloadElement.download = this.selectedListViewExportName;
+        downloadElement.click(); 
 
     }
 

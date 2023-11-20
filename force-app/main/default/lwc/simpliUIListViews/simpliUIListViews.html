@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-16-2023
+  @last modified on  : 11-19-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -181,7 +181,7 @@
                         <template if:true={listViewData}>
                             <template if:true={displayExportButton}>
                                 <lightning-layout-item title={label.Export_All} padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                                    {label.Rows}:&nbsp;<a download={selectedListViewExportName} type='text/csv' onclick={handleDownloadData}>{listViewDataRowsSize}</a>
+                                    {label.Rows}:&nbsp;<a onclick={handleDownloadData}>{listViewDataRowsSize}</a>
                                 </lightning-layout-item>
                             </template>
                             <template if:false={displayExportButton}>
@@ -199,7 +199,7 @@
                         <template if:true={listViewData}>
                             <template if:true={displayExportButton}>
                                 <lightning-layout-item title={label.Export_Selected} padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
-                                    {label.Selected}:&nbsp;<a download={selectedListViewExportName} type='text/csv' onclick={handleSelectedDownloadData}>{selectedRecordCount}</a>
+                                    {label.Selected}:&nbsp;<a onclick={handleSelectedDownloadData}>{selectedRecordCount}</a>
                                 </lightning-layout-item>
                             </template>
                             <template if:false={displayExportButton}>
