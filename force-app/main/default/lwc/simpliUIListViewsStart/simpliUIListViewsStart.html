@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 08-10-2023
+  @last modified on  : 11-25-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -32,6 +32,7 @@
                         <li style="padding-bottom: 5px;"><a href="#quick_start">{label.Quick_Start}</a></li>
                         <li style="padding-bottom: 5px;"><a href="#issues">{label.Issues_And_Questions}</a></li>
                         <li style="padding-bottom: 5px;"><a href="#configuration">{label.Configuration}</a></li>
+                        <li style="padding-bottom: 5px;"><a href="#examples">{label.Example_App_Descriptions}</a></li>
                         <li style="padding-bottom: 5px;"><a href="#actions">Actions</a></li>
                     </ol>
                 </div>
@@ -44,11 +45,12 @@
             <div class="slds-var-m-around_medium">
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:circle; list-style-position: inside;">
-                        <li style="padding-bottom: 5px;">Four list view modes -</li>
+                        <li style="padding-bottom: 5px;">Five list view modes -</li>
                         <div style="padding-left: 20px;">
                             <ol style="list-style-type:lower-roman; list-style-position: inside;">
                                 <li style="padding-bottom: 5px;"><b>App Page</b> - all org list views available in one component</li>
                                 <li style="padding-bottom: 5px;"><b>Single List View</b> - single list view displayed in one component</li>
+                                <li style="padding-bottom: 5px;"><b>Single Object List View</b> - all list views from one object displayed in one component</li>
                                 <li style="padding-bottom: 5px;"><b>Related List View</b> - related list view displayed on single record page</li>
                                 <li style="padding-bottom: 5px;"><b>Split View</b> - split view similar to SFDC split view capability</li>
                             </ol>
@@ -274,6 +276,35 @@
                     <br/>
                     <p>These settings are maintained by the Simpli List View app and should not under normal circumstances be changed by an admin.</p>
                 </div>
+            </div>
+        </lightning-card>
+
+        <br id="examples"/>
+
+        <lightning-card title={label.Example_App_Descriptions} icon-name="standard:settings">
+            <div class="slds-var-m-around_medium">
+
+                <p>Below is a description of each of the tabs in the Simpli List Views Examples App. The example tabs provide many different scenarios that SLV might be used for. These patterns can be copied by users of SLV to quickly create useful applications.</p>
+                <br/>
+                <div style="padding-left: 20px;">
+                    <ol style="list-style-type:circle; list-style-position: inside;">
+                        <li style="padding-bottom: 5px;">Everything Example - showcases the plain vanilla SLV component in App Page component mode. No features have been turned off or changed. This is the scenario where the SLV component is simply dragged on to a page and then displayed. It is more than likely the case that some kind of configuration will want to be performed against the plain component.</li>
+                        <li style="padding-bottom: 5px;">Admin Example - shows how a page could be configured to display useful list views for admins. Two objects available include ApexLog and ApexClass which are not available in standard Salesforce. Data for those list views are retrieved using metadata.</li>
+                        <li style="padding-bottom: 5px;">List Views Example - shows an SLV component which only allows the Simpli List Views objects list views to be displayed. Also, most of the functionality of the SLV capabilities has been turned off.</li>
+                        <li style="padding-bottom: 5px;">Locked Down Example - shows an SLV component which has been locked down using the page and component attributes. Only Account,Contact and Opportunity list views are allowed to be displayed. Also, most of the functionality available in SLV has been turned off.</li>
+                        <li style="padding-bottom: 5px;">Multi Component Example - shows a basic SLV component with a standard SFDC component to the right.</li>
+                        <li style="padding-bottom: 5px;">2 List Views Example - showing how 2 list views can be displayed on the same page and a selection in one list view can alter whats displayed on the second list view.</li>
+                        <li style="padding-bottom: 5px;">3 List Views Example - takes the 2 list view example and extends it even further. Probably not realistic but doable. We could keep going if we wanted. Need 4 list views? 5?</li>
+                        <li style="padding-bottom: 5px;">Pricebook Example - showcasing how objects that typically do not have or don't allow list views can be displayed in list views.</li>
+                        <li style="padding-bottom: 5px;">Single Object Example - showcasing where an SLV component should only show list views for a pre-defined object.</li>
+                        <li style="padding-bottom: 5px;">Single List View Example - showcasing where a component should only show a specific list view given a pre-defined object and list view API name</li>
+                        <li style="padding-bottom: 5px;">Split View Example - shows the split view mode with the left side being only account list views and the right side being another SLV component displaying the contacts associated with the account selected from the left side.</li>
+                        <li style="padding-bottom: 5px;">Campaign/Member Example - showcases how the campaign and campaign member objects that </li>
+                        <li style="padding-bottom: 5px;">Split View Detail Example - shows the split view mode with a record being displayed based on the selected record.</li>
+                        <li style="padding-bottom: 5px;">Dev Examples - shows a number of code examples and the working example of the code</li>
+                    </ol>
+                </div>
+                <br/><br/>
             </div>
         </lightning-card>
 

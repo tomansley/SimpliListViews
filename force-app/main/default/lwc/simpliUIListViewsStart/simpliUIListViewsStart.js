@@ -7,6 +7,7 @@ import Feature_Overview from '@salesforce/label/c.Feature_Overview';
 import Quick_Start from '@salesforce/label/c.Quick_Start';
 import Issues_And_Questions from '@salesforce/label/c.Issues_And_Questions';
 import Configuration from '@salesforce/label/c.Configuration';
+import Example_App_Descriptions from '@salesforce/label/c.Example_App_Descriptions';
 
 import getOrgWideConfig from '@salesforce/apex/ListViewAdminController.getOrgWideConfig';
 import getOrgWideDescriptions from '@salesforce/apex/ListViewConfigController.getOrgWideDescriptions';
@@ -30,7 +31,7 @@ export default class SimpliUIListViewsStart extends LightningElement {
     @track inRenderedCallback = false;  //indicates whether the rendered callback method is processing
     @track calloutCount = 1;            //indicates the number of callouts made for this component
     
-    label = { Feature_Overview, Quick_Start, Issues_And_Questions, Configuration }
+    label = { Feature_Overview, Quick_Start, Issues_And_Questions, Configuration, Example_App_Descriptions }
 
     /*
      * Method which gets called after the class has been instantiated
