@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 03-30-2022
+  @last modified on  : 11-25-2023
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -62,7 +62,8 @@
                                                                                     variant=label-hidden
                                                                                     value={param.value}
                                                                                     name={param.name}
-                                                                                    label={param.label}>
+                                                                                    label={param.label}
+                                                                                    data-type={param.type}>
                                                                 </lightning-combobox>                        
                                                             </template>
                                                             <template if:false={param.isBoolean}>
@@ -72,7 +73,8 @@
                                                                                     onchange={handleParamUpdate}
                                                                                     placeholder={param.placeHolder}
                                                                                     value={param.value}
-                                                                                    label={param.label}>
+                                                                                    label={param.label}
+                                                                                    data-type={param.type}>
                                                                 </lightning-input>
                                                             </template>
                                                         </template>
@@ -84,7 +86,8 @@
                                                                                 onblur={handleParamUpdate}
                                                                                 placeholder={param.placeHolder}
                                                                                 value={param.value}
-                                                                                label={param.label}>
+                                                                                label={param.label}
+                                                                                data-type={param.type}>
                                                             </lightning-input>
                                                         </template>
                                                     </div>
@@ -211,25 +214,25 @@
                                                                 </lightning-combobox>                        
                                                         </template>
                                                         <template if:true={newConditionColumn.isString}>
-                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input1" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="string" name="input1" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                         </template>
                                                         <template if:true={newConditionColumn.isPicklist}>
-                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input2" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="string" name="input2" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                         </template>
                                                         <template if:true={newConditionColumn.isMultiPicklist}>
-                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input3" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="string" name="input3" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                         </template>
                                                         <template if:true={newConditionColumn.isPhone}>
-                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input4" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="string" name="input4" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                         </template>
                                                         <template if:true={newConditionColumn.isEmail}>
-                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input5" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="string" name="input5" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                         </template>
                                                         <template if:true={newConditionColumn.isTextArea}>
-                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input6" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="string" name="input6" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                         </template>
                                                         <template if:true={newConditionColumn.isURL}>
-                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="text" name="input7" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
+                                                            <lightning-input data-type={newConditionColumn.type} variant=label-hidden type="string" name="input7" value={newConditionValue} onchange={handleConditionValueChange}></lightning-input>
                                                         </template>
                                                         <template if:true={newConditionColumn.isDateTime}>
                                                             <div>

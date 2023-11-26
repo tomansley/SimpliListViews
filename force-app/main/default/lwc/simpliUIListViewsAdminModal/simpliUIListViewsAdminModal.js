@@ -153,6 +153,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             getListViewConfig({objectName: this.listViewObject, listViewName: this.listViewName, listViewMode: this.listViewMode })
             .then(result => {
                 console.log('List view config retrieval successful'); 
+                console.log('List View Config - ' + JSON.stringify(result));
                 this.listViewConfig = result;    
             })
             .catch(error => {
@@ -209,7 +210,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         
         var name = event.target.name;
         var value = event.target.value;
-        var type = event.target.type;
+        var type = event.target.dataset.type;
         var label = event.target.label;
 
         if (type === undefined) {
