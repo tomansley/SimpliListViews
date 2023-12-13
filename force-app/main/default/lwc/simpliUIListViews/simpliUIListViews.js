@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-else-return */
+/* eslint-disable guard-for-in */
+/* eslint-disable no-return-assign */
 /* eslint-disable vars-on-top */
 /* eslint-disable no-console */
 import { LightningElement, wire, track, api  } from 'lwc';
@@ -74,7 +78,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api allowRefresh               = false;        //config indicating whether the auto refresh checkbox is made available.
     @api singleClickAutoRefresh     = undefined;    //whether clicking a single or double time starts the auto refresh.
     @api allowHorizontalScrolling   = false;        //config indicating whether horizontal scrolling is available on the list view
-    @api displayAllRelatedRecords   = false;        //Related List View Mode Only: Indicates whether all records should be displayed or scrolling should be used.
     @api allowInlineEditing         = false;        //config indicating whether inline editing is available
     @api displayRecordPopovers      = false;        //config indicating whether record popovers should be displayed
     @api allowAdmin                 = false;        //indicates whether the admin button should display to the user
@@ -92,6 +95,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api singleListViewObject       = '';           //if in SINGLE mode holds the list view object to use.
     @api singleListViewApiName      = '';           //if in SINGLE mode holds the list view API name to use.
     @api excludedRecordPopoverTypes = '';           //Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name.
+    @api displayAllRelatedRecords = false;                 //Related List View Mode Only: Indicates whether all records should be displayed or scrolling should be used.
     @api set recordId(value)                        //used when component on standard record page. Record page injects record id into component.
          { 
              this.relatedRecordId = value; 
@@ -507,7 +511,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
             if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
             if (this.toBool(this.componentConfig.AllowHorizontalScrolling) === false) { this.allowHorizontalScrolling = false; }
-            if (this.toBool(this.componentConfig.DisplayAllRelatedRecords) === false) { this.displayAllRelatedRecords = false; }
             if (this.toBool(this.componentConfig.DisplayRecordPopovers) === false) { this.displayRecordPopovers = false; }
 
             this.excludedRecordPopoverTypes = this.excludedRecordPopoverTypes + this.componentConfig.ExcludedRecordPopoverTypes;
@@ -758,6 +761,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.hasListViewDataRows = false;
         else
             this.hasListViewDataRows = true;
+
+        //this is to fix a weird issue where width of table gets reduced if there are no rows.
+        if (this.allowHorizontalScrolling === true && this.hasListViewDataRows === true) {
+            this.tablestyle = 'slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols tablehorizontalscroll';
+        } else {
+            this.tablestyle = 'slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols';
+        }
 
 
         console.log('this.listViewDataRows.length         - ' + this.listViewDataRows.length + ' for ' + this.pageName);
@@ -2203,16 +2213,22 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log(this.pageName + ' CALLOUT - updateRecord - ' + this.calloutCount++);
             updateRecord({rowId: rowId, rowData: rowDataStr})
             .then(result => {
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false)); 
+                console.log('Record update response - ' + result);
+                
+                if (result === '') {
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false)); 
 
-                this.listViewDataRows.forEach(element => { 
-                    if (element.rowId === rowId)
-                    {
-                        element.isEdited = false;      
-                    }
-                });
-        
-                this.refreshAllListViewData();
+                    this.listViewDataRows.forEach(element => { 
+                        if (element.rowId === rowId)
+                        {
+                            element.isEdited = false;      
+                        }
+                    });
+            
+                    this.refreshAllListViewData();
+                } else {
+                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Error', 'There was a validation exception - ' + result, false)); 
+                }
             })
             .catch(error => {
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'There was an error saving the record.', true)); 
