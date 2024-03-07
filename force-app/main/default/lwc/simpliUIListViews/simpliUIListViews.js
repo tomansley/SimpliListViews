@@ -102,11 +102,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
              this.setJoinCriteria(value);
              if (this.mode === 'Related List View') //we could have other moded components inside a record page
                  this.isModeRelatedRecord = true;
-         };
+         }
          get recordId()
          { 
              return this.relatedRecordId; 
-         };
+         }
     @api set singleListViewObject2(value)           //used where orgs are HUGE and singleListViewObject needs to be entered manually.
          {   
              this.singleListViewObject = value;
@@ -137,7 +137,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
         get canReprocess() { 
              if (this.displayReprocess && this.isCoreListView 
-                || this.displayReprocess && this.selectedObject == undefined && this.selectedListView == undefined && this.isInitialized === true)
+                || this.displayReprocess && this.selectedObject === undefined && this.selectedListView === undefined && this.isInitialized === true)
              {
                 return true;
              }
@@ -277,13 +277,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      * Method which gets called when the class is being instantiated
      * Note that we do not have access to any local variables in the constructor
      */
-    constructor() {
-        super();
+    //constructor() {
+    //    super();
 
         //if the user recently changed a core list view this should do an immediate update. 
         //Only the last modified list view is processed.
         //updateChangedListViews();                           <-- Stopped this for the moment as it takes time and not so much value
-    }
+    //}
     
     /*
      * Method which gets called after the class has been instantiated
@@ -519,7 +519,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.tablestyle = 'slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols tablehorizontalscroll'; //the style applied to the list view table
             }
             //otherwise if they have a pinned list view then use it, if possible.
-            if (pinnedListView != undefined && pinnedListView != '') {
+            if (pinnedListView !== undefined && pinnedListView !== '') {
                 this.isPinned = true;
                 this.pinnedObject = pinnedListView.substring(0, pinnedListView.lastIndexOf(':'));
                 this.pinnedListView = pinnedListView.substring(pinnedListView.lastIndexOf(':')+1);
@@ -533,7 +533,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
         } catch(error) {
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Config', 'There was an error retrieving the user config.', true)); 
-        };
+        }
 
     }
 
@@ -575,9 +575,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 } else {
                     let columnSortData = new Map();
             
-                    for (var i = 0; i < listviewSorting.fields.length; i++) {
+                    for (var index = 0; index < listviewSorting.fields.length; index++) {
 
-                        let sortDirection = listviewSorting.fields[i].sortDirection;
+                        let sortDirection = listviewSorting.fields[index].sortDirection;
                         
                         if (sortDirection === undefined || sortDirection === '') {
                             sortDirection = true;
@@ -585,8 +585,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             sortDirection = this.toBool(sortDirection)
                         }
 
-                        let columnData = [Number(listviewSorting.fields[i].sortIndex), listviewSorting.fields[i].fieldName, sortDirection];
-                        columnSortData.set(Number(listviewSorting.fields[i].sortIndex), columnData);
+                        let columnData = [Number(listviewSorting.fields[index].sortIndex), listviewSorting.fields[index].fieldName, sortDirection];
+                        columnSortData.set(Number(listviewSorting.fields[index].sortIndex), columnData);
                     }
 
                     this.listViewSortData.set(listviewSorting.name, columnSortData);
@@ -595,15 +595,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             } 
         } catch(error) {
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Sorting', 'There was an error retrieving the user sorting config.', true)); 
-        };
+        }
     }
 
     handleTypeAheadWhereClauses() {
 
         if (this.includedObjects !== null && this.includedObjects !== '') {
-            this.whereClauseObjectList = 'simpli_lv__Object_Name__c IN [' + "'" + this.includedObjects.split( "," ).join( "','" ) + "'" + ']';
+            this.whereClauseObjectList = "simpli_lv__Object_Name__c IN ['" + this.includedObjects.split( "," ).join( "','" ) + "']";
         } else if (this.excludedObjects !== null && this.excludedObjects !== '') {
-            this.whereClauseObjectList = 'simpli_lv__Object_Name__c NOT IN [' + "'" + this.excludedObjects.split( "," ).join( "','" ) + "'" + ']';
+            this.whereClauseObjectList = "simpli_lv__Object_Name__c NOT IN ['" + this.excludedObjects.split( "," ).join( "','" ) + "']";
         }
 
 
@@ -887,10 +887,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 if (this.listViewList.length === 0)
                 {
                     this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Retrieving Object List Views', 'No list views available as the user does not have access to this object.', false));
-                } else if (this.urlListView != undefined) {
+                } else if (this.urlListView !== undefined) {
                     this.selectedListView = this.urlListView;
                     this.selectedListViewExportName = this.selectedListView + '.csv';
-                } else if (this.pinnedListView != undefined && this.firstListViewGet === true) {
+                } else if (this.pinnedListView !== undefined && this.firstListViewGet === true) {
 
                     console.log('We have a pinned list view for ' + this.pageName);
                     //check if we have the list view in the list. (it could be a stale pinning)
@@ -925,7 +925,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //if we
         } else if (this.typeAheadListSearch === true) {
 
-            if (this.pinnedListView != undefined && this.firstListViewGet === true) {
+            if (this.pinnedListView !== undefined && this.firstListViewGet === true) {
 
                 console.log('We have a pinned list view for ' + this.pageName);
 
@@ -1009,7 +1009,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('message objectType -' + this.receivedMessage.objectType);
         console.log('message uniqueComponentId -' + this.receivedMessage.uniqueComponentId);
 
-        if (this.receivedMessage.uniqueComponentId == this.uniqueComponentId)
+        if (this.receivedMessage.uniqueComponentId === this.uniqueComponentId)
         {
             return;
         }
@@ -1032,9 +1032,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('isModeRelatedRecord - ' + this.isModeRelatedRecord);
         console.log('joinFieldName - ' + this.joinFieldName);
         //if we have a list view selected AND if we have selected a specific list view to update
-        if (this.selectedObject != undefined 
-                && this.joinFieldName != undefined 
-                && this.joinFieldName != ''
+        if (this.selectedObject !== undefined 
+                && this.joinFieldName !== undefined 
+                && this.joinFieldName !== ''
                 && this.isModeRelatedRecord === false)
         {
             console.log('We have a joined field name - ' + this.joinFieldName + ' for ' + this.pageName);
@@ -1176,7 +1176,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         var selectedRecords = new Set();
         let selectedRows = this.template.querySelectorAll('lightning-input');
         selectedRows.forEach(element => { 
-                                            if (element.checked === true && element.value != 'all')
+                                            if (element.checked === true && element.value !== 'all')
                                             {
                                                 selectedRecords.add(element.value);
                                             }            
@@ -1245,7 +1245,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             var recordIds = '';        
 
             selectedRows.forEach(element => { 
-                if (element.checked === true && element.value != 'all')
+                if (element.checked === true && element.value !== 'all')
                 {
                     //the value includes the row number so remove that from the end as we only want the Ids
                     const indexOf = element.value.indexOf(':');
@@ -1353,7 +1353,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
 
         //if we are not in the construction of the page and we change the list view and its the pinned list view
-        if (this.componentConfig != undefined && this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
+        if (this.componentConfig !== undefined && this.pinnedObject === this.selectedObject && this.pinnedListView === this.selectedListView) {
             this.isPinned = true;
         } else {
             this.isPinned = false;
@@ -1552,7 +1552,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
 
         //if we have selected a specific list view to update
-        if (this.selectedObject != undefined && this.selectedListView != undefined && this.isInitialized === true)
+        if (this.selectedObject !== undefined && this.selectedListView !== undefined && this.isInitialized === true)
         {
             console.log('Updating SINGLE list view for ' + this.pageName);
 
@@ -1582,7 +1582,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
         
         //if we have selected an objects list views to update
-        else if (this.selectedObject != undefined && this.selectedListView === undefined && this.isInitialized === true)
+        else if (this.selectedObject !== undefined && this.selectedListView === undefined && this.isInitialized === true)
         {
             console.log('Updating OBJECT list views for ' + this.pageName);
 
@@ -1655,7 +1655,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.mouseDownColumn = event.currentTarget.dataset.index;
         var childObj = event.target
         var parObj = childObj.parentNode;
-        while(parObj.tagName != 'TH') {
+        while(parObj.tagName !== 'TH') {
             parObj = parObj.parentNode;
         }
         var mouseStart=event.clientX;
@@ -1671,7 +1671,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         if(event.preventDefault) event.preventDefault();
         event.cancelBubble=true;
         event.returnValue=false;
-    };
+    }
 
     /*
      * Called when a user FINISHES changing the column width.
@@ -1688,7 +1688,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.mouseStart = undefined;
 
         this.saveColumnWidth(newWidth, this.mouseDownColumn);
-    };
+    }
 
     /*
      * Method to send the new column width back for saving.
@@ -1731,7 +1731,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             sortDirection = this.toBool(sortDirection)
         }
 
-        let columnData = undefined;
+        let columnData;
 
         //if a user has clicked on a column that is already being sorted then switch the direction
         if (this.columnSortData.has(sortIndex)) {
@@ -1781,7 +1781,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //get the SELECTED RECORD IDs
         let selectedRows = this.template.querySelectorAll('lightning-input');
         selectedRows.forEach(element => { 
-                                            if (element.checked === true && element.value != 'all')
+                                            if (element.checked === true && element.value !== 'all')
                                             {
                                                 selectedRowId = element.value.substring(0, element.value.indexOf(':'));
                                                 if (selectedRowId !== '')
@@ -1813,7 +1813,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                                                                         if (hyperlink.includes(key))
                                                                         {
                                                                             //get the ROW
-                                                                            let row = undefined;
+                                                                            let row;
                                                                             this.listViewDataRows.forEach(element => { 
                                                                                 if (element.isDeleted === false && element.salesforceId === recordIdStr)
                                                                                 {
@@ -2016,7 +2016,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             var orientation = await this.getConfigParameter('PDFOrientationPortrait');
             if (orientation === undefined || orientation === null || orientation === '') {
                 orientation = 'true'; //default to striped if nothing returned
-            } else if (orientation == 'false') { //true = portrait, false = landscape
+            } else if (orientation === 'false') { //true = portrait, false = landscape
                 orientation = 'landscape';
             }
 
@@ -2484,7 +2484,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         //if we have clicked "Enter" and either the search string is greater than 2 characters
         //  or we had a search string and its been removed.
-        if (keyCode == 'Enter' && (searchStr.length > 2 || searchStr.length === 0))
+        if (keyCode === 'Enter' && (searchStr.length > 2 || searchStr.length === 0))
         {
             //CUSTOM list views can only do CLIENT SIDE
             if (this.isCustomListView === true)
@@ -2538,7 +2538,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             strValue !== 'null' &&
             strValue !== 'undefined') ? '1' : strValue;
         return strValue === 'true' || strValue === '1' ? true : false
-    };
+    }
 
     //-------------------------------------------------------------------------------------------
     // POPOVER
@@ -2565,7 +2565,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.hoverAPIName = event.currentTarget.dataset.apiName;
             this.hoverLabelName = event.currentTarget.dataset.labelName;
             this.hoverIsDisplayed = true;
-            this.hoverPositionTop = event.pageY - 240; //have to move up as this is the number of pixels used for the header
+            this.hoverPositionTop = event.pageY - 170; //have to move up as this is the number of pixels used for the header
             this.hoverPositionLeft = event.pageX + 10; //have to move left as this is the number of pixels used for the sidebar    
         } else {
             console.log('Record popovers disabled');
