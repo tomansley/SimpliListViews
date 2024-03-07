@@ -19,7 +19,7 @@
 
 .applistscrollwrapper {
     width: 100%;
-    overflow: scroll;
+    overflow-y: auto;
 }
 
 .tablehorizontalscroll {
