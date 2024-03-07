@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-12-2023
+ * @last modified on  : 01-31-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -182,6 +182,7 @@ public without sharing class ListViewController
 
         lvConfigWrapper = lvlogic.lvConfig;
 
+        HelperString.debug(lvConfigWrapper, 'ListViewController(getListViewConfig)');
         ListViewErrorHelper.addLog('ListViewController(getListViewConfig)', lvConfigWrapper.getDebugString());
 
         ListViewErrorHelper.processLogs(true);
@@ -916,6 +917,62 @@ public without sharing class ListViewController
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
                 String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')  ' + ListViewException.getExtendedString(e);
+                ListViewErrorHelper.createFutureUsageError(message); 
+            }
+        }
+
+        ListViewErrorHelper.processLogs(true);
+
+        return rtnStr;
+    }
+
+    /*
+     * action = remove or add
+     * conditionData = condition id (if remove) or condition data map (if add)
+     */
+    @AuraEnabled
+    public static String processColumnStyleChange(String objectName, String listViewName, String action, String columnStyleData)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.processColumnStyleChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + columnStyleData + ')');
+
+        String rtnStr = 'Ok:';
+
+        if (action == 'add')
+        {
+            //get the field/value pairs of the update data
+            List<Object> listValues = (List<Object>) JSON.deserializeUntyped(columnStyleData);
+            Map<String, Object> mapValues = new Map<String, Object>();
+            for (Object key: listValues)
+            {
+                List<Object> keyValues = (List<Object>) key;
+                mapValues.put( (String) keyValues[0], keyValues[1]);
+            }
+
+            try {
+                ListViewConfigHelper.addListViewColumnStyle(objectName, 
+                                                            listViewName, 
+                                                            (String) mapValues.get('field'), 
+                                                            (String) mapValues.get('decoration'),
+                                                            (String) mapValues.get('font'),
+                                                            (String) mapValues.get('style'),
+                                                            (String) mapValues.get('transform'),
+                                                            (String) mapValues.get('variant'),
+                                                            (String) mapValues.get('weight'));
+                CacheListViewConfig.remove(objectName, listViewName);
+            } catch (Exception e) {
+                rtnStr = 'Failed:' + e.getMessage();
+                String message = 'Exception during ListViewController.processColumnStyleChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + columnStyleData + ')  ' + ListViewException.getExtendedString(e);
+                ListViewErrorHelper.createFutureUsageError(message); 
+                }
+
+        } else if (action == 'remove')
+        {
+            try {
+                ListViewConfigHelper.deleteListViewColumnStyle(columnStyleData);
+                CacheListViewConfig.remove(objectName, listViewName);
+            } catch (Exception e) {
+                rtnStr = 'Failed:' + e.getMessage();
+                String message = 'Exception during ListViewController.processColumnStyleChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + columnStyleData + ')  ' + ListViewException.getExtendedString(e);
                 ListViewErrorHelper.createFutureUsageError(message); 
             }
         }

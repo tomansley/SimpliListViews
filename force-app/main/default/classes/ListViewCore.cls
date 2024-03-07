@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-19-2023
+ * @last modified on  : 02-15-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -461,8 +461,10 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             }
 
-            if (lvConfig != null && !isShell)
+            if (lvConfig != null && !isShell) {
                 rowWrapper.calculateHighlighting(lvConfig.conditions);
+                rowWrapper.calculateCSSStyles(lvConfig.columnStyles);
+            }
         }
 
         //if totals have been configured and we are not paging.

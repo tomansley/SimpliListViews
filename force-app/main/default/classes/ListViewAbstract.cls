@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-26-2023
+ * @last modified on  : 02-15-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -765,6 +765,34 @@ public with sharing abstract class ListViewAbstract {
             }
 
         }
+
+        /*
+         * Method to calculate and set the css styles for fields and columns based on provided configuration styles.
+         */
+        public void calculateCSSStyles(List<ListViewColumnStyle> columnStyles)
+        {
+            System.debug(LoggingLevel.FINE, 'Calculating css styles for row!');
+            HelperString.debug(columnStyles, 'Column styles are');
+            HelperString.debug(fields.keySet(), 'Fields keyset');
+
+            //for each condition
+            for (ListViewColumnStyle style: columnStyles)
+            {
+                System.debug(LoggingLevel.FINE, 'Working style with field name - ' + style.getFieldName());
+
+                //go through each field
+                for (FieldWrapper field: fields.values())
+                {
+                    System.debug(LoggingLevel.FINE, 'Working field with name - ' + field.name.toLowerCase() + ' (' + field.getLongName().toLowerCase() + ')');
+                    if (style.getFieldName().toLowerCase() == field.name.toLowerCase() || style.getFieldName().toLowerCase() == field.getLongName().toLowerCase())
+                    {
+                        field.setCSSStyle(style.getCSSString());
+                    }
+                }
+            }
+
+        }
+
     }
 
     //---------------------------------------------------------------------
@@ -975,6 +1003,7 @@ public with sharing abstract class ListViewAbstract {
         public String parentObjType;   //the API name of the object that this field looks up to
         public Boolean isTotalsRow;    //identifies whether the row this field is a part of is a totals row.
         public String columnWidth;     //indicates the preset column width.
+        public String cssStyle;        //the css style that should be applied to this field based on the column styles configured
 
         public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
         {
@@ -1021,6 +1050,17 @@ public with sharing abstract class ListViewAbstract {
             debug       += 'columnIndex - ' + this.columnIndex + '\n';
             debug       += '---------------------------------------------------------------\n';
             System.debug(LoggingLevel.FINE, debug);
+        }
+
+        public void setCSSStyle(String cssStyle)
+        {
+            this.cssStyle = cssStyle;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getCssStyle()
+        {
+            return cssStyle;
         }
 
         public void setIsTotalsRow(Boolean isTotalsRow)
@@ -1541,6 +1581,101 @@ public with sharing abstract class ListViewAbstract {
         }
     }
 
+    public class ListViewColumnStyle
+    {
+        public List_View_Config_Column_Style__c columnStyle;
+        public String fieldName;
+        public String font;
+        public String decoration;
+        public String style;
+        public String transform;
+        public String variant;
+        public String weight;
+        public String id;
+        public String cssStr = null;
+
+        public ListViewColumnStyle(List_View_Config_Column_Style__c columnStyle)
+        {
+            this.columnStyle = columnStyle;
+            fieldName      = columnStyle.Field_Name__c;
+            decoration     = columnStyle.Style_Decoration__c;
+            font           = columnStyle.Style_Font__c;
+            style          = columnStyle.Style_Style__c;
+            transform      = columnStyle.Style_Transform__c;
+            variant        = columnStyle.Style_Variant__c;
+            weight         = columnStyle.Style_Weight__c;
+            id             = columnStyle.Id;
+        }
+
+        public List_View_Config_Column_Style__c getCondition()
+        {
+            return columnStyle;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFieldName()
+        {
+            return fieldName;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getDecoration()
+        {
+            return decoration;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFont()
+        {
+            return font;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getStyle()
+        {
+            return style;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getTransform()
+        {
+            return transform;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getVariant()
+        {
+            return variant;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getWeight()
+        {
+            return weight;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getId()
+        {
+            return id;
+        }
+
+        public String getCSSString()
+        {
+            if (this.cssStr == null) {
+                this.cssStr = '';
+                if (!String.isBlank(font)) this.cssStr += 'font-family: "' + font + '";';
+                if (!String.isBlank(decoration)) this.cssStr += 'text-decoration:' + decoration + ';';
+                if (!String.isBlank(style)) this.cssStr += 'font-style:' + style + ';';
+                if (!String.isBlank(transform)) this.cssStr += 'text-transform:' + transform + ';';
+                if (!String.isBlank(variant)) this.cssStr += 'font-variant:' + variant + ';';
+                if (!String.isBlank(weight)) this.cssStr += 'font-weight:' + weight + ';';        
+            }
+
+            return cssStr;
+        }
+    }
+
     public class ListViewCondition
     {
         public List_View_Config_Condition__c condition;
@@ -1619,6 +1754,7 @@ public with sharing abstract class ListViewAbstract {
         public String lastModifiedBy;
         public Map<String, ListViewParam> parameters;
         public List<ListViewCondition> conditions;
+        public List<ListViewColumnStyle> columnStyles;
         public String name;
         public String label;
         public String obj;
@@ -1630,6 +1766,7 @@ public with sharing abstract class ListViewAbstract {
             this.listViewMode = listViewMode;
             parameters        = new Map<String,ListViewParam>();
             conditions        = new List<ListViewCondition>();
+            columnStyles      = new List<ListViewColumnStyle>();
         }
 
         /*
@@ -1647,6 +1784,7 @@ public with sharing abstract class ListViewAbstract {
             lastModifiedBy      = listViewConfig.LastModifiedBy.Name;
             parameters          = new Map<String,ListViewParam>();
             conditions          = new List<ListViewCondition>();
+            columnStyles        = new List<ListViewColumnStyle>();
 
             for (List_View_Config_Parameter__c param: params)
             {
@@ -1664,9 +1802,11 @@ public with sharing abstract class ListViewAbstract {
 
             System.debug(LoggingLevel.FINE, 'All config params - ' + parameters);
 
-
             for (List_View_Config_Condition__c condition: listViewConfig.List_View_Config_Conditions__r)
                 conditions.add(new ListViewCondition(condition));
+            
+            for (List_View_Config_Column_Style__c columnStyle: listViewConfig.List_View_Config_Column_Styles__r)
+                columnStyles.add(new ListViewColumnStyle(columnStyle));
             
         }
 
@@ -1755,6 +1895,12 @@ public with sharing abstract class ListViewAbstract {
         public List<ListViewCondition> getConditions()
         {
             return conditions;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public List<ListViewColumnStyle> getColumnStyles()
+        {
+            return columnStyles;
         }
 
         public String getDebugString() {

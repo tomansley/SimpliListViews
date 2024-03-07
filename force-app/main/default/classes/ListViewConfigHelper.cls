@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : 
- * @Last Modified On   : 10-16-2022
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 01-29-2024
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -334,6 +334,30 @@ public with sharing class ListViewConfigHelper {
 
     }
 
+    public static void addListViewColumnStyle(String objectName, String listViewName, String fieldName, String decoration, String font, String style, String transform, String variant, String weight)
+    {
+
+        //get the list view config for the column style
+        List_View_Config__c lvConfig = getListViewConfig(objectName, listViewName);
+
+        List_View_Config_Column_Style__c columnStyle = new List_View_Config_Column_Style__c();
+        columnStyle.Field_Name__c        = fieldName;
+        columnStyle.List_View_Config__c  = lvConfig.Id;
+        columnStyle.Style_Decoration__c  = decoration;
+        columnStyle.Style_Font__c        = font;
+        columnStyle.Style_Style__c       = style;
+        columnStyle.Style_Transform__c   = transform;
+        columnStyle.Style_Variant__c     = variant;
+        columnStyle.Style_Weight__c      = weight;
+
+        System.debug(LoggingLevel.DEBUG, 'ADDING COLUMN STYLE - ' + columnStyle);
+        HelperDatabase.insertRecord(columnStyle);
+
+        //force org cache update
+        resetCache(objectName, listViewName);
+
+    }
+
     public static void deleteListViewCondition(String id)
     {
         System.debug(LoggingLevel.FINE, 'Deleting list view condition - ' + id);
@@ -347,6 +371,22 @@ public with sharing class ListViewConfigHelper {
         List<List_View_Config_Condition__c> conditions = (List<List_View_Config_Condition__c>) dec.getRecords();
 
         HelperDatabase.deleteRecords(conditions, 'simpli_lv__List_View_Config_Condition__c');
+
+    }
+
+    public static void deleteListViewColumnStyle(String id)
+    {
+        System.debug(LoggingLevel.FINE, 'Deleting list view column style - ' + id);
+
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Id 
+                 FROM List_View_Config_Column_Style__c
+                 WHERE Id = :id]);
+
+        List<List_View_Config_Column_Style__c> columnStyles = (List<List_View_Config_Column_Style__c>) dec.getRecords();
+
+        HelperDatabase.deleteRecords(columnStyles, 'simpli_lv__List_View_Config_Column_Style__c');
 
     }
 
@@ -401,7 +441,16 @@ public with sharing class ListViewConfigHelper {
                                     Order__c,
                                     Value__c
                         FROM List_View_Config_Conditions__r
-                        ORDER BY Order__c ASC)
+                        ORDER BY Order__c ASC),
+                        (SELECT Field_Name__c,
+                                Style_Decoration__c,
+                                Style_Font__c,
+                                Style_Style__c,
+                                Style_Transform__c,
+                                Style_Variant__c,
+                                Style_Weight__c
+                         FROM List_View_Config_Column_Styles__r
+                         ORDER BY Field_Name__c)
             FROM List_View_Config__c
                     WHERE Name = :listViewName
                         AND List_View_Object__c = :objectName]);
@@ -446,7 +495,16 @@ public with sharing class ListViewConfigHelper {
                                                             Order__c,
                                                             Value__c
                                                 FROM List_View_Config_Conditions__r
-                                                ORDER BY Order__c ASC)
+                                                ORDER BY Order__c ASC),
+                                                (SELECT Field_Name__c,
+                                                        Style_Decoration__c,
+                                                        Style_Font__c,
+                                                        Style_Style__c,
+                                                        Style_Transform__c,
+                                                        Style_Variant__c,
+                                                        Style_Weight__c
+                                                FROM List_View_Config_Column_Styles__r
+                                                ORDER BY Field_Name__c)
                                     FROM List_View_Config__c
                                             WHERE Primary_Key__c IN :primaryKeys];
 
@@ -481,7 +539,16 @@ public with sharing class ListViewConfigHelper {
                                 Order__c,
                                 Value__c
                     FROM List_View_Config_Conditions__r
-                    ORDER BY Order__c ASC)
+                    ORDER BY Order__c ASC),
+                    (SELECT Field_Name__c,
+                            Style_Decoration__c,
+                            Style_Font__c,
+                            Style_Style__c,
+                            Style_Transform__c,
+                            Style_Variant__c,
+                            Style_Weight__c
+                    FROM List_View_Config_Column_Styles__r
+                    ORDER BY Field_Name__c)
         FROM List_View_Config__c
                 WHERE Id IN :ids]);
     }

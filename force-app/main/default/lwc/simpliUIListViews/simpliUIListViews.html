@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-19-2023
+  @last modified on  : 03-04-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -442,7 +442,8 @@
                                                             <td id={rowData.rowId} key={fieldData.key} data-label={fieldData.label} ondblclick={setRowEdited}>
                                                                 <template if:true={fieldData.hasURL}>
                                                                     <div id={rowData.rowId} 
-                                                                        class="slds-truncate" 
+                                                                        class="slds-truncate"
+                                                                        style={fieldData.cssStyle} 
                                                                         title={fieldData.value}>
                                                                         <a href={fieldData.uRL} onmouseover={displayHoverDetails} 
                                                                                                 data-sfdc-id={fieldData.objValueId} 
@@ -456,12 +457,12 @@
                                                                 </template>
                                                                 <template if:false={fieldData.hasURL}>
                                                                     <template if:true={fieldData.isId}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick} rel="noreferrer">{fieldData.value}</a>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isString}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             {fieldData.value}
                                                                         </div>
                                                                     </template>
@@ -471,79 +472,79 @@
                                                                         </div>
                                                                     </template>
                                                                         <template if:true={fieldData.isLookup}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             {fieldData.value}
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isTextArea}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             {fieldData.value}
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isDate}>
-                                                                        <div id={rowData.rowId} class="slds-truncate">
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle}>
                                                                             <lightning-formatted-date-time value={fieldData.value} year="numeric" month="numeric" day="numeric"></lightning-formatted-date-time>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isDateTime}>
-                                                                        <div id={rowData.rowId} class="slds-truncate">
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle}>
                                                                             <lightning-formatted-date-time time-zone={listViewData.userTimeZone} value={fieldData.value} year="numeric" month="numeric" day="numeric" hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isTime}>
-                                                                        <div id={rowData.rowId} class="slds-truncate">
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle}>
                                                                             <lightning-formatted-date-time value={fieldData.value} hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isInteger}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             {fieldData.value}
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isDecimal}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             <lightning-formatted-number value={fieldData.value}></lightning-formatted-number>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isBoolean}>
-                                                                        <div id={rowData.rowId} class="slds-truncate">
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle}>
                                                                             <template if:true={fieldData.uIValue}>
                                                                                 <lightning-icon size="x-small" icon-name="utility:check" alternative-text="True" title="True"></lightning-icon>
                                                                             </template>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isCurrency}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             <lightning-formatted-number value={fieldData.value} format-style="currency" currency-code={fieldData.currencyCode}></lightning-formatted-number>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isPhone}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             <lightning-formatted-phone value={fieldData.value}></lightning-formatted-phone>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isEmail}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             <lightning-formatted-email value={fieldData.value}></lightning-formatted-email>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isDouble}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             <lightning-formatted-number value={fieldData.value}></lightning-formatted-number>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isPercent}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             <lightning-formatted-number value={fieldData.value} format-style="percent-fixed" maximum-fraction-digits="2"></lightning-formatted-number>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isURL}>
-                                                                        <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <div id={rowData.rowId} class="slds-truncate" style={fieldData.cssStyle} title={fieldData.value}>
                                                                             <lightning-formatted-url value={fieldData.value} tooltip="Go to" target="_blank"></lightning-formatted-url>
                                                                         </div>
                                                                     </template>
                                                                     <template if:true={fieldData.isPicklist}>
-                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate">
+                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style={fieldData.cssStyle}>
                                                                             {fieldData.value}
                                                                         </div>
                                                                     </template>

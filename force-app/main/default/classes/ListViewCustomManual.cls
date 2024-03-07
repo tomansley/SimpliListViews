@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-26-2023
+ * @last modified on  : 02-16-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -463,6 +463,11 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 if (lvConfig != null)
                     rowWrapper.calculateHighlighting(lvConfig.conditions);
             }
+
+            if (lvConfig != null) {
+                rowWrapper.calculateCSSStyles(lvConfig.columnStyles);
+            }
+
         }
 
         rows.queryString = ListViewHelper.LATEST_QUERY; //put the query used to get the data into the wrapper for use on the front end (debugging)

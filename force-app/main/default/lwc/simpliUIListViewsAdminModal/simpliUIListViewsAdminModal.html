@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-25-2023
+  @last modified on  : 02-16-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -99,6 +99,9 @@
                             </div>        
                         </lightning-tab>
 
+                        <!-- ====================================================================================================================================== -->
+                        <!-- CONDITIONS                                                                                                                             -->
+                        <!-- ====================================================================================================================================== -->
                         <lightning-tab label={label.Highlighting}>
                             <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-condition-content" style="min-width: 1100px; overflow: initial;">
                                 <template if:true={spinner}>
@@ -114,9 +117,7 @@
                                                 <div class="slds-truncate" style="padding-left:5px;" title={label.Operator}>{label.Operator}</div>
                                             </th>
                                             <th class="" scope="col">
-                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Value}>
-                                                    {label.Value} 
-                                                </div>
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Value}>{label.Value}</div>
                                             </th>
                                             <th class="" scope="col">
                                                 <div class="slds-truncate" style="padding-left:5px;" title={label.Order}>{label.Precedence}</div>
@@ -132,7 +133,7 @@
                                     <tbody>
                                         <template for:each={listViewConfig.conditions} for:item="condition">
                                             <tr key={condition.id} class="slds-hint-parent">
-                                                <td key={condition.id} data-label={condition.fieldName}>
+                                                <td data-label={condition.fieldName}>
                                                     <div class="slds-truncate" title={label.Field_Name}>
                                                         <lightning-combobox read-only="true"
                                                                             value={condition.fieldName}
@@ -141,22 +142,22 @@
                                                         </lightning-combobox>
                                                     </div>
                                                 </td>
-                                                <td key={condition.id} data-label={condition.operator}>
+                                                <td data-label={condition.operator}>
                                                     <div title={label.Operator}>
                                                         <lightning-formatted-text style="padding-left:5px;" value={condition.operator}></lightning-formatted-text>                        
                                                     </div>
                                                 </td>
-                                                <td key={condition.id} data-label={condition.value}>
+                                                <td data-label={condition.value}>
                                                     <div class="slds-truncate" title={label.Value}>
                                                         <lightning-formatted-text style="padding-left:5px;" value={condition.value}></lightning-formatted-text>
                                                     </div>
                                                 </td>
-                                                <td key={condition.id} data-label={condition.order}>
+                                                <td data-label={condition.order}>
                                                     <div title={label.Precedence}>
                                                         <lightning-formatted-text style="padding-left:5px;" value={condition.order}></lightning-formatted-text>                        
                                                     </div>
                                                 </td>
-                                                <td key={condition.id} data-label={condition.color}>
+                                                <td data-label={condition.color}>
                                                     <div class="slds-truncate" title={label.Color}>
                                                         <lightning-input type="color" 
                                                                             variant="label-hidden" 
@@ -166,7 +167,7 @@
                                                         </lightning-input>
                                                     </div>
                                                 </td>
-                                                <td key={condition.id} data-label={condition.fieldName} style="width:1.25rem">
+                                                <td data-label={condition.fieldName} style="width:1.25rem">
                                                     <div class="slds-truncate">
                                                         <lightning-button-icon icon-name="utility:dash"  
                                                                             alternative-text={label.Remove_Condition} 
@@ -307,6 +308,192 @@
                                                                         alternative-text={label.Add_Condition} 
                                                                         title={label.Add_Condition}
                                                                         onclick={handleConditionChange}
+                                                                        value="add">
+                                                    </lightning-button-icon>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>      
+                            </div>
+                        </lightning-tab>
+
+                        <!-- ====================================================================================================================================== -->
+                        <!-- COLUMN STYLES                                                                                                                          -->
+                        <!-- ====================================================================================================================================== -->
+                        <lightning-tab label={label.Column_Styles}>
+                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-style-content" style="min-width: 1100px; overflow: initial;">
+                                <template if:true={spinner}>
+                                    <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
+                                </template>
+                                    <table class="slds-table slds-table_bordered">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Field_Name}>{label.Field}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Font}>{label.Font}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Decoration}>{label.Decoration}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Style}>{label.Style}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Transform}>{label.Transform}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Variant}>{label.Variant}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Weight}>{label.Weight}</div>
+                                            </th>
+                                            <th class="" scope="col" style="width:1.25rem">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Add_Remove}></div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={listViewConfig.columnStyles} for:item="style">
+                                            <tr key={style.id} class="slds-hint-parent">
+                                                <td data-label={style.fieldName}>
+                                                    <div class="slds-truncate" title={label.Field_Name}>
+                                                        <lightning-combobox read-only="true"
+                                                                            value={style.fieldName}
+                                                                            options={listViewColumns}
+                                                                            variant=label-hidden>
+                                                        </lightning-combobox>
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.font}>
+                                                    <div title={label.Font}>
+                                                        <lightning-formatted-text style="padding-left:5px;" value={style.font}></lightning-formatted-text>                        
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.decoration}>
+                                                    <div title={label.Decoration}>
+                                                        <lightning-formatted-text style="padding-left:5px;" value={style.decoration}></lightning-formatted-text>                        
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.style}>
+                                                    <div title={label.style}>
+                                                        <lightning-formatted-text style="padding-left:5px;" value={style.style}></lightning-formatted-text>                        
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.transform}>
+                                                    <div title={label.Transform}>
+                                                        <lightning-formatted-text style="padding-left:5px;" value={style.transform}></lightning-formatted-text>                        
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.variant}>
+                                                    <div title={label.Variant}>
+                                                        <lightning-formatted-text style="padding-left:5px;" value={style.variant}></lightning-formatted-text>                        
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.weight}>
+                                                    <div title={label.Weight}>
+                                                        <lightning-formatted-text style="padding-left:5px;" value={style.weight}></lightning-formatted-text>
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.fieldName} style="width:1.25rem">
+                                                    <div class="slds-truncate">
+                                                        <lightning-button-icon icon-name="utility:dash"  
+                                                                            alternative-text={label.Remove_Column_Style} 
+                                                                            title={label.Remove_Column_Style}
+                                                                            name={style.id}
+                                                                            onclick={handleColumnStyleChange}
+                                                                            value="remove">
+                                                        </lightning-button-icon>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>            
+                                        <tr class="slds-hint-parent">
+                                            <td style="width:200px">
+                                                <div title="Field Label">
+                                                    <lightning-combobox placeholder={label.Select_A_Column}  
+                                                                        onchange={handleColumnStyleFieldChange}
+                                                                        name="fieldName" 
+                                                                        options={styleListViewColumns}
+                                                                        value={firstColumnStyleField}
+                                                                        variant=label-hidden>
+                                                    </lightning-combobox>
+                                                </div>
+                                            </td>
+                                            <td style="width:75px">
+                                                <div title="Font">
+                                                    <lightning-combobox placeholder={label.Font}
+                                                                        value={newColumnStyleFont}
+                                                                        name="font"
+                                                                        onchange={handleColumnStyleFieldChange}
+                                                                        options={fontStyleList}
+                                                                        variant=label-hidden>
+                                                    </lightning-combobox>                        
+                                                </div>
+                                            </td>
+                                            <td style="width:100px">
+                                                <div title="Decoration">
+                                                    <lightning-combobox placeholder={label.Decoration}
+                                                                        value={newColumnStyleDecoration}
+                                                                        name="decoration"
+                                                                        onchange={handleColumnStyleFieldChange}
+                                                                        options={decorationStyleList}
+                                                                        variant=label-hidden>
+                                                    </lightning-combobox>                        
+                                                </div>
+                                            </td>
+                                            <td style="width:100px">
+                                                <div title="">
+                                                    <lightning-combobox placeholder={label.Style}
+                                                                        value={newColumnStyleStyle}
+                                                                        name="style"
+                                                                        onchange={handleColumnStyleFieldChange}
+                                                                        options={styleStyleList}
+                                                                        variant=label-hidden>
+                                                    </lightning-combobox>                        
+                                                </div>
+                                            </td>
+                                            <td style="width:100px">
+                                                <div title="">
+                                                    <lightning-combobox placeholder={label.Transform}
+                                                                        value={newColumnStyleTransform}
+                                                                        name="transform"
+                                                                        onchange={handleColumnStyleFieldChange}
+                                                                        options={transformStyleList}
+                                                                        variant=label-hidden>
+                                                    </lightning-combobox>                        
+                                                </div>
+                                            </td>
+                                            <td style="width:100px">
+                                                <div title="">
+                                                    <lightning-combobox placeholder={label.Variant}
+                                                                        value={newColumnStyleVariant}
+                                                                        name="variant"
+                                                                        onchange={handleColumnStyleFieldChange}
+                                                                        options={variantStyleList}
+                                                                        variant=label-hidden>
+                                                    </lightning-combobox>                        
+                                                </div>
+                                            </td>
+                                            <td style="width:100px">
+                                                <div title="">
+                                                    <lightning-combobox placeholder={label.Weight}
+                                                                        value={newColumnStyleWeight}
+                                                                        name="weight"
+                                                                        onchange={handleColumnStyleFieldChange}
+                                                                        options={weightStyleList}
+                                                                        variant=label-hidden>
+                                                    </lightning-combobox>                        
+                                                </div>
+                                            </td>
+                                            <td style="width:50px">
+                                                <div>
+                                                    <lightning-button-icon icon-name="utility:add"  
+                                                                        alternative-text={label.Add_Condition} 
+                                                                        title={label.Add_Condition}
+                                                                        onclick={handleColumnStyleChange}
                                                                         value="add">
                                                     </lightning-button-icon>
                                                 </div>
