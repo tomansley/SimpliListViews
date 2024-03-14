@@ -1719,6 +1719,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log(this.pageName + ' CALLOUT - updateUserConfigListViewWidth(columnWidth) - ' + this.calloutCount++);
 
         let configName = 'columnWidths:' + this.selectedObject + ':' + this.selectedListView;
+        console.log('Config width string - ' + configName);
         updateUserConfigListViewWidth({compName: this.pageName, configName: configName, columnIndex: columnIndex, width: newWidth })
         .then(result => {
             //this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Width Saved', 'List view width successfully saved.' + result, false)); 

@@ -607,13 +607,10 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 
                 //get any associated message
                 let message = resultStr.substring(resultStr.indexOf(':')+1);
-                if (message === '' && status === 'Ok') {
-                    message = 'All column styles processed.';
-                } else if (message === '' && status !== 'Ok') {
-                    message = 'There was an error processing the column style.';
-                }
 
                 if (status === 'Ok') {
+                    message = 'All column styles processed.';
+
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Style Updated Successfully!',
                         message: message,
@@ -626,6 +623,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     this.spinner = false;
 
                 } else {
+                    message = 'There was an error processing the column style.';
+
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error!',
                         message: message,

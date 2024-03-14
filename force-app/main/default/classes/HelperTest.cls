@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-19-2023
+ * @last modified on  : 03-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -244,6 +244,23 @@ public with sharing class HelperTest {
         conditions.add(condition);
 
         HelperDatabase.insertRecords(conditions);
+
+        List<List_View_Config_Column_Style__c> styles = new List<List_View_Config_Column_Style__c>();
+
+        List_View_Config_Column_Style__c style = new List_View_Config_Column_Style__c();
+        style.Field_Name__c       = 'AnnualRevenue';
+        style.Style_Decoration__c = 'none';
+        style.Style_Font__c       = 'Times New Roman';
+        style.Style_Style__c      = 'normal';
+        style.Style_Transform__c  = 'none';
+        style.Style_Variant__c    = 'normal';
+        style.Style_Weight__c     = 'bold';
+        style.Style_Alignment__c  = 'center';
+        style.List_View_Config__c = config.Id;
+
+        styles.add(style);
+
+        HelperDatabase.insertRecords(styles);
 
 		List_View_Config_Parameter__c orgWideConfig = [SELECT Id FROM List_View_Config_Parameter__c WHERE Parameter_Name__c = 'ListViewObjects'];
 		orgWideConfig.Parameter_Value__c = '{"Account":"Account"}';

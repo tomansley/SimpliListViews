@@ -159,10 +159,12 @@ global class ListViewControllerTest {
         System.assertNotEquals(lvConfig.listViewConfig, null);
 
         System.assertNotEquals(lvConfig.getName(), null);
+        System.assertNotEquals(lvConfig.getLabel(), null);
         System.assertNotEquals(lvConfig.getObject(), null);
         System.assertNotEquals(lvConfig.getLastModifiedText(), null);
         System.assertNotEquals(lvConfig.getLastModifiedBy(), null);
         System.assertNotEquals(lvConfig.getLastModifiedDate(), null);
+        
         List<ListViewAbstract.ListViewParam> params = lvConfig.getParameters();
         System.assert(params.size() > 0);
         System.assertNotEquals(params[0].getLabel(), null);
@@ -172,6 +174,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(params[0].getDescription(), null);
         System.assertNotEquals(params[0].getUpdateImmediate(), null);
         System.assertNotEquals(params[0].getIsBoolean(), null);
+
         List<ListViewAbstract.ListViewCondition> conditions = lvConfig.getConditions();
         System.assert(conditions.size() > 0);
         System.assertNotEquals(conditions[0].getCondition(), null);
@@ -181,6 +184,21 @@ global class ListViewControllerTest {
         System.assertNotEquals(conditions[0].getOrder(), null);
         System.assertNotEquals(conditions[0].getColor(), null);
         System.assertNotEquals(conditions[0].getId(), null);
+
+        System.assertNotEquals(lvConfig.getColumnStyles(), null);
+        List<ListViewAbstract.ListViewColumnStyle> styles = lvConfig.getColumnStyles();
+        System.assert(styles.size() > 0);
+        System.assertNotEquals(styles[0].getAlignment(), null);
+        System.assertNotEquals(styles[0].getCSSString(), null);
+        System.assertNotEquals(styles[0].getDecoration(), null);
+        System.assertNotEquals(styles[0].getFieldName(), null);
+        System.assertNotEquals(styles[0].getFont(), null);
+        System.assertNotEquals(styles[0].getId(), null);
+        System.assertNotEquals(styles[0].getStyle(), null);
+        System.assertNotEquals(styles[0].getTransform(), null);
+        System.assertNotEquals(styles[0].getVariant(), null);
+        System.assertNotEquals(styles[0].getWeight(), null);
+
 
     }
 
@@ -259,6 +277,12 @@ global class ListViewControllerTest {
         System.assertNotEquals(rows.getIsEdited(), null);
         System.assertNotEquals(rows.getIsCoreListView(), null);
         System.assertNotEquals(rows.getHasTotalsRow(), null);
+        System.assertNotEquals(rows.getListViewConfig(), null);
+        System.assertNotEquals(rows.getQueryString(), null);
+        System.assertEquals(rows.getCanTextSearch(), true);
+        System.assertNotEquals(rows.getIsDefaultSort(), true);
+        System.assertNotEquals(rows.getColumnCount(), 4);
+        System.assertNotEquals(rows.getUIColumnCount(), 4);
 
 
         ListViewAbstract.ListViewWrapper listViewWrapper = rows.getListView();
@@ -268,6 +292,8 @@ global class ListViewControllerTest {
         System.assertNotEquals(listViewWrapper.getOffset(), null);
         System.assertNotEquals(listViewWrapper.getListViewType(), null);
         System.assertNotEquals(listViewWrapper.getRowLimit(), null);
+        System.assertEquals(listViewWrapper.getDefaultSortOrder(), null);
+        System.assertEquals(listViewWrapper.getIsNonEditable(), false);
 
         ListViewAbstract.RowWrapper row = rows.rows[0];
         System.assertNotEquals(row, null);
@@ -281,6 +307,8 @@ global class ListViewControllerTest {
         System.assertNotEquals(row.getIsDeleted(), null);
         System.assertNotEquals(row.getIsEdited(), null);
         System.assertNotEquals(row.getIsDisplayed(), null);
+        System.assertNotEquals(row.getRecordTypeId(), null);
+        System.assertEquals(row.getIsEditable(), true);
 
 
         ListViewAbstract.FieldWrapper field = row.getFields()[0];
@@ -320,6 +348,17 @@ global class ListViewControllerTest {
         System.assertNotEquals(field.getIsURL(), null);
         System.assertNotEquals(field.getUIValue(), null);
         System.assertNotEquals(field.getUIMultiPicklistValues(), null);
+        field.setCSSStyle('xyz:xyz');
+        System.assertEquals(field.getCssStyle(), 'xyz:xyz');
+        System.assertNotEquals(field.getColumnWidth(), null);
+        System.assertNotEquals(field.getObjValueId(), null);
+        System.assertNotEquals(field.getFieldObjLabel(), null);
+        System.assertEquals(field.getIsId(), false);
+        System.assertEquals(field.getIsRichTextArea(), false);
+        System.assertEquals(field.getIsHTML(), false);
+        System.assertEquals(field.getIsImage(), false);
+        System.assertNotEquals(field.getCurrencyCode(), null);
+        System.assertNotEquals(field.getColumnIndex(), null);
 
         List<ListViewAbstract.ListViewColumn> columns = ListViewController.getListViewColumns('Account', 'simpli_lv__AllAccounts');
         System.assertNotEquals(columns, null);
@@ -346,6 +385,10 @@ global class ListViewControllerTest {
         System.assertNotEquals(column.getLabel(), null);
         System.assertNotEquals(column.getType(), null);
         System.assertNotEquals(column.getValue(), null);
+        System.assertEquals(column.getHasWidth(), false);
+        System.assertNotEquals(column.getWidth(), null);
+        System.assertEquals(column.getIsRichTextArea(), false);
+
         
         List<ListViewAbstract.ActionWrapper> actions = ListViewController.getListViewActions('Account', 'simpli_lv__AllAccounts', '');
 
@@ -363,6 +406,16 @@ global class ListViewControllerTest {
         System.assertNotEquals(action.getValue(), null);
         System.assertNotEquals(action.getIsHyperlink(), null);
         System.assertNotEquals(action.getHyperlink(), null);
+        System.assertNotEquals(action.getClassName(), null);
+        System.assertEquals(action.getIsFlow(), false);
+        System.assertEquals(action.getFlowAPIName(), null);
+        System.assertEquals(action.getFlowType(), null);
+        System.assertEquals(action.getFlowFrameHeight(), null);
+        System.assertEquals(action.getFlowFrameWidth(), null);
+        System.assertEquals(action.getMassCreateListViewName(), null);
+        System.assertEquals(action.getSelectedRecVisibility(), 'Displayed if one or more records are selected');
+        System.assertEquals(action.getEmailTemplateFolder(), '');
+        System.assertEquals(action.getEmailTemplateWhatIdField(), '');
 
         System.assertNotEquals(action.getDisplayParameters(), null);
         System.assert(action.getDisplayParameters().size() > 0);
@@ -391,6 +444,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(actionParam.getIsTime(), null);
         System.assertNotEquals(actionParam.getIsURL(), null);
         
+        rows.clearRows();
 
         String result = ListViewController.processAction('Delete:ListViewActionDelete:Core:null', '["' + acct.Id + '"]', '[]');
 
@@ -562,6 +616,48 @@ global class ListViewControllerTest {
         ListViewMetadataAPIService.readListViewResponse_element r4 = new ListViewMetadataAPIService.readListViewResponse_element();
 
         System.assert(true);
+    }
+
+    static testMethod void processColumnStyleChangeTest()
+    {
+        HelperTest.createCoreListViews();
+
+        String jsonStyle = '[["field","Email"],["font","Times New Roman"],["decoration","none"],["style","normal"],["transform","none"],["variant","normal"],["weight","bold"],["alignment","center"]]';
+
+        Test.startTest();
+            ListViewController.processColumnStyleChange('Account', 'simpli_lv__AllAccounts', 'add', jsonStyle);
+
+            List<List_View_Config_Column_Style__c> styles = [SELECT Id FROM List_View_Config_Column_Style__c LIMIT 1000];
+
+            System.assertEquals(2, styles.size());
+
+            String result = ListViewController.processColumnStyleChange('Account', 'simpli_lv__AllAccounts', 'remove', styles[0].Id);
+
+            System.assertEquals('Ok:', result);
+        Test.stopTest();
+
+    }
+
+    static testMethod void updateUserConfigListViewWidthTest()
+    {
+        String response = ListViewController.updateUserConfigListViewWidth('Comp_Name', 'columnWidths:Account:simpli_lv__PlatinumandGoldSLACustomers', '0', '100px');
+
+        System.assertEquals('success', response);
+
+        response = ListViewController.updateUserConfigListViewWidth('Comp_Name', 'columnWidths:Account:simpli_lv__PlatinumandGoldSLACustomers', '1', '120px');
+
+        System.assertEquals('success', response);
+    }
+
+    static testMethod void getListViewIdTest()
+    {
+        HelperTest.createCoreListViews();
+
+        Test.startTest();
+            String id = ListViewController.getListViewId('Account', 'simpli_lv__AllAccounts');
+        Test.stopTest();
+
+        System.assertNotEquals(null, id);
     }
 
     global class ListViewControllerTest_CalloutMock implements HttpCalloutMock  {
