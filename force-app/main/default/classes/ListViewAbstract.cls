@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-07-2024
+ * @last modified on  : 03-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1609,7 +1609,7 @@ public with sharing abstract class ListViewAbstract {
             id             = columnStyle.Id;
         }
 
-        public List_View_Config_Column_Style__c getCondition()
+        public List_View_Config_Column_Style__c getColumnStyle()
         {
             return columnStyle;
         }
