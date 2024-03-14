@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 02-16-2024
+  @last modified on  : 03-07-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -350,6 +350,9 @@
                                             <th class="" scope="col">
                                                 <div class="slds-truncate" style="padding-left:5px;" title={label.Weight}>{label.Weight}</div>
                                             </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Alignment}>{label.Alignment}</div>
+                                            </th>
                                             <th class="" scope="col" style="width:1.25rem">
                                                 <div class="slds-truncate" style="padding-left:5px;" title={label.Add_Remove}></div>
                                             </th>
@@ -395,6 +398,11 @@
                                                 <td data-label={style.weight}>
                                                     <div title={label.Weight}>
                                                         <lightning-formatted-text style="padding-left:5px;" value={style.weight}></lightning-formatted-text>
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.alignment}>
+                                                    <div title={label.Alignment}>
+                                                        <lightning-formatted-text style="padding-left:5px;" value={style.alignment}></lightning-formatted-text>
                                                     </div>
                                                 </td>
                                                 <td data-label={style.fieldName} style="width:1.25rem">
@@ -484,6 +492,17 @@
                                                                         name="weight"
                                                                         onchange={handleColumnStyleFieldChange}
                                                                         options={weightStyleList}
+                                                                        variant=label-hidden>
+                                                    </lightning-combobox>                        
+                                                </div>
+                                            </td>
+                                            <td style="width:100px">
+                                                <div title="">
+                                                    <lightning-combobox placeholder={label.Alignment}
+                                                                        value={newColumnStyleAlignment}
+                                                                        name="alignment"
+                                                                        onchange={handleColumnStyleFieldChange}
+                                                                        options={alignmentList}
                                                                         variant=label-hidden>
                                                     </lightning-combobox>                        
                                                 </div>

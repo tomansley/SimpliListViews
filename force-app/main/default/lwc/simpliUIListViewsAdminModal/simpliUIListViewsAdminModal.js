@@ -32,6 +32,7 @@ import Style from '@salesforce/label/c.Style';
 import Variant from '@salesforce/label/c.Variant';
 import Transform from '@salesforce/label/c.Transform';
 import Weight from '@salesforce/label/c.Weight';
+import Alignment from '@salesforce/label/c.Alignment';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
 import getListViewColumns from '@salesforce/apex/ListViewController.getListViewColumns';
@@ -77,6 +78,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track newColumnStyleTransform;
     @track newColumnStyleVariant;
     @track newColumnStyleWeight;
+    @track newColumnStyleAlignment;
 
     get fontStyleList() {
         return [
@@ -137,6 +139,15 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         ];
     }
 
+    get alignmentList() {
+        return [
+            { label: 'Left', value: 'left'},
+            { label: 'Right', value: 'right'},
+            { label: 'Center', value: 'center'},
+            { label: 'Justify', value: 'justify'},
+        ];
+    }
+
     get booleanList() {
         return [
             { label: 'Yes', value: 'true'},
@@ -191,7 +202,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
     label = { Close, List_View_Config, Settings, Parameter_Name, Value, Select_A_Value, Highlighting, Add_Remove, Field,
               Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition,
-              Update, Column_Styles, Font, Decoration, Style, Variant, Transform, Weight
+              Update, Column_Styles, Font, Decoration, Style, Variant, Transform, Weight, Alignment
             }
 
     constructor() {
@@ -240,7 +251,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 this.setStyleColumns();
             })
             .catch(error => {
-                console.log('Error Detected - ' + JSON.serialize(error));
+                console.log('Error Detected - ' + JSON.stringify(error));
                 this.listViewConfig = undefined;
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error Retrieving List View Config',
@@ -580,6 +591,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             valuesMap.set('transform', this.newColumnStyleTransform);
             valuesMap.set('variant', this.newColumnStyleVariant);
             valuesMap.set('weight', this.newColumnStyleWeight);
+            valuesMap.set('alignment', this.newColumnStyleAlignment);
 
             strParamsMap = JSON.stringify( Array.from(valuesMap) );
             console.log('Params Field/Value  - ' + strParamsMap);
@@ -655,6 +667,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         this.newColumnStyleTransform = 'none';
         this.newColumnStyleVariant = 'normal';
         this.newColumnStyleWeight = 'normal';
+        this.newColumnStyleAlignment = 'left';
     }
 
     handleColumnStyleFieldChange(event) {
@@ -670,6 +683,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         else if (name === 'decoration') this.newColumnStyleDecoration = value;
         else if (name === 'font') this.newColumnStyleFont = value;
         else if (name === 'weight') this.newColumnStyleWeight = value;
+        else if (name === 'alignment') this.newColumnStyleAlignment = value;
     }
 
     handleClose() {

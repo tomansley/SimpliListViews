@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-31-2024
+ * @last modified on  : 03-07-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -957,7 +957,8 @@ public without sharing class ListViewController
                                                             (String) mapValues.get('style'),
                                                             (String) mapValues.get('transform'),
                                                             (String) mapValues.get('variant'),
-                                                            (String) mapValues.get('weight'));
+                                                            (String) mapValues.get('weight'),
+                                                            (String) mapValues.get('alignment'));
                 CacheListViewConfig.remove(objectName, listViewName);
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();

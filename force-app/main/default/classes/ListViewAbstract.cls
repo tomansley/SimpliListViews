@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-15-2024
+ * @last modified on  : 03-07-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1591,6 +1591,7 @@ public with sharing abstract class ListViewAbstract {
         public String transform;
         public String variant;
         public String weight;
+        public String alignment;
         public String id;
         public String cssStr = null;
 
@@ -1604,6 +1605,7 @@ public with sharing abstract class ListViewAbstract {
             transform      = columnStyle.Style_Transform__c;
             variant        = columnStyle.Style_Variant__c;
             weight         = columnStyle.Style_Weight__c;
+            alignment      = columnStyle.Style_Alignment__c;
             id             = columnStyle.Id;
         }
 
@@ -1655,6 +1657,12 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
+        public String getAlignment()
+        {
+            return alignment;
+        }
+
+        @AuraEnabled(cacheable=true)
         public String getId()
         {
             return id;
@@ -1669,7 +1677,8 @@ public with sharing abstract class ListViewAbstract {
                 if (!String.isBlank(style)) this.cssStr += 'font-style:' + style + ';';
                 if (!String.isBlank(transform)) this.cssStr += 'text-transform:' + transform + ';';
                 if (!String.isBlank(variant)) this.cssStr += 'font-variant:' + variant + ';';
-                if (!String.isBlank(weight)) this.cssStr += 'font-weight:' + weight + ';';        
+                if (!String.isBlank(weight)) this.cssStr += 'font-weight:' + weight + ';';
+                if (!String.isBlank(alignment)) this.cssStr += 'text-align:' + alignment + ';';
             }
 
             return cssStr;

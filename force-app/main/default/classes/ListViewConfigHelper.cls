@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 01-29-2024
+ * @Last Modified On   : 03-07-2024
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -334,7 +334,7 @@ public with sharing class ListViewConfigHelper {
 
     }
 
-    public static void addListViewColumnStyle(String objectName, String listViewName, String fieldName, String decoration, String font, String style, String transform, String variant, String weight)
+    public static void addListViewColumnStyle(String objectName, String listViewName, String fieldName, String decoration, String font, String style, String transform, String variant, String weight, String alignment)
     {
 
         //get the list view config for the column style
@@ -349,6 +349,7 @@ public with sharing class ListViewConfigHelper {
         columnStyle.Style_Transform__c   = transform;
         columnStyle.Style_Variant__c     = variant;
         columnStyle.Style_Weight__c      = weight;
+        columnStyle.Style_Alignment__c   = alignment;
 
         System.debug(LoggingLevel.DEBUG, 'ADDING COLUMN STYLE - ' + columnStyle);
         HelperDatabase.insertRecord(columnStyle);
@@ -448,7 +449,8 @@ public with sharing class ListViewConfigHelper {
                                 Style_Style__c,
                                 Style_Transform__c,
                                 Style_Variant__c,
-                                Style_Weight__c
+                                Style_Weight__c,
+                                Style_Alignment__c
                          FROM List_View_Config_Column_Styles__r
                          ORDER BY Field_Name__c)
             FROM List_View_Config__c
@@ -502,7 +504,8 @@ public with sharing class ListViewConfigHelper {
                                                         Style_Style__c,
                                                         Style_Transform__c,
                                                         Style_Variant__c,
-                                                        Style_Weight__c
+                                                        Style_Weight__c,
+                                                        Style_Alignment__c
                                                 FROM List_View_Config_Column_Styles__r
                                                 ORDER BY Field_Name__c)
                                     FROM List_View_Config__c
@@ -546,7 +549,8 @@ public with sharing class ListViewConfigHelper {
                             Style_Style__c,
                             Style_Transform__c,
                             Style_Variant__c,
-                            Style_Weight__c
+                            Style_Weight__c,
+                            Style_Alignment__c
                     FROM List_View_Config_Column_Styles__r
                     ORDER BY Field_Name__c)
         FROM List_View_Config__c
