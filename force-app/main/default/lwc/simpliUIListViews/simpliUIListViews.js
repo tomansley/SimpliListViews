@@ -87,6 +87,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api displayReprocess           = false;
     @api displayURL                 = false;
     @api displayRowCount            = false;
+    @api noSorting                  = false;        //indicates whether any sorting should be allowed on the listview
+    @api useSimpleSorting           = false;        //indicates whether standard sorting should be used.
     @api displaySelectedCount       = false;
     @api displayOrigButton;                         //this is not used....deprecated.
     @api displayModified            = false;
@@ -418,6 +420,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.headerCanWrap          = true;
                 this.hasMainTitle           = false;
                 this.displayRowCount        = false;
+                this.noSorting              = false;
+                this.useSimpleSorting       = false;
                 this.displaySelectedCount   = false;
                 this.allowInlineEditing     = false;
                 this.displayTextSearch      = false;
@@ -499,19 +503,37 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     this.allowAdmin = false;
             }            
             if (this.toBool(this.componentConfig.TypeAheadListSearch) === true) { this.typeAheadListSearch = true; }
+            console.log('Config typeAheadListSearch - ' + this.typeAheadListSearch);
             if (this.toBool(this.componentConfig.TypeAheadObjectSearch) === true) { this.typeAheadObjectSearch = true; }
+            console.log('Config typeAheadObjectSearch - ' + this.typeAheadObjectSearch); 
             if (this.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
+            console.log('Config displayActions - ' + this.displayActions); 
             if (this.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
+            console.log('Config displayReprocess - ' + this.displayReprocess); 
             if (this.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
+            console.log('Config displayURL - ' + this.displayURL); 
             if (this.toBool(this.componentConfig.DisplayRowCount) === false) { this.displayRowCount = false; }
+            console.log('Config displayRowCount - ' + this.displayRowCount); 
+            if (this.toBool(this.componentConfig.UseSimpleSorting) === true) { this.useSimpleSorting = true; }
+            console.log('Config useSimpleSorting - ' + this.useSimpleSorting); 
+            if (this.toBool(this.componentConfig.NoSorting) === true) { this.noSorting = true; }
+            console.log('Config noSorting - ' + this.noSorting); 
             if (this.toBool(this.componentConfig.DisplaySelectedCount) === false) { this.displaySelectedCount = false; }
+            console.log('Config displaySelectedCount - ' + this.displaySelectedCount); 
             if (this.toBool(this.componentConfig.DisplayTextSearch) === false) { this.displayTextSearch = false; }
+            console.log('Config displayTextSearch - ' + this.displayTextSearch); 
             if (this.displayTextSearch === true) { this.canDisplayTextSearch = true; }
+            console.log('Config canDisplayTextSearch - ' + this.canDisplayTextSearch); 
             if (this.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
+            console.log('Config displayExportButton - ' + this.displayExportButton); 
             if (this.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
+            console.log('Config allowRefresh - ' + this.allowRefresh); 
             if (this.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
+            console.log('Config allowInlineEditing - ' + this.allowInlineEditing); 
             if (this.toBool(this.componentConfig.AllowHorizontalScrolling) === false) { this.allowHorizontalScrolling = false; }
+            console.log('Config allowHorizontalScrolling - ' + this.allowHorizontalScrolling); 
             if (this.toBool(this.componentConfig.DisplayRecordPopovers) === false) { this.displayRecordPopovers = false; }
+            console.log('Config displayRecordPopovers - ' + this.displayRecordPopovers); 
 
             this.excludedRecordPopoverTypes = this.excludedRecordPopoverTypes + this.componentConfig.ExcludedRecordPopoverTypes;
 
@@ -1733,25 +1755,44 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
         let columnData;
 
-        //if a user has clicked on a column that is already being sorted then switch the direction
-        if (this.columnSortData.has(sortIndex)) {
-            columnData = this.columnSortData.get(sortIndex);
+        if (this.useSimpleSorting === true) {
+            if (this.columnSortData.has(sortIndex)) {
+                columnData = this.columnSortData.get(sortIndex);
 
-            //if this is the second click on the column then switch the column.
-            if (columnData[2] === true) {
-                columnData[2] = false; 
-                this.columnSortData.set(sortIndex, columnData);
+                columnData[2] = !columnData[2];
+                columnData[0] = 0;
 
-            //if this is the third click on the column then reset all sorting data.
-            } else {
                 this.columnSortData = new Map(); 
+                this.columnSortData.set(0, columnData);
+            //if this is the first time clicking on a column then just add the column for sorting.
+            } else {
+                columnData = [0, fieldName, sortDirection];
+                this.columnSortData = new Map();
+                this.columnSortData.set(0, columnData);
+            }
+        } else {
+            //if a user has clicked on a column that is already being sorted then switch the direction
+            if (this.columnSortData.has(sortIndex)) {
+                columnData = this.columnSortData.get(sortIndex);
+
+                //if this is the second click on the column then switch the column.
+                if (columnData[2] === true) {
+                    columnData[2] = false; 
+                    this.columnSortData.set(sortIndex, columnData);
+
+                //if this is the third click on the column then reset all sorting data.
+                } else {
+                    this.columnSortData = new Map(); 
+                }
+
+            //if this is the first time clicking on a column then just add the column for sorting.
+            } else {
+                columnData = [sortIndex, fieldName, sortDirection];
+                this.columnSortData.set(sortIndex, columnData);
             }
 
-        //if this is the first time clicking on a column then just add the column for sorting.
-        } else {
-            columnData = [sortIndex, fieldName, sortDirection];
-            this.columnSortData.set(sortIndex, columnData);
         }
+
 
         this.columnSortDataStr = JSON.stringify( Array.from(this.columnSortData));
         this.listViewSortData.set(this.selectedObject + ':' + this.selectedListView, this.columnSortData);

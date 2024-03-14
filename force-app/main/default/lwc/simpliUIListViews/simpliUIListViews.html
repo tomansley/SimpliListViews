@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 03-04-2024
+  @last modified on  : 03-13-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -328,35 +328,44 @@
                                             <!-- -------------------- -->
                                             <div onmouseup={setNewWidth}>
                                                 <template if:true={field.sortable}>
-                                                    <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
-                                                        <span class="slds-assistive-text">{label.Sort_By}: </span>
-                                                        <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                                            <span class="slds-truncate" 
-                                                                title={field.sortingTooltip} 
-                                                                onclick={sortColumns} 
-                                                                data-sortdir={field.sortDir}
-                                                                data-name={field.name}
-                                                                data-sortindex={field.sortIndex}>{field.label}</span>
-                                                            <div if:true={field.sortIndex}>
-                                                                <div if:true={field.sortDir}>
-                                                                    <template if:true={listViewData.isDefaultSort}>
-                                                                        &nbsp;(&#9660;)
-                                                                    </template>
-                                                                    <template if:false={listViewData.isDefaultSort}>
-                                                                        &nbsp;(&#9660;{field.sortIndexDisplay})
-                                                                    </template>
-                                                                </div>
-                                                                <div if:false={field.sortDir}>
-                                                                    <template if:true={listViewData.isDefaultSort}>
-                                                                        &nbsp;(&#9650;)
-                                                                    </template>
-                                                                    <template if:false={listViewData.isDefaultSort}>
-                                                                        &nbsp;(&#9650;{field.sortIndexDisplay})
-                                                                    </template>
+                                                    <template if:false={noSorting}>
+                                                        <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
+                                                            <span class="slds-assistive-text">{label.Sort_By}: </span>
+                                                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                                <span class="slds-truncate" 
+                                                                    title={field.sortingTooltip} 
+                                                                    onclick={sortColumns} 
+                                                                    data-sortdir={field.sortDir}
+                                                                    data-name={field.name}
+                                                                    data-sortindex={field.sortIndex}>{field.label}</span>
+                                                                <div if:true={field.sortIndex}>
+                                                                    <div if:true={field.sortDir}>
+                                                                        <template if:true={listViewData.isDefaultSort}>
+                                                                            &nbsp;(&#9660;)
+                                                                        </template>
+                                                                        <template if:false={listViewData.isDefaultSort}>
+                                                                            &nbsp;(&#9660;{field.sortIndexDisplay})
+                                                                        </template>
+                                                                    </div>
+                                                                    <div if:false={field.sortDir}>
+                                                                        <template if:true={listViewData.isDefaultSort}>
+                                                                            &nbsp;(&#9650;)
+                                                                        </template>
+                                                                        <template if:false={listViewData.isDefaultSort}>
+                                                                            &nbsp;(&#9650;{field.sortIndexDisplay})
+                                                                        </template>
+                                                                    </div>
                                                                 </div>
                                                             </div>
+                                                        </a>
+                                                    </template>
+                                                    <template if:true={noSorting}>
+                                                        <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                            <span class="slds-truncate" title={field.label}>
+                                                                {field.label}
+                                                            </span>
                                                         </div>
-                                                    </a>
+                                                    </template>
                                                 </template>
                                                 <template if:false={field.sortable}>
                                                     <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">

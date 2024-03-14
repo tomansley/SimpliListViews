@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-16-2023
+ * @last modified on  : 03-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -66,7 +66,7 @@ global class ListViewControllerTest {
 
         Map<String, String> configs = ListViewController.getComponentConfig('CompName 1');
 
-        System.assertEquals(27, configs.size());
+        System.assertEquals(29, configs.size());
         System.assertEquals('Account:simpli_lv__AllAccounts', configs.get('pinnedListView'));
 
         //update user config
@@ -75,7 +75,7 @@ global class ListViewControllerTest {
 
         configs = ListViewController.getComponentConfig('CompName 1');
 
-        System.assertEquals(27, configs.size());
+        System.assertEquals(29, configs.size());
         System.assertEquals('Contact:simpli_lv__AllContacts', configs.get('pinnedListView'));
 
 

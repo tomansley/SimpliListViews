@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-16-2023
+ * @last modified on  : 03-13-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2363,6 +2363,22 @@ global with sharing class ListViewHelper
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Add Object Name On Lookup Labels';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'UseSimpleSorting';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
+        param.Parameter_Label__c  = 'Use Standard Single Column Sorting';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'NoSorting';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.TTRUE;
+        param.Parameter_Label__c  = 'Do Not Allow Sorting';
         params.add(param);
 
         HelperDatabase.insertRecords(params);
