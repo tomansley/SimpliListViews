@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-13-2024
+ * @last modified on  : 03-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -650,6 +650,8 @@ global with sharing class ScriptInstall implements InstallHandler {
         }
 
         HelperDatabase.insertRecords(newActionParams);
+
+        CacheHelper.clearAllCache();
 
         //send email notifying of the upgrade
         HelperEmail.sendInstallEmail('Upgraded');
