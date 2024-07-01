@@ -1,7 +1,7 @@
 /**
  * @description       : Implementation of an action to start flows.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-26-2023
+ * @last modified on  : 05-24-2024
  * @last modified by  : tom@ansleyllc.com
  * Ver   Date         Author                       Modification
  * 1.0   08-29-2021   tom@ansleyllc.com   Initial Version
@@ -47,7 +47,7 @@ public with sharing class ListViewActionFlow extends ListViewAction {
 
             flowInt.start();
 
-            returnStr += 'Flow successfully started';
+            returnStr += 'Flow successfully completed';
         } catch (Exception e) {
             System.debug(LoggingLevel.FINE, 'Error found - ' + e.getMessage() + ', stack - ' + e.getStackTraceString());
             String message = ListViewAction.RESULT_ERROR + ':There was an error starting the flow (' + flowName + '). Please see a system admin.';
