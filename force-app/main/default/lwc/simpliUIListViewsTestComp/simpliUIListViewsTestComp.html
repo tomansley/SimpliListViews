@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 11-08-2023
+  @last modified on  : 04-24-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -287,6 +287,42 @@
                 </div>
             </lightning-tab>
 
+            <lightning-tab label="Stand Alone Example 1">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <!-- DESCRIPTION OF EXAMPLE -->
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                            This example would get used where data is to be injected into the component dynamically by the parent LWC page. 
+                        </div>
+
+                        <!-- EXAMPLE HTML TAG -->
+                        <div class="codebox">
+                            <pre>
+                                &lt;c-simpli-u-i-list-views<br/>
+                                &#9;&#9;mode="Stand Alone"<br/>
+                                &#9;&#9;page-name="App_Example_1"<br/>
+                                &#9;&#9;row-data="{standAlone1RowData}"<br/>
+                                &#9;&#9;column-data="{standAlone1ColumnData}"<br/>
+                                &#9;&#9;allow-horizontal-scrolling=false&gt;<br/>
+                                &lt;/c-simpli-u-i-list-views&gt;    
+                            </pre>
+                        </div>
+                    </lightning-card>
+                        
+                    <!-- WORKING EXAMPLE -->
+                    <div class="examplebox">
+                        <c-simpli-u-i-list-views mode="Stand Alone"
+                                                page-name="App_Example_1"
+                                                row-data={standAlone1RowData}
+                                                column-data={standAlone1ColumnData}
+                                                allow-horizontal-scrolling=false>
+                        </c-simpli-u-i-list-views>
+                    </div>
+
+                </div>
+            </lightning-tab>
+        
         </lightning-tabset>
     </lightning-card>
 
