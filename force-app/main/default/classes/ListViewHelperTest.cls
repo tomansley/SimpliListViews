@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-29-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 04-28-2024
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   11-19-2020   tom@ansleyllc.com   Initial Version
@@ -75,12 +75,12 @@ private class ListViewHelperTest {
                         'FROM List_View_Config__c';
 
         //(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example)
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, false, -1));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, false, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -90,7 +90,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -109,12 +109,12 @@ private class ListViewHelperTest {
                         'FROM List_View_Config__c ' +
                         'ORDER BY List_View_Object__c';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -124,7 +124,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -142,12 +142,12 @@ private class ListViewHelperTest {
                        'FROM List_View_Config__c ' +
                        'LIMIT 100';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -157,7 +157,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -176,12 +176,12 @@ private class ListViewHelperTest {
                         'ORDER BY List_View_Object__c ' +
                         'LIMIT 100';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -191,7 +191,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -221,12 +221,12 @@ private class ListViewHelperTest {
                               'ORDER BY Order__c ASC) ' + 
                         'FROM List_View_Config__c';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -236,7 +236,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Primary_Key__c', true, 2));
         sortData.add(new ListViewHelper.ColumnSortData('List_View_Object__c', true, 3));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -252,12 +252,12 @@ private class ListViewHelperTest {
                                 'ORDER BY Name) ' + 
                         'FROM Account';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -266,7 +266,7 @@ private class ListViewHelperTest {
         sortData.add(new ListViewHelper.ColumnSortData('Name', true, 1));
         sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -284,12 +284,12 @@ private class ListViewHelperTest {
                                 'ORDER BY Name) ' + 
                         'FROM Account';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -297,7 +297,7 @@ private class ListViewHelperTest {
         List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
         sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -308,12 +308,12 @@ private class ListViewHelperTest {
     {
         String soql = 'SELECT Id FROM Account USING SCOPE everything';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -321,7 +321,7 @@ private class ListViewHelperTest {
         List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
         sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -342,12 +342,12 @@ private class ListViewHelperTest {
                                      'FROM Contact ' + 
                                      'WHERE Title = \'SVP, Operations\') ';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -355,7 +355,7 @@ private class ListViewHelperTest {
         List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
         sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -377,12 +377,12 @@ private class ListViewHelperTest {
                                      'WHERE Title = \'SVP, Operations\') ' +
                         'ORDER BY Id';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -390,7 +390,7 @@ private class ListViewHelperTest {
         List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
         sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -421,12 +421,12 @@ private class ListViewHelperTest {
                             'AND IsWon = false ' +
                             'AND IsClosed = false';
 
-        List<SObject> objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null));
+        List<SObject> objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, null, null, null, true, -1));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, null, null, null, true, -1));
         System.assert(objs.size() > 0);
 
         //-------------------------------------
@@ -434,7 +434,7 @@ private class ListViewHelperTest {
         List<ListViewHelper.ColumnSortData> sortData = new List<ListViewHelper.ColumnSortData>();
         sortData.add(new ListViewHelper.ColumnSortData('Id', true, 2));
 
-        objs = Database.query(ListViewHelper.getSOQLQuery(soql, null, sortData, null, null));
+        objs = Database.query(ListViewHelper.getCustomListViewQuery(soql, null, sortData, null, null));
         System.assert(objs.size() > 0);
 
         //-------------------------------------

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-14-2024
+ * @last modified on  : 05-06-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -233,12 +233,12 @@ global class ListViewControllerTest {
         Account acct = HelperTest.insertAccount('Test Acct for getListViewActionAndDataTest');
 
         Test.startTest();
-            ListViewAbstract.ActionWrapper action = ListViewController.getListViewActionAndData('Update:ListViewActionUpdate:Core:Account', '["' + acct.Id + '"]');
+            ListViewActionWrapper action = ListViewController.getListViewActionAndData('Update:ListViewActionUpdate:Core:Account', '["' + acct.Id + '"]');
         Test.stopTest();
 
         System.assertEquals('Update', action.getLabel());
         System.assert(action.getDisplayParameters().size() > 0);
-        ListViewAbstract.ActionParameterWrapper param = action.getDisplayParameters()[0];
+        ListViewActionWrapper.ActionParameterWrapper param = action.getDisplayParameters()[0];
         System.debug(LoggingLevel.DEBUG, 'PARAMS - ' + action.getDisplayParameters());
         System.assert(!String.isEmpty(param.getValue()));
     }
@@ -390,13 +390,13 @@ global class ListViewControllerTest {
         System.assertEquals(column.getIsRichTextArea(), false);
 
         
-        List<ListViewAbstract.ActionWrapper> actions = ListViewController.getListViewActions('Account', 'simpli_lv__AllAccounts', '');
+        List<ListViewActionWrapper> actions = ListViewController.getListViewActions('Account', 'simpli_lv__AllAccounts', '');
 
         System.assertNotEquals(actions, null);
         System.assert(actions.size() > 0);
         
 
-        ListViewAbstract.ActionWrapper action = ListViewController.getListViewAction('Update:ListViewActionUpdate:Core:Account');
+        ListViewActionWrapper action = ListViewController.getListViewAction('Update:ListViewActionUpdate:Core:Account');
         System.assertNotEquals(action.getLabel(), null);
         System.assertNotEquals(action.getObjectType(), null);
         System.assertNotEquals(action.getHasDisplayParameters(), null);
@@ -420,7 +420,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(action.getDisplayParameters(), null);
         System.assert(action.getDisplayParameters().size() > 0);
 
-        ListViewAbstract.ActionParameterWrapper actionParam = action.getDisplayParameters()[0];
+        ListViewActionWrapper.ActionParameterWrapper actionParam = action.getDisplayParameters()[0];
 
         System.assertNotEquals(actionParam.getAPIName(), null);
         System.assertNotEquals(actionParam.getLabel(), null);
