@@ -32,3 +32,72 @@ export function createToast(type, error, title, message, includeStack)
         mode: mode
     });
 }
+
+export function invokeWorkspaceAPI(methodName, methodArgs) {
+    return new Promise((resolve, reject) => {
+        const apiEvent = new CustomEvent("internalapievent", {
+        bubbles: true,
+        composed: true,
+        cancelable: false,
+        detail: {
+            category: "workspaceAPI",
+            methodName: methodName,
+            methodArgs: methodArgs,
+            callback: (err, response) => {
+            if (err) {
+                return reject(err);
+            } else {
+                return resolve(response);
+            }
+            }
+        }
+        });
+    
+        window.dispatchEvent(apiEvent);
+    });
+}
+
+export function toBool(value) {
+    var strValue = String(value).toLowerCase();
+    strValue = ((!isNaN(strValue) && strValue !== '0') &&
+        strValue !== '' &&
+        strValue !== 'null' &&
+        strValue !== 'undefined') ? '1' : strValue;
+    return strValue === 'true' || strValue === '1' ? true : false
+}
+
+
+//-------------------------------------------------------------------------------------------
+//PDF TABLES
+//-------------------------------------------------------------------------------------------            
+
+export function headRows(fieldMetaData) {
+    let headers = [];
+    let headerRow = [];
+    headers.push(headerRow);
+    fieldMetaData.forEach(column => { headerRow.push(column.label); });
+    return headers;
+}
+
+export function bodyRows(selectedRecordIds, listViewDataRows) {
+    var body = []
+    listViewDataRows.forEach(row => { 
+
+        //if no rows are selected or the Id has been selected.
+        if (selectedRecordIds.size === 0 || selectedRecordIds.has(row.salesforceId))
+        {
+            var bodyRow = [];
+
+            for (var i = 0; i < row.fields.length; i++) {
+                var field = row.fields[i];
+                if (field.isDate || field.isDateTime || field.isTime) {
+                    bodyRow.push(field.prettyValue);
+                } else {
+                    bodyRow.push(field.value);
+                }
+            }
+            body.push(bodyRow)
+        }
+    });
+    return body;
+}
