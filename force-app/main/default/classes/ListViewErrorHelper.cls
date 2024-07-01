@@ -4,24 +4,24 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 01-11-2022
+ * @Last Modified On   : 05-28-2024
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
 **/
-public with sharing class ListViewErrorHelper {
+global with sharing class ListViewErrorHelper {
 
-    public static final String TYPE_EXCEPTION = 'Exception';
-    public static final String TYPE_LOG = 'Log';
+    global static final String TYPE_EXCEPTION = 'Exception';
+    global static final String TYPE_LOG = 'Log';
 
-    public static List<List_View_Error__c> logs = new List<List_View_Error__c>(); //holds all debugging logs that we might log before finishing the transaction.
+    global static List<List_View_Error__c> logs = new List<List_View_Error__c>(); //holds all debugging logs that we might log before finishing the transaction.
 
-    public static void addLog(String className, String message)
+    global static void addLog(String className, String message)
     {
         addLog(TYPE_LOG, className, message);
     }
 
-    public static void addException(String className, String message)
+    global static void addException(String className, String message)
     {
         addLog(TYPE_EXCEPTION, className, message);
     }
@@ -39,7 +39,7 @@ public with sharing class ListViewErrorHelper {
     * @param message the long description of the log.
     * @param force indicates the log should be added regardless of whether debugging is on.
     **/
-    public static void addLog(String type, String className, String message, Boolean force)
+    global static void addLog(String type, String className, String message, Boolean force)
     {
         if (force || Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam(ListViewConfigHelper.DEBUG)))
         {
@@ -52,7 +52,7 @@ public with sharing class ListViewErrorHelper {
         }
     }
 
-    public static void processLogs(Boolean isFuture)
+    global static void processLogs(Boolean isFuture)
     {
         if (logs.size() > 0)
         {
@@ -67,7 +67,7 @@ public with sharing class ListViewErrorHelper {
     }
 
     @future
-    public static void processFutureLogs(String jsonString)
+    global static void processFutureLogs(String jsonString)
     {
         List<List_View_Error__c> logs = (List<List_View_Error__c>) JSON.deserialize(jsonString, List<List_View_Error__c>.class);
         HelperDatabase.insertRecords(logs);
@@ -77,7 +77,7 @@ public with sharing class ListViewErrorHelper {
      * Method to create a usage error record which can be used for debugging purposes.
      */
     @future
-    public static void createFutureUsageError(String message)
+    global static void createFutureUsageError(String message)
     {
         System.debug(LoggingLevel.ERROR, 'Error - ' + message);
         if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
@@ -92,7 +92,7 @@ public with sharing class ListViewErrorHelper {
         }
     }
 
-    public static void createNonFutureUsageError(String message) 
+    global static void createNonFutureUsageError(String message) 
     {
         List_View_Error__c error   = new List_View_Error__c();
         error.Running_User__c  = UserInfo.getUserId();
