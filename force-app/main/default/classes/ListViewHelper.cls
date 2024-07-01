@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-13-2024
+ * @last modified on  : 07-01-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -30,6 +30,9 @@ global with sharing class ListViewHelper
     public static final Set<String> POLYMORPHIC_FIELDS = new Set<String>{ 'WhatId', 'WhoId'};
 
     public static final String CORE_APEX_CLASS = 'ListViewCore';
+
+    public static final String SUCCESS = 'success';
+    public static final String FAILED = 'failed';
 
     public static final String PROC_TYPE_CREATE = 'create';
     public static final String PROC_TYPE_UPDATE = 'update';
@@ -1135,6 +1138,31 @@ global with sharing class ListViewHelper
     public static List<SObject> getCoreListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
 
+        //get rows of data from query
+        List<SObject> objectRows = null;
+        String query;
+        try {
+
+            query = getCoreListViewQuery(listview, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
+            ListViewErrorHelper.addLog('ListViewHelper(getListViewData)', query);
+
+            objectRows = Database.query(query);
+
+            //put the query string into a static variable for use across the app (for debugging purposes)
+            LATEST_QUERY = query;
+
+        } catch (Exception e) {
+            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getCoreListViewData(' + query + ')  ' + ListViewException.getExtendedString(e));
+            throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
+        }
+        
+        return objectRows;
+
+    }
+
+    public static String getCoreListViewQuery(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
+    {
+
         String debug = '\n\nStarting getListViewData - \n';
         debug += 'listview                        - ' + listview + '\n';
         debug += 'listview.Core_ListView_Query__c - ' + listview.Core_ListView_Query__c + '\n';
@@ -1345,24 +1373,10 @@ global with sharing class ListViewHelper
         query = 'SELECT ' + selectStr + ' FROM ' + objectName + ' ' + scopeStr + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
 
         System.debug(LoggingLevel.FINE, 'Final SOQL - ' + query);
-        ListViewErrorHelper.addLog('ListViewHelper(getListViewData)', query + '\n\n' + debug);
+        ListViewErrorHelper.addLog('ListViewHelper(getListViewQuery)', debug);
 
-        //get rows of data from query
-        List<SObject> objectRows = null;
-        try {
-            objectRows = Database.query(query);
-        } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during ListViewHelper.getCoreListViewData(' + query + ')  ' + ListViewException.getExtendedString(e));
-            throw new ListViewException('There was an error during data retrieval. Please try again or notify an administrator. (' + e.getMessage() + ')');
-        }
-        
-        //put the query string into a static variable for use across the app (for debugging purposes)
-        LATEST_QUERY = query;
-
-        return objectRows;
-
+        return query;
     }
-
 
 
     //===============================================================================
@@ -1389,7 +1403,7 @@ global with sharing class ListViewHelper
 
     public static List<SObject> getCustomListViewData(List_View__c listview, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
-        String soql = getSOQLQuery(listview.Core_ListView_Query__c, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
+        String soql = getCustomListViewQuery(listview.Core_ListView_Query__c, lvConfig, sortData, joinFieldName, joinRecordIds, example, offset);
         
         //get rows of data from query
         List<SObject> objectRows = null;
@@ -1410,15 +1424,15 @@ global with sharing class ListViewHelper
                    ii. This does not have any paging requirements
     * @author tom@ansleyllc.com | 06-21-2021 
     **/
-    public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
+    public static String getCustomListViewQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds)
     {
-        return getSOQLQuery(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
+        return getCustomListViewQuery(soql, lvConfig, sortData, joinFieldName, joinRecordIds, false, -1);
     }
 
     /*
-        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + ListViewHelper.getSOQLQuery('SELECT Name, v2sales__V2_Path_Stage_Name__c, v2sales__V2_Action_Name__c, v2sales__Is_Completed__c, v2sales__Is_Opp_At_Stage__c FROM v2sales__V2_Action_Instance__c WHERE v2sales__Is_Opp_At_Stage__c = true', null, new List<ListViewHelper.ColumnSortData>(), '', new Set<String>(), true, -1));
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + ListViewHelper.getCustomListViewQuery('SELECT Name, v2sales__V2_Path_Stage_Name__c, v2sales__V2_Action_Name__c, v2sales__Is_Completed__c, v2sales__Is_Opp_At_Stage__c FROM v2sales__V2_Action_Instance__c WHERE v2sales__Is_Opp_At_Stage__c = true', null, new List<ListViewHelper.ColumnSortData>(), '', new Set<String>(), true, -1));
      */
-    public static String getSOQLQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
+    public static String getCustomListViewQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
 
         String debug = '\n\n------------------------- GET SOQL QUERY -------------------------\n';
@@ -1613,7 +1627,7 @@ global with sharing class ListViewHelper
         debug += 'FINAL SOQL                      - ' + soql + '\n';
 
         System.debug(LoggingLevel.FINE, debug);
-        ListViewErrorHelper.addLog('ListViewHelper(getSOQLQuery)', debug);
+        ListViewErrorHelper.addLog('ListViewHelper(getCustomListViewQuery)', debug);
 
         //put the query string into a static variable for use across the app (for debugging purposes)
         LATEST_QUERY = soql;
@@ -2561,6 +2575,225 @@ global with sharing class ListViewHelper
         return listViews;
     }
 
+    /**
+    * @description Method to retrieve list view data based on user provided criteria.
+    * @author tom@ansleyllc.com | 06-28-2021 
+    * @param pageName the name of the lightning page that the list is being displayed on. This is used for list view config retrieval
+    * @param compType the mode of the component the data is being retrieved for.
+    * @param objectName the name of the list view object
+    * @param listViewName the name of the list view
+    * @param sortData the sorting information for the list view.
+    * @param joinFieldName used by a list view component listening on the same page. Indicates the field name used to join the data between the two list views.
+    * @param joinData the joined field data to use when performing the query.
+    * @param offset indicates the offset if the data is being paged.
+    * @param isShell indicates whether the request should only retrieve the rowwrapper without data or all the data
+    * @return ListViewAbstract.RowsWrapper 
+    **/
+    public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String compType, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, Boolean isShell, String textSearchStr)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewHelper.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ', ' + isShell + ', ' + textSearchStr + ')');
+        
+        ListViewAbstract.RowsWrapper rowData = null;
+
+        ListViewAbstract lvLogic = getListViewProcessor(pageName, compType, objectName, listViewName, offset, isShell, textSearchStr);
+        lvLogic.setListView(ListViewHelper.getListViews(objectName, listViewName).values()[0]);
+
+        lvLogic.setSortingData(sortData);
+        lvLogic.setJoinData(joinFieldName, joinData);
+        lvlogic.setOffset(offset);
+
+        rowData = lvLogic.getData();
+
+        String debug = '\n\n=======================================================================================\n';
+        for (ListViewAbstract.RowWrapper row: rowData.rows)
+        {
+            debug += '-------------------------------------\n';
+            debug += 'Row Id - ' + row.getRowId() + '\n';
+            for (String field: row.fields.keySet())
+            {
+                ListViewAbstract.FieldWrapper fWrapper = row.fields.get(field);
+                debug += 'Field - ' + fWrapper + '\n';
+            }                
+            debug += '-------------------------------------\n';
+        }
+        debug       += '=======================================================================================\n';
+        System.debug(LoggingLevel.FINE, debug);
+        
+        //update the sorting for this user for this list view for this component. This MUST be done at the end!
+        if (!rowData.isDefaultSort && !isShell)
+            ListViewUserConfigHelper.updateSortConfigValue(pageName, lvLogic.getSortString(), objectName, listviewName);
+
+        ListViewUserActivityHelper.registerListViewView(pageName, compType, objectName, listViewName, lvLogic.listview.Id, rowData.getRowCount());
+
+        ListViewErrorHelper.processLogs(true);
+
+        return rowData;
+
+    }
+
+    public static ListViewAbstract getListViewProcessor(String pageName, String compType, String objectName, String listViewName, Integer offset, Boolean isShell, String textSearchStr)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewHelper.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + isShell + ', ' + textSearchStr + ')');
+        ListViewAbstract lvLogic = null;
+
+        //------------------------------------------------------------------------------------------
+        //LIST VIEW METADATA
+        //------------------------------------------------------------------------------------------
+        Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectName, listViewName);
+
+        if (listviews.size() > 0) 
+        {
+
+            List_View__c listview = listviews.values()[0];
+
+            //------------------------------------------------------------------------------------------
+            //LIST VIEW APEX CLASS CREATION AND PROCESSING
+            //------------------------------------------------------------------------------------------
+            String objType = null;
+            if (listView.RecordTypeId == null || listView.RecordTypeId == ListViewHelper.coreRTId)
+            {
+                objType = ListViewHelper.CORE_APEX_CLASS;
+
+            } else {
+                
+                objType = listView.Custom_Apex_Class__c;
+            }
+
+            //get an apex Type of the object type
+            Type t = HelperSchema.getClassType(objType);
+
+            //create a new instance
+            lvLogic = (ListViewAbstract) t.newInstance();
+            lvLogic.setIsShell(isShell);
+            lvLogic.setMode(compType);
+            lvLogic.setPageName(pageName);
+            lvLogic.setTextSearchString(textSearchStr);
+
+        } else {
+            throw new ListViewException('The list view configuration can not be found for object ' + objectName + ' and list view name - ' + listViewName + ')');
+        }
+        
+        return lvlogic;
+    }
+
+    public static String exportJSON(String type, Boolean incLVConf, Boolean incGlobalConf, Boolean incActions)
+    {
+        return exportJSON(type, incLVConf, incGlobalConf, incActions, new Set<Id>());    
+    }
+
+    /*
+     * Method to check security and determine whether the list view is updateable
+     * to the requesting user. The following security is performed.
+     * 1. if user is owner
+     * 2. if list view allows all internal users.
+     * 3. if user is in allowed roles
+     * 4. if user is in allowed groups
+     * 5. if user is in allowed territories
+     */
+    public static Boolean isUpdateable(List_View__c lv)
+    {
+        User usr = UserHelper.getCurrentUser();
+
+        if (lv.OwnerId == UserInfo.getUserId()) return true;
+
+        if (HelperProfile.hasModifyAll()) return true;
+
+        if (lv.All_Internal_Users__c != null && lv.All_Internal_Users__c) return true;
+
+        return false;
+    }
+
+    public static String updateSingleListView(String objectType, String listViewName)
+    {
+        //get the listviews with object and name
+        Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectType, listViewName);
+
+        //if no listviews return failed
+        if (listviews.size() == 0) return FAILED;
+
+        //get the list views Id
+        Set<Id> lvId = new Set<Id>();
+        lvId.add(listviews.values()[0].Id);
+
+        //update the list view
+        Boolean result = ListViewHelper.updateListViewsFromSLVIds(lvId);
+
+        //remove cache so that list views are refetched
+        CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
+
+        return SUCCESS;
+    }
+
+    public static String updateObjectListViews(String objectType)
+    {
+        //update the list view
+        Boolean result = ListViewHelper.updateListViewsFromObj(objectType);
+
+        //remove cache so that list views are refetched
+        CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
+
+        return SUCCESS;
+    }
+
+	public static String updateAllListViews()
+	{
+
+        Simpli_lv.ListViewPreProcessBatch b = new Simpli_lv.ListViewPreProcessBatch();
+        
+        Id jobId = null;
+        
+        try {
+            jobId = Database.executebatch(b, 40);
+        } catch (Exception e) {
+            jobId = FAILED;
+            String message = 'Exception during ListViewController.updateAllListViews()  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createFutureUsageError(message); 
+        }
+
+        //remove cache so that list views are refetched
+        CacheHelper.clearAllCache();
+
+        return jobId;
+	}
+
+	public static String updateChangedListViews()
+	{
+        //try get the last changed CORE list view
+        Map<Id, ListView> changedListViews = ListViewHelper.getLastChangedListViewForUser(UserInfo.getUserId());
+
+        if (changedListViews.size() > 0)
+        {
+            //get the changed CORE list view
+            ListView lv = changedListViews.values()[0];
+
+            //get the SIMPLI listviews with object and name
+            Map<Id, List_View__c> listviews = ListViewHelper.getListViews(lv.SObjectType, lv.DeveloperName);
+
+            //if SIMPLI listviews return then process
+            if (listviews.size() > 0)
+            {
+
+                //get the list views Id
+                Set<Id> lvId = new Set<Id>();
+                lvId.add(listviews.values()[0].Id);
+
+                //update the list view
+                ListViewHelper.updateListViewsFromSLVIds(lvId);
+
+            }
+        }
+
+        return SUCCESS;
+	}
+
+
+
+
+
+    //================================================================================================================
+    // GLOBAL METHODS
+    //================================================================================================================
+
     global static void insertCoreConfiguration()
     {
         insertCoreActions();
@@ -2569,6 +2802,543 @@ global with sharing class ListViewHelper
 
         insertCoreListViews();
     }
+
+    global static String refreshObjectListViews(String objectName)
+    {
+        return updateObjectListViews(objectName);
+    }
+
+    global static String refreshSingleListView(String objectName, String listViewName)
+    {
+        return updateSingleListView(objectName, listViewName);
+    }
+
+	global static String refreshChangedListViews()
+	{
+        return updateChangedListViews();
+	}
+
+	global static String refreshAllListViews()
+	{
+        return updateAllListViews();
+	}
+
+    global static Map<String, List_View__c> getObjectListViews(String objectName)
+    {
+        return ListViewHelper.getListViewsByObject(objectName);
+    }
+
+
+    global static Map<String, String> getListViewObjects()
+    {
+        return getListViewObjects(new Set<String>(), new Set<String>(), true);
+    }
+
+    /*
+        System.debug(LoggingLevel.ERROR, 'SOQL - ' + ListViewHelper.getListViewQuery('Example_1_All_List_View', 'App Page', 'simpli_lv__List_View__c', 'simpli_lv__All','','','', -1, false,''));     
+    */
+    global static String getListViewQuery(String pageName, String compType, String objectName, String listViewName, String sortData, String joinField, String joinData, Integer offset, Boolean isShell, String textSearchStr)
+    {
+        ListViewAbstract lvLogic = getListViewProcessor(pageName, compType, objectName, listViewName, offset, isShell, textSearchStr);
+        List_View__c listview = ListViewHelper.getListViews(objectName, listViewName).values()[0];
+        lvLogic.setListView(listview);
+        lvLogic.setSortingData(sortData);
+        lvLogic.setJoinData(joinField, joinData);
+        lvlogic.setOffset(offset);
+
+        return lvlogic.getQuery();
+    }
+
+    /*
+        System.debug(LoggingLevel.ERROR, 'SOQL - ' + ListViewHelper.getListViewQuery('Example_1_All_List_View', 'App Page', 'simpli_lv__List_View__c', 'simpli_lv__All_Custom','[]','','', -1, false,''));     
+    */
+    global static List<Map<String, String>> getListViewColumns(String pageName, String compType, String objectName, String listViewName, String sortData, String joinField, String joinData, Integer offset, Boolean isShell, String textSearchStr)
+    {
+        ListViewAbstract lvLogic = getListViewProcessor(pageName, compType, objectName, listViewName, offset, isShell, textSearchStr);
+        List_View__c listview = ListViewHelper.getListViews(objectName, listViewName).values()[0];
+        lvLogic.setListView(listview);
+        lvLogic.setSortingData(sortData);
+        lvLogic.setJoinData(joinField, joinData);
+        lvlogic.setOffset(offset);
+
+        List<Map<String, String>> columns = new List<Map<String, String>>();
+        for (ListViewAbstract.ListViewColumn column: lvlogic.getColumnData())
+        {
+            Map<String, String> c = new Map<String, String>();
+            c.put('label', column.getLabel());
+            c.put('name', column.name);
+            c.put('columnWidth', column.width);
+            columns.add(c);
+        }
+
+        return columns;
+    }
+
+    /*
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + ListViewAdminController.getConfigExportJSON());
+     */
+    global static String exportJSON(String type, Boolean incLVConf, Boolean incGlobalConf, Boolean incActions, Set<Id> ids)
+    {
+        String jsonStr = '';
+        
+        //the thing we will stuff all objects into and then JSONify!
+        Map<String, List<SObject>> objects = new Map<String, List<SObject>>();
+
+        //1. List Views where record type is custom
+        Map<Id, List_View__c> listviews = getListViewsByType(type, false);
+
+        List<List_View__c> lvs = new List<List_View__c>();
+        if (ids?.size() > 0)
+        {
+            for (Id id: ids)
+            {
+                if (listviews.containsKey(id))
+                    lvs.add(listviews.get(id));
+            }
+            
+        } else {
+            lvs.addAll(listviews.values());
+        }
+        objects.put('ListViews', lvs);
+
+        Set<String> primaryKeys = new Set<String>();
+        if (incGlobalConf)
+            primaryKeys.add('All:All');
+
+        if (incLVConf) {
+            for (List_View__c listview: lvs)
+                primaryKeys.add(getPrimaryKey(listview));
+        }
+
+        if (!primaryKeys.isEmpty()) {
+            //2. All configs for the custom list views and the global configs
+            Map<String, List_View_Config__c> configs = ListViewConfigHelper.getListViewConfigs(primaryKeys);
+            objects.put('ListViewConfigs', configs.values());
+        }
+
+        //3. All actions
+        if (incActions) {
+            List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+            objects.put('Actions', actions);
+        }
+
+        jsonStr = JSON.serialize(objects);
+
+        return jsonStr;
+    }
+
+    global static String importJSON(String configStr)
+    {
+        String response = '';
+        String debug = '\n\n----- Import Response -----\n';
+
+        try {
+            System.debug(LoggingLevel.FINE, 'Starting ListViewHelper.importJSON(' + configStr + ')');
+
+            Map<String, List<SObject>> allConfig = (Map<String, List<SObject>>) JSON.deserialize(configStr, Map<String, List<SObject>>.class);
+
+            //-----------------------------------------------------------------
+            //GET THE DATA FROM THE INPUT (making sure to CLONE the objects and
+            //                             removing any Id that might exist)
+            //
+            //-----------------------------------------------------------------
+
+            Map<Integer, List_View__c> oldListViews = new Map<Integer, List_View__c>();
+            Map<Integer, List_View__c> newListViews = new Map<Integer, List_View__c>();
+
+            Map<Integer, List_View_Action__c> oldActions = new Map<Integer, List_View_Action__c>();
+            Map<Integer, List_View_Action__c> newActions = new Map<Integer, List_View_Action__c>();
+
+            Map<Integer, List_View_Config__c> oldConfigs = new Map<Integer, List_View_Config__c>();
+            Map<Integer, List_View_Config__c> newConfigs = new Map<Integer, List_View_Config__c>();
+
+            for (String objType: allConfig.keySet())
+            {
+                if (objType == 'ListViews')
+                {
+                    Integer tempKey = 1;
+                    //get all list views from input
+                    List<List_View__c> tempListViews = (List<List_View__c>) allConfig.get('ListViews');
+                    for (List_View__c listview: tempListViews)
+                    {
+                        listview.Core_ListView_Id__c = '';
+                        listview.RecordTypeId = ListViewHelper.customRTId;
+                        listview.OwnerId = UserInfo.getUserId();
+                        listview.Id = null;
+                        //create a new cloned list view that will be used for upsertion.
+                        newListViews.put(tempKey, listview.clone(false, true, false, false));
+                        tempKey++;
+                    }
+                } else if (objType == 'ListViewConfigs') 
+                {
+                    Integer tempKey = 1;
+                    //get all configs from input
+                    List<List_View_Config__c> tempConfigs = (List<List_View_Config__c>) allConfig.get('ListViewConfigs');
+                    for (List_View_Config__c config: tempConfigs)
+                    {
+                        config.OwnerId = UserInfo.getUserId();
+                        config.Id = null;
+
+                        //create a new cloned config that will be used for upsertion.
+                        newConfigs.put(tempKey, config.clone(false, true, false, false));
+
+                        //put the old config aside for use when handling children
+                        oldConfigs.put(tempKey, config);
+                        tempKey++;
+                    }
+
+                //because the actions primary key is not an external Id we cannot use it as a primary key (doh!) so we need to use the Ids!
+                } else if (objType == 'Actions')
+                {
+                    Integer tempKey = 1;
+
+                    //get the imported actions.
+                    List<List_View_Action__c> importActions = (List<List_View_Action__c>) allConfig.get('Actions');
+                    
+                    //because the actions primary key is not an external Id we cannot use it as a primary key (doh!) so we need to use the Ids!
+                    Set<String> primaryKeys = HelperCollection.getStringFieldSet(importActions, 'Primary_Key__c');
+                    Map<String, List_View_Action__c> existingActionsByKey = ListViewActionHelper.getListViewActionsByKey(primaryKeys);
+
+                    //go through the imported actions. If it exists then set the imported actions Id to the existing Id based on primary key
+                    for (List_View_Action__c action: importActions)
+                    {
+                        action.OwnerId = UserInfo.getUserId();
+                        action.Id = null;
+
+                        if (String.isEmpty(action.Subtype__c))
+                            action.RecordTypeId = ListViewActionHelper.coreRTId;
+                        else
+                            action.RecordTypeId = ListViewActionHelper.customRTId;
+
+                        List_View_Action__c existingAction = existingActionsByKey.get(action.Primary_Key__c);
+                        if (existingAction != null)
+                            action.Id = existingAction.Id; //set the correct existing Id into the old action based on the primary key
+                        else
+                            action.Id = null;
+                    }
+
+                    //now clone the imported action.
+                    for (List_View_Action__c action: importActions)
+                    {
+                        //create a new cloned action that will be used for upsertion.
+                        newActions.put(tempKey, action.clone(true, true, false, false)); //preserveId = true in this case!
+
+                        //put the old action aside for use when handling children
+                        oldActions.put(tempKey, action);
+                        tempKey++;
+                    }
+                }
+            }
+
+
+
+
+            //-----------------------------------------------------------------
+            //INSERT LIST VIEWS (Easy as there are no children)
+            // RESULTS - WORKS FOR UPDATES
+            //           WORKS FOR INSERT (where API and Primary Key are changed)
+            //-----------------------------------------------------------------
+
+            List<Database.UpsertResult> results = HelperDatabase.upsertRecordsNoStrip(newListViews.values(), 'simpli_lv__Primary_Key__c', false);
+
+            Integer errorCount = 0;
+            Integer successCount = 0;
+            for (Database.UpsertResult result: results)
+            {
+                if (result.isSuccess()) {
+                    successCount++;
+                    debug += 'List View Success - ' + result.getId() + '\n';
+                } else {
+                    errorCount++;
+                    debug += 'List View Error   - ' + result.getErrors() + '\n';
+                }
+            }
+
+            response += 'List Views:' + successCount + ':' + errorCount + ';      ';
+            debug    += 'List Views Totals:' + successCount + ':' + errorCount + '\n\n';
+
+            //-----------------------------------------------------------------
+            //GET THE CONFIG PARAMETERS AND CONDITIONS FROM THE CONFIGS
+            //-----------------------------------------------------------------
+
+            Map<Integer, List<List_View_Config_Parameter__c>> configParamsByKey = new Map<Integer, List<List_View_Config_Parameter__c>>();
+            Map<Integer, List<List_View_Config_Condition__c>> configCondsByKey = new Map<Integer, List<List_View_Config_Condition__c>>();
+
+            //1. Put all config parameters and conditions into a map by the tempKey
+            for (Integer key: oldConfigs.keySet())
+            {
+                List_View_Config__c oldConfig = oldConfigs.get(key);
+
+                if (oldConfig.List_View_Config_Parameters__r != null)
+                    configParamsByKey.put(key, oldConfig.List_View_Config_Parameters__r);
+                if (oldConfig.List_View_Config_Conditions__r != null)
+                    configCondsByKey.put(key, oldConfig.List_View_Config_Conditions__r);
+            }
+
+            //2. upsert all configs
+            results = HelperDatabase.upsertRecordsNoStrip(newConfigs.values(), 'simpli_lv__Primary_Key__c', false);
+
+            errorCount = 0;
+            successCount = 0;
+            Set<String> successConfigIds = new Set<String>();
+            for (Database.UpsertResult result: results)
+            {
+                if (result.isSuccess()) {
+                    successCount++;
+                    successConfigIds.add(result.getId());
+                    debug += 'Config Success - ' + result.getId() + '\n';
+                } else {
+                    errorCount++;
+                    debug += 'Config Error   - ' + result.getErrors() + '\n';
+                }
+            }
+
+            response += 'Configs:' + successCount + ':' + errorCount + ';      ';
+            debug    += 'Configs Totals:' + successCount + ':' + errorCount + '\n\n';
+
+            Map<String, List_View_Config__c> fullConfigs = ListViewConfigHelper.getListViewConfigsById(successConfigIds); 
+
+
+            //3. Put Ids of configs into config params and put in list for upsert
+            List<List_View_Config_Parameter__c> configParams = new List<List_View_Config_Parameter__c>();
+            for (Integer key: configParamsByKey.keySet())
+            {
+                List<List_View_Config_Parameter__c> params = configParamsByKey.get(key);
+                if (params != null)
+                {
+                    List_View_Config__c newConfig = newConfigs.get(key);
+                    if (newConfig.Id != null)
+                    {
+                        List_View_Config__c fullConfig = fullConfigs.get(newConfig.Id);
+
+                        for (List_View_Config_Parameter__c oldParam: params)
+                        {
+
+                            //if we are importing the is Initialized parameter for the global configs then automatically set to false!
+                            if (newConfig.Primary_Key__c == 'All:All' && oldParam.Parameter_Name__c == 'IsInitialized')
+                                oldParam.Parameter_Value__c = ListViewHelper.FFALSE;
+                            
+                            //check if the param already exists
+                            Boolean paramExists = false;
+                            for (List_View_Config_Parameter__c param: fullConfig.List_View_Config_Parameters__r)
+                            {
+                                if (param.Parameter_Name__c == oldParam.Parameter_Name__c)
+                                    paramExists = true;
+                            }
+
+                            if (!paramExists)
+                            {
+                                oldParam.Id = null;
+
+                                List_View_Config_Parameter__c newParam = oldParam.clone(false, true, false, false);
+                                newParam.List_View_Config__c = newConfig.Id;
+                                configParams.add(newParam);
+                            }
+                        }
+                    }
+                }
+            }
+
+            results = HelperDatabase.upsertRecordsNoStrip(configParams, null, false);
+
+            errorCount = 0;
+            successCount = 0;
+            for (Database.UpsertResult result: results)
+            {
+                if (result.isSuccess()) {
+                    successCount++;
+                    debug += 'Config Param Success - ' + result.getId() + '\n';
+                } else {
+                    errorCount++;
+                    debug += 'Config Param Error   - ' + result.getErrors() + '\n';
+                }
+            }
+            debug    += 'Config Params Totals:' + successCount + ':' + errorCount + '\n\n';
+
+
+
+            //3. Put Ids of configs into config conds and put in list for upsert
+            List<List_View_Config_Condition__c> configConds = new List<List_View_Config_Condition__c>();
+            for (Integer key: configCondsByKey.keySet())
+            {
+                List<List_View_Config_Condition__c> conds = configCondsByKey.get(key);
+                if (conds != null)
+                {
+                    List_View_Config__c newConfig = newConfigs.get(key);
+                    if (newConfig.Id != null)
+                    {
+                        List_View_Config__c fullConfig = fullConfigs.get(newConfig.Id);
+
+                        for (List_View_Config_Condition__c oldCond: conds)
+                        {
+                            //check if the condition already exists
+                            Boolean condExists = false;
+                            for (List_View_Config_Condition__c cond: fullConfig.List_View_Config_Conditions__r)
+                            {
+                                if (cond.Field_Name__c == oldCond.Field_Name__c 
+                                    && cond.Highlight_Color__c == oldCond.Highlight_Color__c)
+                                    condExists = true;
+                            }
+
+                            if (!condExists)
+                            {
+                                oldCond.OwnerId = UserInfo.getUserId();
+                                oldCond.Id = null;
+                                List_View_Config_Condition__c newCond = oldCond.clone(false, true, false, false);
+                                newCond.List_View_Config__c = newConfig.Id;
+                                configConds.add(newCond);
+                            }
+                        }
+                    }
+                }
+            }
+
+            results = HelperDatabase.upsertRecordsNoStrip(configConds, null, false);
+
+            errorCount = 0;
+            successCount = 0;
+            for (Database.UpsertResult result: results)
+            {
+                if (result.isSuccess()) {
+                    successCount++;
+                    debug += 'Config Cond Success - ' + result.getId() + '\n';
+                } else {
+                    errorCount++;
+                    debug += 'Config Cond Error   - ' + result.getErrors() + '\n';
+                }
+            }
+            debug    += 'Config Conds Totals:' + successCount + ':' + errorCount + '\n\n';
+
+
+
+
+
+            //-----------------------------------------------------------------
+            //INSERT ACTIONS AND PARAMETERS
+            // RESULTS - WORKS FOR UPDATES
+            //           WORKS FOR INSERT (where Primary Key is changed)
+            //-----------------------------------------------------------------
+
+            Map<Integer, List<List_View_Action_Parameter__c>> actionParamsByKey = new Map<Integer, List<List_View_Action_Parameter__c>>();
+
+            //1. Put all action parameters into a map by the tempKey
+            for (Integer key: oldActions.keySet())
+            {
+                List_View_Action__c oldAction = oldActions.get(key);
+                if (oldAction.List_View_Action_Parameters__r != null)
+                {
+                    actionParamsByKey.put(key, oldAction.List_View_Action_Parameters__r);
+                }
+            }
+
+            //2. upsert all actions
+            results = HelperDatabase.upsertRecordsNoStrip(newActions.values(), 'Id', false);
+
+            errorCount = 0;
+            successCount = 0;
+            Set<Id> successActionIds = new Set<Id>();
+            for (Database.UpsertResult result: results)
+            {
+                if (result.isSuccess()) {
+                    successCount++;
+                    successActionIds.add(result.getId());
+                    debug += 'Action Success - ' + result.getId() + '\n';
+                } else {
+                    errorCount++;
+                    debug += 'Action Error   - ' + result.getErrors() + '\n';
+                }
+            }
+            response += 'Actions:' + successCount + ':' + errorCount + ';      ';
+            debug    += 'Actions Totals:' + successCount + ':' + errorCount + '\n\n';
+
+            //REGET the actions so that we can determine if the parameters already exist
+            Map<Id, List_View_Action__c> fullActions = ListViewActionHelper.getListViewActions(successActionIds); 
+
+
+
+            //3. Put Ids of actions into action parameters and put in list for upsert
+            List<List_View_Action_Parameter__c> actionParams = new List<List_View_Action_Parameter__c>();
+            for (Integer key: actionParamsByKey.keySet())
+            {
+                List<List_View_Action_Parameter__c> params = actionParamsByKey.get(key);
+                if (params != null)
+                {
+                    List_View_Action__c newAction = newActions.get(key);
+                    if (newAction.Id != null)
+                    {
+                        List_View_Action__c fullAction = fullActions.get(newAction.Id);
+
+                        for (List_View_Action_Parameter__c oldParam: params)
+                        {
+                            //check if the parameter already exists
+                            Boolean paramExists = false;
+                            for (List_View_Action_Parameter__c param: fullAction.List_View_Action_Parameters__r)
+                            {
+                                if (param.Field_API_Name__c == oldParam.Field_API_Name__c)
+                                    paramExists = true;
+                            }
+
+                            if (!paramExists)
+                            {
+                                oldParam.Id = null;
+                                List_View_Action_Parameter__c newParam = oldParam.clone(false, true, false, false);
+                                newParam.List_View_Action__c = newAction.Id;
+                                actionParams.add(newParam);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //4. Insert action parameters
+            results = HelperDatabase.upsertRecordsNoStrip(actionParams, null, false);
+
+            errorCount = 0;
+            successCount = 0;
+            for (Database.UpsertResult result: results)
+            {
+                if (result.isSuccess()) {
+                    successCount++;
+                    debug += 'Action Param Success - ' + result.getId() + '\n';
+                } else {
+                    errorCount++;
+                    debug += 'Action Param Error   - ' + result.getErrors() + '\n';
+                }
+            }
+            debug    += 'Action Params Totals:' + successCount + ':' + errorCount + '\n\n';
+            System.debug(LoggingLevel.DEBUG, 'Import response - ' + response);
+        } catch (Exception e) {
+            String message = ListViewException.getExtendedString(e);
+            List_View_Error__c log   = new List_View_Error__c();
+            log.Running_User__c  = UserInfo.getUserId();
+            log.Message__c       = message;
+            log.Type__c          = ListViewErrorHelper.TYPE_EXCEPTION;
+            log.Subtype__c       = 'ListViewHelper(importJSON)';
+            HelperDatabase.insertRecord(log);
+            response = 'There was an error importing the data. Please see the logs for more details - ' + message;
+        }
+
+        List_View_Error__c log   = new List_View_Error__c();
+        log.Running_User__c  = UserInfo.getUserId();
+        log.Message__c       = debug;
+        log.Type__c          = ListViewErrorHelper.TYPE_LOG;
+        log.Subtype__c       = 'ListViewHelper(importJSON)';
+        HelperDatabase.insertRecord(log);
+
+        return response;
+    }
+
+
+
+
+
+
+
+
+    //================================================================================================================
+    // PRIVATE METHODS
+    //================================================================================================================
+
 
     /*
      * Method to check security and determine whether the list view is visible
@@ -2711,27 +3481,19 @@ global with sharing class ListViewHelper
         return visible;
     }
 
-    /*
-     * Method to check security and determine whether the list view is updateable
-     * to the requesting user. The following security is performed.
-     * 1. if user is owner
-     * 2. if list view allows all internal users.
-     * 3. if user is in allowed roles
-     * 4. if user is in allowed groups
-     * 5. if user is in allowed territories
-     */
-    public static Boolean isUpdateable(List_View__c lv)
-    {
-        User usr = UserHelper.getCurrentUser();
 
-        if (lv.OwnerId == UserInfo.getUserId()) return true;
 
-        if (HelperProfile.hasModifyAll()) return true;
 
-        if (lv.All_Internal_Users__c != null && lv.All_Internal_Users__c) return true;
 
-        return false;
-    }
+
+
+
+
+    
+    //================================================================================================================
+    // INNER CLASSES
+    //================================================================================================================
+
 
     public class ColumnSortData implements Comparable {
 
