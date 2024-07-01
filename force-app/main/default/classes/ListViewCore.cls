@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-15-2024
+ * @last modified on  : 04-28-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -26,6 +26,11 @@ public with sharing class ListViewCore extends ListViewAbstract {
             rowData.listView.rowLimit = 250;
 
         return rowData;
+    }
+
+    public override String getQuery()
+    {
+        return ListViewHelper.getCoreListViewQuery(listview, lvConfig, columnSortData, joinField, joinRecordIds, this.isShell, offset);
     }
 
     public override List<List_View_Config_Parameter__c> getConfigParams(List_View_Config__c config)

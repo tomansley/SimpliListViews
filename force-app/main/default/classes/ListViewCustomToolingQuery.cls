@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-03-2021
+ * @last modified on  : 04-28-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -43,7 +43,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
         String soql = requestData.data.get(DATA_QUERY);
 
-        soql = ListViewHelper.getSOQLQuery(soql, lvConfig, columnSortData, joinField, joinRecordIds);
+        soql = ListViewHelper.getCustomListViewQuery(soql, lvConfig, columnSortData, joinField, joinRecordIds);
 
 
         String endPoint = URL.getSalesforceBaseUrl().toExternalForm();

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-19-2023
+ * @last modified on  : 04-28-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -28,6 +28,11 @@ public with sharing abstract class ListViewCustomToolingAbstract extends ListVie
     public void setRequestData(String key, String value)
     {
         requestData.data.put(key, value);
+    }
+
+    public override String getQuery()
+    {
+        return '';
     }
 
     public override ListViewAbstract.RowsWrapper getData()

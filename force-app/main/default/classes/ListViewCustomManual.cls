@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-16-2024
+ * @last modified on  : 04-28-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -169,6 +169,11 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         RowsWrapper rowData = handleRowsToWrapper(pageName, dataRows, listView, lvConfig, columnSortData);
 
         return rowData;
+    }
+
+    public override String getQuery()
+    {
+        return ListViewHelper.getCustomListViewQuery(listview.Core_ListView_Query__c, lvConfig, columnSortData, joinField, joinRecordIds, this.isShell, offset);
     }
 
     public override List<ListViewColumn> getColumnData()
