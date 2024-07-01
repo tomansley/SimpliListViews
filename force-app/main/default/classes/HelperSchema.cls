@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-27-2023
+ * @Last Modified On   : 07-01-2024
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -44,6 +44,38 @@ public with sharing class HelperSchema {
     public static final String REL_TYPE_CORE_ID   = 'coreid';
     public static final String REL_TYPE_LOOKUP    = 'lookup';
     public static final String REL_TYPE_CHILD_REL = 'childrel';
+
+    public static final String SYS_VAR_HAS_NAMESPACE = 'HasNameSpace';
+    public static final String SLVE_NAMESPACE         = 'simpli_lv_ent';
+
+    /**
+    * @description Method to determine if a package has been installed on the calling org. The response is placed into Cache.
+    * @author tom@ansleyllc.com | 07-01-2024 
+    * @param namespace the namespace of the package being checked for.
+    * @return Boolean true = installed, false = not installed
+
+            System.debug(LOggingLevel.DEBUG, 'Is Installed - ' + HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE));
+    **/
+    public static Boolean isPackageInstalled(String namespace)
+    {
+        Boolean hasNameSpace = null;
+        Object response = CacheSystemConfig.get(SYS_VAR_HAS_NAMESPACE);
+        if (response == null)
+        {
+            List<PackageLicense> packages = [SELECT Id FROM PackageLicense WHERE NamespacePrefix = :namespace];
+
+            if (packages.isEmpty())
+                hasNameSpace = false;
+            else
+                hasNameSpace = true;
+        
+            CacheSystemConfig.put(SYS_VAR_HAS_NAMESPACE, hasNameSpace);
+        } else {
+            hasNameSpace = (Boolean) response;
+        }
+
+        return hasNameSpace;
+    }
 
     public static Map<String, Schema.SObjectType> getAllObjectsByName() 
     {
@@ -882,7 +914,8 @@ public with sharing class HelperSchema {
 				}
 			}
         } catch (Exception e) {
-            ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ')  ' + ListViewException.getExtendedString(e)); 
+            System.debug(LoggingLevel.ERROR, e.getMessage() + ' - ' + e.getStackTraceString());
+            //ListViewErrorHelper.createFutureUsageError('Exception during HelperSchema.getFieldData(' + obj + ',' + fieldName + ')  ' + ListViewException.getExtendedString(e)); 
 			data = null;
         }
         
@@ -1372,8 +1405,10 @@ public with sharing class HelperSchema {
 		Integer index = typeStr.indexOf('.');
     	if (index != -1) {
         	// With namespace "ns.Type"
-        	t = Type.forName(typeStr.substring(index), typeStr.substring(index + 1, typeStr.length()));
-    	} else {
+        	t = Type.forName(typeStr.substring(0, index), typeStr.substring(index + 1, typeStr.length()));
+    	} 
+        
+        if (t == null) {
         	// Just "Type"
         	t = Type.forName(null, typeStr);
     	}
