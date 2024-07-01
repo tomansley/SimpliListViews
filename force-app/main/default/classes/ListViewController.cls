@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-07-2024
+ * @last modified on  : 07-01-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -178,7 +178,7 @@ public without sharing class ListViewController
         lvLogic.listviewMode = listViewMode;
 
         //set all request information into the apex processing class.
-        lvlogic.setRequestData(listview);
+        lvlogic.setListView(listview);
 
         lvConfigWrapper = lvlogic.lvConfig;
 
@@ -353,41 +353,25 @@ public without sharing class ListViewController
     public static String updateObjectListViews(String objectType)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateObjectListViews(' + objectType + ')');
+        
         //update the list view
-        Boolean result = ListViewHelper.updateListViewsFromObj(objectType);
-
-        //remove cache so that list views are refetched
-        CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
+        String response = ListViewHelper.updateObjectListViews(objectType);
 
         ListViewErrorHelper.processLogs(true);
 
-        return SUCCESS;
+        return response;
     }
 
     @AuraEnabled
     public static String updateSingleListView(String objectType, String listViewName)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateSingleListView(' + objectType + ', ' + listViewName + ')');
-        //get the listviews with object and name
-        Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectType, listViewName);
 
-        //if no listviews return failed
-        if (listviews.size() == 0) return FAILED;
-
-        //get the list views Id
-        Set<Id> lvId = new Set<Id>();
-        lvId.add(listviews.values()[0].Id);
-
-        //update the list view
-        System.debug(LoggingLevel.FINE, 'A - ' + HelperLimits.getLimitsString());
-        Boolean result = ListViewHelper.updateListViewsFromSLVIds(lvId);
-
-        //remove cache so that list views are refetched
-        CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
-
+        String response = ListViewHelper.updateSingleListView(objectType, listViewName);
+        
         ListViewErrorHelper.processLogs(true);
 
-        return SUCCESS;
+        return response;
     }
 
 	@AuraEnabled
@@ -395,34 +379,11 @@ public without sharing class ListViewController
 	{
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateChangedListViews()');
 
-        //try get the last changed CORE list view
-        Map<Id, ListView> changedListViews = ListViewHelper.getLastChangedListViewForUser(UserInfo.getUserId());
-
-        if (changedListViews.size() > 0)
-        {
-            //get the changed CORE list view
-            ListView lv = changedListViews.values()[0];
-
-            //get the SIMPLI listviews with object and name
-            Map<Id, List_View__c> listviews = ListViewHelper.getListViews(lv.SObjectType, lv.DeveloperName);
-
-            //if SIMPLI listviews return then process
-            if (listviews.size() > 0)
-            {
-
-                //get the list views Id
-                Set<Id> lvId = new Set<Id>();
-                lvId.add(listviews.values()[0].Id);
-
-                //update the list view
-                ListViewHelper.updateListViewsFromSLVIds(lvId);
-
-            }
-        }
+        String response = ListViewHelper.updateChangedListViews();
 
         ListViewErrorHelper.processLogs(true);
 
-        return SUCCESS;
+        return response;
 	}
 
 	@AuraEnabled
@@ -430,32 +391,19 @@ public without sharing class ListViewController
 	{
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.updateAllListViews()');
 
-        Simpli_lv.ListViewPreProcessBatch b = new Simpli_lv.ListViewPreProcessBatch();
-        
-        Id jobId = null;
-        
-        try {
-            jobId = Database.executebatch(b, 40);
-        } catch (Exception e) {
-            jobId = FAILED;
-            String message = 'Exception during ListViewController.updateAllListViews()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createFutureUsageError(message); 
-        }
-
-        //remove cache so that list views are refetched
-        CacheHelper.clearAllCache();
+        String response = ListViewHelper.updateAllListViews();
 
         ListViewErrorHelper.processLogs(true);
 
-        return jobId;
+        return response;
 	}
 
     @AuraEnabled(cacheable=true)
-    public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName, String componentName)
+    public static List<ListViewActionWrapper> getListViewActions(String objectType, String listViewName, String componentName)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewActions(' + objectType + ', ' + listViewName + ', ' + componentName + ')');
         
-        List<ListViewAbstract.ActionWrapper> actions = ListViewActionHelper.getListViewActions(objectType, listViewName, componentName);
+        List<ListViewActionWrapper> actions = ListViewActionHelper.getListViewActions(objectType, listViewName, componentName);
 
         ListViewErrorHelper.processLogs(true);
 
@@ -463,11 +411,11 @@ public without sharing class ListViewController
     }
 
     @AuraEnabled
-    public static ListViewAbstract.ActionWrapper getListViewActionAndData(String actionName, String dataIds)
+    public static ListViewActionWrapper getListViewActionAndData(String actionName, String dataIds)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewAction(' + actionName + ', ' + dataIds + ')');
 
-        ListViewAbstract.ActionWrapper wrapper = getListViewAction(actionName);
+        ListViewActionWrapper wrapper = getListViewAction(actionName);
 
         try {
 
@@ -484,7 +432,7 @@ public without sharing class ListViewController
 
                     //3. Get the list of fields
                     List<String> fieldAPINames = new List<String>();
-                    for (ListViewAbstract.ActionParameterWrapper param: wrapper.getDisplayParameters())
+                    for (ListViewActionWrapper.ActionParameterWrapper param: wrapper.getDisplayParameters())
                     {
                         fieldAPINames.add(param.getAPIName());
                     }
@@ -495,7 +443,7 @@ public without sharing class ListViewController
                     //5. Set the record values into the action wrapper
                     if (record != null)
                     {
-                        for (ListViewAbstract.ActionParameterWrapper param: wrapper.getDisplayParameters())
+                        for (ListViewActionWrapper.ActionParameterWrapper param: wrapper.getDisplayParameters())
                         {
                             param.setDefaultValue(record.get(param.getAPIName()));
                         }
@@ -513,11 +461,11 @@ public without sharing class ListViewController
     }
 
     @AuraEnabled
-    public static ListViewAbstract.ActionWrapper getListViewAction(String actionName)
+    public static ListViewActionWrapper getListViewAction(String actionName)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewAction(' + actionName + ')');
 
-        ListViewAbstract.ActionWrapper wrapper = null;
+        ListViewActionWrapper wrapper = null;
         if (!String.isEmpty(actionName))
         {
 
@@ -525,7 +473,7 @@ public without sharing class ListViewController
     
             try {
                 action = ListViewActionHelper.getListViewActionByKey(actionName);
-                wrapper = new ListViewAbstract.ActionWrapper(action);
+                wrapper = new ListViewActionWrapper(action);
 
             } catch (Exception e) {
                 String message = 'Exception during ListViewController.getListViewAction(' + actionName + ')  ' + ListViewException.getExtendedString(e);
@@ -642,6 +590,11 @@ public without sharing class ListViewController
         return rows;
     }
 
+    public static ListViewAbstract.RowsWrapper getListViewData(String compType, String objectName, String listViewName)
+    {
+        return getListViewData('', compType, objectName, listViewName, '', '', '', -1, false, '');
+    }
+
     @AuraEnabled
     public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String compType, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, String textSearchStr)
     {
@@ -652,7 +605,7 @@ public without sharing class ListViewController
     * @description Method to retrieve list view data based on user provided criteria.
     * @author tom@ansleyllc.com | 06-28-2021 
     * @param pageName the name of the lightning page that the list is being displayed on. This is used for list view config retrieval
-    * @param compType the type of the component the data is being retrieved for.
+    * @param compType the mode of the component the data is being retrieved for.
     * @param objectName the name of the list view object
     * @param listViewName the name of the list view
     * @param sortData the sorting information for the list view.
@@ -664,185 +617,8 @@ public without sharing class ListViewController
     **/
     public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String compType, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, Boolean isShell, String textSearchStr)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ', ' + isShell + ', ' + textSearchStr + ')');
-        
-        ListViewAbstract.RowsWrapper rowData                   = null;
-
-        //------------------------------------------------------------------------------------------
-        //JOIN INFORMATION
-        //------------------------------------------------------------------------------------------
-        Set<String> joinRecordIds = null;
-        if (!String.isEmpty(joinFieldName) && !String.isEmpty(joinData))
-        {
-            System.debug(LoggingLevel.DEBUG, 'We have join data and a join field');
-            //check that we can actually act on the join data as it could be for another component.
-            if (HelperSchema.isValidSFDCFieldName(objectName, joinFieldName))
-            {
-                Map<String, Object> joinDataMap = (Map<String, Object>) JSON.deserializeUntyped(joinData);
-                joinRecordIds = HelperString.getSetFromString(((String) joinDataMap.get('recordIds')), ',');
-                joinRecordIds.remove(null); //make sure we remove any nulls
-                joinRecordIds.remove('');
-
-                //if we have any Ids we need to check that the Ids match the field object type
-                //unless its a polymorphic field!
-                if (joinRecordIds.size() > 0
-                    && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName)
-                    && !joinFieldName.contains('.'))
-                {
-                    System.debug(LoggingLevel.DEBUG, 'joinRecordIds != 0, joinFieldName is NOT polymorphic, joinFieldName != contain "."');
-
-                    //get the type of the join field lookup object.
-                    String objType = HelperSchema.getObjectTypeForField(objectName, joinFieldName);
-
-                    String objType2 = '';
-
-                    //this is crazy. In order to get any one value from a set
-                    //I have to iterate over it and break at the first value!!
-                    for (String recordId: joinRecordIds)
-                    {
-                        objType2 = HelperSchema.getObjectTypeFromId(recordId);
-                        break;
-                    }
-                    System.debug(LoggingLevel.DEBUG, 'First object type - ' + objType);
-                    System.debug(LoggingLevel.DEBUG, 'Second object type - ' + objType2);
-
-                    if (objType != objType2
-                        && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName)) //if we have join data that doesn't match return an empty shell. This can happen if we have multiple components that all have different join id types
-                    {      
-                        rowData = getListViewData(pageName, compType, objectName, listViewName, sortData, joinFieldName, '{"recordIds":""}', offset, true, '');
-                        rowData.clearRows();
-                        return rowData;
-                    } else {
-                        System.debug(LoggingLevel.DEBUG, 'Object types do not match');
-                    }
-                } else {
-                    System.debug(LoggingLevel.DEBUG, 'joinRecordIds.size() - ' + joinRecordIds.size());
-                    System.debug(LoggingLevel.DEBUG, '!ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName) - ' + !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinFieldName));
-                    System.debug(LoggingLevel.DEBUG, '!joinFieldName.contains(\'.\') - ' + !joinFieldName.contains('.'));
-
-                }
-            } else {
-                System.debug(LoggingLevel.DEBUG, 'joinFieldName is not valid');
-            }
-        }
-
-        //------------------------------------------------------------------------------------------
-        //LIST VIEW METADATA
-        //------------------------------------------------------------------------------------------
-        Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectName, listViewName);
-
-        if (listviews.size() > 0) 
-        {
-
-            List_View__c listview = listviews.values()[0];
-
-            //------------------------------------------------------------------------------------------
-            //SORTING INFORMATION
-            //------------------------------------------------------------------------------------------
-            List<ListViewHelper.ColumnSortData> columnSortData = new List<ListViewHelper.ColumnSortData>();
-            String sortStr = '';
-            Boolean isDefaultSort = false;
-
-            //if sorting is provided from the UI then use it first
-            if (sortData != null && sortData.length() > 2) //the value when empty can be "[]"
-            {
-                //below is a bit of a mess at the moment because Map objects cannot be stringified
-                //in Javascript. So we end up with a list of list!!
-                List<Object> sortValues = (List<Object>) JSON.deserializeUntyped(sortData);
-                System.debug(LoggingLevel.DEBUG, 'SORT VALUES - ' + sortValues);
-                for (Object values: sortValues)
-                {
-                    List<Object> sortVals = (List<Object>) values;
-                    List<Object> tst = (List<Object>) sortVals[1];
-
-                    ListViewHelper.ColumnSortData columnData = new ListViewHelper.ColumnSortData();
-                    columnData.sortIndex     = (Integer) tst[0];
-                    columnData.fieldName     = (String) tst[1];
-                    columnData.sortDirection = (Boolean) tst[2];
-
-                    columnSortData.add(columnData);
-                    sortStr += columnData.getUserConfigString() + ';';
-                }
-
-                columnSortData.sort();
-                sortStr = sortStr.removeEnd(';');
-
-            //if no sort order provided from UI then check if there is a default sort order
-            } else if (!String.isEmpty(listview.Default_Sort_Order__c))
-            {
-                List<String> sortValues = listview.Default_Sort_Order__c.split(';');
-                System.debug(LoggingLevel.DEBUG, 'SORT VALUES 1 - ' + sortValues);
-                for (String values: sortValues)
-                {
-                    ListViewHelper.ColumnSortData columnData = new ListViewHelper.ColumnSortData();
-                    columnData.sortIndex     = Integer.valueOf(values.split(':')[0]);
-                    columnData.fieldName     = values.split(':')[2];
-                    columnData.sortDirection = Boolean.valueOf(values.split(':')[1]);
-
-                    columnSortData.add(columnData);
-                    sortStr += columnData.getUserConfigString() + ';';
-                }
-
-                columnSortData.sort();
-                isDefaultSort = true;
-            }
-
-            //------------------------------------------------------------------------------------------
-            //LIST VIEW APEX CLASS CREATION AND PROCESSING
-            //------------------------------------------------------------------------------------------
-            String objType = null;
-            if (listView.RecordTypeId == null || listView.RecordTypeId == ListViewHelper.coreRTId)
-            {
-                objType = ListViewHelper.CORE_APEX_CLASS;
-
-            } else {
-                
-                objType = listView.Custom_Apex_Class__c;
-            }
-
-            //get an apex Type of the object type
-            Type t = HelperSchema.getClassType(objType);
-
-            //create a new instance
-            ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
-            lvLogic.setIsShell(isShell);
-            lvLogic.setMode(compType);
-            lvLogic.setPageName(pageName);
-            lvLogic.setTextSearchString(textSearchStr);
-    
-            //set all request information into the apex processing class.
-            lvlogic.setRequestData(listview, columnSortData, joinFieldName, joinRecordIds, offset);
-
-            rowData = lvLogic.getData();
-            rowData.setIsDefaultSort(isDefaultSort);
-
-            String debug = '\n\n=======================================================================================\n';
-            for (ListViewAbstract.RowWrapper row: rowData.rows)
-            {
-                debug += '-------------------------------------\n';
-                debug += 'Row Id - ' + row.getRowId() + '\n';
-                for (String field: row.fields.keySet())
-                {
-                    ListViewAbstract.FieldWrapper fWrapper = row.fields.get(field);
-                    debug += 'Field - ' + fWrapper + '\n';
-                }                
-                debug += '-------------------------------------\n';
-            }
-            debug       += '=======================================================================================\n';
-            System.debug(LoggingLevel.FINE, debug);
-            
-            //update the sorting for this user for this list view for this component. This MUST be done at the end!
-            if (!isDefaultSort && !isShell)
-                ListViewUserConfigHelper.updateSortConfigValue(pageName, sortStr, objectName, listviewName);
-
-        } else {
-            throw new ListViewException('The list view configuration can not be found for object ' + objectName + ' and list view name - ' + listViewName + ')');
-        }
-        
-        ListViewErrorHelper.processLogs(true);
-
-        return rowData;
-
+        System.debug(LoggingLevel.ERROR, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ', ' + isShell + ', ' + textSearchStr + ')');
+        return ListViewHelper.getListViewData(pageName, compType, objectName, listViewName, sortData, joinFieldName, joinData, offset, isShell, textSearchStr);
     }
 
     @AuraEnabled
@@ -988,69 +764,7 @@ public without sharing class ListViewController
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.processAction(' + actionKey + ', ' + dataIds + ',' + valuesMap + ')');
     
-        String responseStr = ListViewAction.RESULT_OK;
-        List_View_Action__c action = null;
-
-        try {
-            action = ListViewActionHelper.getListViewActionByKey(actionKey);
-        } catch (Exception e) {
-            String message = 'Exception during ListViewController.processAction(' + actionKey + ',' + dataIds + ',' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createFutureUsageError(message); 
-            responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find action config for name provided!';
-            return responseStr;
-        }
-
-        System.debug(LoggingLevel.DEBUG, 'Action - ' + action);
-        
-        Type t = null;
-        try {
-            // Get the Type corresponding to the class name
-            t = HelperSchema.getClassType(action.Apex_Class_Name__c);
-        } catch (Exception e) {
-            responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find apex class "' + action.Apex_Class_Name__c + '" for config with name ' + action.Label__c;
-            return responseStr; 
-        }
-        
-        //get the list of Ids of the records that are to be processed.
-        List<Object> listIds = (List<Object>) JSON.deserializeUntyped(dataIds);
-        List<String> listStrIds = new List<String>();
-        for (Object listId: listIds)
-            listStrIds.add((String) listId);
-
-        //get the field/value pairs of the update data
-        List<Object> listValues = (List<Object>) JSON.deserializeUntyped(valuesMap);
-        Map<String, Object> mapValues = new Map<String, Object>();
-        for (Object key: listValues)
-        {
-            List<Object> keyValues = (List<Object>) key;
-            mapValues.put( (String) keyValues[0], keyValues[1]);
-        }
-
-        //create the object from configuration.
-        ListViewAction actionJob = null;
-        
-        //if we have a FLOW
-        if (action.Is_Flow__c == true) {
-            if (String.isEmpty(action.Flow_API_Name__c)) throw new ListViewException('Flow actions must have a flow API name');
-            ListViewActionFlow actionFlow = (ListViewActionFlow) t.newInstance();
-            actionFlow.setFlowName(action.Flow_API_Name__c);
-            actionJob = actionFlow;
-
-        //if we have a REGULAR ACTION
-        } else {
-            actionJob = (ListViewAction) t.newInstance();
-        }
-
-        //process the object
-        try {
-            responseStr = actionJob.process(listStrIds, mapValues);
-        } catch (Exception e) {
-            responseStr = ListViewAction.RESULT_ERROR + ':There was an error processing the records - ' + e.getMessage();
-            String message = 'Exception during ListViewController.processAction(' + actionKey + ', ' + dataIds + ', ' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createFutureUsageError(message); 
-        }
-        
-        ListViewErrorHelper.processLogs(true);
+        String responseStr = ListViewActionHelper.processAction(actionKey, dataIds, valuesMap);
 
         return responseStr;
     }
@@ -1079,7 +793,7 @@ public without sharing class ListViewController
         ListViewAbstract lvLogic = (ListViewAbstract) t.newInstance();
 
         //set all request information into the apex processing class.
-        lvlogic.setRequestData(listview);
+        lvlogic.setListView(listview);
 
         List<ListViewAbstract.ListViewColumn> columnData = lvLogic.getColumnData();
 
