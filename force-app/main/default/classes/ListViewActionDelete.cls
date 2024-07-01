@@ -2,16 +2,17 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-16-2021
+ * @last modified on  : 05-31-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
  * 2.0   12-15-2021   tom@ansleyllc.com   Pulled out creating types due to different methods for handling types with package names etc.
+ * 3.0   05-31-2024   tom@ansleyllc.com   Moved class to global so that it could be seen when checking for instanceof by SLVE
 **/
-public with sharing class ListViewActionDelete  extends ListViewAction {
+global with sharing class ListViewActionDelete  extends ListViewAction {
     
-    public ListViewActionDelete() {
+    global ListViewActionDelete() {
 
     }
 
