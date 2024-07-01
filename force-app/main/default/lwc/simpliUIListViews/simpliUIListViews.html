@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 03-13-2024
+  @last modified on  : 06-05-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -900,7 +900,9 @@
                                             action-api-name={selectedActionKey}
                                             record-ids={selectedRecordIdsStr}
                                             onprocessed={processActionModal}
-                                            oncancelled={cancelActionModal}>
+                                            oncancelled={cancelActionModal}
+                                            onrunaction={processActionModalRunAction}
+                                            virtual={virtual}>
     </c-simpli-u-i-list-views-action-modal>
 
     <!-- ---------------------------------------------------------------------------------- -->

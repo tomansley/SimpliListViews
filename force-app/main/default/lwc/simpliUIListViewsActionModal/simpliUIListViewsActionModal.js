@@ -21,14 +21,14 @@ export default class simpliUIListViewsActionModal extends LightningElement {
     @api showModal;                     //indicates whether this modal dialog should be displayed or not.
     @api actionApiName;                 //the action that was clicked on.
     @api recordIds;                     //the record ids of the records to be updated
-
+    @api virtual          = false;      //indicates whether the list view is displaying data virtually from another org.
     @track recordCount;                 //the number of record Ids passed in. Only used in the UI.
     @track listViewAction;              //holds the action data for the provided action API name.
-    @track hasParameters = true;        //indicates whether the action has parameters
+    @track hasParameters  = true;       //indicates whether the action has parameters
     @track requestDataMap = new Map();  //holds the map of field/value request data
-    @track spinner = false;             //identifies if the spinner should be displayed or not.
-    @track isInitialized = false;
-    @track calloutCount = 1;            //indicates the number of callouts made for this component
+    @track spinner        = false;      //identifies if the spinner should be displayed or not.
+    @track isInitialized  = false;
+    @track calloutCount   = 1;          //indicates the number of callouts made for this component
 
     label = { Close, Value, Field_Name, Process, Cancel, Continue_Processing, Selected_Records_With, Action };
 
@@ -122,6 +122,15 @@ export default class simpliUIListViewsActionModal extends LightningElement {
         console.log('Action name  - ' + this.actionApiName);
         console.log('Data         - ' + this.recordIds);
         console.log('Field/Value  - ' + strValuesMap);
+
+        if (this.virtual) {
+            this.dispatchEvent(new CustomEvent('runaction', { detail: {action: this.listViewAction, valuesMap: strValuesMap }}));
+            this.spinner = false;
+            this.recordCount = undefined;
+            this.isInitialized = false;
+            this.listViewAction = undefined;
+            return;
+        }
 
         console.log('simpliUIListViewsActionModal CALLOUT - processAction - ' + this.calloutCount++);
         processAction({ actionKey: this.actionApiName, dataIds: this.recordIds, valuesMap: strValuesMap})
