@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 02-02-2022
+ * @last modified on  : 06-01-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -11,7 +11,7 @@
  * 3.0   08-20-2021   tom@ansleyllc.com   Updated strings to static final variables, added 2 new fields - Is_Hyperlink__c, Hyperlink_Target__c, new logic to handle whether actions are displayed based on user permissions
  * 4.0   08-20-2021   tom@ansleyllc.com   Removed Hyperlink_Target__c
 **/
-public with sharing class ListViewActionHelper {
+global with sharing class ListViewActionHelper {
 
     public static final Id coreRTId = Schema.SObjectType.List_View_Action__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View_Action__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
@@ -401,11 +401,11 @@ public with sharing class ListViewActionHelper {
     * @author tom@ansleyllc.com | 08-15-2021 
     * @return Map<String, String> the primary key of the action and the action name
     **/
-    public static List<ListViewAbstract.ActionWrapper> getListViewActions(String objectType, String listViewName, String componentName)
+    public static List<ListViewActionWrapper> getListViewActions(String objectType, String listViewName, String componentName)
     {
         debugString += 'getListViewActions(' + objectType + ', ' + listViewName + ')';
 
-        List<ListViewAbstract.ActionWrapper> actions = new List<ListViewAbstract.ActionWrapper>();
+        List<ListViewActionWrapper> actions = new List<ListViewActionWrapper>();
 
         //get the list views
         Map<Id, List_View__c> listViews = ListViewHelper.getListViews(objectType, listViewName);
@@ -422,7 +422,7 @@ public with sharing class ListViewActionHelper {
         {
             List_View_Action__c action = lvActions.get(actionName);
             if (canPerformAction(objectType, componentName, action))
-                actions.add(new ListViewAbstract.ActionWrapper(action));         
+                actions.add(new ListViewActionWrapper(action));         
         }
 
         System.debug(LoggingLevel.DEBUG, debugString);
@@ -529,5 +529,85 @@ public with sharing class ListViewActionHelper {
 
         debugString += 'canPerformAction - ' + result + ' - ' + objectType + ' - ' + componentName + ' - ' + action.Primary_Key__c + ', ';
         return result;
+    }
+
+    global static String getAllListViewActions(String objectType, String listViewName, String componentName)
+    {
+        List<ListViewActionWrapper> actions = getListViewActions(objectType, listViewName, componentName);
+
+        String actionsJSON = JSON.serialize(actions);
+
+        return actionsJSON;
+    }
+
+    global static String processAction(String actionKey, String dataIds, String valuesMap)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewActionHelper.processAction(' + actionKey + ', ' + dataIds + ',' + valuesMap + ')');
+    
+        String responseStr = ListViewAction.RESULT_OK;
+        List_View_Action__c action = null;
+
+        try {
+            action = ListViewActionHelper.getListViewActionByKey(actionKey);
+        } catch (Exception e) {
+            String message = 'Exception during ListViewActionHelper.processAction(' + actionKey + ',' + dataIds + ',' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createFutureUsageError(message); 
+            responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find action config for name provided (' + actionKey + ').';
+            return responseStr;
+        }
+
+        System.debug(LoggingLevel.DEBUG, 'Action - ' + action);
+        
+        Type t = null;
+        try {
+            // Get the Type corresponding to the class name
+            t = HelperSchema.getClassType(action.Apex_Class_Name__c);
+        } catch (Exception e) {
+            responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find apex class "' + action.Apex_Class_Name__c + '" for config with name ' + action.Label__c;
+            return responseStr; 
+        }
+        
+        //get the list of Ids of the records that are to be processed.
+        List<Object> listIds = (List<Object>) JSON.deserializeUntyped(dataIds);
+        List<String> listStrIds = new List<String>();
+        for (Object listId: listIds)
+            listStrIds.add((String) listId);
+
+        //get the field/value pairs of the update data
+        List<Object> listValues = (List<Object>) JSON.deserializeUntyped(valuesMap);
+        Map<String, Object> mapValues = new Map<String, Object>();
+        for (Object key: listValues)
+        {
+            List<Object> keyValues = (List<Object>) key;
+            mapValues.put( (String) keyValues[0], keyValues[1]);
+        }
+
+        //create the object from configuration.
+        ListViewAction actionJob = null;
+        
+        //if we have a FLOW
+        if (action.Is_Flow__c == true) {
+            if (String.isEmpty(action.Flow_API_Name__c)) throw new ListViewException('Flow actions must have a flow API name');
+            ListViewActionFlow actionFlow = (ListViewActionFlow) t.newInstance();
+            actionFlow.setFlowName(action.Flow_API_Name__c);
+            actionJob = actionFlow;
+
+        //if we have a REGULAR ACTION
+        } else {
+            actionJob = (ListViewAction) t.newInstance();
+        }
+
+        //process the object
+        try {
+            responseStr = actionJob.process(listStrIds, mapValues);
+        } catch (Exception e) {
+            responseStr = ListViewAction.RESULT_ERROR + ':There was an error processing the records - ' + e.getMessage();
+            String message = 'Exception during ListViewActionHelper.processAction(' + actionKey + ', ' + dataIds + ', ' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createFutureUsageError(message); 
+        }
+        
+        ListViewErrorHelper.processLogs(true);
+
+        return responseStr;
     }
 }
