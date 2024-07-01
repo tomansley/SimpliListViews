@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-14-2024
+ * @last modified on  : 05-20-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -15,7 +15,7 @@
 **/
 public with sharing abstract class ListViewAbstract {
     
-    public static Set<String> validTotalColumns = new Set<String>{ListViewHelper.TYPE_INTEGER, ListViewHelper.TYPE_DECIMAL, ListViewHelper.TYPE_CURRENCY, ListViewHelper.TYPE_DOUBLE, ListViewHelper.TYPE_NUMBER};
+    public static Set<String> validTotalColumns = new Set<String>{ListViewHelper.TYPE_INTEGER, ListViewHelper.TYPE_PERCENT, ListViewHelper.TYPE_DECIMAL, ListViewHelper.TYPE_CURRENCY, ListViewHelper.TYPE_DOUBLE, ListViewHelper.TYPE_NUMBER};
     public static Set<String> validNameColumnNames = new Set<String>{'Name', 'CaseNumber', 'Task_Name__c', 'ContractNumber'}; //holds the list of column names that if found will produce a link to the record.
 
     public String listviewMode = null;                                //holds the mode that the list view is being displayed as. NULL = any mode
@@ -23,6 +23,7 @@ public with sharing abstract class ListViewAbstract {
     public List_View_Config__c config = null;                         //holds the SFDC list view config SObject
     public ListViewAbstract.ListViewConfigWrapper lvConfig = null;    //holds the list views config after its been wrapped.
     public List<ListViewHelper.ColumnSortData> columnSortData = null; //holds any sorting data coming in on the request
+    public String sortStr = '';                                       //holds the string version of sorting used to save sorting to the database
     public Set<String> joinRecordIds = null;                          //holds any join Ids that might be used to identify records.
     public String joinField = null;                                   //if getting data based on join Ids this field describes the join field to use.
     public Integer offset = -1;                                       //holds the offset value if we need to page data into the list view.
@@ -44,6 +45,13 @@ public with sharing abstract class ListViewAbstract {
     * @return RowsWrapper the returned data wrapped in metadata which is used by the UI
     **/
     public abstract RowsWrapper getData();
+
+    /**
+    * @description Method called to return the query for this list view
+    * @author tom@ansleyllc.com | 4-28-2024
+    * @return String the SOQL query that includes all logic used to return the data for this list view.
+    **/
+    public abstract String getQuery();
 
     /**
     * @description Method called to determine if the list view config parameters are complete or
@@ -90,26 +98,140 @@ public with sharing abstract class ListViewAbstract {
         this.isShell = isShell;
     }
 
-    public void setRequestData(List_View__c listview)
+    public void setOffset(Integer offset)
     {
-        setRequestData(listview, null, null, null, -1);
+        this.offset = offset;
     }
 
-    public void setRequestData(List_View__c listview, List<ListViewHelper.ColumnSortData> columnSortData, String joinField, Set<String> joinRecordIds, Integer offset)
+    public void setListView(List_View__c listview)
     {
-        System.debug(LoggingLevel.FINE, 'Starting ListViewAbstract.setRequestData - ' + listview);
-        this.listview       = listview;
-        this.columnSortData = columnSortData;
+        this.listview = listview;
+        config = ListViewConfigHelper.getListViewConfig(listview.Object_Name__c, listview.API_Name__c);
+        List<List_View_Config_Parameter__c> params = getConfigParams(config);
+        lvConfig = new ListViewConfigWrapper(listview, config, params, listViewMode);
+    }
+
+    public void setJoinData(String joinField, String joinData)
+    {
+        //------------------------------------------------------------------------------------------
+        //JOIN INFORMATION
+        //------------------------------------------------------------------------------------------
+        Set<String> joinRecordIds = null;
+        if (!String.isEmpty(joinField) && !String.isEmpty(joinData))
+        {
+            System.debug(LoggingLevel.DEBUG, 'We have join data and a join field');
+            //check that we can actually act on the join data as it could be for another component.
+            if (HelperSchema.isValidSFDCFieldName(lvConfig.getObject(), joinField))
+            {
+                Map<String, Object> joinDataMap = (Map<String, Object>) JSON.deserializeUntyped(joinData);
+                joinRecordIds = HelperString.getSetFromString(((String) joinDataMap.get('recordIds')), ',');
+                joinRecordIds.remove(null); //make sure we remove any nulls
+                joinRecordIds.remove('');
+
+                //if we have any Ids we need to check that the Ids match the field object type
+                //unless its a polymorphic field!
+                if (joinRecordIds.size() > 0
+                    && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinField)
+                    && !joinField.contains('.'))
+                {
+                    System.debug(LoggingLevel.DEBUG, 'joinRecordIds != 0, joinField is NOT polymorphic, joinField != contain "."');
+
+                    //get the type of the join field lookup object.
+                    String objType = HelperSchema.getObjectTypeForField(lvConfig.getObject(), joinField);
+
+                    String objType2 = '';
+
+                    //this is crazy. In order to get any one value from a set
+                    //I have to iterate over it and break at the first value!!
+                    for (String recordId: joinRecordIds)
+                    {
+                        objType2 = HelperSchema.getObjectTypeFromId(recordId);
+                        break;
+                    }
+                    System.debug(LoggingLevel.DEBUG, 'First object type - ' + objType);
+                    System.debug(LoggingLevel.DEBUG, 'Second object type - ' + objType2);
+
+                    if (objType != objType2
+                        && !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinField)) //if we have join data that doesn't match return an empty shell. This can happen if we have multiple components that all have different join id types
+                    {      
+                        //rowData = getListViewData(pageName, compType, objectName, listViewName, sortData, joinField, '{"recordIds":""}', offset, true, '');
+                        //rowData.clearRows();
+                        //return rowData;
+                    } else {
+                        System.debug(LoggingLevel.DEBUG, 'Object types do not match');
+                    }
+                } else {
+                    System.debug(LoggingLevel.DEBUG, 'joinRecordIds.size() - ' + joinRecordIds.size());
+                    System.debug(LoggingLevel.DEBUG, '!ListViewHelper.POLYMORPHIC_FIELDS.contains(joinField) - ' + !ListViewHelper.POLYMORPHIC_FIELDS.contains(joinField));
+                    System.debug(LoggingLevel.DEBUG, '!joinField.contains(\'.\') - ' + !joinField.contains('.'));
+
+                }
+            } else {
+                System.debug(LoggingLevel.DEBUG, 'joinField is not valid');
+            }
+        }
+    
         this.joinField      = joinField;
         this.joinRecordIds  = joinRecordIds;
-        this.offset         = offset;
 
-        config = ListViewConfigHelper.getListViewConfig(listview.Object_Name__c, listview.API_Name__c);
+    }
 
-        List<List_View_Config_Parameter__c> params = getConfigParams(config);
+    public String getSortString() {
+        return sortStr;
+    }
 
-        lvConfig = new ListViewConfigWrapper(listview, config, params, listViewMode);
+    public void setSortingData(String sortData)
+    {
+        //------------------------------------------------------------------------------------------
+        //SORTING INFORMATION
+        //------------------------------------------------------------------------------------------
+        columnSortData = new List<ListViewHelper.ColumnSortData>();
+        sortStr = '';
+        Boolean isDefaultSort = false;
 
+        //if sorting is provided from the UI then use it first
+        if (sortData != null && sortData.length() > 2) //the value when empty can be "[]"
+        {
+            //below is a bit of a mess at the moment because Map objects cannot be stringified
+            //in Javascript. So we end up with a list of list!!
+            List<Object> sortValues = (List<Object>) JSON.deserializeUntyped(sortData);
+            System.debug(LoggingLevel.DEBUG, 'SORT VALUES - ' + sortValues);
+            for (Object values: sortValues)
+            {
+                List<Object> sortVals = (List<Object>) values;
+                List<Object> tst = (List<Object>) sortVals[1];
+
+                ListViewHelper.ColumnSortData columnData = new ListViewHelper.ColumnSortData();
+                columnData.sortIndex     = (Integer) tst[0];
+                columnData.fieldName     = (String) tst[1];
+                columnData.sortDirection = (Boolean) tst[2];
+
+                columnSortData.add(columnData);
+                sortStr += columnData.getUserConfigString() + ';';
+            }
+
+            columnSortData.sort();
+            sortStr = sortStr.removeEnd(';');
+
+        //if no sort order provided from UI then check if there is a default sort order
+        } else if (!String.isEmpty(listview.Default_Sort_Order__c))
+        {
+            List<String> sortValues = listview.Default_Sort_Order__c.split(';');
+            System.debug(LoggingLevel.DEBUG, 'SORT VALUES 1 - ' + sortValues);
+            for (String values: sortValues)
+            {
+                ListViewHelper.ColumnSortData columnData = new ListViewHelper.ColumnSortData();
+                columnData.sortIndex     = Integer.valueOf(values.split(':')[0]);
+                columnData.fieldName     = values.split(':')[2];
+                columnData.sortDirection = Boolean.valueOf(values.split(':')[1]);
+
+                columnSortData.add(columnData);
+                sortStr += columnData.getUserConfigString() + ';';
+            }
+
+            columnSortData.sort();
+            isDefaultSort = true;
+        }    
     }
 
     //-------------------------------------------------------------------
@@ -438,7 +560,7 @@ public with sharing abstract class ListViewAbstract {
     //-----------------------------------------------------------
     public class RowWrapper
     {
-        RowsWrapper parentWrapper;               //pointer to the parent wrapper
+        transient RowsWrapper parentWrapper;     //pointer to the parent wrapper
         public Map<String, FieldWrapper> fields; //the list of fields and values for the row
         public String sfdcId;                    //the SFDC record id
         public String recordTypeId;              //the record type id if it exists
@@ -2039,487 +2161,6 @@ public with sharing abstract class ListViewAbstract {
         public Integer compareTo(Object compareTo) {
             ListViewParam param2 = (ListViewParam) compareTo;
             return label.compareTo(param2.label);
-        }
-    }
-
-    //---------------------------------------
-    //ACTION - class which wraps up an action
-    //---------------------------------------
-    public class ActionWrapper
-    {
-        public List_View_Action__c action;
-        public List<ActionParameterWrapper> displayParameters;
-        public List<ActionParameterWrapper> nonDisplayParameters;
-
-        public ActionWrapper(List_View_Action__c action)
-        {
-            this.action = action;
-            displayParameters = new List<ActionParameterWrapper>();
-            nonDisplayParameters = new List<ActionParameterWrapper>();
-            for (List_View_Action_Parameter__c param: action.List_View_Action_Parameters__r)
-            {
-                ActionParameterWrapper wrapper = new ActionParameterWrapper(param);
-                if (wrapper.getIsDisplayed())
-                    displayParameters.add(wrapper);
-                else
-                    nonDisplayParameters.add(wrapper);
-            }
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getHasDisplayParameters()
-        {
-            if (displayParameters.size() > 0)
-                return true;
-            else
-                return false;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public List<ActionParameterWrapper> getDisplayParameters()
-        {
-            return displayParameters;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public List<ActionParameterWrapper> getNonDisplayParameters()
-        {
-            return nonDisplayParameters;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public List<ActionParameterWrapper> getAllParameters()
-        {
-            List<ActionParameterWrapper> all = new List<ActionParameterWrapper>();
-            all.addAll(nonDisplayParameters);
-            all.addAll(displayParameters);
-            return all;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getPrimaryKey()
-        {
-            return action.Primary_Key__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getLabel() //do not change this. Its used on the UI for SelectOption
-        {
-            return action.Label__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getValue() //do not change this. Its used on the UI for SelectOption
-        {
-            return action.Primary_Key__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getClassName()
-        {
-            return action.Apex_Class_Name__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getObjectType()
-        {
-            return action.Object_Type__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsHyperlink()
-        {
-            return action.Is_Hyperlink__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsFlow()
-        {
-            return action.Is_Flow__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getFlowAPIName()
-        {
-            return action.Flow_API_Name__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getFlowType()
-        {
-            return action.Flow_Type__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getFlowFrameHeight()
-        {
-            return action.Flow_Frame_Height__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getFlowFrameWidth()
-        {
-            return action.Flow_Frame_Width__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getMassCreateListViewName()
-        {
-            return action.Mass_Create_List_View_Name__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getSelectedRecVisibility()
-        {
-            return action.Selected_Record_Visibility__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getHyperlink()
-        {
-            String url = '';
-            for (ActionParameterWrapper param: getAllParameters())
-            {
-                if (param.getAPIName().toUpperCase() == ListViewActionHelper.PARAM_KEY_URL.toUpperCase())
-                {
-                    url = param.getValue();
-                    break;
-                }
-            }
-            return url;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getEmailTemplateFolder()
-        {
-            String folder = '';
-            for (ActionParameterWrapper param: getAllParameters())
-            {
-                if (param.getAPIName().toUpperCase() == ListViewActionHelper.PARAM_KEY_EMAIL_TEMP_FOLDER.toUpperCase())
-                {
-                    folder = param.getValue();
-                    break;
-                }
-            }
-            return folder;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getEmailTemplateWhatIdField()
-        {
-            String whatId = '';
-            for (ActionParameterWrapper param: getAllParameters())
-            {
-                if (param.getAPIName().toUpperCase() == ListViewActionHelper.PARAM_KEY_EMAIL_WHAT_ID.toUpperCase())
-                {
-                    whatId = param.getValue();
-                    break;
-                }
-            }
-            return whatId;
-        }
-
-    }
-
-    //---------------------------------------------------------
-    //ACTION PARAM - class which wraps up an action parameter.
-    //---------------------------------------------------------
-    public class ActionParameterWrapper
-    {
-        public List_View_Action_Parameter__c param;
-        private String paramType = null;
-        private Object defaultValue = null;
-        public String parentObjType;   //the API name of the object that this field looks up to
-
-        public ActionParameterWrapper(List_View_Action_Parameter__c param)
-        {
-            this.param = param;
-            this.defaultValue = param.Default_Value__c;
-            this.paramType = param.Type__c.toLowerCase();
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getLookupType()
-        {
-            return param.Lookup_Type__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getAPIName()
-        {
-            return param.Field_API_Name__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getLabel()
-        {
-            return param.Label__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getType()
-        {
-            return paramType;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getValue()
-        {
-            String strValue = '';
-            
-            //No Value!
-            if (this.defaultValue == null) {
-                strValue = '';
-
-            } else if (getIsBoolean()) 
-            {
-                if (defaultValue instanceof Boolean) 
-                {
-                    if (((Boolean) defaultValue) == false)
-                        strValue = ListViewHelper.FFALSE;        //if boolean value is FALSE then send NOTHING
-                    else 
-                        strValue = ListViewHelper.TTRUE;
-                } else {
-                    strValue = String.valueOf(defaultValue);
-                }                    
-            } else if (getIsDateTime()) {
-                //in case of tooling API value is datetime but comes in as a string so we need to check
-                if (defaultValue instanceof DateTime) 
-                    strValue = String.valueOf(((DateTime) defaultValue).getTime());
-                else
-                    strValue = String.valueOf(defaultValue);
-
-            } else if (getIsDate()) {
-                //in case of tooling API value is date but comes in as a string so we need to check
-                if (defaultValue instanceof Date)
-                {
-                    DateTime dt = HelperDate.convertDateToDateTime((Date) defaultValue);
-                    strValue = String.valueOf(dt.getTime()).removeEnd(' 00:00:00');
-                } else {
-                    strValue = String.valueOf(defaultValue);
-                }
-
-            } else if (getIsTime()) {
-                //in case of tooling API value is time but comes in as a string so we need to check
-                if (defaultValue instanceof Time)
-                {
-                    Time tm = ((Time) defaultValue);
-                    //we don't care about the date...just the time.
-                    DateTime dt = DateTime.newInstance(2000, 1, 1, tm.hour(), tm.minute(), tm.second());
-                    strValue = String.valueOf(dt.getTime());
-                } else {
-                    strValue = String.valueOf(defaultValue);
-                }
-
-            //String
-            } else {
-                strValue = String.valueOf(defaultValue);
-            }
-
-            System.debug(LoggingLevel.FINE, 'Finished getValue with type - ' + this.getType() + ' - ' + strValue);
-            return strValue;
-        }
-
-        /**
-        * @description the value that is sent to the UI widgets. Sometimes that is different that what is displayed as text.
-        **/
-        @AuraEnabled(cacheable=true)
-        public String getUIValue()
-        {
-            String uiStr = '';
-            if (defaultValue != null)
-            {
-                if (getIsDateTime()) {
-                        uiStr = String.valueOf(defaultValue).replace(' ', 'T') + 'Z';
-                
-                } else if (getIsDate()) {
-                    uiStr = String.valueOf(defaultValue);
-                
-                } else if (getIsTime()) {
-                    uiStr = String.valueOf(defaultValue);
-                    
-                } else if (getIsBoolean()) 
-                {
-                    if (defaultValue instanceof Boolean) 
-                    {
-                        if (((Boolean) defaultValue) == false)
-                            uiStr = null;        //if boolean value is FALSE then send NOTHING
-                        else 
-                            uiStr = ListViewHelper.TTRUE;
-                    } else {
-                        if (String.valueOf(defaultValue) == ListViewHelper.FFALSE)
-                            uiStr = null;
-                        else 
-                            uiStr = ListViewHelper.TTRUE;
-                    }
-                }
-            }
-            System.debug(LoggingLevel.FINE, 'getUIValue - ' + this.getType() + ' - ' + uiStr );
-            return uiStr;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getFieldObjName()
-        {
-            return parentObjType;
-        }
-
-        public void setParentObjType(String parentObjType)
-        {
-            this.parentObjType = parentObjType;
-        }
-        
-        public void setDefaultValue(Object objValue)
-        {
-            defaultValue = objValue;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public String getPlaceholder()
-        {
-            return param.Placeholder_Text__c;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsDisplayed()
-        {
-            if (param.Display_Order__c == -1)
-                return false;
-            else    
-                return true;
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsRichTextArea()
-        {
-            if (paramType == ListViewHelper.TYPE_RICH_TEXTAREA) return true;
-            return false;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsString()
-        {
-            if (paramType == ListViewHelper.TYPE_STRING) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsTextArea()
-        {
-            if (paramType == ListViewHelper.TYPE_TEXTAREA) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsURL()
-        {
-            if (paramType == ListViewHelper.TYPE_URL) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsBoolean()
-        {
-            if (paramType == ListViewHelper.TYPE_BOOLEAN) return true;
-            return false;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsLookup()
-        {
-            if (paramType == ListViewHelper.TYPE_LOOKUP) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsCurrency()
-        {
-            if (paramType == ListViewHelper.TYPE_CURRENCY) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsDate()
-        {
-            if (paramType == ListViewHelper.TYPE_DATE) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsDateTime()
-        {
-            if (paramType == ListViewHelper.TYPE_DATETIME) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsTime()
-        {
-            if (paramType == ListViewHelper.TYPE_TIME) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsPicklist()
-        {
-            if (paramType == ListViewHelper.TYPE_PICKLIST) return true;
-            return false;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsMultiPicklist()
-        {
-            if (paramType == ListViewHelper.TYPE_MULTI_PICK) return true;
-            return false;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsDecimal()
-        {
-            if (paramType == ListViewHelper.TYPE_DECIMAL) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsInteger()
-        {
-            if (paramType == ListViewHelper.TYPE_INTEGER) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsDouble()
-        {
-            if (paramType == ListViewHelper.TYPE_DOUBLE) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsPercent()
-        {
-            if (paramType == ListViewHelper.TYPE_PERCENT) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsPhone()
-        {
-            if (paramType == ListViewHelper.TYPE_PHONE) return true;
-            return false;    
-        }
-        
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsEmail()
-        {
-            if (paramType == ListViewHelper.TYPE_EMAIL) return true;
-            return false;    
-        }
-
-        @AuraEnabled(cacheable=true)
-        public Boolean getIsRichText()
-        {
-            if (paramType == ListViewHelper.TYPE_RICH_TEXTAREA) return true;
-            return false;    
         }
     }
 
