@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-02-2022
+ * @last modified on  : 05-23-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -61,10 +61,14 @@ public with sharing class ListViewActionBL {
                 {
                     try {
                         Type t = HelperSchema.getClassType(action.Apex_Class_Name__c);
-                        ListViewAction lvLogic = (ListViewAction) t.newInstance();
+                        Object lvLogic = t.newInstance();
+
+                        if (!(lvLogic instanceof simpli_lv.ListViewAction))
+                            action.addError('The apex class does not extend simpli_lv.ListViewAction (' + action.Apex_Class_Name__c + ')');
+
                     } catch (Exception e) {
                         System.debug(LoggingLevel.DEBUG, ListViewException.getExtendedString(e));
-                        action.addError('The apex class does not exist or implement simpli_lv.ListViewAction (' + action.Apex_Class_Name__c + ')');
+                        action.addError('The apex class cannot be found (' + action.Apex_Class_Name__c + ')');
                     }
                 }
             }
