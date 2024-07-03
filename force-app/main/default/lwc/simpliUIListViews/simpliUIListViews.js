@@ -105,17 +105,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             return this.objectActionList;
         }
 
-    _rowData;
-    @api set rowData(value)                         //if in STANDALONE or VIRTUAL mode used when passing data rows directly into the component
-        {
-            this._rowData = value;
-            if (this._rowData !== undefined && this._rowData !== '')
-                this.handleRowData();
-        }
-        get rowData()
-        {
-            return this._rowData;
-        }
+    @api rowData = undefined;                         //if in STANDALONE or VIRTUAL mode used when passing data rows directly into the component
+
     @api set recordId(value)                        //used when component on standard record page. Record page injects record id into component.
          { 
              this.relatedRecordId = value; 
@@ -354,8 +345,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.mode === 'Stand Alone') {
                 if (this.rowData === undefined || this.columnData === undefined) {
                     this.dispatchEvent(SLVHelper.createToast('error', '', 'StandAlone Component Config Error', 'The following properties must be set when using standalone mode - row-data, column-data', false)); 
-                 }
-                 this.spinnerOff('renderedCallback');
+                } else {
+                    this.handleStandAloneRowData();
+                } 
+                this.spinnerOff('renderedCallback');
 
             } else if (this.mode === 'App Page') {
                 this.isModeApp            = true;
@@ -497,43 +490,18 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('Finished renderedCallback for ' + this.pageName);
     }
 
-    handleColumnData() {
-        
+    handleStandAloneRowData() {
+
         //if its a standalone injection we need to turn the JSON into objects
         if (!this.virtual) {
+            this.rowData = JSON.parse(this.rowData);
             this.columnData = JSON.parse(this.columnData);
         
         //if its a virtual injection we need to make the objects writable
         } else {
-            this.columnData = JSON.parse(JSON.stringify(this.columnData));
-        }
-
-        this.listViewData.fieldMetaData = this.columnData;
-        this.listViewData.uIColumnCount = this.columnData.length;
-
-        let index = 0;
-        this.listViewData.fieldMetaData.forEach( column => {
-            if (column.sortDir === undefined) column.sortDir = false;
-            if (column.sortIndex === undefined) column.sortIndex = index;
-            if (column.sortIndexDisplay === undefined) column.sortIndexDisplay = index + 1;
-            if (column.columnIndex === undefined) column.sortIndex = index + 1;
-            if (column.sortable === undefined) column.sortable = false;
-            if (column.sortingTooltip === undefined) column.sortingTooltip = '';
-            index++;
-        });
-
-    }
-
-    handleRowData() {
-
-        //if its a standalone injection we need to turn the JSON into objects
-        if (!this.virtual) {
-            this._rowData = JSON.parse(this._rowData);
-        
-        //if its a virtual injection we need to make the objects writable
-        } else {
-            this.columnData = this._rowData.columns; //get the columns from the row data
-            this._rowData = JSON.parse(JSON.stringify(this._rowData.data));
+            this.columnData = this.rowData.columns; //get the columns from the row data
+            this.columnData = JSON.parse(JSON.stringify(this.columnData)); //make the objects writable
+            this.rowData = JSON.parse(JSON.stringify(this.rowData.data));
         }
 
         this.listViewData = {};
@@ -541,6 +509,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.listViewData.isDefaultSort = true;
         this.listViewData.objectName = 'Account';
         this.listViewData.userTimeZone = 'America/Chicago';
+        this.listViewData.fieldMetaData = this.columnData;
+        this.listViewData.uIColumnCount = this.columnData.length;
 
         let listview = {};
         listview.defaultSortOrder = '';
@@ -553,45 +523,49 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         listview.rowLimit = 10000;               
         this.listViewData.listView = listview;
 
-        this.listViewDataRows = this._rowData;
+        this.listViewDataRows = this.rowData;
         let index = 1;
         this.listViewDataRows.forEach(row => {
             row.isEdited = false;
             row.isDeleted = false;
+            row.sfdcId = index;
             if (row.isDisplayed === undefined) row.isDisplayed = true;
             if (row.isTotals === undefined) row.isTotals = false;
             if (row.highlightColor === undefined) row.highlightColor = '';
             row.salesforceId = row.sfdcId;
             row.rowId = row.sfdcId + ':' + index;
             row.checkBoxId = 'checkbox:' + row.rowId;
+            //row.isEditable = true;
 
             let fieldIndex = 1;
             row.fields.forEach(field => {
+                let column = this.columnData[fieldIndex-1];
                 field.label = '';
                 field.key = row.rowId + ':' + fieldIndex;
                 field.objValueId = row.salesforceId;
+                //field.isEditable = true;
                 if (field.uIValue === undefined) field.uIValue = field.value;
-                if (field.isBoolean === undefined) field.isBoolean = false;
-                if (field.isCurrency === undefined) field.isCurrency = false;
-                if (field.isDate === undefined) field.isDate = false;
-                if (field.isDateTime === undefined) field.isDateTime = false;
-                if (field.isDecimal === undefined) field.isDecimal = false;
-                if (field.isDouble === undefined) field.isDouble = false;
-                if (field.isEmail === undefined) field.isEmail = false;
-                if (field.isHTML === undefined) field.isHTML = false;
-                if (field.isImage === undefined) field.isImage = false;
-                if (field.isInteger === undefined) field.isInteger = false;
-                if (field.isLookup === undefined) field.isLookup = false;
-                if (field.isMultiPicklist === undefined) field.isMultiPicklist = false;
-                if (field.isPercent === undefined) field.isPercent = false;
-                if (field.isPhone === undefined) field.isPhone = false;
-                if (field.isPicklist === undefined) field.isPicklist = false;
-                if (field.isRichTextArea === undefined) field.isRichTextArea = false;
-                if (field.isString === undefined) field.isString = false;
-                if (field.isTextArea === undefined) field.isTextArea = false;
-                if (field.isTime === undefined) field.isTime = false;
-                if (field.isURL === undefined) field.isURL = false;
-                if (field.isId === undefined) field.isId = false;
+                if (column.type === 'boolean') field.isBoolean = true; else field.isBoolean = false;
+                if (column.type === 'currency') field.isCurrency = true; else field.isCurrency = false;
+                if (column.type === 'date') field.isDate = true; else field.isDate = false;
+                if (column.type === 'datetime') field.isDateTime = true; else field.isDateTime = false;
+                if (column.type === 'decimal') field.isDecimal = true; else field.isDecimal = false;
+                if (column.type === 'double') field.isDouble = true; else field.isDouble = false;
+                if (column.type === 'email') field.isEmail = true; else field.isEmail = false;
+                if (column.type === 'html') field.isHTML = true; else field.isHTML = false;
+                if (column.type === 'image') field.isImage = true; else field.isImage = false;
+                if (column.type === 'integer') field.isInteger = true; else field.isInteger = false;
+                if (column.type === 'lookup') field.isLookup = true; else field.isLookup = false;
+                if (column.type === 'multipicklist') field.isMultiPicklist = true; else field.isMultiPicklist = false;
+                if (column.type === 'percent') field.isPercent = true; else field.isPercent = false;
+                if (column.type === 'phone') field.isPhone = true; else field.isPhone = false;
+                if (column.type === 'picklist') field.isPicklist = true; else field.isPicklist = false;
+                if (column.type === 'richtextarea') field.isRichTextArea = true; else field.isRichTextArea = false;
+                if (column.type === 'string') field.isString = true; else field.isString = false;
+                if (column.type === 'textarea') field.isTextArea = true; else field.isTextArea = false;
+                if (column.type === 'time') field.isTime = true; else field.isTime = false;
+                if (column.type === 'url') field.isURL = true; else field.isURL = false;
+                if (column.type === 'id') field.isId = true; else field.isId = false;
                 if (field.cssStyle === undefined) field.cssStyle = '';
                 if (field.currencyCode === undefined) field.currencyCode = 'USD';
                 fieldIndex++;
@@ -599,16 +573,27 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             index++;
         });
 
-        this.handleColumnData();
+        index = 0;
+        this.listViewData.fieldMetaData.forEach( column => {
+            if (column.columnWidth !== undefined) column.columnWidth = 'width: ' + column.columnWidth + ';'; //CSS
+            if (column.sortDir === undefined) column.sortDir = false;
+            if (column.sortIndex === undefined) column.sortIndex = index;
+            if (column.sortIndexDisplay === undefined) column.sortIndexDisplay = index + 1;
+            if (column.columnIndex === undefined) column.sortIndex = index + 1;
+            if (column.sortable === undefined) column.sortable = false;
+            if (column.sortingTooltip === undefined) column.sortingTooltip = '';
+            index++;
+        });
 
-        this.listViewDataRowsSize = this._rowData.length;  
+
+        this.listViewDataRowsSize = this.rowData.length;  
         this.hasListViewDataRows = true;
 
         if (this.virtual) {
             this.listwrapperstyle = 'virtualapplistscrollwrapper';
         }
 
-        this.spinnerOff('handleRowData');
+        this.spinnerOff('handleStandAloneRowData');
     }
     
     handleComponentConfig() {
