@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-01-2024
+ * @last modified on  : 07-03-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -110,14 +110,14 @@ global with sharing class ListViewHelper
         return objectName.replace(' ', '_') + ':' + listViewName;
     }
 
- 	/*
-	 * Method which, given a field type and field value will convert the provided value into the 
-	 * correct object based on the provided fields type.
-	 */
-	public static Object getObjectForValue(String type, String value)
-	{
+    /*
+     * Method which, given a field type and field value will convert the provided value into the 
+     * correct object based on the provided fields type.
+     */
+    public static Object getObjectForValue(String type, String value)
+    {
         System.debug(LoggingLevel.FINE, 'Starting getObjectForValue - ' + type + '/' + value);
-		Object objValue = null;
+        Object objValue = null;
 
         if (type == ListViewHelper.TYPE_BOOLEAN) return Boolean.valueOf(value);
         else if (type == ListViewHelper.TYPE_DOUBLE) { 
@@ -152,12 +152,12 @@ global with sharing class ListViewHelper
                                                                                             Integer.valueOf(value.substring(6, 8)), 
                                                                                             Integer.valueOf(value.substring(9))); //03:15:00.000
                                                                 }
-        else objValue = value;		 
+        else objValue = value;       
 
         System.debug(LoggingLevel.FINE, 'Finished getObjectForValue - ' + type + '/' + objValue);
 
-		return objValue;
-	}
+        return objValue;
+    }
 
     /**
     * @description Method to update/create MANY records given their record Ids (for updates) and a map of field updates
@@ -1871,8 +1871,8 @@ global with sharing class ListViewHelper
             return true;
     }
 
-	public static void cleanListViews(List<List_View__c> scope) 
-	{
+    public static void cleanListViews(List<List_View__c> scope) 
+    {
         String debug = '';
         
         try {        
@@ -1964,7 +1964,7 @@ global with sharing class ListViewHelper
 
         ListViewErrorHelper.processLogs(false);
 
-	}
+    }
 
     public static List<List_View_Action__c> insertCoreActions()
     {
@@ -1974,7 +1974,7 @@ global with sharing class ListViewHelper
         orgNewAction.Apex_Class_Name__c  = 'ListViewActionCreate';
         orgNewAction.Label__c            = 'New';
         orgNewAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		orgNewAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
+        orgNewAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
         orgNewAction.Is_Active__c        = true;
         orgNewAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
 
@@ -1984,7 +1984,7 @@ global with sharing class ListViewHelper
         orgCloneAction.Apex_Class_Name__c  = 'ListViewActionClone';
         orgCloneAction.Label__c            = 'Clone';
         orgCloneAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		orgCloneAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
+        orgCloneAction.Permissions__c      = ListViewActionHelper.PERM_CREATE;
         orgCloneAction.Is_Active__c        = true;
         orgCloneAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
 
@@ -1994,7 +1994,7 @@ global with sharing class ListViewHelper
         orgEditAction.Apex_Class_Name__c  = 'ListViewActionEdit';
         orgEditAction.Label__c            = 'Edit';
         orgEditAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		orgEditAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+        orgEditAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
         orgEditAction.Is_Active__c        = true;
         orgEditAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ONLY_ONE;
 
@@ -2004,7 +2004,7 @@ global with sharing class ListViewHelper
         orgEditAllAction.Apex_Class_Name__c  = 'ListViewActionEditAll';
         orgEditAllAction.Label__c            = 'Edit All';
         orgEditAllAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		orgEditAllAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+        orgEditAllAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
         orgEditAllAction.Is_Active__c        = true;
         orgEditAllAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
 
@@ -2014,7 +2014,7 @@ global with sharing class ListViewHelper
         orgDeleteAction.Apex_Class_Name__c  = 'ListViewActionDelete';
         orgDeleteAction.Label__c            = 'Delete';
         orgDeleteAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		orgDeleteAction.Permissions__c      = ListViewActionHelper.PERM_DELETE;
+        orgDeleteAction.Permissions__c      = ListViewActionHelper.PERM_DELETE;
         orgDeleteAction.Is_Active__c        = true;
         orgDeleteAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
@@ -2025,7 +2025,7 @@ global with sharing class ListViewHelper
         acctUpdateAction.Label__c            = 'Update';
         acctUpdateAction.Object_Type__c      = 'Account';
         acctUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		acctUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+        acctUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
         acctUpdateAction.Is_Active__c        = true;
         acctUpdateAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
@@ -2036,7 +2036,7 @@ global with sharing class ListViewHelper
         oppsCloseUpdateAction.Label__c            = 'Set Close Lost';
         oppsCloseUpdateAction.Object_Type__c      = 'Opportunity';
         oppsCloseUpdateAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		oppsCloseUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
+        oppsCloseUpdateAction.Permissions__c      = ListViewActionHelper.PERM_EDIT;
         oppsCloseUpdateAction.Is_Active__c        = true;
         oppsCloseUpdateAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
@@ -2058,7 +2058,7 @@ global with sharing class ListViewHelper
         mailAction.Label__c            = 'Send Email';
         mailAction.Object_Type__c      = 'Contact';
         mailAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		mailAction.Permissions__c      = ListViewActionHelper.PERM_READ;
+        mailAction.Permissions__c      = ListViewActionHelper.PERM_READ;
         mailAction.Is_Active__c        = true;
         mailAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_AT_LEAST_ONE;
 
@@ -2069,7 +2069,7 @@ global with sharing class ListViewHelper
         savePDFCoreAction.Label__c            = 'Save To PDF';
         savePDFCoreAction.Object_Type__c      = '';
         savePDFCoreAction.RecordTypeId        = ListViewActionHelper.coreRTId;
-		savePDFCoreAction.Permissions__c      = ListViewActionHelper.PERM_READ;
+        savePDFCoreAction.Permissions__c      = ListViewActionHelper.PERM_READ;
         savePDFCoreAction.Is_Active__c        = true;
         savePDFCoreAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
 
@@ -2081,7 +2081,7 @@ global with sharing class ListViewHelper
         savePDFCustomAction.Object_Type__c      = 'Opportunity';
         savePDFCustomAction.SubType__c          = 'Manual';
         savePDFCustomAction.RecordTypeId        = ListViewActionHelper.customRTId;
-		savePDFCustomAction.Permissions__c      = ListViewActionHelper.PERM_READ;
+        savePDFCustomAction.Permissions__c      = ListViewActionHelper.PERM_READ;
         savePDFCustomAction.Is_Active__c        = true;
         savePDFCustomAction.Selected_Record_Visibility__c = ListViewActionHelper.VIS_ALWAYS;
 
@@ -2455,26 +2455,26 @@ global with sharing class ListViewHelper
         // 
         //---------------------------------------
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = PARAM_ADD_FIELDS;
-		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
-		param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
-		param.List_View_Config__c = config2.Id;
+        param.Parameter_Name__c = PARAM_ADD_FIELDS;
+        param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c = 'CreatedBy.Name, Owner.Profile.Name, AnnualRevenue';
+        param.List_View_Config__c = config2.Id;
         param.Parameter_Label__c  = 'Additional Fields';
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMNS;
-		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
-		param.Parameter_Value__c = 'AnnualRevenue';
-		param.List_View_Config__c = config2.Id;
+        param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMNS;
+        param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
+        param.Parameter_Value__c = 'AnnualRevenue';
+        param.List_View_Config__c = config2.Id;
         param.Parameter_Label__c  = 'Total Columns';
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
-		param.Parameter_Type__c = 'Color';
-		param.Parameter_Value__c = '#6C95BD';
-		param.List_View_Config__c = config2.Id;
+        param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
+        param.Parameter_Type__c = 'Color';
+        param.Parameter_Value__c = '#6C95BD';
+        param.List_View_Config__c = config2.Id;
         param.Parameter_Label__c  = 'Total Row Color';
         params.add(param);
         
@@ -2735,8 +2735,8 @@ global with sharing class ListViewHelper
         return SUCCESS;
     }
 
-	public static String updateAllListViews()
-	{
+    public static String updateAllListViews()
+    {
 
         Simpli_lv.ListViewPreProcessBatch b = new Simpli_lv.ListViewPreProcessBatch();
         
@@ -2754,10 +2754,10 @@ global with sharing class ListViewHelper
         CacheHelper.clearAllCache();
 
         return jobId;
-	}
+    }
 
-	public static String updateChangedListViews()
-	{
+    public static String updateChangedListViews()
+    {
         //try get the last changed CORE list view
         Map<Id, ListView> changedListViews = ListViewHelper.getLastChangedListViewForUser(UserInfo.getUserId());
 
@@ -2784,7 +2784,7 @@ global with sharing class ListViewHelper
         }
 
         return SUCCESS;
-	}
+    }
 
 
 
@@ -2804,7 +2804,7 @@ global with sharing class ListViewHelper
     }
 
     global static String refreshObjectListViews(String objectName)
-    {
+    { 
         return updateObjectListViews(objectName);
     }
 
@@ -2813,15 +2813,15 @@ global with sharing class ListViewHelper
         return updateSingleListView(objectName, listViewName);
     }
 
-	global static String refreshChangedListViews()
-	{
+    global static String refreshChangedListViews()
+    {
         return updateChangedListViews();
-	}
+    }
 
-	global static String refreshAllListViews()
-	{
+    global static String refreshAllListViews()
+    {
         return updateAllListViews();
-	}
+    }
 
     global static Map<String, List_View__c> getObjectListViews(String objectName)
     {
@@ -3328,11 +3328,38 @@ global with sharing class ListViewHelper
         return response;
     }
 
+    global class StandAloneColumn {
+        @AuraEnabled
+        global String label {get; set;}
+        @AuraEnabled
+        global String columnWidth {get; set;}
+        @AuraEnabled
+        global String name {get; set;}
+        @AuraEnabled
+        global String type {get; set;}
+    }
 
+    global class StandAloneRow {
+        @AuraEnabled
+        global List<StandAloneField> fields {get; set;}
 
+        public StandAloneRow() {
+            fields = new List<StandAloneField>();
+        }
 
+        public void addField(String value) {
+            fields.add(new StandAloneField(value));
+        }
+    }
 
+    global class StandAloneField {
+        @AuraEnabled
+        global String value {get; set;}
 
+        public StandAloneField(String value) {
+            this.value = value;
+        }
+    }
 
 
     //================================================================================================================
