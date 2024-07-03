@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 03-07-2024
+ * @Last Modified On   : 07-02-2024
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -13,8 +13,9 @@
  * 4.0   08-18-2021   tom@ansleyllc.com     Updated strings to static final variables
  * 4.0   08-25-2021   tom@ansleyllc.com     Major enhancement to condition validation for more types
  * 4.0   12-15-2021   tom@ansleyllc.com     Removed old methods for checking object accessibility
+ * 5.0   07-02-2024   tom@ansleyllc.com     Created global methods and set class to global
 **/
-public with sharing class ListViewConfigHelper {
+global with sharing class ListViewConfigHelper {
 
     private static Map<String,Object> orgWideConfigParams = null; //convenience variable to easily access param values
     public static final String ALL = 'All';
@@ -155,7 +156,7 @@ public with sharing class ListViewConfigHelper {
         return value;
     }
 
-    public static String updateOrgWideParams(Map<String, Object> newParams)
+    public static String setOrgWideParams(Map<String, Object> newParams)
     {
 
         Map<String, List_View_Config_Parameter__c> paramDetails = getOrgWideParamDetails();
@@ -796,6 +797,53 @@ public with sharing class ListViewConfigHelper {
         }
         return '';
     }
+
+
+
+
+
+
+
+
+    //================================================================================================================
+    // GLOBAL METHODS
+    //================================================================================================================
+
+    global static void updateOrgWideParam(String settingName, String value)
+    {
+        setOrgWideConfigParam(settingName, value);
+    }
+
+    global static void updateOrgWideParams(Map<String, String> newParams)
+    {
+        setOrgWideParams(newParams);
+    }
+    
+    global static String getOrgWideParam(String settingName)
+    {
+        return ListViewConfigHelper.getOrgWideConfigParam(settingName);
+    }
+
+    global static Map<String, String> getOrgWideParams()
+    {
+        Map<String, String> params = new Map<String, String>();
+
+        Map<String, Object> orgWideParams = ListViewConfigHelper.getOrgWideConfigParams();
+
+        for (String key: orgWideParams.keySet())
+            params.put(key, String.valueOf(orgWideParams.get(key)));
+
+        return params;
+    }
+
+
+
+
+
+
+    //================================================================================================================
+    // PRIVATE METHODS
+    //================================================================================================================
 
     private static Date getDateValue(String condValue)
     {

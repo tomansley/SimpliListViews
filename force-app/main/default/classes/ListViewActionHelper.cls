@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 06-01-2024
+ * @last modified on  : 07-02-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -552,7 +552,7 @@ global with sharing class ListViewActionHelper {
         } catch (Exception e) {
             String message = 'Exception during ListViewActionHelper.processAction(' + actionKey + ',' + dataIds + ',' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createFutureUsageError(message); 
-            responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find action config for name provided (' + actionKey + ').';
+            responseStr = ListViewAction.RESULT_ERROR + ':Couldn\'t find action config with provided key (' + actionKey + ').';
             return responseStr;
         }
 

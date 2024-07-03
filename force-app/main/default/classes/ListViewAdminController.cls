@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 05-22-2024
+ * @last modified on  : 07-02-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -144,7 +144,7 @@ public with sharing class ListViewAdminController {
             mapValues.put( (String) keyValues[0], keyValues[1]);
         }
 
-        String result = ListViewConfigHelper.updateOrgWideParams(mapValues);
+        String result = ListViewConfigHelper.setOrgWideParams(mapValues);
 
         ListViewErrorHelper.processLogs(true);
 
