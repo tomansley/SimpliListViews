@@ -343,6 +343,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.handleTypeAheadWhereClauses();
 
             if (this.mode === 'Stand Alone') {
+                this.isModeStandAlone = true;
                 if (this.rowData === undefined || this.columnData === undefined) {
                     this.dispatchEvent(SLVHelper.createToast('error', '', 'StandAlone Component Config Error', 'The following properties must be set when using standalone mode - row-data, column-data', false)); 
                 } else {
