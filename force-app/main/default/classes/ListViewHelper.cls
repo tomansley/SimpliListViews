@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-18-2024
+ * @last modified on  : 07-24-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2740,6 +2740,9 @@ global with sharing class ListViewHelper
 
     public static String updateSingleListView(String objectType, String listViewName)
     {
+        objectType = String.escapeSingleQuotes(objectType);
+        listViewName = String.escapeSingleQuotes(listViewName);
+
         //get the listviews with object and name
         Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectType, listViewName);
 
@@ -2851,6 +2854,7 @@ global with sharing class ListViewHelper
 
     global static String refreshObjectListViews(String objectName)
     { 
+        objectName = String.escapeSingleQuotes(objectName);
         return updateObjectListViews(objectName);
     }
 
@@ -2871,6 +2875,7 @@ global with sharing class ListViewHelper
 
     global static Map<String, List_View__c> getObjectListViews(String objectName)
     {
+        objectName = String.escapeSingleQuotes(objectName);
         return ListViewHelper.getListViewsByObject(objectName);
     }
 
