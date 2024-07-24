@@ -1,5 +1,5 @@
 @RestResource(urlMapping='/v1/request/*')
-global class WebServiceListViewRequest {
+global with sharing class WebServiceListViewRequest {
 
     /*
      * Web service which gets all simpli list views

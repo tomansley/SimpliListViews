@@ -22,10 +22,10 @@ public with sharing class WebServiceListViewRequestTest {
             Test.stopTest();
     }
 
-    global class WebServiceListViewRequestTest_CalloutMock implements HttpCalloutMock  {
+    public class WebServiceListViewRequestTest_CalloutMock implements HttpCalloutMock  {
    
         //method to send mock respose
-        global HTTPResponse respond(HTTPRequest request) {
+        public HTTPResponse respond(HTTPRequest request) {
     
             HTTPResponse wsResponse = new HTTPResponse();
 

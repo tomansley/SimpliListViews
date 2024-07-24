@@ -1,6 +1,6 @@
 public with sharing class ListViewUserActivityHelper {
 
-    private static final String TYPE_ACTION_RUN    = 'ActionRun';
+    private static final String TYPE_ACTION_PROC    = 'ActionProcessed';
     private static final String TYPE_LISTVIEW_VIEW = 'ListViewView';
 
     public static void registerAction(String pageName, String objectName, String actionName, String actionId, Integer rows)
@@ -18,7 +18,7 @@ public with sharing class ListViewUserActivityHelper {
         activity.pageName      = pageName;
         activity.objectName    = objectName;
 
-        registerActivity(TYPE_ACTION_RUN, activity);
+        registerActivity(TYPE_ACTION_PROC, activity);
     }
 
     public static void registerListViewView(String pageName, String pageMode, String objectName, String listViewName, String listViewId, Integer rows)
