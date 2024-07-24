@@ -57,6 +57,12 @@ export function invokeWorkspaceAPI(methodName, methodArgs) {
     });
 }
 
+export function isEmpty(str)
+{
+    if (str === undefined || str === null || str === '') return true;
+    return false;
+}
+
 export function toBool(value) {
     var strValue = String(value).toLowerCase();
     strValue = ((!isNaN(strValue) && strValue !== '0') &&
@@ -66,6 +72,32 @@ export function toBool(value) {
     return strValue === 'true' || strValue === '1' ? true : false
 }
 
+export function setFieldTypes(type, obj)
+{
+    if (type === 'boolean') obj.isBoolean = true; else obj.isBoolean = false;
+    if (type === 'currency') obj.isCurrency = true; else obj.isCurrency = false;
+    if (type === 'date') obj.isDate = true; else obj.isDate = false;
+    if (type === 'datetime') obj.isDateTime = true; else obj.isDateTime = false;
+    if (type === 'decimal') obj.isDecimal = true; else obj.isDecimal = false;
+    if (type === 'double') obj.isDouble = true; else obj.isDouble = false;
+    if (type === 'email') obj.isEmail = true; else obj.isEmail = false;
+    if (type === 'html') obj.isHTML = true; else obj.isHTML = false;
+    if (type === 'image') obj.isImage = true; else obj.isImage = false;
+    if (type === 'integer') obj.isInteger = true; else obj.isInteger = false;
+    if (type === 'lookup') obj.isLookup = true; else obj.isLookup = false;
+    if (type === 'multipicklist') obj.isMultiPicklist = true; else obj.isMultiPicklist = false;
+    if (type === 'percent') obj.isPercent = true; else obj.isPercent = false;
+    if (type === 'phone') obj.isPhone = true; else obj.isPhone = false;
+    if (type === 'picklist') obj.isPicklist = true; else obj.isPicklist = false;
+    if (type === 'richtextarea') obj.isRichTextArea = true; else obj.isRichTextArea = false;
+    if (type === 'string') obj.isString = true; else obj.isString = false;
+    if (type === 'textarea') obj.isTextArea = true; else obj.isTextArea = false;
+    if (type === 'time') obj.isTime = true; else obj.isTime = false;
+    if (type === 'url') obj.isURL = true; else obj.isURL = false;
+    if (type === 'id') obj.isId = true; else obj.isId = false;
+
+    return obj;
+}
 
 //-------------------------------------------------------------------------------------------
 //PDF TABLES
