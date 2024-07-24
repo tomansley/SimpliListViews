@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-01-2024
+ * @last modified on  : 07-19-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -20,6 +20,17 @@ public without sharing class ListViewController
 
     public static final String SUCCESS = 'success';
     public static final String FAILED = 'failed';
+
+    @AuraEnabled
+    public static Boolean hasEnterprise()
+    {
+        if (HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) 
+            return true;
+        else if (HelperSchema.isObject('simpli_lv_ent__List_Views_Org_Connection__c')) //a hack for the enterprise org as its not installed
+            return true;
+        else
+            return false;
+    }
 
     @AuraEnabled
     public static Boolean hasModifyAll()
@@ -429,6 +440,8 @@ public without sharing class ListViewController
 
                     //2. get the single record Id
                     String recordId = (String) listIds[0];
+                    recordId = String.escapeSingleQuotes(recordId);
+
 
                     //3. Get the list of fields
                     List<String> fieldAPINames = new List<String>();
@@ -624,8 +637,15 @@ public without sharing class ListViewController
     @AuraEnabled
     public static String processParamChange(String objectName, String listViewName, String paramName, String paramValue, String paramLabel, String paramType)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.processParamChange(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ', ' + paramLabel + ', ' + paramType + ')');
+        objectName = String.escapeSingleQuotes(objectName);
+        listViewName = String.escapeSingleQuotes(listViewName);
+        paramName = String.escapeSingleQuotes(paramName);
+        paramValue = String.escapeSingleQuotes(paramValue);
+        paramLabel = String.escapeSingleQuotes(paramLabel);
+        paramType = String.escapeSingleQuotes(paramType);
 
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.processParamChange(' + objectName + ', ' + listViewName + ', ' + paramName + ', ' + paramValue + ', ' + paramLabel + ', ' + paramType + ')');
+        
         String rtnStr = 'Ok:';
 
         try {
