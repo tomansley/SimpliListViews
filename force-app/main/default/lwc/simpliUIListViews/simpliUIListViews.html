@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 06-05-2024
+  @last modified on  : 07-17-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -30,7 +30,7 @@
         <!-- ---------------------------------------------------------------------------------- -->
         <template if:true={isInitialized}>
             <lightning-card>
-                <template if:true={hasMainTitle}>
+                <template if:true={hasTitle}>
                     <template if:true={isModeApp}>
                         <div slot="title" style="padding:0px;">
                             {mainTitle}
@@ -40,7 +40,7 @@
                 
                 <lightning-layout multiple-rows={headerCanWrap}>
 
-                    <template if:true={hasMainTitle}>
+                    <template if:true={hasTitle}>
                         <template if:false={isModeApp}>
                             <lightning-layout-item padding="horizontal-small" style="width: 20%;">
                                 <h2 style="font-weight: bold; font-size: 1.3em; padding: 5px">
@@ -328,7 +328,7 @@
                                             <!-- -------------------- -->
                                             <div onmouseup={setNewWidth}>
                                                 <template if:true={field.sortable}>
-                                                    <template if:false={noSorting}>
+                                                    <template if:false={isNoSorting}>
                                                         <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
                                                             <span class="slds-assistive-text">{label.Sort_By}: </span>
                                                             <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
@@ -359,7 +359,7 @@
                                                             </div>
                                                         </a>
                                                     </template>
-                                                    <template if:true={noSorting}>
+                                                    <template if:true={isNoSorting}>
                                                         <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
                                                             <span class="slds-truncate" title={field.label}>
                                                                 {field.label}
