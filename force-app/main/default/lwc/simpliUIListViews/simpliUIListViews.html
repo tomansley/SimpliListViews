@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 07-17-2024
+  @last modified on  : 07-24-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -61,7 +61,7 @@
                                                                     key-field-name="Name"
                                                                     initial-id={selectedObject}
                                                                     field-obj-name="SObject"
-                                                                    where-clause={whereClauseObjectList}
+                                                                    where-clause={whereClauseObject}
                                                                     onvaluechange={handleObjectChange}>
                                 </c-simpli-u-i-list-views-type-ahead>
                             </template>
@@ -89,7 +89,7 @@
                                                                         key-field-name="simpli_lv__API_Name__c"
                                                                         initial-id={selectedListViewId}
                                                                         field-obj-name="simpli_lv__List_View__c"
-                                                                        where-clause={whereClauseListViewList}
+                                                                        where-clause={whereClauseListView}
                                                                         onvaluechange={handleListViewChanged}>
                                     </c-simpli-u-i-list-views-type-ahead>
                                 </template>

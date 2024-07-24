@@ -7,8 +7,9 @@ public with sharing class ListViewTypeAheadController {
     private static final String SCHEMA_SOBJ = 'SObject';
 
     @AuraEnabled(cacheable=true)
-    public static List<ListViewController.SelectOption> search(String searchType, String searchTerm, String objName, String labelFieldName, String keyFieldName, String whereClause) 
+    public static List<ListViewController.SelectOption> search(String searchType, String searchTerm, String objName, String labelFieldName, String keyFieldName, String whereClauseJSON) 
     {
+        System.debug(LoggingLevel.DEBUG, 'Starting search(' + searchType + ', ' + searchTerm + ', ' + objName + ', ' + labelFieldName + ', ' + keyFieldName + ', ' + whereClauseJSON + ')');
         if (searchTerm == null) searchTerm = '';
         searchTerm = searchTerm.toLowerCase();
 
@@ -19,17 +20,21 @@ public with sharing class ListViewTypeAheadController {
             String soql = null;
 
             if(searchTerm == ''){
-                if (String.isBlank(whereClause)) {
+                if (String.isBlank(whereClauseJSON)) {
                     soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' LIMIT 100'; 
                 } else {
-                    soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + whereClause + ' LIMIT 100'; 
+                    WhereClause clause = (WhereClause) JSON.deserialize(whereClauseJSON, WhereClause.class);
+                    String whereStatement = clause.getWhereClause();
+                    soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + whereStatement + ' LIMIT 100'; 
                 }
             }
             else {
-                if (String.isBlank(whereClause)) {
-                    soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + labelFieldName + ' LIKE  \'%' + String.escapeSingleQuotes(searchTerm) + '%\' LIMIT 100';
+                if (String.isBlank(whereClauseJSON)) {
+                    soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + String.escapeSingleQuotes(labelFieldName) + ' LIKE  \'%' + String.escapeSingleQuotes(searchTerm) + '%\' LIMIT 100';
                 } else {
-                soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + whereClause + ' AND ' + labelFieldName + ' LIKE  \'%' + String.escapeSingleQuotes(searchTerm) + '%\' LIMIT 100';
+                    WhereClause clause = (WhereClause) JSON.deserialize(whereClauseJSON, WhereClause.class);
+                    String whereStatement = clause.getWhereClause();
+                    soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + whereStatement + ' AND ' + String.escapeSingleQuotes(labelFieldName) + ' LIKE  \'%' + String.escapeSingleQuotes(searchTerm) + '%\' LIMIT 100';
                 }
             }
             
@@ -48,18 +53,21 @@ public with sharing class ListViewTypeAheadController {
             {
                 Map<String, String> objMap = HelperSchema.getAllObjectNames();
 
-                Boolean hasWhereClause = String.isBlank(whereClause) ? false : true;
+                Boolean hasWhereClause = String.isBlank(whereClauseJSON) ? false : true;
                 Boolean isInc = null;
                 Set<String> objs =  null;
 
                 if (hasWhereClause)
                 {
-                    if (whereClause.contains('NOT IN'))
+                    WhereClause clause = (WhereClause) JSON.deserialize(whereClauseJSON, WhereClause.class);
+                    String whereStatement = clause.getWhereClause();
+
+                    if (clause.operator == 'NOT IN')
                         isInc = false;
                     else 
                         isInc = true;
 
-                    objs =  HelperString.getSetFromString(whereClause.substringAfter('[').substringBefore(']').replace('\'', ''), ',', true);
+                    objs = clause.getValuesList();
                 }
 
                 for (String apiName : objMap.keySet())
@@ -98,4 +106,31 @@ public with sharing class ListViewTypeAheadController {
         return (String) Database.query(soql)[0].get(String.escapeSingleQuotes(labelFieldName));
     }
 
+    public class WhereClause {
+
+        public String field {get; set;}
+        public String operator {get; set;}
+        public String values {get; set;}
+
+        public String getWhereClause()
+        {
+            String response = '';
+            values = String.escapeSingleQuotes(values);
+            values = values.replace('"', '\'');
+
+            if (operator == 'IN' || operator == 'NOT IN') {
+                response = String.escapeSingleQuotes(field) + ' ' + String.escapeSingleQuotes(operator) + ' [' + values + ']';
+            } else {
+                response = String.escapeSingleQuotes(field) + ' ' + String.escapeSingleQuotes(operator) + ' \'' + values + '\'';
+            }
+            return response;
+        }
+
+        public Set<String> getValuesList()
+        {
+            values = values.remove('"');
+            return HelperString.getSetFromString(values, ',', true);
+
+        }
+    }
 }

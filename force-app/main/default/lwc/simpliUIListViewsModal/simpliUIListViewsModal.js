@@ -1,9 +1,8 @@
 import { LightningElement, wire, track, api  } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
-import processAction from '@salesforce/apex/ListViewController.processAction';
-import getListViewAction from '@salesforce/apex/ListViewController.getListViewAction';
+import { simpliUIListViews } from 'c/simpliUIListViews';
 
-export default class simpliUIListViewsModal extends LightningElement {
+export default class simpliUIListViewsModal extends simpliUIListViews {
 
 }

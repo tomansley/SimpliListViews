@@ -132,7 +132,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
                 console.log('initialId      - ' + this.initialId);
                 console.log('fieldObjName   - ' + this.fieldObjName);
                 console.log('labelFieldName - ' + this.labelFieldName);
-                console.log('whereClause    - ' + this.whereClause);
+                console.log('whereClause    - ' + JSON.stringify(this.whereClause));
                 this.uniqueKey = this.labelFieldName;
                 console.log('uniqueKey - ' + this.uniqueKey);
 
@@ -182,8 +182,11 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
                 &&
              this.searchTerm.length > 1)
         {
+            let whereClauseStr = JSON.stringify(this.whereClause);
+
             console.log('Performing search - ' + this.searchType + ', ' + this.searchTerm + ', ' + this.fieldObjName + ', ' + this.labelFieldName + ', ' + this.keyFieldName + ', ' + this.whereClause)
-            search({searchType : this.searchType, searchTerm : this.searchTerm, objName : this.fieldObjName, labelFieldName : this.labelFieldName, keyFieldName : this.keyFieldName, whereClause : this.whereClause})
+            
+            search({searchType : this.searchType, searchTerm : this.searchTerm, objName : this.fieldObjName, labelFieldName : this.labelFieldName, keyFieldName : this.keyFieldName, whereClauseJSON : whereClauseStr})
             .then(result => {
                 console.log('searchType - ' + this.searchType);
                 console.log('fieldObjName - ' + this.fieldObjName);
@@ -212,7 +215,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
         console.log("In handleClick");
         console.log('fieldObjName   - ' + this.fieldObjName);
         console.log('labelFieldName - ' + this.labelFieldName);
-        console.log('whereClause    - ' + this.whereClause);
+        console.log('whereClause    - ' + JSON.stringify(this.whereClause));
 
         this.oldSearchTerm = this.searchTerm;
         this.searchTerm = '';

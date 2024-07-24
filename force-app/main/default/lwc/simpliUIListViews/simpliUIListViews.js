@@ -285,8 +285,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track columnSortDataStr = '';
 
     //for type-ahead functionality for searching list views
-    @track whereClauseListViewList;
-    @track whereClauseObjectList;
+    @track whereClauseListView;
+    @track whereClauseObject;
 
     //for handling edited records
     updatedRowData = new Map();
@@ -384,21 +384,21 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
             } else if (this.mode === 'Single Object List View') {
 
-                if (this.singleListViewObject === '')
+                if (SLVHelper.isEmpty(this.singleListViewObject))
                 {
                     this.dispatchEvent(SLVHelper.createToast('error', '', 'Single Object List View Configuration Error', 'If using Single Object List View mode the list view object must be provided.', false)); 
                     this.spinnerOff('renderedCallback');
                     return;
-                } else {
-
-                    this.canPin               = true;
-                    this.isModeSingleObject   = true;
-                    this.selectedObject       = this.singleListViewObject;
-                    this.displayObjectNames   = false;
-                    this.displayListViewNames = true;
-
-                    this.getListViewsForObject();
                 }
+
+                this.canPin               = true;
+                this.isModeSingleObject   = true;
+                this.displayObjectNames   = false;
+                this.displayListViewNames = true;
+
+                let event = {detail: {selectedValue: this.singleListViewObject}, target: {value: this.singleListViewObject}}; //faking an event
+                this.handleObjectChange(event);
+                this.getListViewsForObject();
             
             } else if (this.mode === 'Single List View') {
 
@@ -719,22 +719,28 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
     }
 
+    createWhereClause(field, operator, values) {
+        let whereClause = {field: field, operator: operator, values: values};
+        return whereClause;
+    }
+
     handleTypeAheadWhereClauses() {
 
-        if (this.includedObjects !== null && this.includedObjects !== '') {
-            this.whereClauseObjectList = "simpli_lv__Object_Name__c IN ['" + this.includedObjects.split( "," ).join( "','" ) + "']";
-        } else if (this.excludedObjects !== null && this.excludedObjects !== '') {
-            this.whereClauseObjectList = "simpli_lv__Object_Name__c NOT IN ['" + this.excludedObjects.split( "," ).join( "','" ) + "']";
+        if (!SLVHelper.isEmpty(this.includedObjects)) {
+            this.whereClauseObject = this.createWhereClause('simpli_lv__Object_Name__c', 'IN', this.includedObjects);
+            console.log('whereClauseObject - ' + JSON.stringify(this.whereClauseObject));
+        } else if (!SLVHelper.isEmpty(this.excludedObjects)) {
+            this.whereClauseObject = this.createWhereClause('simpli_lv__Object_Name__c', 'NOT IN', this.excludedObjects);
+            console.log('whereClauseObject - ' + JSON.stringify(this.whereClauseObject));
         }
 
 
         if (this.mode === 'Single Object List View' && this.singleListViewObject !== '')
         {
-            this.whereClauseListViewList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+            this.whereClauseListView = this.createWhereClause('simpli_lv__Object_Name__c', '=', this.selectedObject);
+            console.log('whereClauseListView - ' + JSON.stringify(this.whereClauseListView));
         }
 
-        console.log('whereClauseObjectList - ' + this.whereClauseObjectList);
-        console.log('whereClauseListViewList - ' + this.whereClauseListViewList);
     }
 
     /*
@@ -1068,7 +1074,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         this.selectedListView = this.pinnedListView;
                         this.selectedListViewExportName = this.selectedListView + '.csv';
                         this.selectedListViewId = result;
-                        this.whereClauseListViewList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+                        this.whereClauseListView = this.createWhereClause('simpli_lv__Object_Name__c', '=', this.selectedObject);
                         this.refreshAllListViewData();
 
                     //if we do not then bail.
@@ -1129,9 +1135,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.receivedMessage = message;
         console.log(this.uniqueComponentId + ' received a message from ' + this.receivedMessage.uniqueComponentId + ' for ' + this.pageName);
 
-        console.log('message recordIds -' + this.receivedMessage.recordIds);
-        console.log('message objectType -' + this.receivedMessage.objectType);
-        console.log('message uniqueComponentId -' + this.receivedMessage.uniqueComponentId);
+        console.log('message recordIds - ' + this.receivedMessage.recordIds);
+        console.log('message objectType - ' + this.receivedMessage.objectType);
+        console.log('message uniqueComponentId - ' + this.receivedMessage.uniqueComponentId);
 
         if (this.receivedMessage.uniqueComponentId === this.uniqueComponentId)
         {
@@ -1426,7 +1432,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.selectedListView = undefined;
         this.selectedListViewId = undefined;
         this.selectedListViewExportName = undefined;
-        this.whereClauseListViewList = 'simpli_lv__Object_Name__c = \'' + this.selectedObject + '\'';
+        this.whereClauseListView = this.createWhereClause('simpli_lv__Object_Name__c', '=', this.selectedObject);
         this.listViewList = undefined;
         this.listViewData = undefined;
         this.listViewDataRows = undefined;
@@ -2610,6 +2616,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         let recordId = event.currentTarget.dataset.rowId;
 
         const message = {
+            type: 'selectrecordupdate',
             recordIds: recordId,
             objectType: this.selectedObject,
             uniqueComponentId: this.uniqueComponentId
