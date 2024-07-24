@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-28-2024
+ * @last modified on  : 07-08-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -166,7 +166,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
     {
         List<SObject> dataRows = ListViewHelper.getCustomListViewData(listview, lvConfig, columnSortData, joinField, joinRecordIds, false, offset, textSearchStr);
 
-        RowsWrapper rowData = handleRowsToWrapper(pageName, dataRows, listView, lvConfig, columnSortData);
+        RowsWrapper rowData = handleRowsToWrapper(pageName, dataRows, listView, lvConfig, columnSortData, offset, false);
 
         return rowData;
     }
@@ -249,7 +249,9 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                                     List<SObject> dataRows, 
                                                                     List_View__c listView, 
                                                                     ListViewConfigWrapper lvConfig,
-                                                                    List<ListViewHelper.ColumnSortData> sortData)
+                                                                    List<ListViewHelper.ColumnSortData> sortData,
+                                                                    Integer offset,
+                                                                    Boolean isShell)
     {
         Long startTime = System.now().getTime();
         System.debug(LoggingLevel.FINE, 'Starting ListViewCore.handleRowsToWrapper');
@@ -475,6 +477,111 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
         }
 
+        //if totals have been configured and we are not paging.
+        if (lvConfig != null
+            && lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS) != null 
+            && !String.isEmpty(lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS).getValue())
+            && offset == -1
+            && !isShell)
+        {
+
+            rows.hasTotalsRow = true;
+
+            System.debug(LoggingLevel.DEBUG, 'Starting total column calculations!');
+
+            String totalColumns = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS).getValue();
+
+            System.debug(LoggingLevel.DEBUG, 'TotalColumns - ' + totalColumns);
+
+            RowWrapper totalWrapper = new RowWrapper('000000000000000000');
+            totalWrapper.highlight = true;
+            if (lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) != null)
+                totalWrapper.highlightColor = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR).getValue();
+            else
+                totalWrapper.highlightColor = '#FFFFFF';
+            totalWrapper.isTotals = true;
+
+            rows.addRow(totalWrapper);
+
+            //for each row of data
+            for (RowWrapper rowWrapper: rows.getRows())
+            {
+
+                if (rowWrapper.getIsTotals()) continue;
+
+                List<FieldWrapper> fields = rowWrapper.getFields();
+
+                //for each field
+                for (FieldWrapper fieldWrapper: fields)
+                {
+
+                    FieldWrapper totalField = totalWrapper.getField(fieldWrapper.getName() + ':' + fieldWrapper.columnIndex);
+
+                    //if this is the first pass then we will need to create a wrapper 
+                    //regardless of whether its a column that is to be calculated.
+                    if (totalField == null)
+                    {
+                        String initValue = '';
+
+                        //for the very first column add the TOTALS string
+                        if (totalWrapper.fields.size() == 0) //USE "fields" instead of getFields() to ensure UI works correctly.
+                            initValue = 'TOTALS';
+                        //for any VALID calculation columns
+                        else if (ListViewAbstract.validTotalColumns.contains(fieldWrapper.getType())
+                                && totalColumns.contains(fieldWrapper.getName()))
+                            initValue = '0';
+                        else 
+                            initValue = '';
+
+                        totalField = new FieldWrapper(fieldWrapper.getLabel(),  
+                                                      initValue,
+                                                      fieldWrapper.getType(),
+                                                      fieldWrapper.getName(),
+                                                      fieldWrapper.columnIndex,
+                                                      '');
+                        totalField.setIsTotalsRow(true);
+
+                        System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
+
+                        totalWrapper.addField(totalField);
+                    }
+
+                    //see if the field is a column to be totalled
+                    if (totalColumns != null && totalColumns.contains(fieldWrapper.getName()))
+                    {
+                        System.debug(LoggingLevel.DEBUG, 'Found a column to total - ' + fieldWrapper.getName());
+
+                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper            - ' + fieldWrapper);
+                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getValue() - ' + fieldWrapper.getValue());
+                        System.debug(LoggingLevel.DEBUG, 'fieldWrapper.getType()  - ' + fieldWrapper.getType());
+                        System.debug(LoggingLevel.DEBUG, 'totalField.value        - ' + totalField.getValue());
+                        System.debug(LoggingLevel.DEBUG, 'totalField.getType()    - ' + totalField.getType());
+
+                        //if this is a valid column for total calculation and there is a value to calculate
+                        if (ListViewAbstract.validTotalColumns.contains(totalField.getType().toLowerCase()) && !String.isEmpty(fieldWrapper.getValue()))
+                        {
+                            System.debug(LoggingLevel.DEBUG, 'This is a valid column');
+                            if (String.isEmpty(totalField.getValue()))
+                                totalField.setValue(0);
+                            if (totalField.getType() == ListViewHelper.TYPE_CURRENCY)
+                            {
+                                System.debug(LoggingLevel.DEBUG, 'This is a currency field');
+                                Decimal total = Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.getValue());
+                                totalField.setValue(total);
+                            } else {
+                                totalField.setValue(Decimal.valueOf(fieldWrapper.getValue()) + Decimal.valueOf(totalField.getValue()));
+                            }
+                            System.debug(LoggingLevel.DEBUG, 'Total is now - ' + totalField.getValue());
+                            
+                        }
+                    }
+                }
+
+
+            }
+
+        }
+        
         rows.queryString = ListViewHelper.LATEST_QUERY; //put the query used to get the data into the wrapper for use on the front end (debugging)
 
         System.debug(LoggingLevel.DEBUG, rows.getDebugString());
