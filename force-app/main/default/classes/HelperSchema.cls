@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-03-2024
+ * @Last Modified On   : 07-24-2024
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -996,12 +996,6 @@ public with sharing class HelperSchema {
             System.debug(LoggingLevel.FINE, data.getDebugString());
         
             return data;
-    }
-
-    public static void checkObjectPermissions(String objAPIName, String action)
-    {
-        if (action == DELETABLE) HelperSchema.checkObjectDeletable(objAPIName);
-            else throw new ListViewException('No permission check for ' + objAPIName + ' with action - ' + action);
     }
 
 	public static String scrubFieldNameForSOQL(String fieldName)

@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class to aid in the handling of DML transactions
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-03-2024
+ * @last modified on  : 07-24-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -267,8 +267,11 @@ public with sharing class HelperDatabase {
 
     public static void deleteRecords(List<SObject> data, String objAPIName, Boolean allOrNone) 
     {
+        String objName = HelperSchema.getObjectType(data[0]);
+        Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objName);
 
-        HelperSchema.checkObjectPermissions(objAPIName, HelperSchema.DELETABLE);
+        if (objDesc.isDeletable() == false)
+            throw new ListViewException('You do not have delete permissions on this object - ' + objName);
 
         Database.delete(data, allOrNone);
     }
@@ -279,9 +282,12 @@ public with sharing class HelperDatabase {
 
         if (data != null && data.size() > 0)
         {
-            String objAPIName = HelperSchema.getObjectType(data[0]);
-            HelperSchema.checkObjectPermissions(objAPIName, HelperSchema.DELETABLE);
-
+            String objName = HelperSchema.getObjectType(data[0]);
+            Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objName);
+    
+            if (objDesc.isDeletable() == false)
+                throw new ListViewException('You do not have delete permissions on this object - ' + objName);
+    
             results = Database.delete(data, allOrNone);
         }
 
