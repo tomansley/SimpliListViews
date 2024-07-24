@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 07-03-2024
+  @last modified on  : 07-19-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -37,6 +37,7 @@
                     <!-- WORKING EXAMPLE -->
                     <div class="examplebox">
                         <c-simpli-u-i-list-views mode="App Page"
+                                                data-id="Example 1"
                                                 page-name="App_Example_1"
                                                 allow-horizontal-scrolling=false>
                         </c-simpli-u-i-list-views>
@@ -44,7 +45,40 @@
 
                 </div>
             </lightning-tab>
-        
+        <!--
+            <lightning-tab label="Event Example 1">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                            Event Example 1
+                        </div>
+
+                        <div class="codebox">
+                            <pre>
+                                &lt;c-simpli-u-i-list-views<br/>
+                                &#9;&#9;mode="App Page"<br/>
+                                &#9;&#9;page-name="App_Example_1"<br/>
+                                &#9;&#9;allow-horizontal-scrolling=false&gt;<br/>
+                                &lt;/c-simpli-u-i-list-views&gt;    
+                            </pre>
+                        </div>
+                    </lightning-card>
+                        
+                    <div class="examplebox">
+                        <lightning-button onclick={handleEventRequest} label="Refresh Data"></lightning-button>
+                        <c-simpli-u-i-list-views mode="App Page"
+                                                        page-name="My Button Event Test"
+                                                        oneventresponse={handleEventResponse}                                                        
+                                                        has-main-title=true
+                                                        main-title="My Refresh Button Test"
+                                                        use-message-channel=true>
+                        </c-simpli-u-i-list-views>
+                    </div>
+
+                </div>
+            </lightning-tab>
+        -->        
             <lightning-tab label="App Example 2">
                 <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
 
@@ -84,6 +118,7 @@
                     <!-- WORKING EXAMPLE -->
                     <div class="examplebox">
                         <c-simpli-u-i-list-views mode="App Page"
+                                                data-id="Example 2"
                                                 page-name="App_Example_2"
                                                 has-main-title=true
                                                 main-title="Everything List View!"
@@ -138,6 +173,7 @@
                     <!-- WORKING EXAMPLE -->
                     <div class="examplebox">
                         <c-simpli-u-i-list-views mode="Single List View"
+                                                data-id="Example 3"
                                                 has-main-title=true
                                                 main-title="Platinum/Gold Customers!"
                                                 single-list-view-object="Account"
@@ -197,10 +233,12 @@
                     <div class="examplebox">
                         Search for an Account:&nbsp;&nbsp;
                         <c-simpli-u-i-list-views-lookup field-obj-name="Account"
+                                                        data-id="Example 4-1"
                                                         onlookupchange={handleExample4DataChange}>
                         </c-simpli-u-i-list-views-lookup>                        
 
                         <c-simpli-u-i-list-views mode="Related List View"
+                                                data-id="Example 4-2"
                                                 has-main-title=true
                                                 main-title="Contacts"
                                                 single-list-view-object="Contact"
@@ -236,6 +274,7 @@
                     <div>
                         <div class="splitboxleft" style="width: 33%; float:left;">
                             <c-simpli-u-i-list-views mode="Split View"
+                                                     data-id="Example 5"
                                                      page-name="Split_Example_1"
                                                      excluded-objects="Event,Task">
                             </c-simpli-u-i-list-views>
@@ -272,6 +311,7 @@
                         <div class="splitboxleft" style="width: 33%; float:left;">
                             <lightning-card>
                                 <c-simpli-u-i-list-views mode="Split View"
+                                                         data-id="Example 6"
                                                         single-list-view-object="Account"
                                                         page-name="Split_Example_2">
                                 </c-simpli-u-i-list-views>
@@ -287,13 +327,183 @@
                 </div>
             </lightning-tab>
 
+            <lightning-tab label="Multi Example 1">
+                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                    <!-- DESCRIPTION OF EXAMPLE -->
+                    <lightning-card>
+                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                            This example shows two list views interacting with each other. Selecting an account will display its associated contacts
+                        </div>
+                                                
+                        <!-- EXAMPLE HTML TAG -->
+                        <div class="codebox">
+                            <pre>
+                                &lt;c-simpli-u-i-list-views mode="Split View"<br/>
+                                &#9;&#9;&#9;single-list-view-object="Account"<br/>    
+                                &#9;&#9;&#9;page-name="Split_Example_2"&gt;<br/>    
+                            </pre>
+                        </div>
+                    </lightning-card>
+
+                    <!-- WORKING EXAMPLE -->
+                    <div>
+                        <div style="max-height:300px;">
+                            <lightning-card>
+                                <c-simpli-u-i-list-views mode="Single List View"
+                                                         data-id="Example 8"
+                                                         use-message-channel=true
+                                                         single-list-view-object="Account"
+                                                         single-list-view-api-name="AllAccounts"
+                                                         has-main-title=true
+                                                         main-title="All Accounts"
+                                                         page-name="Multi_Example_1">
+                                </c-simpli-u-i-list-views>
+                            </lightning-card>
+                        </div>
+                        <div style="max-height:300px;">
+                            <lightning-card>
+                                <c-simpli-u-i-list-views mode="Single List View"
+                                                         data-id="Example 9"
+                                                         use-message-channel=true
+                                                         single-list-view-object="Contact"
+                                                         single-list-view-api-name="AllContacts"
+                                                         has-main-title=true
+                                                         main-title="Contacts For Above Selected Accounts"
+                                                         join-field-name="AccountId"
+                                                         page-name="Multi_Example_1">
+                                </c-simpli-u-i-list-views>
+                            </lightning-card>
+                        </div>
+                            
+                    </div>
+                </div>
+            </lightning-tab>
+
             <lightning-tab label="Stand Alone Example 1">
                 <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
 
                     <!-- DESCRIPTION OF EXAMPLE -->
                     <lightning-card>
                         <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            This example would get used where data is to be injected into the component dynamically by the parent LWC page. 
+                            In this example data is injected into the component dynamically by the parent LWC page. This requires development and an understanding of LWC.  
+                        </div>
+
+                        <div class="codebox">
+                            <pre>
+                                &#9;public with sharing class ListViewTestCompController {<br/>
+                                <br/>
+                                &#9;    // Access method for the LWC controller to retrieve the data<br/>
+                                &#9;    // Notice the simpli_lv.ListViewHelper classes that are available.<br/>
+                                &#9;    // They do not need to be used but the JSON structure that they provide must be identical<br/>
+                                &#9;    @AuraEnabled(cacheable=true)<br/>
+                                &#9;    public static simpli_lv.ListViewHelper.StandAloneListView getData()<br/>
+                                &#9;    {<br/>
+                                &#9;        simpli_lv.ListViewHelper.StandAloneListView lv = new simpli_lv.ListViewHelper.StandAloneListView();<br/>
+                                &#9;        lv.data = getRows();<br/>
+                                &#9;        lv.columns = getColumns();<br/>
+                                &#9;        return lv;<br/>
+                                &#9;    }<br/>
+                                <br/>
+                                &#9;    // Private method to show how columns for the list view are populated<br/>
+                                &#9;    //------------------------------------------------------------------------<br/>
+                                &#9;    // AVAILABLE COLUMN TYPES<br/>
+                                &#9;    //------------------------------------------------------------------------<br/>
+                                &#9;    //  id<br/>
+                                &#9;    //  boolean<br/>
+                                &#9;    //  double<br/>
+                                &#9;    //  string<br/>
+                                &#9;    //  decimal<br/>
+                                &#9;    //  currency<br/>
+                                &#9;    //  date<br/>
+                                &#9;    //  datetime<br/>
+                                &#9;    //  number<br/>
+                                &#9;    //  percent<br/>
+                                &#9;    //  time<br/>
+                                &#9;    //  picklist<br/>
+                                &#9;    //  multipicklist<br/>
+                                &#9;    //  lookup<br/>
+                                &#9;    //  textarea<br/>
+                                &#9;    //  rich textarea<br/>
+                                &#9;    //  url<br/>
+                                &#9;    //  html<br/>
+                                &#9;    //  email<br/>
+                                &#9;    //  phone<br/>
+                                &#9;    //  integer<br/>
+                                &#9;    private static List&lt;simpli_lv.ListViewHelper.StandAloneColumn&gt; getColumns()<br/>
+                                &#9;&#9;&#9;&#9;        {<br/>
+                                &#9;        List&lt;simpli_lv.ListViewHelper.StandAloneColumn&gt; columns = new List&lt;simpli_lv.simpli_lv.ListViewHelper.StandAloneColumn&gt;();<br/>
+                                <br/>
+                                &#9;        simpli_lv.ListViewHelper.StandAloneColumn column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                &#9;        column.label        = 'Account Name';<br/>
+                                &#9;        column.name         = 'Name';<br/>
+                                &#9;        column.type         = 'string';<br/>
+                                &#9;        column.columnWidth  = '415px';<br/>
+                                &#9;        columns.add(column);<br/>
+                                <br/>
+                                &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                &#9;        column.label        = 'Account Site';<br/>
+                                &#9;        column.name         = 'Site';<br/>
+                                &#9;        column.type         = 'string';<br/>
+                                &#9;        column.columnWidth  = '305px';<br/>
+                                &#9;        columns.add(column);<br/>
+                                <br/>
+                                &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                &#9;        column.label        = 'Billing State/Province';<br/>
+                                &#9;        column.name         = 'BillingState';<br/>
+                                &#9;        column.type         = 'string';<br/>
+                                &#9;        column.columnWidth  = '294px';<br/>
+                                &#9;        columns.add(column);<br/>
+                                <br/>
+                                &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                &#9;        column.label        = 'Last Modified Date';<br/>
+                                &#9;        column.name         = 'LastModifiedDate';<br/>
+                                &#9;        column.type         = 'date';<br/>
+                                &#9;        column.columnWidth  = '175px';<br/>
+                                &#9;        columns.add(column);<br/>
+                                <br/>
+                                &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                &#9;        column.label        = 'Active';<br/>
+                                &#9;        column.name         = 'Active';<br/>
+                                &#9;        column.type         = 'picklist';<br/>
+                                &#9;        column.columnWidth  = '90px';<br/>
+                                &#9;        columns.add(column);<br/>
+                                <br/>
+                                &#9;        return columns;<br/>
+                                &#9;    }<br/>
+                                <br/>
+                                &#9;    // Private method to show how row data for the list view is populated<br/>
+                                &#9;    private static List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt; getRows()<br/>
+                                &#9;        {<br/>
+                                &#9;        List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt; rows = new List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt;();<br/>
+                                <br/>
+                                &#9;        simpli_lv.ListViewHelper.StandAloneRow row = new simpli_lv.ListViewHelper.StandAloneRow();<br/>
+                                <br/>
+                                &#9;        //Note the following:<br/>
+                                &#9;        //1. Fields must be in order of columns<br/>
+                                &#9;        //2. addField() method takes a string only. For example date would be 1673989622000 to represent 1/17/2023<br/>
+                                &#9;        row.addField('Express Logistics and Transport');<br/>
+                                &#9;        row.addField('Site 1');<br/>
+                                &#9;        row.addField('TX');<br/>
+                                &#9;        row.addField('1673989622000');<br/>
+                                &#9;        row.addField('No');<br/>
+                                &#9;        rows.add(row);<br/>
+                                <br/>
+                                &#9;        row = new simpli_lv.ListViewHelper.StandAloneRow();<br/>
+                                &#9;        row.addField('Other Logistics');<br/>
+                                &#9;        row.addField('Other Site 1');<br/>
+                                &#9;        row.addField('FL');<br/>
+                                &#9;        row.addField('1674189622000');<br/>
+                                &#9;        row.addField('Yes');<br/>
+                                &#9;        rows.add(row);<br/>
+                                <br/>
+                                &#9;        return rows;<br/>
+                                &#9;    }<br/>
+                                <br/>
+                                &#9;}<br/>
+                                <br/>                        
+                            </pre>
+
                         </div>
 
                         <!-- EXAMPLE HTML TAG -->
@@ -313,9 +523,10 @@
                     <!-- WORKING EXAMPLE -->
                     <div class="examplebox">
                         <c-simpli-u-i-list-views mode="Stand Alone"
+                                                data-id="Example 7"
                                                 page-name="Stand_Alone_Example_1"
-                                                row-data={standAloneRowData}
-                                                column-data={standAloneColumnData}
+                                                row-data={standAloneData}
+                                                oneventresponse={handleEventResponse}
                                                 allow-horizontal-scrolling=false>
                         </c-simpli-u-i-list-views>
                     </div>

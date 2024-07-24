@@ -1,5 +1,14 @@
 public with sharing class ListViewTestCompController {
     
+    @AuraEnabled(cacheable=true)
+    public static ListViewHelper.StandAloneListView getData()
+    {
+        ListViewHelper.StandAloneListView lv = new ListViewHelper.StandAloneListView();
+        lv.data = getRows();
+        lv.columns = getColumns();
+        return lv;
+    }
+
     //------------------------------------------------------------------------
     // AVAILABLE COLUMN TYPES
     //------------------------------------------------------------------------
@@ -24,11 +33,9 @@ public with sharing class ListViewTestCompController {
     //  email
     //  phone
     //  integer
-
-    @AuraEnabled(cacheable=true)
-    public static List<simpli_lv.ListViewHelper.StandAloneColumn> getStandAloneColumns()
+    private static List<ListViewHelper.StandAloneColumn> getColumns()
     {
-        List<simpli_lv.ListViewHelper.StandAloneColumn> columns = new List<simpli_lv.ListViewHelper.StandAloneColumn>();
+        List<ListViewHelper.StandAloneColumn> columns = new List<simpli_lv.ListViewHelper.StandAloneColumn>();
 
         ListViewHelper.StandAloneColumn column = new ListViewHelper.StandAloneColumn();
         column.label        = 'Account Name';
@@ -68,8 +75,7 @@ public with sharing class ListViewTestCompController {
         return columns;
     }
 
-    @AuraEnabled(cacheable=true)
-    public static List<ListViewHelper.StandAloneRow> getStandAloneRowData()
+    private static List<ListViewHelper.StandAloneRow> getRows()
     {
         List<ListViewHelper.StandAloneRow> rows = new List<ListViewHelper.StandAloneRow>();
 
