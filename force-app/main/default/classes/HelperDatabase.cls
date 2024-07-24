@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class to aid in the handling of DML transactions
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-02-2022
+ * @last modified on  : 07-03-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -232,6 +232,11 @@ public with sharing class HelperDatabase {
     {
         if (data.size() == 0) return new List<Database.UpsertResult>();
         
+        String objName = HelperSchema.getObjectType(data[0]);
+        Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objName);
+        if (objDesc.isUpdateable() == false || objDesc.isCreateable() == false)
+            throw new ListViewException('You do not have update or create permissions on this object - ' + objName);
+
         List<Database.UpsertResult> results = null;
         if (externalIdField != null)
         {
