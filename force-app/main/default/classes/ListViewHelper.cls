@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-03-2024
+ * @last modified on  : 07-18-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -303,6 +303,11 @@ global with sharing class ListViewHelper
         {
             soql += 'WHERE SObjectType = \'' + (String) values.get('ObjectName') + '\' ';
 
+        } else if (type == 'ByName') 
+        {
+            soql += 'WHERE SObjectType = \'' + (String) values.get('ObjectName') + '\' ';
+            soql += ' AND DeveloperName = \'' + (String) values.get('ListViewName') + '\' ';
+            
         } else if (type == 'ById')
         {
             ids = (Set<Id>) values.get('Ids');
@@ -323,7 +328,7 @@ global with sharing class ListViewHelper
             if (values.get('limit') != null)
                 soqlLimit = (Integer) values.get('limit');    
         } else {
-            throw new ListViewException('A valid type(ByObject, ById, ModifiedBy) must be provided - ' + type);
+            throw new ListViewException('A valid type(ByName, ByObject, ById, ModifiedBy) must be provided - ' + type);
         }
 
         //always exclude list views to be excluded by admin param
@@ -385,6 +390,14 @@ global with sharing class ListViewHelper
         values.put('Ids', lvIds);
         
         return getCoreListViews('ById', values);
+    }
+
+    public static List<ListView> getCoreListViews(String objectName, String listViewName)
+    {
+        Map<String, Object> values = new Map<String, Object>();
+        values.put('ObjectName', objectName);
+        values.put('ListViewName', listViewName);
+        return ListViewHelper.getCoreListViews('ByName', values);
     }
 
     /*
@@ -1871,48 +1884,29 @@ global with sharing class ListViewHelper
             return true;
     }
 
-    public static void cleanListViews(List<List_View__c> scope) 
+    public static String deleteListViews(Map<String, List_View__c> listViews)
     {
+        String response = SUCCESS;
         String debug = '';
-        
-        try {        
-            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
-            List<List_View__c> listViews = (List<List_View__c>) dec.getRecords();
-            Map<String, List_View__c> deletedListViews = new Map<String, List_View__c>();
-            Map<String, List_View_Config__c> deletedLVConfigs = new Map<String, List_View_Config__c>();
-            List<List_View_Config_Condition__c> deletedLVConfigConds = new List<List_View_Config_Condition__c>();
-            List<List_View_Config_Parameter__c> deletedLVConfigParams = new List<List_View_Config_Parameter__c>();
-            List<List_View_User_Config__c> deletedUserConfigs = new List<List_View_User_Config__c>();
+        Map<String, List_View_Config__c> deletedLVConfigs = new Map<String, List_View_Config__c>();
+        List<List_View_Config_Column_Style__c> deletedLVConfigStyles = new List<List_View_Config_Column_Style__c>();
+        List<List_View_Config_Condition__c> deletedLVConfigConds = new List<List_View_Config_Condition__c>();
+        List<List_View_Config_Parameter__c> deletedLVConfigParams = new List<List_View_Config_Parameter__c>();
+        List<List_View_User_Config__c> deletedUserConfigs = new List<List_View_User_Config__c>();
 
-            //get the set of core list view Ids
-            Set<Id> coreListViewIDs = HelperCollection.getIdFieldSet(listViews, 'Core_ListView_Id__c');
-
-            //get the associated core list views
-            List<ListView> coreListViews = ListViewHelper.getCoreListViews(coreListViewIDs);
-            //get map of core list views
-            Map<Id, ListView> coreListViewsById = new Map<Id, ListView>(coreListViews);
-
-            //go through SLV list views looking for ones that have deleted core list view Ids
-            for (List_View__c listView: listViews)
-            {
-                //if a core list view does not exist for the id then delete it
-                if (!coreListViewsById.containsKey(listView.Core_ListView_Id__c))
-                {
-                    deletedListViews.put(listView.Primary_Key__c, listView);
-                    debug += 'Deleting list view - ' + listView.Primary_Key__c + '\n';
-                }
-            }
-
-            //find all list view configs/conditions/parameters
-            if (deletedListViews.size() > 0)
+        try {
+            
+            if (listViews.size() > 0)
             {
                 //get all configs for the list views to be deleted
-                deletedLVConfigs = ListViewConfigHelper.getListViewConfigs(deletedListViews.keySet());
+                deletedLVConfigs = ListViewConfigHelper.getListViewConfigs(listViews.keySet());
                 
                 for (List_View_Config__c lvConfig: deletedLVConfigs.values())
                 {
                     debug += 'Deleting list view config - ' + lvConfig.Primary_Key__c + '\n';
                 
+                    deletedLVConfigStyles.addAll(lvConfig.List_View_Config_Column_Styles__r);
+
                     deletedLVConfigConds.addAll(lvConfig.List_View_Config_Conditions__r);
 
                     deletedLVConfigParams.addAll(lvConfig.List_View_Config_Parameters__r);
@@ -1948,11 +1942,52 @@ global with sharing class ListViewHelper
             }
 
 
-            HelperDatabase.deleteRecords(deletedListViews.values(), 'simpli_lv__List_View__c');
+            HelperDatabase.deleteRecords(listViews.values(), 'simpli_lv__List_View__c');
+            HelperDatabase.deleteRecords(deletedLVConfigStyles, 'simpli_lv__List_View_Config_Column_Style__c');
             HelperDatabase.deleteRecords(deletedLVConfigConds, 'simpli_lv__List_View_Config_Condition__c');
             HelperDatabase.deleteRecords(deletedLVConfigParams, 'simpli_lv__List_View_Config_Parameter__c');
             HelperDatabase.deleteRecords(deletedLVConfigs.values(), 'simpli_lv__List_View_Config__c');
             HelperDatabase.deleteRecords(deletedUserConfigs, 'simpli_lv__List_View_User_Config__c');
+
+        } catch (Exception e) {
+            response = 'Exception during ListViewHelper.deleteListViews()  ' + ListViewException.getExtendedString(e);
+            ListViewErrorHelper.createNonFutureUsageError(response); 
+        }
+        System.debug(LoggingLevel.DEBUG, debug);
+
+        return response;
+    }
+
+    public static void cleanListViews(List<List_View__c> scope) 
+    {
+        String debug = '';
+        
+        try {        
+            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
+            List<List_View__c> listViews = (List<List_View__c>) dec.getRecords();
+            Map<String, List_View__c> deletedListViews = new Map<String, List_View__c>();
+
+            //get the set of core list view Ids
+            Set<Id> coreListViewIDs = HelperCollection.getIdFieldSet(listViews, 'Core_ListView_Id__c');
+
+            //get the associated core list views
+            List<ListView> coreListViews = ListViewHelper.getCoreListViews(coreListViewIDs);
+
+            //get map of core list views
+            Map<Id, ListView> coreListViewsById = new Map<Id, ListView>(coreListViews);
+
+            //go through SLV list views looking for ones that have deleted core list view Ids
+            for (List_View__c listView: listViews)
+            {
+                //if a core list view does not exist for the id then delete it
+                if (!coreListViewsById.containsKey(listView.Core_ListView_Id__c))
+                {
+                    deletedListViews.put(listView.Primary_Key__c, listView);
+                    debug += 'Deleting list view - ' + listView.Primary_Key__c + '\n';
+                }
+            }
+
+            deleteListViews(deletedListViews);
 
         } catch (Exception e) {
             String message = 'Exception during ListViewHelper.cleanListViews()  ' + ListViewException.getExtendedString(e);
@@ -2375,7 +2410,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'AddObjNameOnLookupLabels';
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
         param.Parameter_Label__c  = 'Add Object Name On Lookup Labels';
         params.add(param);
 
@@ -2708,15 +2743,21 @@ global with sharing class ListViewHelper
         //get the listviews with object and name
         Map<Id, List_View__c> listviews = ListViewHelper.getListViews(objectType, listViewName);
 
-        //if no listviews return failed
-        if (listviews.size() == 0) return FAILED;
+        //if we have an SLV listview to update
+        if (listviews.size() > 0) {
 
-        //get the list views Id
-        Set<Id> lvId = new Set<Id>();
-        lvId.add(listviews.values()[0].Id);
+            //get the list views Id
+            Set<Id> lvId = new Set<Id>();
+            lvId.add(listviews.values()[0].Id);
 
-        //update the list view
-        Boolean result = ListViewHelper.updateListViewsFromSLVIds(lvId);
+            //update the list view
+            Boolean result = ListViewHelper.updateListViewsFromSLVIds(lvId);
+
+        //if we don't then try to update because the list view could be new
+        } else {
+            List<ListView> coreListViews = ListViewHelper.getCoreListViews(objectType, listViewName);
+            Boolean result = updateListViewsFromCore(coreListViews);
+        }
 
         //remove cache so that list views are refetched
         CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
@@ -2803,6 +2844,11 @@ global with sharing class ListViewHelper
         insertCoreListViews();
     }
 
+    global static String deleteCustomListViews(Map<String, List_View__c> listViews)
+    {
+        return deleteListViews(listViews);
+    }
+
     global static String refreshObjectListViews(String objectName)
     { 
         return updateObjectListViews(objectName);
@@ -2832,6 +2878,11 @@ global with sharing class ListViewHelper
     global static Map<String, String> getListViewObjects()
     {
         return getListViewObjects(new Set<String>(), new Set<String>(), true);
+    }
+
+    global static void clearCache()
+    {
+        CacheHelper.clearAllCache();
     }
 
     /*
@@ -2868,6 +2919,7 @@ global with sharing class ListViewHelper
             c.put('label', column.getLabel());
             c.put('name', column.name);
             c.put('columnWidth', column.width);
+            c.put('type', column.type);
             columns.add(c);
         }
 
@@ -3326,6 +3378,13 @@ global with sharing class ListViewHelper
         HelperDatabase.insertRecord(log);
 
         return response;
+    }
+
+    global class StandAloneListView {
+        @AuraEnabled
+        global List<ListViewHelper.StandAloneColumn> columns {get; set;}
+        @AuraEnabled
+        global List<ListViewHelper.StandAloneRow> data {get; set;}
     }
 
     global class StandAloneColumn {
