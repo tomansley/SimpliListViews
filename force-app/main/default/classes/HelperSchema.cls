@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-01-2024
+ * @Last Modified On   : 07-03-2024
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -1000,55 +1000,8 @@ public with sharing class HelperSchema {
 
     public static void checkObjectPermissions(String objAPIName, String action)
     {
-        String key = objAPIName + ':' + action;
-        if (HelperSchema.objectPermissions.contains(key)) 
-        {
-            System.debug(LoggingLevel.DEBUG, 'USED CACHE(checkObjectPermissions)');
-            return;
-        }
-
-        if (objAPIName == 'Simpli_lv__List_View__c')
-        { 
-            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View__c');
-            else throw new ListViewException('No permission check for Simpli_lv__List_View__c with action - ' + action);
-
-        } else if (objAPIName == 'Simpli_lv__List_View_Config__c')
-        {
-            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Config__c');
-            else throw new ListViewException('No permission check for Simpli_lv__List_View_Config__c with action - ' + action);
-        
-        }  else if (objAPIName == 'Simpli_lv__List_View_Config_Parameter__c')
-        {
-            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Config_Parameter__c');
-            else throw new ListViewException('No permission check for Simpli_lv__List_View_Config_Parameter__c with action - ' + action);
-        
-        }  else if (objAPIName == 'simpli_lv__List_View_Config_Condition__c')
-        {
-            if (action == DELETABLE) checkObjectDeletable('simpli_lv__List_View_Config_Condition__c');
-            else throw new ListViewException('No permission check for simpli_lv__List_View_Config_Condition__c with action - ' + action);
-        
-        } else if (objAPIName == 'Simpli_lv__List_View_Action__c')
-        {
-            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Action__c');
-            else throw new ListViewException('No permission check for Simpli_lv__List_View_Action__c with action - ' + action);
-        
-        } else if (objAPIName == 'Simpli_lv__List_View_Action_Parameter__c')
-        {
-            if (action == DELETABLE) checkObjectDeletable('Simpli_lv__List_View_Action_Parameter__c');
-            else throw new ListViewException('No permission check for Simpli_lv__List_View_Action_Parameter__c with action - ' + action);
-        
-        }  else if (objAPIName == 'simpli_lv__List_View_User_Config__c')
-        {
-            if (action == DELETABLE) checkObjectDeletable('simpli_lv__List_View_User_Config__c');
-            else throw new ListViewException('No permission check for simpli_lv__List_View_User_Config__c with action - ' + action);
-        
-        }else {
-            if (action == DELETABLE) HelperSchema.checkObjectDeletable(objAPIName);
+        if (action == DELETABLE) HelperSchema.checkObjectDeletable(objAPIName);
             else throw new ListViewException('No permission check for ' + objAPIName + ' with action - ' + action);
-            
-        }
-
-        objectPermissions.add(key);
     }
 
 	public static String scrubFieldNameForSOQL(String fieldName)
