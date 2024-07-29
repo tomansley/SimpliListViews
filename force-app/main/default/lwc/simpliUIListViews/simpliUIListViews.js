@@ -257,6 +257,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track quickDataRowId;
     @track quickDataFieldValue;
     @track quickDataFieldName;
+    @track quickDataObjectName;
     @track quickDataComponentId;      //the HTML field name that called the quick data modal. Used to set the focus back on the component
     @track quickDataOldFieldValue;
 
@@ -774,7 +775,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 console.log(this.pageName + ' CALLOUT - getListViewActions - ' + this.calloutCount++);
                 this.objectActionList = result; 
                 this.handleListViewActions(0);
-                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshActions', status: 'finished'}}));
+                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshActions', status: 'finished', listView: this.selectedListView, object: this.selectedObject}}));
             })
             .catch(error => {
                 this.objectActionList = undefined; 
@@ -840,12 +841,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.dispatchEvent(new CustomEvent('getdata', { detail: {pageName: this.pageName, compType: this.mode, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset, textSearchStr: this.textSearchText }}));
             } else {
                 this.spinnerOn('getListViewDataPage');
-                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshData', status: 'started'}}));
+                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshData', status: 'started', object: this.selectedObject, listView: this.selectedListView}}));
 
                 let listViewDataResult = await getListViewData({pageName: this.pageName, compType: this.mode, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset, textSearchStr: this.textSearchText });
                 this.handleListViewDataPage(listViewDataResult);
 
-                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshData', status: 'finished', count: this.listViewDataRowsSize}}));
+                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshData', status: 'finished', count: this.listViewDataRowsSize, object: this.selectedObject, listView: this.selectedListView}}));
                 this.spinnerOff('getListViewDataPage');
             }
         } catch(error) {
@@ -1046,7 +1047,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 this.refreshTitle = 'Click to perform a refresh on all ' + this.selectedObject + ' list views';
 
-                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshListViews', status: 'finished', count: this.listViewList.length, object: this.selectedObject}}));
+                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshListViews', status: 'finished', count: this.listViewList.length, object: this.selectedObject, listView: this.selectedListView}}));
 
                 this.spinnerOff('getListViewsForObject'); 
             })
@@ -1299,7 +1300,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         downloadElement.download = this.selectedListViewExportName;
         downloadElement.click(); 
 
-        this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'downloadData', status: 'finished', data: dataStr}}));
+        this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'downloadData', status: 'finished', data: dataStr, object: this.selectedObject, listView: this.selectedListView}}));
 
     }
 
@@ -1338,7 +1339,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         downloadElement.download = this.selectedListViewExportName;
         downloadElement.click(); 
 
-        this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'downloadSelectedData', status: 'finished', data: dataStr}}));
+        this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'downloadSelectedData', status: 'finished', data: dataStr, object: this.selectedObject, listView: this.selectedListView}}));
 
     }
 
@@ -2156,7 +2157,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         
         this.resetActionComboBox();
 
-        this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'runAction', status: 'finished', action: this.selectedActionKey}}));
+        this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'runAction', status: 'finished', action: this.selectedActionKey, listView: this.selectedListView, object: this.selectedObject}}));
 
     }
 
@@ -2316,7 +2317,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             }
                         });
                 
-                        this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'dataSaved', status: 'finished', rowId: rowId}}));
+                        this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'dataSaved', status: 'finished', rowId: rowId, listView: this.selectedListView, object: this.selectedObject}}));
                                         
                         this.refreshAllListViewData();
                     } else {
@@ -2496,6 +2497,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.quickDataFieldName     = event.currentTarget.dataset.field;
         this.quickDataComponentId   = event.target.name;
         this.quickDataOldFieldValue = event.target.value;
+        this.quickDataObjectName    = event.currentTarget.dataset.object;
         this.showQuickDataModal = true;
     }
 
