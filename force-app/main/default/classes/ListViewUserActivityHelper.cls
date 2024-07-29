@@ -3,10 +3,19 @@ public with sharing class ListViewUserActivityHelper {
     private static final String TYPE_ACTION_PROC    = 'ActionProcessed';
     private static final String TYPE_LISTVIEW_VIEW = 'ListViewView';
 
+    /**
+    * @description 
+    * @author tom@ansleyllc.com | 07-24-2024 
+    * @param pageName the name of the listview page component if available
+    * @param objectName the naem of the object the action is being applied to if available
+    * @param actionName the name of the action.
+    * @param actionId the Id of the action
+    * @param rows the number of rows being processed.
+    **/
     public static void registerAction(String pageName, String objectName, String actionName, String actionId, Integer rows)
     {
         //if SLVE is not installed as a package we ignore.
-        if (!HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) return;
+        if (!ListViewHelper.hasEnterprise()) return;
 
         Activity activity      = new Activity();
         activity.actionId      = actionId;
@@ -21,10 +30,10 @@ public with sharing class ListViewUserActivityHelper {
         registerActivity(TYPE_ACTION_PROC, activity);
     }
 
-    public static void registerListViewView(String pageName, String pageMode, String objectName, String listViewName, String listViewId, Integer rows)
+    public static void registerView(String pageName, String pageMode, String objectName, String listViewName, String listViewId, Integer rows)
     {
         //if SLVE is not installed as a package we ignore.
-        if (!HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) return;
+        if (!ListViewHelper.hasEnterprise()) return;
 
         Activity activity      = new Activity();
         activity.listViewId    = listViewId;

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-19-2024
+ * @last modified on  : 07-24-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -24,12 +24,7 @@ public without sharing class ListViewController
     @AuraEnabled
     public static Boolean hasEnterprise()
     {
-        if (HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) 
-            return true;
-        else if (HelperSchema.isObject('simpli_lv_ent__List_Views_Org_Connection__c')) //a hack for the enterprise org as its not installed
-            return true;
-        else
-            return false;
+        return ListViewHelper.hasEnterprise();
     }
 
     @AuraEnabled

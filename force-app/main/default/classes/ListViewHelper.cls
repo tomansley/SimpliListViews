@@ -110,6 +110,16 @@ global with sharing class ListViewHelper
         return objectName.replace(' ', '_') + ':' + listViewName;
     }
 
+    public static Boolean hasEnterprise()
+    {
+        if (HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) 
+            return true;
+        else if (HelperSchema.isObject('simpli_lv_ent__List_Views_Org_Connection__c')) //a hack for the enterprise org as its not installed
+            return true;
+        else
+            return false;
+    }
+
     /*
      * Method which, given a field type and field value will convert the provided value into the 
      * correct object based on the provided fields type.
@@ -2658,7 +2668,7 @@ global with sharing class ListViewHelper
         if (!rowData.isDefaultSort && !isShell)
             ListViewUserConfigHelper.updateSortConfigValue(pageName, lvLogic.getSortString(), objectName, listviewName);
 
-        ListViewUserActivityHelper.registerListViewView(pageName, compType, objectName, listViewName, lvLogic.listview.Id, rowData.getRowCount());
+        ListViewUserActivityHelper.registerView(pageName, compType, objectName, listViewName, lvLogic.listview.Id, rowData.getRowCount());
 
         ListViewErrorHelper.processLogs(true);
 
