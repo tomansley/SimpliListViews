@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 07-24-2024
+  @last modified on  : 07-26-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -567,8 +567,10 @@
                                                                             <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
                                                                         </div>
                                                                     </template>
-                                                                    <template if:true={fieldData.isMultiPicklist} class="slds-truncate">
-                                                                        {fieldData.value}
+                                                                    <template if:true={fieldData.isMultiPicklist}>
+                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
+                                                                            {fieldData.value}
+                                                                        </div>
                                                                     </template>
                                                                 </template>
                                                             </td>
@@ -681,7 +683,9 @@
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isMultiPicklist} class="slds-truncate">
-                                                                    {fieldData.value}
+                                                                    <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
+                                                                        {fieldData.value}
+                                                                    </div>
                                                                 </template>
                                                             </template>
                                                             <template if:true={fieldData.isEditable}>
@@ -775,16 +779,9 @@
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isMultiPicklist}>
-                                                                        <c-simpli-u-i-list-views-picklist type="multipicklist"
-                                                                                                        size=2
-                                                                                                        row-id={rowData.rowId} 
-                                                                                                        sfdc-id={rowData.salesforceId}
-                                                                                                        object-api-name={listViewData.objectName} 
-                                                                                                        selected-value={fieldData.uIMultiPicklistValues}  
-                                                                                                        pick-list-field-api-name={fieldData.name}
-                                                                                                        onpicklistchange={handleFieldDataChange}
-                                                                                                        variant=label-hidden>
-                                                                        </c-simpli-u-i-list-views-picklist>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <lightning-input data-type={fieldData.type} data-object={listViewData.objectName} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
+                                                                    </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isLookup}>
                                                                     <div id={rowData.rowId} title={fieldData.value}>
@@ -943,6 +940,7 @@
                                                 heading={quickDataHeading}
                                                 field-type={quickDataFieldType}
                                                 field-name={quickDataFieldName}
+                                                object-name={quickDataObjectName}
                                                 field-label={quickDataFieldLabel}
                                                 field-data-id={quickDataRowId}
                                                 field-value={quickDataFieldValue}

@@ -1,8 +1,8 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 01-25-2022
-  @last modified by  : tom.h.ansley@medtronic.com
+  @last modified on  : 07-26-2024
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
   1.0   07-19-2021   tom@ansleyllc.com   Initial Version
@@ -10,18 +10,20 @@
 <template>
     <template if:true={isPicklist}>
         <template if:false={hasError}>
-            <lightning-combobox id="dependentPickList"
-                                name={compName}
-                                label={label}
-                                value={value}
-                                placeholder={label.None_Dash}
-                                variant={variant}
-                                options={options}
-                                onchange={handleChange}
-                                field-level-help={fieldLevelHelp}
-                                required={required}
-                                style={fieldStyle}>
-            </lightning-combobox>
+            <template if:true={isOptionsSet}>
+                <lightning-combobox id="dependentPickList"
+                                    name={compName}
+                                    label={label}
+                                    value={value}
+                                    placeholder={label.None_Dash}
+                                    variant={variant}
+                                    options={options}
+                                    onchange={handleChange}
+                                    field-level-help={fieldLevelHelp}
+                                    required={required}
+                                    style={fieldStyle}>
+                </lightning-combobox>
+            </template>
         </template>
         <template if:true={hasError}>
             {value}
@@ -29,18 +31,20 @@
     </template>
     <template if:true={isMultiPicklist}>
         <template if:false={hasError}>
-            <lightning-dual-listbox name={compName}
-                                    source-label={sourceLabel}
-                                    selected-label={selectedLabel}
-                                    options={options}
-                                    onchange={handleChange}
-                                    variant={variant}
-                                    value={value}
-                                    size={size}
-                                    field-level-help={fieldLevelHelp}
-                                    required={required}
-                                    style={fieldStyle}>
-            </lightning-dual-listbox>
+            <template if:true={isOptionsSet}>
+                <lightning-dual-listbox name={compName}
+                                        source-label={sourceLabel}
+                                        selected-label={selectedLabel}
+                                        options={options}
+                                        onchange={handleChange}
+                                        variant={variant}
+                                        value={value}
+                                        size={size}
+                                        field-level-help={fieldLevelHelp}
+                                        required={required}
+                                        style={fieldStyle}>
+                </lightning-dual-listbox>
+            </template>
         </template>
         <template if:true={hasError}>
             {value}

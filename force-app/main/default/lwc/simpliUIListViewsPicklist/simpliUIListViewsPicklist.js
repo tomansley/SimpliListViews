@@ -2,6 +2,8 @@
 import { LightningElement, track, wire, api } from 'lwc';
 import { getPicklistValuesByRecordType } from 'lightning/uiObjectInfoApi';
 import { CurrentPageReference } from 'lightning/navigation';
+import * as SLVHelper from 'c/simpliUIListViewsHelper';
+import getRecordTypeId from '@salesforce/apex/ListViewsPicklistController.getRecordTypeId';
 
 //------------------------ LABELS ------------------------
 import None_Dash from '@salesforce/label/c.None_Dash';
@@ -35,6 +37,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
 
     label = { None_Dash }
 
+    @track isOptionsSet = false;
     @track options = [
         { label: 'Default 1', value: 'Default1' },
         { label: 'Default 2', value: 'Default2' },
@@ -53,13 +56,20 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         return this.value;
     }
     set selectedValue(val) {
-        if (val === '' || val === undefined || val === null)
-            this.value = { label: '--None--', value: "" }.value;
-        else
-            this.value = val;
+        if (SLVHelper.isEmpty(val)) {
+            if (this.type === 'picklist')
+                this.value = '';
+            else
+                this.value = [];
+        } else {
+            if (this.type === 'picklist')
+                this.value = val;
+            else
+                this.value = val.split(';');
+        }
     }
          
-    renderedCallback() {
+    async renderedCallback() {
 
         if (this.type === 'picklist') {
             this.isPicklist = true;
@@ -68,6 +78,10 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         }
 
         this.compName = this.rowId + ':' + this.pickListFieldApiName;
+
+        if (SLVHelper.isEmpty(this.recordTypeId)) {
+            this.recordTypeId = await getRecordTypeId({recordId: this.sfdcId});
+        }
 
         console.log('In simpliUIListViewsPicklist.renderedCallback');
         console.log('type     - ' + this.type);
@@ -80,10 +94,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         console.log('pickListFieldApiName - ' + this.pickListFieldApiName);
 
     }
- 
-    /*
-     * Method to retrieve all object picklist values given its API name and record type.
-     */
+
     @wire(getPicklistValuesByRecordType, { objectApiName: '$objectApiName', recordTypeId: '$recordTypeId' })
     wiredOptions({ error, data }) {
         console.log('getPicklistValuesByRecordType Record type - ' + this.recordTypeId);
@@ -105,7 +116,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             console.log('Options - ', JSON.stringify(this.options));
 
             //if the selected value has NOT been provided then default it.
-            if(this.selectedValue === '' || this.selectedValue === undefined || this.selectedValue === null) {
+            if(SLVHelper.isEmpty(this.selectedValue)) {
                 if (this.type === 'picklist') {
                     this.value = { label: '--None--', value: "" }.value;
                 } else if (this.type === 'multipicklist') {
@@ -116,14 +127,14 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             } else {
                 if (this.type === 'picklist') {
                     let pickVal = this.options.find(listItem => listItem.value === this.value);
-                    if (pickVal !== undefined && pickVal !== null)
+                    if (!SLVHelper.isEmpty(pickVal))
                     {
                         this.value = pickVal.value;
                     }
-                } else if (this.type === 'multipicklist') {
-                    this.value = this.value;
                 }
             }
+
+            this.isOptionsSet = true;
         } else if (error) {
             console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
         }
@@ -137,7 +148,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         let tempValue = event.target.value;
         console.log("event.target.value",event.target.value);
         console.log("this.value",tempValue);
-        let selectedValue = undefined;
+        let selectedValue;
         if (Array.isArray(tempValue)) {
             selectedValue = tempValue.join(';');
         } else {

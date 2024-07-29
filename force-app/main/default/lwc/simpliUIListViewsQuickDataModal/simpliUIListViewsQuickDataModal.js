@@ -1,4 +1,5 @@
 import { LightningElement, api, track} from 'lwc';
+import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 export default class SimpliUIListViewsQuickDataModal extends LightningElement {
 
@@ -11,12 +12,22 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
     @api fieldValue;
     @api fieldType = 'string'; 
     @api fieldName;
-    @api fieldDataId;
+    _fieldDataId = '';
+    @api get fieldDataId() { return this._fieldDataId; }
+         set fieldDataId(value) { 
+            if (!SLVHelper.isEmpty(value)) {
+                this._fieldDataId = value; 
+                this.sfdcId = this._fieldDataId.split(':')[0]; 
+            }
+         }
+    @api objectName;
 
+    @track sfdcId = '';
     @track isInitialized = false;
     @track isString = true;
     @track isRichText = false;
     @track isTextArea = false;
+    @track isMultiSelect = false;
 
     renderedCallback() {
         console.log('SimpliUIListViewsQuickDataModal.renderedCallback starting');
@@ -33,6 +44,7 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
             this.isTextArea = false;
             this.isString = false;
             this.isRichText = false;
+            this.isMultiSelect = false
 
             if (this.fieldType === 'string') {
                 this.isString = true;
@@ -40,6 +52,8 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
                 this.isTextArea = true;
             } else if (this.fieldType === 'rich textarea') {
                 this.isRichText = true;
+            } else if (this.fieldType === 'multipicklist') {
+                this.isMultiSelect = true;
             }
             this.isInitialized = true;
         }
@@ -51,6 +65,7 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
         console.log('Field Type    - ' + this.fieldType);
         console.log('Field Value   - ' + this.fieldValue);
         console.log('Field Name    - ' + this.fieldName);
+        console.log('Object Name   - ' + this.objectName);
         console.log('isInitialized - ' + this.isInitialized);
 
     }
@@ -64,6 +79,8 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
                 this.template.querySelector('textarea').focus();
             } else if (this.isString) {
                 this.template.querySelector('lightning-input').focus();
+            } else if (this.isMultiSelect) {
+                this.template.querySelector('lightning-dual-listbox').focus();
             }
         }
     }
@@ -84,6 +101,11 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
     }
 
     handleFieldUpdate(event) {
-        this.fieldValue = event.target.value;
+        if (!SLVHelper.isEmpty(event.target.value)) {
+            this.fieldValue = event.target.value;
+        
+        } else if (!SLVHelper.isEmpty(event.detail.selectedValue)) {
+            this.fieldValue = event.detail.selectedValue;
+        }
     }
 }
