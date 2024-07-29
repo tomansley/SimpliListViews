@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-02-2024
+ * @last modified on  : 07-24-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -607,6 +607,8 @@ global with sharing class ListViewActionHelper {
         }
         
         ListViewErrorHelper.processLogs(true);
+
+        ListViewUserActivityHelper.registerAction('', '', actionKey, action.Id, listIds.size());
 
         return responseStr;
     }

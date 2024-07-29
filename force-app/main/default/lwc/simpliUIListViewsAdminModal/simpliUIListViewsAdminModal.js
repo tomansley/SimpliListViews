@@ -5,6 +5,7 @@
 import { LightningElement, wire, track, api  } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
+import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 //------------------------ LABELS ------------------------
 import Close from '@salesforce/label/c.Close';
@@ -548,7 +549,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     }
 
     //---------------------------------------------------------------------------------------------------------
-    // CONDITION METHODS
+    // STYLE METHODS
     //---------------------------------------------------------------------------------------------------------
     handleColumnStyleChange(event) {
         var id = event.target.name;
@@ -568,14 +569,16 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
             strParamsMap = id;
 
-        //if we are ADDING we need to pass all condition information
+        //if we are ADDING we need to pass all style information
         } else if (action === 'add') {
+
+            if (SLVHelper.isEmpty(this.newColumnStyleField)) { errorMsg = 'The style field must be provided.'}
 
             //if we have an error
             if (errorMsg !== '')
             {
                 this.dispatchEvent(new ShowToastEvent({
-                    title: 'Condition Error',
+                    title: 'Style Error',
                     message: errorMsg,
                     variant: 'error',
                     mode: 'sticky'
@@ -705,15 +708,6 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             variant: 'success',
             mode: 'dismissable'
         }));
-}
-
-    handleCloseClick(event) {
-        setTimeout(function(){
-            console.log('after');
-        },500); //give the parameter time to be saved before sending message to parent
-        this.dispatchEvent(new CustomEvent('close', { detail: this.configChanged }));
-        this.configChanged = false;
-        this.resetNewCondition();
     }
 
 }
