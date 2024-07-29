@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-24-2024
+ * @Last Modified On   : 07-26-2024
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -124,6 +124,16 @@ public with sharing class HelperSchema {
         }
 
         return recordTypeId;
+    }
+
+    public static String getRecordTypeId(String recordId)
+    {
+        String objApiName = HelperSchema.getObjectTypeFromId(recordId);
+
+        if (getHasRecordTypes(objApiName))
+            return getRecordTypeId(Database.query('SELECT Id, RecordTypeId FROM ' + objApiName + ' WHERE Id = :recordId'));
+        else
+            return getRecordTypeId(Database.query('SELECT Id FROM ' + objApiName + ' WHERE Id = :recordId'));
     }
 
     /*
