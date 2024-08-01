@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-24-2024
+ * @last modified on  : 07-31-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -568,13 +568,17 @@ global with sharing class ListViewActionHelper {
         }
         
         //get the list of Ids of the records that are to be processed.
-        List<Object> listIds = (List<Object>) JSON.deserializeUntyped(dataIds);
+        List<Object> listIds = new List<Object>();
+        if (!String.isBlank(dataIds))
+            listIds = (List<Object>) JSON.deserializeUntyped(dataIds);
         List<String> listStrIds = new List<String>();
         for (Object listId: listIds)
             listStrIds.add((String) listId);
 
         //get the field/value pairs of the update data
-        List<Object> listValues = (List<Object>) JSON.deserializeUntyped(valuesMap);
+        List<Object> listValues = new List<Object>();
+        if (!String.isBlank(valuesMap))
+            listValues = (List<Object>) JSON.deserializeUntyped(valuesMap);
         Map<String, Object> mapValues = new Map<String, Object>();
         for (Object key: listValues)
         {
@@ -601,7 +605,7 @@ global with sharing class ListViewActionHelper {
         try {
             responseStr = actionJob.process(listStrIds, mapValues);
         } catch (Exception e) {
-            responseStr = ListViewAction.RESULT_ERROR + ':There was an error processing the records - ' + e.getMessage();
+            responseStr = ListViewAction.RESULT_ERROR + ':' + e.getMessage();
             String message = 'Exception during ListViewActionHelper.processAction(' + actionKey + ', ' + dataIds + ', ' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createFutureUsageError(message); 
         }
