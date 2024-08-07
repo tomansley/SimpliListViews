@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-26-2024
+ * @Last Modified On   : 07-30-2024
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -857,7 +857,7 @@ public with sharing class HelperSchema {
 					    
                         //if we have a lookup field then determine if we add the object name to the label
                         String addObjName = ListViewConfigHelper.getOrgWideConfigParam('AddObjNameOnLookupLabels');
-                        if (addObjName == ListViewHelper.TTRUE)
+                        if (addObjName == ListViewHelper.TTRUE && fieldName.contains('.'))
                             label = objType + ' ' + fieldDesc.getLabel();
 
                         data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
