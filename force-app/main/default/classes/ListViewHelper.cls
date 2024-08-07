@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-02-2024
+ * @last modified on  : 08-07-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2237,7 +2237,7 @@ global with sharing class ListViewHelper
         param.List_View_Config__c = config.Id;
         param.Parameter_Name__c   = 'ExcludedObjectTypes';
         param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution';
+        param.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution,VoiceCall,VoiceCallChangeEvent,VoiceCallRecordingShare,Shift,ShiftFeed,ShiftHistory,ShiftShare,ShiftStatus,MessagingChannel,MsgChannelLanguageKeyword,MessagingChannelSkill,MessagingDeliveryError,MessagingLink,MessagingSession,MessagingSessionFeed,MessagingSessionHistory,MessagingSessionShare,MessagingTemplate,MessagingEndUser,MessagingEndUserHistory,MessagingEndUserShare,MessagingConfiguration,CommSubscription,CommSubscriptionHistory,CommSubscriptionChannelType,CommSubscriptionChannelTypeHistory,CommSubscriptionChannelTypeFeed,CommSubscriptionChannelTypeShare,CommSubscriptionConsent,CommSubscriptionConsentHistory,CommSubscriptionConsentFeed,CommSubscriptionConsentShare,CommSubscriptionFeed,CommSubscriptionShare,CommSubscriptionTiming,CommSubscriptionTimingHistory,CommSubscriptionTimingFeed,AuthorizationForm,AuthorizationFormConsent,AuthorizationFormConsentChangeEvent,AuthorizationFormConsentHistory,AuthorizationFormConsentShare,AuthorizationFormDataUse,AuthorizationFormDataUseHistory,AuthorizationFormDataUseShare,AuthorizationFormHistory,AuthorizationFormShare,AuthorizationFormText,AuthorizationFormTextHistory';
         param.Parameter_Label__c  = 'Excluded Object Types';
         params.add(param);
 
@@ -2399,6 +2399,14 @@ global with sharing class ListViewHelper
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param.Parameter_Value__c  = ListViewHelper.FFALSE;
         param.Parameter_Label__c  = 'Debug';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'ProcessingSize';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
+        param.Parameter_Value__c  = '40';
+        param.Parameter_Label__c  = 'List View Processing Batch Size';
         params.add(param);
 
         param = new List_View_Config_Parameter__c();

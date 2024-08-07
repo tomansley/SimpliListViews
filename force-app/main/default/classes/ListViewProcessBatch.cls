@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 04-24-2022
+ * @last modified on  : 08-07-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -15,7 +15,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
     public static final String TYPE_PERIOD = 'period';
 
     private String query = 'SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView WHERE SObjectType != null';
-    private final Integer batchSize = 40;
+    private Integer batchSize = 40;
     private Set<Id> listViewIds = null;
     private String processType = TYPE_ALL;
 
@@ -45,6 +45,11 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	/* IMPLEMENTS SCHEDULABLE INTERFACE */
 	global void execute(SchedulableContext sc)
 	{
+        String procSize = ListViewConfigHelper.getOrgWideConfigParam('ProcessingSize');
+
+        if (procSize != null)
+            batchSize = Integer.valueOf(procSize);
+
 		database.executebatch(this, batchSize);
 	}
        
