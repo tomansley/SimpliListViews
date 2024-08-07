@@ -329,6 +329,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         //this ensures we only call this once for each page load
         if (this.mode !== undefined && this.componentConfig === undefined && this.isInitialized === true && this.inRenderedCallback === false) 
         {
+            this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'rendering', status: 'started'}}));
+
             this.inRenderedCallback = true;
 
             loadScript(this, JSPDF)
@@ -558,7 +560,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.listViewDataRows.forEach(row => {
             row.isEdited = false;
             row.isDeleted = false;
-            row.sfdcId = index;
+            if (SLVHelper.isEmpty(row.sfdcId)) {
+                row.sfdcId = index;
+            }
             if (row.isDisplayed === undefined) row.isDisplayed = true;
             if (row.isTotals === undefined) row.isTotals = false;
             if (row.highlightColor === undefined) row.highlightColor = '';
@@ -775,7 +779,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 console.log(this.pageName + ' CALLOUT - getListViewActions - ' + this.calloutCount++);
                 this.objectActionList = result; 
                 this.handleListViewActions(0);
-                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshActions', status: 'finished', listView: this.selectedListView, object: this.selectedObject}}));
+                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshActions', status: 'finished', listView: this.selectedListView, object: this.selectedObject, count: this.displayedActionList.length}}));
             })
             .catch(error => {
                 this.objectActionList = undefined; 
@@ -851,6 +855,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
         } catch(error) {
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Data', 'Error retrieving the list view data.', true));
+            this.spinnerOff('getListViewDataPage');
         }
 
         this.refreshTime = Date.now();
@@ -961,6 +966,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         {
             console.log('Starting getObjectsList');
             console.log(this.pageName + ' CALLOUT - getListViewObjects - ' + this.calloutCount++);
+            this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshObjects', status: 'started'}}));
             await getListViewObjects({includedObjects: this.includedObjects, excludedObjects: this.excludedObjects })
             .then(result => {
                 this.objectList = result; 
@@ -1007,6 +1013,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.listViewListObject = this.selectedObject;
 
             console.log(this.pageName + ' CALLOUT - getObjectListViews(' + this.selectedObject + ') - ' + this.calloutCount++);
+            this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshListViews', status: 'started', object: this.selectedObject}}));
             await getObjectListViews({objectName: this.selectedObject })
             .then(result => {
                 console.log('Object list view retrieval successful for ' + this.pageName);
@@ -1047,7 +1054,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                 this.refreshTitle = 'Click to perform a refresh on all ' + this.selectedObject + ' list views';
 
-                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshListViews', status: 'finished', count: this.listViewList.length, object: this.selectedObject, listView: this.selectedListView}}));
+                this.dispatchEvent(new CustomEvent('eventresponse', { detail: {type: 'refreshListViews', status: 'finished', count: this.listViewList.length, object: this.selectedObject}}));
 
                 this.spinnerOff('getListViewsForObject'); 
             })
@@ -1743,7 +1750,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
 
                     } else {
                         this.batchId = result;
-                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Processing', 'List view processing has started for all list views. You must do a full page refresh after completion to see changes.', false)); 
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Processing', 'List view processing has started for all list views. Refresh page after completion to see changes.', false)); 
                         this.dispatchEvent(new CustomEvent('processlistviewclick'));
                         this.spinnerOff('handleProcessListViewsButtonClick7');
                     }
