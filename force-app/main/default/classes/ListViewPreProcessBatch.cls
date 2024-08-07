@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-22-2022
+ * @last modified on  : 08-01-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -11,7 +11,7 @@
 **/
 global with sharing class ListViewPreProcessBatch implements Database.AllowsCallouts, Database.Batchable<SObject>, Database.Stateful, Schedulable {
     
-    private String query = 'SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView WHERE SObjectType != null';
+    private String query = 'SELECT Id FROM User LIMIT 1';
     private final Integer batchSize             = 25;
     private Set<Id> listViewIds                 = null;
 
@@ -31,43 +31,20 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
 	/* IMPLEMENTS DATABASE.BATCHABLE INTERFACE */
 	global Database.QueryLocator start(Database.BatchableContext BC) 
 	{
-        CacheHelper.clearAllCache();
-        
-        //finally set isInitialized to true.
-        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', ListViewHelper.FFALSE);
-
-        Database.QueryLocator locator = null;
-        try {
-
-            if (Test.isRunningTest())
-                query += ' LIMIT 1';
-
-            String debug = 'SOQL - ' + query;
-            
-            System.debug(LoggingLevel.DEBUG, debug);
-            ListViewErrorHelper.addLog('ListViewPreProcessBatch(start)', debug);
-
-            ListViewErrorHelper.processLogs(false);
-
-            return Database.getQueryLocator(query);
-
-        } catch (Exception e) {
-            String message = 'Exception during ListViewPreProcessBatch.start(' + query + ')  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createNonFutureUsageError(message);
-        }
+        Database.QueryLocator locator = Database.getQueryLocator(query);
                 
-        ListViewErrorHelper.processLogs(false);
+        //ListViewErrorHelper.processLogs(false);
 
-        return null;
+        return locator;
 	}
 
 	/* IMPLEMENTS DATABASE.BATCHABLE INTERFACE */
 	global void execute(Database.BatchableContext BC, List<SObject> scope) 
 	{
         try {        
-            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
+//            SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
 
-            List<ListView> listViews = (List<ListView>) dec.getRecords();
+  //          List<ListView> listViews = (List<ListView>) dec.getRecords();
 
         } catch (Exception e) {
             String message = 'Exception during ListViewPreProcessBatch.execute()  ' + ListViewException.getExtendedString(e);
@@ -81,6 +58,11 @@ global with sharing class ListViewPreProcessBatch implements Database.AllowsCall
 	/* IMPLEMENTS DATABASE.BATCHABLE INTERFACE */ 
 	global void finish(Database.BatchableContext BC) 
 	{
+        CacheHelper.clearAllCache();
+        
+        //finally set isInitialized to true.
+        ListViewConfigHelper.setOrgWideConfigParam('IsInitialized', ListViewHelper.FFALSE);
+
         ListViewProcessBatch job = new ListViewProcessBatch();
         job.execute(null);
 	}
