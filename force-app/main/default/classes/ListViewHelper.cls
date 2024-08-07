@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-24-2024
+ * @last modified on  : 08-02-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1906,7 +1906,7 @@ global with sharing class ListViewHelper
 
         try {
             
-            if (listViews.size() > 0)
+            if (!listViews.isEmpty())
             {
                 //get all configs for the list views to be deleted
                 deletedLVConfigs = ListViewConfigHelper.getListViewConfigs(listViews.keySet());
@@ -1925,7 +1925,7 @@ global with sharing class ListViewHelper
                 debug += 'No list views or configs deleted\n';
             }
 
-            if (deletedLVConfigs.size() > 0)
+            if (!deletedLVConfigs.isEmpty())
             {
                 //use primary keys to find the user configs
                 String userConfSOQL = 'SELECT Id, Name__c, Value__c, Primary_Key__c FROM List_View_User_Config__c WHERE ';
@@ -1938,6 +1938,7 @@ global with sharing class ListViewHelper
 
                 userConfSOQL = userConfSOQL.removeEnd(' OR ');
 
+                debug += 'SOQL - ' + userConfSOQL + '\n';
                 System.debug(LoggingLevel.FINE, 'CONF SOQL - ' + userConfSOQL);
                 
                 SObjectAccessDecision dec2 = 
@@ -1961,7 +1962,7 @@ global with sharing class ListViewHelper
 
         } catch (Exception e) {
             response = 'Exception during ListViewHelper.deleteListViews()  ' + ListViewException.getExtendedString(e);
-            ListViewErrorHelper.createNonFutureUsageError(response); 
+            ListViewErrorHelper.createNonFutureUsageError(response + ' - debugging - ' + debug); 
         }
         System.debug(LoggingLevel.DEBUG, debug);
 
@@ -2598,8 +2599,7 @@ global with sharing class ListViewHelper
 
         }
 
-        //org might not have PriceBook2 object so do it individually.
-        try 
+        if (HelperSchema.isObject('Pricebook2')) //if we do not have sales cloud this will not work!
         {
             listViews = new List<List_View__c>();
             lv                          = new List_View__c();
@@ -2614,8 +2614,7 @@ global with sharing class ListViewHelper
             listViews.add(lv);
             listViews = HelperDatabase.insertRecords(listViews);
 
-        } catch (Exception e) { }
-
+        }
 
         return listViews;
     }
