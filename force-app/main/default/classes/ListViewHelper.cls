@@ -1953,12 +1953,12 @@ global with sharing class ListViewHelper
             }
 
 
-            HelperDatabase.deleteRecords(listViews.values(), 'simpli_lv__List_View__c');
-            HelperDatabase.deleteRecords(deletedLVConfigStyles, 'simpli_lv__List_View_Config_Column_Style__c');
-            HelperDatabase.deleteRecords(deletedLVConfigConds, 'simpli_lv__List_View_Config_Condition__c');
-            HelperDatabase.deleteRecords(deletedLVConfigParams, 'simpli_lv__List_View_Config_Parameter__c');
-            HelperDatabase.deleteRecords(deletedLVConfigs.values(), 'simpli_lv__List_View_Config__c');
-            HelperDatabase.deleteRecords(deletedUserConfigs, 'simpli_lv__List_View_User_Config__c');
+            HelperDatabase.deleteRecords(listViews.values());
+            HelperDatabase.deleteRecords(deletedLVConfigStyles);
+            HelperDatabase.deleteRecords(deletedLVConfigConds);
+            HelperDatabase.deleteRecords(deletedLVConfigParams);
+            HelperDatabase.deleteRecords(deletedLVConfigs.values());
+            HelperDatabase.deleteRecords(deletedUserConfigs);
 
         } catch (Exception e) {
             response = 'Exception during ListViewHelper.deleteListViews()  ' + ListViewException.getExtendedString(e);

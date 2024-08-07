@@ -271,13 +271,13 @@ public with sharing class HelperDatabase {
     // DELETE
     //--------------------------------------------------------------------------------------------------------------------------
 
-    public static void deleteRecords(List<SObject> data, String objAPIName) 
+    public static void deleteRecords(List<SObject> data) 
     {
 
-        deleteRecords(data, objAPIName, true); 
+        deleteRecords(data, true); 
     }
 
-    public static void deleteRecords(List<SObject> data, String objAPIName, Boolean allOrNone) 
+    public static void deleteRecords(List<SObject> data, Boolean allOrNone) 
     {
         if (data != null && data.size() > 0)
         {
@@ -309,12 +309,12 @@ public with sharing class HelperDatabase {
         return results;
     }
 
-    public static void deleteRecord(SObject data, String objAPIName) 
+    public static void deleteRecord(SObject data) 
     {
         List<SObject> records = new List<SObject>();
         records.add(data);
 
-        deleteRecords(records, objAPIName);
+        deleteRecords(records);
     }
 
 }

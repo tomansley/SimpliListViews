@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-02-2024
+ * @Last Modified On   : 08-07-2024
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -372,7 +372,7 @@ global with sharing class ListViewConfigHelper {
 
         List<List_View_Config_Condition__c> conditions = (List<List_View_Config_Condition__c>) dec.getRecords();
 
-        HelperDatabase.deleteRecords(conditions, 'simpli_lv__List_View_Config_Condition__c');
+        HelperDatabase.deleteRecords(conditions);
 
     }
 
@@ -388,7 +388,7 @@ global with sharing class ListViewConfigHelper {
 
         List<List_View_Config_Column_Style__c> columnStyles = (List<List_View_Config_Column_Style__c>) dec.getRecords();
 
-        HelperDatabase.deleteRecords(columnStyles, 'simpli_lv__List_View_Config_Column_Style__c');
+        HelperDatabase.deleteRecords(columnStyles);
 
     }
 

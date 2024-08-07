@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 04-06-2022
+ * @Last Modified On   : 08-07-2024
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -82,7 +82,7 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
 
             SObjectAccessDecision dec = Security.stripInaccessible(AccessType.READABLE, scope);
 
-            HelperDatabase.deleteRecords(dec.getRecords(), 'List_View__c');
+            HelperDatabase.deleteRecords(dec.getRecords());
             
         } catch (Exception e) {
             String message = 'Exception during ListViewPostProcessBatch.execute()  ' + ListViewException.getExtendedString(e);

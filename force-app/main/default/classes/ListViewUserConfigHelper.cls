@@ -1,8 +1,8 @@
 /**
  * @description       : Helper class for list view user configuration
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-16-2022
- * @last modified by  : 
+ * @last modified on  : 08-07-2024
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   09-08-2020   tom@ansleyllc.com   Initial Version
@@ -182,7 +182,7 @@ public with sharing class ListViewUserConfigHelper {
 
         } else {
             if (config != null)
-                HelperDatabase.deleteRecord(config, 'simpli_lv__List_View_User_Config__c');
+                HelperDatabase.deleteRecord(config);
         }
     }
 

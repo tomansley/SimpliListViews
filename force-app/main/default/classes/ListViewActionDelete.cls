@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 05-31-2024
+ * @last modified on  : 08-07-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -47,7 +47,7 @@ global with sharing class ListViewActionDelete  extends ListViewAction {
                 deletedObjs.put(recordId.substringBefore(':'), obj);
             }
 
-            HelperDatabase.deleteRecords(deletedObjs.values(), objType);
+            HelperDatabase.deleteRecords(deletedObjs.values());
 
             if (deletedObjs.size() == 1)
                 returnStr += '1 record deleted successfully.';
