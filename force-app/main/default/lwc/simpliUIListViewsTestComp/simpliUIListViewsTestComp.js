@@ -6,7 +6,14 @@ import getData from '@salesforce/apex/ListViewTestCompController.getData';
 export default class SimpliUIListViewsTestComp extends LightningElement {
 
     @track selectedAccountId = '';
-    @track standAloneData;
+    @track standAloneData = '';
+
+    get standAloneJSONData() {
+        if (this.standAloneData !== '') {
+            return JSON.stringify(this.standAloneData);
+        }
+        return '';
+    }
 
     @wire (getData, {})
     wiredGetStandAloneData({ error, data }) {
