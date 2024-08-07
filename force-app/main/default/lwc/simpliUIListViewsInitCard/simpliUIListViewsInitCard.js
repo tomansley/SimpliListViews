@@ -102,7 +102,7 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
 
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'List View Processing',
-                        message: 'List view processing has started for all list views. You must do a full page refresh after completion to see changes.',
+                        message: 'List view processing has started for all list views. Refresh page after completion to see changes.',
                         variant: 'success',
                         mode: 'dismissable'
                     }));
