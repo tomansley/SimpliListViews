@@ -1,7 +1,7 @@
 /**
  * @description       : Helper class to aid in the handling of DML transactions
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-24-2024
+ * @last modified on  : 08-07-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -76,12 +76,16 @@ public with sharing class HelperDatabase {
 
     public static SObject insertRecord(SObject data) 
     {
-        List<SObject> records = new List<SObject>();
-        records.add(data);
+        if (data != null)
+        {
+            List<SObject> records = new List<SObject>();
+            records.add(data);
 
-        records = insertRecords(records);
+            records = insertRecords(records);
 
-        return records[0];
+            return records[0];
+        }
+        return null;
     }
 
     public static List<SObject> insertRecords(List<SObject> data, Boolean allOrNone) 
@@ -175,22 +179,30 @@ public with sharing class HelperDatabase {
 
     public static SObject upsertRecord(SObject data) 
     {
-        List<SObject> records = new List<SObject>();
-        records.add(data);
+        if (data != null)
+        {
+            List<SObject> records = new List<SObject>();
+            records.add(data);
 
-        records = upsertRecords(records);
+            records = upsertRecords(records);
 
-        return records[0];
+            return records[0];
+        }
+        return null;
     }
 
     public static SObject upsertRecord(SObject data, String externalIdField) 
     {
-        List<SObject> records = new List<SObject>();
-        records.add(data);
+        if (data != null)
+        {
+            List<SObject> records = new List<SObject>();
+            records.add(data);
 
-        records = upsertRecords(records, externalIdField, true);
-        
-        return records[0];
+            records = upsertRecords(records, externalIdField, true);
+            
+            return records[0];
+        }
+        return null;
    }
 
     public static List<SObject> upsertRecords(List<SObject> data) 
@@ -267,13 +279,16 @@ public with sharing class HelperDatabase {
 
     public static void deleteRecords(List<SObject> data, String objAPIName, Boolean allOrNone) 
     {
-        String objName = HelperSchema.getObjectType(data[0]);
-        Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objName);
+        if (data != null && data.size() > 0)
+        {
+            String objName = HelperSchema.getObjectType(data[0]);
+            Schema.DescribeSObjectResult objDesc = HelperSchema.getObjectSchema(objName);
 
-        if (objDesc.isDeletable() == false)
-            throw new ListViewException('You do not have delete permissions on this object - ' + objName);
+            if (objDesc.isDeletable() == false)
+                throw new ListViewException('You do not have delete permissions on this object - ' + objName);
 
-        Database.delete(data, allOrNone);
+            Database.delete(data, allOrNone);
+        }
     }
 
     public static List<Database.DeleteResult> deleteRecordsWithResults(List<SObject> data, Boolean allOrNone) 
