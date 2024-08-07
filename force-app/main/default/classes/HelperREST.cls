@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-10-2022
+ * @last modified on  : 08-02-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -48,6 +48,7 @@ public with sharing class HelperREST {
         req.setHeader('Authorization', 'Bearer ' + sessionId);
         req.setHeader('Content-Type', 'application/json');
         req.setEndpoint(endPoint);
+        req.setTimeout(120000);
         req.setMethod('GET');
         if (body != null)
             req.setBody(body);
