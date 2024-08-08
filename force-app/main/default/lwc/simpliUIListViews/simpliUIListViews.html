@@ -13,9 +13,9 @@
 
 -->
 <template>
-    <div onclick={hideHoverDetails} onmouseleave={hideHoverDetails} >
+    <div onclick={hideHoverDetails} onmouseleave={hideHoverDetails} class="mainwrapper">
         <template if:true={spinner}>
-            <lightning-spinner alternative-text={label.Loading} class="pageSpinnerHolder"></lightning-spinner>
+             <c-simpli-u-i-list-views-spinner text={label.Loading}></c-simpli-u-i-list-views-spinner>
         </template>
 
         <!-- ------------------------------------------------------------------------ -->
@@ -299,7 +299,7 @@
                 <template if:false={isModeSplitView}>
 
                     <div class={listwrapperstyle}>
-                        <table id="datatable" class={tablestyle} role="grid">
+                        <table id="datatable" class={tablestyle} role="grid" style="overflow: hidden;">
 
                             <!-- ------------------------- -->
                             <!-- HEADER DATA               -->
