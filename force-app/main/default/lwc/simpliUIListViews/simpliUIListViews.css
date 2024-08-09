@@ -1,8 +1,16 @@
-.button-short { line-height: inherit; }
+.mainwrapper {
+    position: relative;
+}
 
-.toastMessage.forceActionsText{ white-space : pre-line !important; }
+.button-short {
+    line-height: inherit;
+}
 
-.dataSpinnerHolder{
+.toastMessage.forceActionsText {
+    white-space: pre-line !important;
+}
+
+.dataSpinnerHolder {
     position: relative;
     display: inline-block;
     margin-left: 30px;
@@ -10,7 +18,7 @@
     white-space: nowrap;
 }
 
-.pageSpinnerHolder{
+.pageSpinnerHolder {
     position: absolute;
     min-height: 180px;
     min-width: 180px;
@@ -20,12 +28,14 @@
 .applistscrollwrapper {
     width: 100%;
     overflow-y: auto;
+    max-height: 60vh;
 }
 
 .virtualapplistscrollwrapper {
     width: 100%;
     overflow-y: auto;
     border-top: red solid 4px;
+    max-height: 60vh;
 }
 
 .tablehorizontalscroll {
@@ -33,7 +43,6 @@
 }
 
 .tablenohorizontalscroll {
-
 }
 
 .relatedlistscrollwrapper {
@@ -84,13 +93,13 @@
     min-width: 20%;
 }
 
-thead th { 
-    position: sticky; 
-    top: 0; 
+thead th {
+    position: sticky;
+    top: 0;
 }
 
-th { 
-    z-index: 1 
+th {
+    z-index: 1;
 }
 
 .slds-card__header {
