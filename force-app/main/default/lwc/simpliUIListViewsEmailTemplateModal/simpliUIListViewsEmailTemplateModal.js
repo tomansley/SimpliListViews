@@ -1,5 +1,5 @@
-import { LightningElement, wire, track, api  } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+/* eslint-disable no-console */
+import { LightningElement, track, api } from 'lwc';
 import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 import getEmailTemplates from '@salesforce/apex/ListViewActionEmailController.getEmailTemplates';
@@ -36,8 +36,8 @@ export default class SimpliUIListViewsEmailTemplateModal extends LightningElemen
     @track calloutCount = 1;            //indicates the number of callouts made for this component
     @track inRenderedCallback = false;  //indicates whether the rendered callback method is processing
     get recordCount() {                 //count of records provided.
-        return this.recordIds.size; 
-    }                 
+        return this.recordIds.size;
+    }
 
     label = { Create, Cancel, Save_All_Data, Reset_All_Data, Send_Email_From_Template, Select_Template, Email_Templates, Record_Count, Description, Email_Subject, Email_Body, Send_Emails };
 
@@ -49,8 +49,7 @@ export default class SimpliUIListViewsEmailTemplateModal extends LightningElemen
 
         console.log('Starting simpliUIListViewsEmailTemplateModal.renderedCallback for MassCreateModal');
 
-        if (this.showModal && this.inRenderedCallback === false) 
-        {
+        if (this.showModal && this.inRenderedCallback === false) {
             this.inRenderedCallback = true;
             this.getEmailTemplates();
         }
@@ -60,87 +59,82 @@ export default class SimpliUIListViewsEmailTemplateModal extends LightningElemen
         this.dispatchEvent(new CustomEvent('close'));
     }
 
-    handleCancelClick(event) {
+    handleCancelClick() {
         this.dispatchEvent(new CustomEvent('close'));
     }
 
     getEmailTemplates() {
 
-        if (this.folderName !== '')
-        {
+        if (this.folderName !== '') {
             this.spinnerOn();
             console.log('simpliUIListViewsEmailTemplateModal CALLOUT - getEmailTemplates - ' + this.calloutCount++);
-            getEmailTemplates({folderName: this.folderName})
-            .then(result => {
-                
-                this.templateList = result;
+            getEmailTemplates({ folderName: this.folderName })
+                .then(result => {
 
-                if (this.templateList.length === 0)
-                {
-                    this.dispatchEvent(SLVHelper.createToast('error', '', 'No Email Templates Available', 'No email templates available in the specified email folder(' + this.folderName + ')', false)); 
+                    this.templateList = result;
+
+                    if (this.templateList.length === 0) {
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'No Email Templates Available', 'No email templates available in the specified email folder(' + this.folderName + ')', false));
+                        this.spinnerOff();
+                        return;
+                    }
+
                     this.spinnerOff();
-                    return;
-                }
 
-                this.spinnerOff();
-                
-            })
-            .catch(error => {
-                this.spinnerOff();
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error retrieving the email templates - ', true)); 
-            });
+                })
+                .catch(error => {
+                    this.spinnerOff();
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error retrieving the email templates - ', true));
+                });
         }
 
     }
-    
+
     handleTemplateChange(event) {
 
         this.spinnerOn();
         this.selectedTemplateName = event.target.value;
-        
-        getEmailTemplateDetails({devName: this.selectedTemplateName})
-        .then(result => {
 
-            this.selectedTemplate = result;
-            this.spinnerOff();
-        })
-        .catch(error => {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error retrieving the chosen email template - ', true)); 
-            this.spinnerOff();
-        });
+        getEmailTemplateDetails({ devName: this.selectedTemplateName })
+            .then(result => {
+
+                this.selectedTemplate = result;
+                this.spinnerOff();
+            })
+            .catch(error => {
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error retrieving the chosen email template - ', true));
+                this.spinnerOff();
+            });
     }
 
-     handleProcessClick(event) {
+    handleProcessClick() {
 
         this.spinnerOn();
 
-        if (this.selectedTemplateName !== undefined)
-        {
-            let selectedRecordIdsStr = JSON.stringify( Array.from(this.recordIds));
+        if (this.selectedTemplateName !== undefined) {
+            let selectedRecordIdsStr = JSON.stringify(Array.from(this.recordIds));
 
             console.log('simpliUIListViewsEmailTemplateModal CALLOUT - processEmails - ' + this.calloutCount++);
-            processEmails({templateDevName: this.selectedTemplateName, whatId: this.whatIdField, recordIdsStr: selectedRecordIdsStr})
-            .then(result => {
+            processEmails({ templateDevName: this.selectedTemplateName, whatId: this.whatIdField, recordIdsStr: selectedRecordIdsStr })
+                .then(result => {
 
-                if (result.endsWith(':success'))
-                {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', this.recordCount + ' email(s) processed successfully.', false)); 
-                    this.handleClose();
+                    if (result.endsWith(':success')) {
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', this.recordCount + ' email(s) processed successfully.', false));
+                        this.handleClose();
+                        this.spinnerOff();
+                    } else if (result.endsWith(':submitted')) {
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Submitted', this.recordCount + ' email(s) submitted for processing.', false));
+                        this.handleClose();
+                        this.spinnerOff();
+                    } else {
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the emails - ' + result, false));
+                        this.spinnerOff();
+                    }
+                })
+                .catch(error => {
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the emails - ', true));
                     this.spinnerOff();
-                } else if (result.endsWith(':submitted'))
-                {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Submitted', this.recordCount + ' email(s) submitted for processing.', false)); 
-                    this.handleClose();
-                    this.spinnerOff();
-                } else {
-                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', 'There was an error processing the emails - ' + result, false)); 
-                    this.spinnerOff();
-                }
-            })
-            .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the emails - ', true)); 
-                this.spinnerOff();
-            });
+                });
         }
 
     }

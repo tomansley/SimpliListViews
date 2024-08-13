@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-07-2024
+ * @last modified on  : 08-12-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -24,6 +24,8 @@
 global with sharing class ListViewHelper 
 {
     public static String LATEST_QUERY = '';
+    private static Boolean hasEnterprise = null;
+    private static Map<String, ListViewFunction2> functions = new Map<String, ListViewFunction2>();
     public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
    
@@ -100,6 +102,22 @@ global with sharing class ListViewHelper
 
     public static Integer offset           = -1;                  //used to hold the offset that is set when performing a query.
 
+    public static Object processFunction(String apexClass, Object value, Map<String, Object> context)
+    {
+        //if (!ListViewHelper.hasEnterprise()) return value;
+
+        ListViewFunction2 function;
+        if (ListViewHelper.functions.containsKey(apexClass)) { //get from cache if possible
+            function = ListViewHelper.functions.get(apexClass);
+        } else {
+            Type t = HelperSchema.getClassType(apexClass);
+            function = (ListViewFunction2) t.newInstance();
+            ListViewHelper.functions.put(apexClass, function);
+        }
+
+        return function.get(value, context);
+    }
+
     public static String getPrimaryKey(List_View__c listView)
     {
         return listView.Object_Name__c.replace(' ', '_') + ':' + listView.API_Name__c;
@@ -112,12 +130,16 @@ global with sharing class ListViewHelper
 
     public static Boolean hasEnterprise()
     {
-        if (HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) 
-            return true;
-        else if (HelperSchema.isObject('simpli_lv_ent__List_Views_Org_Connection__c')) //a hack for the enterprise org as its not installed
-            return true;
-        else
-            return false;
+        if (ListViewHelper.hasEnterprise == null)
+        {
+            if (HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) 
+                ListViewHelper.hasEnterprise = true;
+            else if (HelperSchema.isObject('simpli_lv_ent__List_Views_Org_Connection__c')) //a hack for the enterprise org as its not installed
+                ListViewHelper.hasEnterprise = true;
+            else
+                ListViewHelper.hasEnterprise = false;
+        }
+        return ListViewHelper.hasEnterprise;
     }
 
     /*
@@ -3589,7 +3611,18 @@ global with sharing class ListViewHelper
         return visible;
     }
 
+    public static Map<String, StandardColumn> getStandardColumnsFromJSON(String columnJSON)
+    {
+        //get all columns from the list view
+        List<StandardColumn> allColumns = (List<StandardColumn>) JSON.deserialize(columnJSON, List<StandardColumn>.class);
 
+        Map<String, StandardColumn> columns = new Map<String, StandardColumn>();
+        for (StandardColumn column: allColumns)
+            columns.put(column.fieldNameOrPath, column);
+
+        return columns;
+            
+    } 
 
 
 
@@ -3601,7 +3634,13 @@ global with sharing class ListViewHelper
     //================================================================================================================
     // INNER CLASSES
     //================================================================================================================
-
+    public class StandardColumn {
+        public String fieldNameOrPath;
+        public Boolean hidden;
+        public String type;
+        public String label;
+        public String function;
+    }
 
     public class ColumnSortData implements Comparable {
 

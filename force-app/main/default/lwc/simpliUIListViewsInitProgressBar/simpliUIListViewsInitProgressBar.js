@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { LightningElement, track, api } from 'lwc';
 
 import getListViewInitProgress from '@salesforce/apex/ListViewController.getListViewInitProgress';
@@ -13,11 +14,11 @@ export default class SimpliUIListViewsInitProgressBar extends LightningElement {
     batchStatus = 'Initializing';
 
     connectedCallback() {
-        
+
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
         this._interval = setInterval(() => {
 
-            getListViewInitProgress({batchId: this.batchId})
-            .then(result => {
+            getListViewInitProgress({ batchId: this.batchId }).then(result => {
 
                 const progressResult = result.split(':'); //response = progress:status               
 
@@ -28,14 +29,12 @@ export default class SimpliUIListViewsInitProgressBar extends LightningElement {
                     this.hasCompleted = true;
                     clearInterval(this._interval);
                 }
-            })
-            .catch(error => {
+            }).catch(error => {
                 console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
                 this.progress = 0;
             });
 
         }, 2000);
-
     }
 
 }

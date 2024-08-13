@@ -9,7 +9,7 @@ import getRecordTypeId from '@salesforce/apex/ListViewsPicklistController.getRec
 import None_Dash from '@salesforce/label/c.None_Dash';
 
 export default class SimpliUIListViewsPicklist extends LightningElement {
-    
+
     @wire(CurrentPageReference) pageRef;
 
     @api type;                        //indicates the type of component to be created. (picklist or multipicklist)
@@ -42,8 +42,8 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         { label: 'Default 1', value: 'Default1' },
         { label: 'Default 2', value: 'Default2' },
         { label: '--None--', value: "" }
-    ];   
-    
+    ];
+
     get recordTypeId() {
         return this.recordTypeIdValue;
     }
@@ -51,7 +51,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         this.recordTypeIdValue = value;
     }
 
-    @api 
+    @api
     get selectedValue() {
         return this.value;
     }
@@ -68,7 +68,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
                 this.value = val.split(';');
         }
     }
-         
+
     async renderedCallback() {
 
         if (this.type === 'picklist') {
@@ -80,7 +80,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
         this.compName = this.rowId + ':' + this.pickListFieldApiName;
 
         if (SLVHelper.isEmpty(this.recordTypeId)) {
-            this.recordTypeId = await getRecordTypeId({recordId: this.sfdcId});
+            this.recordTypeId = await getRecordTypeId({ recordId: this.sfdcId });
         }
 
         console.log('In simpliUIListViewsPicklist.renderedCallback');
@@ -103,7 +103,7 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             let response = data;
 
             //if we have a valid picklist field then get the options.
-            if(response.picklistFieldValues[this.pickListFieldApiName] !== undefined) {
+            if (response.picklistFieldValues[this.pickListFieldApiName] !== undefined) {
                 let tempOptions = [];
                 if (this.type === 'picklist') {
                     tempOptions = [{ label: '--None--', value: "" }];
@@ -116,19 +116,18 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             console.log('Options - ', JSON.stringify(this.options));
 
             //if the selected value has NOT been provided then default it.
-            if(SLVHelper.isEmpty(this.selectedValue)) {
+            if (SLVHelper.isEmpty(this.selectedValue)) {
                 if (this.type === 'picklist') {
                     this.value = { label: '--None--', value: "" }.value;
                 } else if (this.type === 'multipicklist') {
                     this.value = this.selectedValue;
                 }
 
-            //otherwise set it based on provided value/s
+                //otherwise set it based on provided value/s
             } else {
                 if (this.type === 'picklist') {
                     let pickVal = this.options.find(listItem => listItem.value === this.value);
-                    if (!SLVHelper.isEmpty(pickVal))
-                    {
+                    if (!SLVHelper.isEmpty(pickVal)) {
                         this.value = pickVal.value;
                     }
                 }
@@ -146,8 +145,8 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
      */
     handleChange(event) {
         let tempValue = event.target.value;
-        console.log("event.target.value",event.target.value);
-        console.log("this.value",tempValue);
+        console.log("event.target.value", event.target.value);
+        console.log("this.value", tempValue);
         let selectedValue;
         if (Array.isArray(tempValue)) {
             selectedValue = tempValue.join(';');

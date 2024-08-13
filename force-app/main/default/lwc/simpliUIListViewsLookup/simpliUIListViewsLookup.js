@@ -16,12 +16,12 @@ export default class SimpliUIListViewsLookup extends LightningElement {
     @api initialId = '';     //the initial ID value of the field.
     @api fieldObjName;       //the API name of the object that the field is on that is being populated
     @api fieldName;          //the API name of the field the lookup is populating. Used to create the unique key only
-    
+
     href;
     searchTerm;
     isInitialized = false; //identifies if the component has been initialized.
     iconName = 'standard:account'; //the icon name used when displaying the options. This will changed based on the provided object type
-    
+
     uniqueKey;           //a key which is unique to this lookup component and passed back with the value once a selection has been made 
     @track selectedName; //the string name of the selected record (used for display purposes only)
     @track selectedId;   //the id of the selected record
@@ -36,8 +36,7 @@ export default class SimpliUIListViewsLookup extends LightningElement {
     label = { Search_Dot }
 
     renderedCallback() {
-        if (this.isInitialized === false)
-        {
+        if (this.isInitialized === false) {
             this.isInitialized = true;
             console.log('In simpliUIListViewsLookup.renderedCallback');
             console.log('rowId     - ' + this.rowId);
@@ -51,32 +50,30 @@ export default class SimpliUIListViewsLookup extends LightningElement {
             this.iconName = 'standard:' + this.fieldObjName.toLowerCase();
 
             //if we have an initial value then set that as the chosen option.
-            if (this.initialId !== '' && this.initialName !== '')
-            {
+            if (this.initialId !== '' && this.initialName !== '') {
                 this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
-                this.hasValue = true;    
+                this.hasValue = true;
                 this.selectedId = this.initialId;
                 this.selectedName = this.initialName;
-            
-            //if we do not have the name of the record to display then get it.
-            } else if (this.initialId !== '' && this.initialName === '')
-            {
-                getRecordName({selectedId: this.initialId, fieldObjName: this.fieldObjName})
-                .then(result => {
-                    console.log('Get record name successful for ' + this.pageName);
-                    console.log('Record name - ' + result);
 
-                    this.selectedName = result;
-    
-                })
-                .catch(error => {
-                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
-                });    
+                //if we do not have the name of the record to display then get it.
+            } else if (this.initialId !== '' && this.initialName === '') {
+                getRecordName({ selectedId: this.initialId, fieldObjName: this.fieldObjName })
+                    .then(result => {
+                        console.log('Get record name successful for ' + this.pageName);
+                        console.log('Record name - ' + result);
+
+                        this.selectedName = result;
+
+                    })
+                    .catch(error => {
+                        console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace + ' for ' + this.pageName);
+                    });
 
                 this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
-                this.hasValue = true;    
+                this.hasValue = true;
                 this.selectedId = this.initialId;
-            
+
             }
 
             console.log('selectedName  - ' + this.selectedName);
@@ -87,7 +84,7 @@ export default class SimpliUIListViewsLookup extends LightningElement {
     /*
      * Method called when the search term has been updated and the data is searched for.
      */
-    @wire(search, {searchTerm : '$searchTerm', obj : '$fieldObjName'})
+    @wire(search, { searchTerm: '$searchTerm', obj: '$fieldObjName' })
     wiredRecords({ error, data }) {
         if (data) {
             this.options = data;
@@ -117,7 +114,7 @@ export default class SimpliUIListViewsLookup extends LightningElement {
     handleBlur() {
         console.log("In handleBlur");
         // eslint-disable-next-line @lwc/lwc/no-async-operation
-        this.blurTimeout = setTimeout(() =>  {this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus'}, 300);
+        this.blurTimeout = setTimeout(() => { this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus' }, 300);
     }
 
     /*
@@ -129,14 +126,14 @@ export default class SimpliUIListViewsLookup extends LightningElement {
         this.selectedName = event.currentTarget.dataset.value;
         console.log('selectedId - ', this.selectedId);
         console.log('selectedName - ', this.selectedName);
-        
+
         //send selected value to parent and in return parent sends the value to @api rowId
         let rowId = this.rowId;
         let selectedValue = this.selectedId;
         let field = this.fieldName;
         this.dispatchEvent(new CustomEvent('lookupchange', { detail: { selectedValue, rowId, field }, }));
 
-        if(this.blurTimeout) {
+        if (this.blurTimeout) {
             clearTimeout(this.blurTimeout);
         }
         this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
@@ -149,7 +146,7 @@ export default class SimpliUIListViewsLookup extends LightningElement {
     onChange(event) {
         console.log("In onChange");
         this.searchTerm = event.target.value;
-        console.log("searchTerm",this.searchTerm);
+        console.log("searchTerm", this.searchTerm);
     }
 
     /*

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 /*
@@ -7,19 +8,17 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 * @param message      - String - the message body to be displayed
 * @param includeStack - Boolean - indicates whether the stacktrace should be displayed with the message
 */
-export function createToast(type, error, title, message, includeStack) 
-{
+export function createToast(type, error, title, message, includeStack) {
     let mode = 'sticky';
     if (type === 'success' || type === 'info')
         mode = 'dismissable';
 
     let errorStr = message;
-    if (error != '' && error.body !== undefined)
-    {
+    if (error !== '' && error.body !== undefined) {
         if (includeStack === true)
             errorStr = message + ' - ' + error.body.message;
         console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-    } else if (error != '') {
+    } else if (error !== '') {
         if (includeStack === true)
             errorStr = message + ' - ' + error.message;
         console.log('Error Detected - ' + error.message + ' | ' + error.stack);
@@ -36,29 +35,27 @@ export function createToast(type, error, title, message, includeStack)
 export function invokeWorkspaceAPI(methodName, methodArgs) {
     return new Promise((resolve, reject) => {
         const apiEvent = new CustomEvent("internalapievent", {
-        bubbles: true,
-        composed: true,
-        cancelable: false,
-        detail: {
-            category: "workspaceAPI",
-            methodName: methodName,
-            methodArgs: methodArgs,
-            callback: (err, response) => {
-            if (err) {
-                return reject(err);
-            } else {
-                return resolve(response);
+            bubbles: true,
+            composed: true,
+            cancelable: false,
+            detail: {
+                category: "workspaceAPI",
+                methodName: methodName,
+                methodArgs: methodArgs,
+                callback: (err, response) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    return resolve(response);
+                }
             }
-            }
-        }
         });
-    
+
         window.dispatchEvent(apiEvent);
     });
 }
 
-export function isEmpty(str)
-{
+export function isEmpty(str) {
     if (str === undefined || str === null || str === '') return true;
     return false;
 }
@@ -72,8 +69,7 @@ export function toBool(value) {
     return strValue === 'true' || strValue === '1' ? true : false
 }
 
-export function setFieldTypes(type, obj)
-{
+export function setFieldTypes(type, obj) {
     if (type === 'boolean') obj.isBoolean = true; else obj.isBoolean = false;
     if (type === 'currency') obj.isCurrency = true; else obj.isCurrency = false;
     if (type === 'date') obj.isDate = true; else obj.isDate = false;
@@ -113,15 +109,14 @@ export function headRows(fieldMetaData) {
 
 export function bodyRows(selectedRecordIds, listViewDataRows) {
     var body = []
-    listViewDataRows.forEach(row => { 
+    listViewDataRows.forEach(row => {
 
         //if no rows are selected or the Id has been selected.
-        if (selectedRecordIds.size === 0 || selectedRecordIds.has(row.salesforceId))
-        {
-            var bodyRow = [];
+        if (selectedRecordIds.size === 0 || selectedRecordIds.has(row.salesforceId)) {
+            let bodyRow = [];
 
-            for (var i = 0; i < row.fields.length; i++) {
-                var field = row.fields[i];
+            for (let i = 0; i < row.fields.length; i++) {
+                const field = row.fields[i];
                 if (field.isDate || field.isDateTime || field.isTime) {
                     bodyRow.push(field.prettyValue);
                 } else {

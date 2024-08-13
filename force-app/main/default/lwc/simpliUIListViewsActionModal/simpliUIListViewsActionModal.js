@@ -1,5 +1,5 @@
-import { LightningElement, wire, track, api  } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+/* eslint-disable no-console */
+import { LightningElement, track, api  } from 'lwc';
 import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 //------------------------ LABELS ------------------------
@@ -41,7 +41,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
 
         if (this.showModal === true && !this.isInitialized && this.recordIds !== undefined)
         {
-            var parsedIds = JSON.parse(this.recordIds);
+            const parsedIds = JSON.parse(this.recordIds);
             this.recordCount = parsedIds.length; 
 
             if (this.recordCount === 1)
@@ -73,7 +73,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                 .catch(error => {
                     console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
                     this.spinner = false;
-                    return;
+                    
                 });
                 
             } else {
@@ -89,7 +89,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                 .catch(error => {
                     console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
                     this.spinner = false;
-                    return;
+                    
                 });
             }
 
@@ -102,9 +102,9 @@ export default class simpliUIListViewsActionModal extends LightningElement {
     handleProcessClick() {
         this.spinner = true;
 
-        var resultStr;
-        var valuesMap = new Map();
-        var strValuesMap;
+        let resultStr;
+        let valuesMap = new Map();
+        let strValuesMap;
 
         //get all the non-displayed parameters into the request data map
         this.listViewAction.nonDisplayParameters.forEach(element => { 
@@ -144,7 +144,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                 let message = resultStr.substring(resultStr.indexOf(':')+1);
                 if (message === '' && status === 'Ok') {
                     message = 'All records have been processed successfully.';
-                } else if (message === '' && status != 'Ok') {
+                } else if (message === '' && status !== 'Ok') {
                     message = 'There was an error processing the records.';
                 }
 
@@ -159,14 +159,14 @@ export default class simpliUIListViewsActionModal extends LightningElement {
                 } else {
                     this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', message, false)); 
                     this.spinner = false;
-                    return;
+                    
                 }
             })
             .catch(error => {
                 resultStr = undefined;
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error processing the records - ', true)); 
                 this.spinner = false;
-                return;
+                
         });
     }
   

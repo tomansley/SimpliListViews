@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-08-2024
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 08-10-2024
+ * @last modified by  : 
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -280,6 +280,9 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                     fieldName,
                                                     columnIndex);
 
+            if (columnData.containsKey('function'))
+                 field.setFunction((String) columnData.get('function'));
+
             if (sortDataByFieldName.containsKey(fieldName))
             {
                 field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
@@ -310,8 +313,6 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 column.columnWidth = widthsByIndex.get(column.columnIndex);
             }    
         }
-
-
 
         if (dataRows == null)
             return rows;
@@ -360,6 +361,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
                     field.setIsEditable(fieldData.isEditable);
 
+                    field.setFunction(columnMetaData.getFunction());
+
                     //also set the editable state into the column data
                     if (rows.getFieldMetaData(field.getName()) != null)
                         rows.getFieldMetaData(field.getName()).setIsEditable(fieldData.isEditable);
@@ -373,8 +376,6 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                         field.setObjValueId(rowWrapper.getSalesforceId()); //if this is not a lookup then set its own wrappers SFDC Id
                     }
 
-                    System.debug(LoggingLevel.FINE, 'Field - ' + field);
-                    
                     if (ListViewAbstract.validNameColumnNames.contains(field.getName().substringAfterLast('.'))
                         || ListViewAbstract.validNameColumnNames.contains(field.getName())
                         || (field.objValue != null //if we have a lookup object
@@ -390,6 +391,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                         field.sortDir   = sortDataByFieldName.get(columnMetaData.name).sortDirection;
                     }
 
+                    System.debug(LoggingLevel.FINE, 'Row Field - ' + field);
+                    
                     rowWrapper.addField(field);
                 
                 }
@@ -433,11 +436,10 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                                   columnMetaData.columnIndex,
                                                                   fieldData.parentObjType);
                             field.longName = columnMetaData.name;
+                            field.setFunction(columnMetaData.getFunction());
 
                             if (fieldData.objValueId != null)
                                 field.setObjValueId(fieldData.objValueId);
-        
-                            System.debug(LoggingLevel.FINE, 'Field - ' + field);
         
                             if ((ListViewAbstract.validNameColumnNames.contains(fieldData.name)             //if we have the name of the object
                                     || fieldData.parentObjType == 'Task' && fieldData.name == 'Subject')
@@ -540,6 +542,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                       fieldWrapper.columnIndex,
                                                       '');
                         totalField.setIsTotalsRow(true);
+                        totalField.setFunction(fieldWrapper.getFunction());
 
                         System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
 

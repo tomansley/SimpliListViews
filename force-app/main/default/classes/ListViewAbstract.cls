@@ -1,8 +1,8 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 05-20-2024
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 08-10-2024
+ * @last modified by  : 
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   10-23-2020   tom@ansleyllc.com   Initial Version
@@ -533,7 +533,7 @@ public with sharing abstract class ListViewAbstract {
             debug += '    Field Metadata' + '\n';
             for (FieldWrapper metadata: fieldMetaData)
             {
-                debug += '    Name - ' + metadata.name + ', Column Index - ' + metadata.columnIndex + ', Label - ' + metadata.label + ', Type - ' + metadata.type + '\n';
+                debug += '    Name - ' + metadata.name + ', Column Index - ' + metadata.columnIndex + ', Label - ' + metadata.label + ', Type - ' + metadata.type + ', Function - ' + metadata.getFunction() + '\n';
             }
             debug += '' + '\n';
             debug += '    Row Data' + '\n';
@@ -544,7 +544,7 @@ public with sharing abstract class ListViewAbstract {
                 for (String fieldKey: row.fields.keySet())
                 {
                     FieldWrapper field = row.fields.get(fieldKey);
-                    debug += '        Key - ' + fieldKey + ', Name - ' + field.name + ', Long Name - ' + field.longName + ', Label - ' + field.label + ', Value - ' + field.getValue() + ', Type - ' + field.getType() + ', objValueId - ' + field.objValueId + ', URL Str - ' + field.urlStr + ', parentObjType - ' + field.parentObjType + ', isTotalsRow - ' + field.isTotalsRow + ', isEditable - ' + field.isEditable + '\n';
+                    debug += '        Key - ' + fieldKey + ', Name - ' + field.name + ', Long Name - ' + field.longName + ', Label - ' + field.label + ', Value - ' + field.getValue() + ', Type - ' + field.getType() + ', Function - ' + field.getFunction() + ', objValueId - ' + field.objValueId + ', URL Str - ' + field.urlStr + ', parentObjType - ' + field.parentObjType + ', isTotalsRow - ' + field.isTotalsRow + ', isEditable - ' + field.isEditable + '\n';
                 }                    
                 debug += '' + '\n';
             }
@@ -1126,6 +1126,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isTotalsRow;    //identifies whether the row this field is a part of is a totals row.
         public String columnWidth;     //indicates the preset column width.
         public String cssStyle;        //the css style that should be applied to this field based on the column styles configured
+        public String functionApexClass;//if the field is to be calculated based on a provided function this is the apex class to use
 
         public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
         {
@@ -1136,7 +1137,6 @@ public with sharing abstract class ListViewAbstract {
             this.columnIndex   = columnIndex;
             this.isSortable    = true;
             this.urlTarget     = '_self';
-            this.objValue      = objValue;
             this.parentObjType = parentObjType;
             this.longName      = '';
             this.isTotalsRow   = false;
@@ -1144,10 +1144,10 @@ public with sharing abstract class ListViewAbstract {
             this.setType(type); //must be below setValue() as it uses value to determine type in some cases.
             
             String debug = '\n\n---------------------------------------------------------------\n';
-            debug       += 'Label - ' + this.label + '\n';
-            debug       += 'type - ' + this.type + '\n';
-            debug       += 'object - ' + this.objValue + '\n';
-            debug       += 'name - ' + this.name + '\n';
+            debug       += 'Label       - ' + this.label + '\n';
+            debug       += 'type        - ' + this.type + '\n';
+            debug       += 'object      - ' + this.objValue + '\n';
+            debug       += 'name        - ' + this.name + '\n';
             debug       += 'columnIndex - ' + this.columnIndex + '\n';
             debug       += '---------------------------------------------------------------\n';
             System.debug(LoggingLevel.FINE, debug);
@@ -1172,6 +1172,22 @@ public with sharing abstract class ListViewAbstract {
             debug       += 'columnIndex - ' + this.columnIndex + '\n';
             debug       += '---------------------------------------------------------------\n';
             System.debug(LoggingLevel.FINE, debug);
+        }
+
+        public Boolean hasFunction()
+        {
+            if (String.isBlank(this.functionApexClass)) return false;
+            return true;
+        }
+
+        public void setFunction(String functionApexClass)
+        {
+            this.functionApexClass = functionApexClass;
+        }
+
+        public String getFunction()
+        {
+            return this.functionApexClass;
         }
 
         public void setCSSStyle(String cssStyle)
@@ -1261,8 +1277,10 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public Boolean getIsEditable()
         {
-            //only editable if its a field that is on the main object or a lookup.
-            if (this.name.countMatches('.') > 1 || (this.name.countMatches('.') == 1 && !this.name.contains('.Name'))) return false;
+            //only editable if its a field that is on the main object or a lookup and is not a function
+            if (this.name.countMatches('.') > 1 
+               || hasFunction() 
+               || (this.name.countMatches('.') == 1 && !this.name.contains('.Name'))) return false;
             
             System.debug(LoggingLevel.DEBUG, 'IS EDITABLE - ' + isEditable + ' - ' + this.label);
 
@@ -1307,7 +1325,7 @@ public with sharing abstract class ListViewAbstract {
         }
 
         /*
-         * Method to return a pretty human readable version of the value.
+         * Method to return a pretty human readable version of the value. This is used for printing out the PDF
          */
         @AuraEnabled(cacheable=true)
         public String getPrettyValue()
@@ -1328,6 +1346,17 @@ public with sharing abstract class ListViewAbstract {
         {
             String strValue = '';
             
+            //if we have a function we turn the object value into another value
+            if (hasFunction()) {
+                System.debug(LoggingLevel.DEBUG, 'Before function - ' + this.objValue);
+                Map<String, Object> context = new Map<String, Object>();
+                context.put('SObject', this.fieldObj);
+                this.objValue = ListViewHelper.processFunction(this.getFunction(), this.objValue, context);
+                System.debug(LoggingLevel.DEBUG, 'After function - ' + this.objValue);
+            } else {
+                System.debug(LoggingLevel.DEBUG, 'No function');
+            }
+
             //No Value!
             if (this.objValue == null) {
                 strValue = '';
@@ -1681,6 +1710,13 @@ public with sharing abstract class ListViewAbstract {
             cloneField.urlStr = urlStr;
             cloneField.setFieldObj(fieldObj);
             cloneField.objValueId = objValueId;
+            cloneField.functionApexClass = functionApexClass;
+            cloneField.columnWidth = columnWidth;
+            cloneField.sortIndex = sortIndex;
+            cloneField.isEditable = isEditable;
+            cloneField.isTotalsRow = isTotalsRow;
+            cloneField.cssStyle = cssStyle;
+            //public String key;
 
             //if we are not deleting the field then it means its the header record so allow edits.
             if (!deleteFieldData)

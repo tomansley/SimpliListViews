@@ -150,17 +150,16 @@
                 <tbody>
                     <template for:each={config.parameters} for:item="param">
                         <tr key={param.name} class="slds-hint-parent">
-
-                            <td key={param.name} style="width: 30%;">
-                                <div key={param.name} class="slds-truncate" title={param.name}>
+                            <td style="width: 30%;">
+                                <div class="slds-truncate" title={param.name}>
                                     {param.label}
                                     &nbsp;
-                                    <div key={param.name} class="slds-wrap" style="white-space:normal; font-size:0.75em" title={param.name}>
+                                    <div class="slds-wrap" style="white-space:normal; font-size:0.75em" title={param.name}>
                                         {param.description}
                                     </div>
                                 </div>
                             </td>
-                            <td key={param.name} data-label={param.name} style="width: 70%;">
+                            <td data-label={param.name} style="width: 70%;">
                                 <div class="slds-form-element__control" title={param.value}>
                                     <template if:true={param.isBoolean}>
                                         <lightning-combobox placeholder={label.Select_A_Value}

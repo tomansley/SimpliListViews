@@ -1,4 +1,5 @@
-import {LightningElement, api} from 'lwc';
+/* eslint-disable no-console */
+import { LightningElement, api } from 'lwc';
 
 export default class simpliUIListViewsFlow extends LightningElement {
     @api width;
@@ -16,8 +17,7 @@ export default class simpliUIListViewsFlow extends LightningElement {
             if (event.data.flowOrigin !== this.url) {
                 return;
             }
-            if (event.data.flowStatus === 'FINISHED')
-            {
+            if (event.data.flowStatus === 'FINISHED') {
                 const moveEvt = new CustomEvent('finish', {
                     detail: {
                         //flowStatus: event.data.flowStatus,
@@ -36,8 +36,7 @@ export default class simpliUIListViewsFlow extends LightningElement {
 
     get finalWidth() {
         let finalWidth = '100%';
-        if (this.width !== undefined && this.width !== '')
-        {
+        if (this.width !== undefined && this.width !== '') {
             finalWidth = this.width;
         }
 
@@ -46,8 +45,7 @@ export default class simpliUIListViewsFlow extends LightningElement {
 
     get finalHeight() {
         let finalHeight = '300';
-        if (this.height !== undefined && this.height !== '')
-        {
+        if (this.height !== undefined && this.height !== '') {
             finalHeight = this.height;
         }
 
@@ -62,24 +60,22 @@ export default class simpliUIListViewsFlow extends LightningElement {
                 recordIdStr = recordIdStr + '"' + recordId + '",';
         });
 
-        
-        if (recordIdStr.startsWith(','))
-        {
+
+        if (recordIdStr.startsWith(',')) {
             recordIdStr = recordIdStr.replace(',', '');
         }
-        if (recordIdStr.endsWith(','))
-        {
-            recordIdStr = recordIdStr.substring(0, recordIdStr.length-1);
+        if (recordIdStr.endsWith(',')) {
+            recordIdStr = recordIdStr.substring(0, recordIdStr.length - 1);
         }
 
         if (recordIdStr !== '')
             recordIdStr = '&recordIds=' + encodeURI(recordIdStr);
-            
+
         let origin = '&origin=' + encodeURI(this.url);
         let finalURL = this.url + this.flowName + recordIdStr + origin;
 
         console.log('FINAL URL - ' + finalURL);
-        
+
         return finalURL;
     }
 }

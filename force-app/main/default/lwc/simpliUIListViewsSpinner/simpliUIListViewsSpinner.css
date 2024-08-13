@@ -1,9 +1,9 @@
 .loader::after {
-    position:absolute;
-    content:attr(data-text);
-    width:100%;
-    text-align:center;
-    font-weight:bold;
+    position: absolute;
+    content: attr(data-text);
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
     top: calc(50% + 1rem);
-    color:grey;
+    color: grey;
 }

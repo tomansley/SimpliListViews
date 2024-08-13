@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable @lwc/lwc/no-async-operation */
 
-import { api, LightningElement, track, wire } from 'lwc';
+import { api, LightningElement, track } from 'lwc';
 import getRecordName from '@salesforce/apex/ListViewTypeAheadController.getRecordName';
 import search from '@salesforce/apex/ListViewTypeAheadController.search';
 
@@ -14,92 +14,85 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
     @api initialName = '';  //the initial string value of the field for display purposes only
 
     _initialId;          //the initial value of the field.
-    @api set initialId(value) 
-         {
-            if (this.searchType === 'schema') {
-                this.searchTerm = value;
-            }
-            this._initialId = value;
-            this.search();
-         }
-         get initialId() { 
-             return this._initialId; 
-         }
+    @api set initialId(value) {
+        if (this.searchType === 'schema') {
+            this.searchTerm = value;
+        }
+        this._initialId = value;
+        this.search();
+    }
+    get initialId() {
+        return this._initialId;
+    }
 
 
     _searchType;          //indicates the type of data being searched for. i.e. sobject, metadata, schema
-    @api set searchType(value) 
-         {
-            if (value !== this._searchType) {
-                this.searchTerm = '';
-                this.oldSearchTerm = '';
-            }
-            this._searchType = value;
-         }
-         get searchType() { 
-             return this._searchType; 
-         }
+    @api set searchType(value) {
+        if (value !== this._searchType) {
+            this.searchTerm = '';
+            this.oldSearchTerm = '';
+        }
+        this._searchType = value;
+    }
+    get searchType() {
+        return this._searchType;
+    }
 
     _fieldObjName;          //the API name of the object that the field is on that is being populated
-    @api set fieldObjName(value) 
-         {
-            if (value !== this._fieldObjName) {
-                this.searchTerm = '';
-                this.oldSearchTerm = '';
-            }
-            this._fieldObjName = value;
-         }
-         get fieldObjName() { 
-             return this._fieldObjName; 
-         }
+    @api set fieldObjName(value) {
+        if (value !== this._fieldObjName) {
+            this.searchTerm = '';
+            this.oldSearchTerm = '';
+        }
+        this._fieldObjName = value;
+    }
+    get fieldObjName() {
+        return this._fieldObjName;
+    }
 
     _whereClause;           //any additional criteria (in SOQL format without WHERE keyword) to be applied when displaying values
-    @api set whereClause(value) 
-         {
-            if (value !== this._whereClause) {
-                this.searchTerm = '';
-                this.oldSearchTerm = '';
-            }
-            this._whereClause = value;
-            this.search();
-         }
-         get whereClause() { 
-             return this._whereClause; 
-         }
+    @api set whereClause(value) {
+        if (value !== this._whereClause) {
+            this.searchTerm = '';
+            this.oldSearchTerm = '';
+        }
+        this._whereClause = value;
+        this.search();
+    }
+    get whereClause() {
+        return this._whereClause;
+    }
 
     _labelFieldName;           //the API name of the label field the lookup is populating. Used to create the unique key only
-    @api set labelFieldName(value) 
-         {
-            if (value !== this._labelFieldName) {
-                this.searchTerm = '';
-                this.oldSearchTerm = '';
-            }
-            this._labelFieldName = value;
-         }
-         get labelFieldName() { 
-             return this._labelFieldName; 
-         }
+    @api set labelFieldName(value) {
+        if (value !== this._labelFieldName) {
+            this.searchTerm = '';
+            this.oldSearchTerm = '';
+        }
+        this._labelFieldName = value;
+    }
+    get labelFieldName() {
+        return this._labelFieldName;
+    }
 
     _keyFieldName;           //the API name of the labels associated key field.
-    @api set keyFieldName(value) 
-         {
-            if (value !== this._keyFieldName) {
-                this.searchTerm = '';
-                this.oldSearchTerm = '';
-            }
-            this._keyFieldName = value;
-         }
-         get keyFieldName() { 
-             return this._keyFieldName; 
-         }
+    @api set keyFieldName(value) {
+        if (value !== this._keyFieldName) {
+            this.searchTerm = '';
+            this.oldSearchTerm = '';
+        }
+        this._keyFieldName = value;
+    }
+    get keyFieldName() {
+        return this._keyFieldName;
+    }
 
     _searchTerm;           //the API name of the labels associated key field.
-    set searchTerm(value) 
-    {
+    set searchTerm(value) {
         this._searchTerm = value;
     }
-    get searchTerm() { 
-        return this._searchTerm; 
+    get searchTerm() {
+        return this._searchTerm;
     }
 
     @api iconName;          //the icon name used when displaying the options.
@@ -107,7 +100,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
     href;
     oldSearchTerm;
     isInitialized = false; //identifies if the component has been initialized.
-    
+
     uniqueKey;           //a key which is unique to this search component and passed back with the value once a selection has been made 
     @track selectedName; //the string name of the selected record (used for display purposes only)
     @track selectedId;   //the id of the selected record
@@ -122,10 +115,8 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
     label = { Search_Dot }
 
     renderedCallback() {
-        if (this.isInitialized === false)
-        {
-            if (this.searchType !== '' && this.searchType !== undefined)
-            {
+        if (this.isInitialized === false) {
+            if (this.searchType !== '' && this.searchType !== undefined) {
                 console.log('In SimpliUIListViewsTypeAhead.renderedCallback');
                 console.log('searchType     - ' + this.searchType);
                 console.log('initialName    - ' + this.initialName);
@@ -137,32 +128,30 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
                 console.log('uniqueKey - ' + this.uniqueKey);
 
                 //if we have an initial value then set that as the chosen option.
-                if (this.initialId !== '' && this.initialName !== '')
-                {
+                if (this.initialId !== '' && this.initialName !== '') {
                     this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
-                    this.hasValue = true;    
+                    this.hasValue = true;
                     this.selectedId = this.initialId;
                     this.selectedName = this.initialName;
                     this.isInitialized = true;
 
-                //if we do not have the name of the record to display then get it.
-                } else if (this.searchType === 'sobject' && this.initialId !== undefined && this.initialId !== '' && this.initialName === '')
-                {
-                    getRecordName({selectedId: this.initialId, objName: this.fieldObjName, labelFieldName : this.labelFieldName})
-                    .then(result => {
-                        console.log('Get record name successful');
-                        console.log('Record name - ' + result);
+                    //if we do not have the name of the record to display then get it.
+                } else if (this.searchType === 'sobject' && this.initialId !== undefined && this.initialId !== '' && this.initialName === '') {
+                    getRecordName({ selectedId: this.initialId, objName: this.fieldObjName, labelFieldName: this.labelFieldName })
+                        .then(result => {
+                            console.log('Get record name successful');
+                            console.log('Record name - ' + result);
 
-                        this.selectedName = result;
-                        this.searchTerm = this.selectedName;
-                        this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
-                        this.hasValue = true;    
-                        this.selectedId = this.initialId;
-                        this.isInitialized = true;
-                    })
-                    .catch(error => {
-                        console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-                    });    
+                            this.selectedName = result;
+                            this.searchTerm = this.selectedName;
+                            this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
+                            this.hasValue = true;
+                            this.selectedId = this.initialId;
+                            this.isInitialized = true;
+                        })
+                        .catch(error => {
+                            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+                        });
                     this.isInitialized = true;
                 }
 
@@ -176,35 +165,32 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
 
     search() {
 
-        if ( (this.searchType === 'sobject' && this.whereClause !== undefined && this.labelFieldName !== undefined && this.keyFieldName !== undefined && this.fieldObjName != undefined)
-                ||
-             (this.searchType === 'schema' && this.fieldObjName !== undefined)
-                &&
-             this.searchTerm.length > 1)
-        {
+        if ((this.searchType === 'sobject' && this.whereClause !== undefined && this.labelFieldName !== undefined && this.keyFieldName !== undefined && this.fieldObjName !== undefined)
+            ||
+            (this.searchType === 'schema' && this.fieldObjName !== undefined)
+            &&
+            this.searchTerm.length > 1) {
             let whereClauseStr = JSON.stringify(this.whereClause);
 
             console.log('Performing search - ' + this.searchType + ', ' + this.searchTerm + ', ' + this.fieldObjName + ', ' + this.labelFieldName + ', ' + this.keyFieldName + ', ' + this.whereClause)
-            
-            search({searchType : this.searchType, searchTerm : this.searchTerm, objName : this.fieldObjName, labelFieldName : this.labelFieldName, keyFieldName : this.keyFieldName, whereClauseJSON : whereClauseStr})
-            .then(result => {
-                console.log('searchType - ' + this.searchType);
-                console.log('fieldObjName - ' + this.fieldObjName);
-                console.log('result - ' + result);
-                this.options = result;
-            // console.log("Options - ", JSON.stringify(this.options));
-                if (this.options.length === 0)
-                    this.options = undefined;
-            })
-            .catch(error => {
-                console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
-            });    
-        
-        } else if (this.searchType === 'schema' && this.fieldObjName !== undefined)
-        {
 
+            search({ searchType: this.searchType, searchTerm: this.searchTerm, objName: this.fieldObjName, labelFieldName: this.labelFieldName, keyFieldName: this.keyFieldName, whereClauseJSON: whereClauseStr })
+                .then(result => {
+                    console.log('searchType - ' + this.searchType);
+                    console.log('fieldObjName - ' + this.fieldObjName);
+                    console.log('result - ' + result);
+                    this.options = result;
+                    // console.log("Options - ", JSON.stringify(this.options));
+                    if (this.options.length === 0)
+                        this.options = undefined;
+                })
+                .catch(error => {
+                    console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
+                });
+
+        } else if (this.searchType === 'schema' && this.fieldObjName !== undefined) {
+            console.log('searchType = schema && fieldObjName != undefined', true);
         }
-
     }
 
     /*
@@ -233,7 +219,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
         if (this.searchTerm === '')
             this.searchTerm = this.oldSearchTerm;
         // eslint-disable-next-line @lwc/lwc/no-async-operation
-        this.blurTimeout = setTimeout(() =>  {this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus'}, 300);
+        this.blurTimeout = setTimeout(() => { this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus' }, 300);
     }
 
     /*
@@ -245,14 +231,14 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
         this.selectedName = event.currentTarget.dataset.value;
         console.log('selectedId - ', this.selectedId);
         console.log('selectedName - ', this.selectedName);
-        
+
         //send selected value to parent and in return parent sends the value to @api rowId
         let selectedValue = this.selectedId;
         let field = this.labelFieldName;
         this.searchTerm = this.selectedName;
         this.dispatchEvent(new CustomEvent('valuechange', { detail: { selectedValue, field }, }));
 
-        if(this.blurTimeout) {
+        if (this.blurTimeout) {
             clearTimeout(this.blurTimeout);
         }
         this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus';
@@ -266,7 +252,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
         console.log("In onChange");
         this.searchTerm = event.target.value;
         this.search();
-        console.log("searchTerm",this.searchTerm);
+        console.log("searchTerm", this.searchTerm);
     }
 
 }
