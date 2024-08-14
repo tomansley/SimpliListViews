@@ -40,9 +40,12 @@
 
 .tablehorizontalscroll {
     width: max-content;
+    min-width: 100%;
 }
 
 .tablenohorizontalscroll {
+    width: auto;
+    min-width: 100%;
 }
 
 .relatedlistscrollwrapper {
