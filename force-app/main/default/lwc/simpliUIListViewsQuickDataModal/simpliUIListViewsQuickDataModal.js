@@ -1,4 +1,5 @@
-import { LightningElement, api, track} from 'lwc';
+/* eslint-disable no-console */
+import { LightningElement, api, track } from 'lwc';
 import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 export default class SimpliUIListViewsQuickDataModal extends LightningElement {
@@ -10,16 +11,16 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
     @api cancelLabel;
     @api showModal;
     @api fieldValue;
-    @api fieldType = 'string'; 
+    @api fieldType = 'string';
     @api fieldName;
     _fieldDataId = '';
     @api get fieldDataId() { return this._fieldDataId; }
-         set fieldDataId(value) { 
-            if (!SLVHelper.isEmpty(value)) {
-                this._fieldDataId = value; 
-                this.sfdcId = this._fieldDataId.split(':')[0]; 
-            }
-         }
+    set fieldDataId(value) {
+        if (!SLVHelper.isEmpty(value)) {
+            this._fieldDataId = value;
+            this.sfdcId = this._fieldDataId.split(':')[0];
+        }
+    }
     @api objectName;
 
     @track sfdcId = '';
@@ -33,8 +34,7 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
         console.log('SimpliUIListViewsQuickDataModal.renderedCallback starting');
         console.log('this.showModal - ' + this.showModal);
         console.log('this.isInitialized - ' + this.isInitialized);
-        if (this.showModal && !this.isInitialized)
-        {
+        if (this.showModal && !this.isInitialized) {
             if (this.cancelLabel === undefined)
                 this.cancelLabel = 'Cancel';
 
@@ -57,7 +57,8 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
             }
             this.isInitialized = true;
         }
-        setTimeout(()=>this.setComponentFocus(), 200);
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => this.setComponentFocus(), 200);
         console.log('------ Quick Data Component Logging ------');
         console.log('Heading       - ' + this.heading);
         console.log('Field Label   - ' + this.fieldLabel);
@@ -71,8 +72,7 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
     }
 
     setComponentFocus() {
-        if (this.isInitialized)
-        {
+        if (this.isInitialized) {
             if (this.isRichText) {
                 this.template.querySelector('lightning-input-rich-text').focus();
             } else if (this.isTextArea) {
@@ -90,22 +90,26 @@ export default class SimpliUIListViewsQuickDataModal extends LightningElement {
         this.isInitialized = false;
     }
 
-    handleCancelClick(event) {
-        this.dispatchEvent(new CustomEvent('cancel', { detail: {value: undefined, fieldDataId: undefined}}));
+    handleCancelClick() {
+        this.dispatchEvent(new CustomEvent('cancel', { detail: { value: undefined, fieldDataId: undefined } }));
         this.resetComponent();
     }
 
-    handleOkClick(event) {
-        this.dispatchEvent(new CustomEvent('ok', { detail: {value: this.fieldValue, fieldDataId: this.fieldDataId, fieldName: this.fieldName}}));
+    handleOkClick() {
+        this.dispatchEvent(new CustomEvent('ok', { detail: { value: this.fieldValue, fieldDataId: this.fieldDataId, fieldName: this.fieldName } }));
         this.resetComponent();
     }
 
     handleFieldUpdate(event) {
-        if (!SLVHelper.isEmpty(event.target.value)) {
-            this.fieldValue = event.target.value;
-        
-        } else if (!SLVHelper.isEmpty(event.detail.selectedValue)) {
-            this.fieldValue = event.detail.selectedValue;
+        try {
+            const { target, detail } = event;
+            if (!SLVHelper.isEmpty(target.value)) {
+                this.fieldValue = target.value;
+            } else if (!SLVHelper.isEmpty(detail.selectedValue)) {
+                this.fieldValue = detail.selectedValue;
+            }
+        } catch (error) {
+            SLVHelper.showErrorMessage(error);
         }
     }
 }

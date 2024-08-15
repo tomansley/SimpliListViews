@@ -1,9 +1,12 @@
-import { LightningElement, wire, track, api   } from 'lwc';
+/* eslint-disable no-console */
+import { LightningElement, track, api } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 import getOrgWideConfigParam from '@salesforce/apex/ListViewAdminController.getOrgWideConfigParam';
 import saveOrgWideConfig from '@salesforce/apex/ListViewAdminController.saveOrgWideConfig';
 import scheduleRefreshJob from '@salesforce/apex/ListViewAdminController.scheduleRefreshJob';
+
+import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 import List_View_Refresh_Scheduled from '@salesforce/label/c.List_View_Refresh_Scheduled';
 import Select_Time_Period from '@salesforce/label/c.Select_Time_Period';
@@ -33,8 +36,8 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
         if (value !== undefined)
             this.timePeriodChanged(value);
     }
-    get timePeriod() { 
-        return this.selectedTimePeriod; 
+    get timePeriod() {
+        return this.selectedTimePeriod;
     }
 
     @track isInitialized = false;
@@ -62,7 +65,7 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
     ];
 
     @track xMinutePeriodsList = [
-        { label: '5', value: '5' }, { label: '10', value: '10' }, { label: '15', value: '15' }, 
+        { label: '5', value: '5' }, { label: '10', value: '10' }, { label: '15', value: '15' },
         { label: '20', value: '20' }, { label: '30', value: '30' },
     ];
 
@@ -71,7 +74,7 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
         { label: '15', value: '15' }, { label: '20', value: '20' }, { label: '25', value: '25' },
         { label: '30', value: '30' }, { label: '35', value: '35' }, { label: '40', value: '40' },
         { label: '45', value: '45' }, { label: '50', value: '50' }, { label: '55', value: '55' },
-    ];   
+    ];
 
     @track hourPeriodsList = [
         { label: '00', value: '0' }, { label: '01', value: '1' }, { label: '02', value: '2' },
@@ -82,87 +85,83 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
         { label: '15', value: '15' }, { label: '16', value: '16' }, { label: '17', value: '17' },
         { label: '18', value: '18' }, { label: '19', value: '19' }, { label: '20', value: '20' },
         { label: '21', value: '21' }, { label: '22', value: '22' }, { label: '23', value: '23' },
-    ];   
+    ];
 
     @track dayPeriodsList = [
         { label: Monday, value: 'MON' }, { label: Tuesday, value: 'TUE' },
         { label: Wednesday, value: 'WED' }, { label: Thursday, value: 'THU' },
         { label: Friday, value: 'FRI' }, { label: Saturday, value: 'SAT' },
         { label: Sunday, value: 'SUN' },
-    ];   
+    ];
 
     @track monthPeriodsList = [
-        { label: 'First Day Of Month', value: '1' }, 
+        { label: 'First Day Of Month', value: '1' },
         { label: '15th Of Month', value: '15' },
         { label: 'Last Day Of Month', value: 'L' },
-    ];   
+    ];
 
-    label = { List_View_Refresh_Scheduled, Select_Time_Period, Select_Minute, Select_Hour, Select_Day, Select_Month, Monday, Tuesday, Wednesday, Thursday, 
-              Friday, Saturday, Sunday, Schedule_Core_List_View_Refreshes, Schedule_Core_List_View_Refreshes_Verbage, Schedule, Scheduled, Unschedule,
-              Select_X_Minute };
+    label = {
+        List_View_Refresh_Scheduled, Select_Time_Period, Select_Minute, Select_Hour, Select_Day, Select_Month, Monday, Tuesday, Wednesday, Thursday,
+        Friday, Saturday, Sunday, Schedule_Core_List_View_Refreshes, Schedule_Core_List_View_Refreshes_Verbage, Schedule, Scheduled, Unschedule,
+        Select_X_Minute
+    };
 
-    
+
     renderedCallback() {
-        if (this.isInitialized === false)
-        {
+        if (this.isInitialized === false) {
             this.isInitialized = true;
             this.spinnerOn();
             getOrgWideConfigParam({ paramName: 'RefreshJob' })
-            .then(result => {
+                .then(result => {
 
-                let refreshJobData = result.value.split(':'); //example - weekly:00:00:Tuesday
+                    let refreshJobData = result.value.split(':'); //example - weekly:00:00:Tuesday
 
-                if (refreshJobData[0] !== 'Not Scheduled')
-                {                
-                    this.isTurnedOn = true;
-                    this.selectedTimePeriod = refreshJobData[0]; 
+                    if (refreshJobData[0] !== 'Not Scheduled') {
+                        this.isTurnedOn = true;
+                        this.selectedTimePeriod = refreshJobData[0];
 
-                    if (this.selectedTimePeriod === 'minutely')
-                        this.selectedXMinutes = refreshJobData[1];
-                    else if (this.selectedTimePeriod === 'hourly')
-                        this.selectedMinute = refreshJobData[1];
-                    else if (this.selectedTimePeriod === 'daily') {
-                        this.selectedMinute = refreshJobData[1];
-                        this.selectedHour = refreshJobData[2];
-                    } else if (this.selectedTimePeriod === 'weekly') {
-                        this.selectedMinute = refreshJobData[1];
-                        this.selectedHour = refreshJobData[2];
-                        this.selectedDay = refreshJobData[3];
-                    } else if (this.selectedTimePeriod === 'monthly') {
-                        this.selectedMinute = refreshJobData[1];
-                        this.selectedHour = refreshJobData[2];
-                        this.selectedMonth = refreshJobData[3];
-                    }                
-                    this.timePeriodChanged(this.selectedTimePeriod);    
-                }
+                        if (this.selectedTimePeriod === 'minutely')
+                            this.selectedXMinutes = refreshJobData[1];
+                        else if (this.selectedTimePeriod === 'hourly')
+                            this.selectedMinute = refreshJobData[1];
+                        else if (this.selectedTimePeriod === 'daily') {
+                            this.selectedMinute = refreshJobData[1];
+                            this.selectedHour = refreshJobData[2];
+                        } else if (this.selectedTimePeriod === 'weekly') {
+                            this.selectedMinute = refreshJobData[1];
+                            this.selectedHour = refreshJobData[2];
+                            this.selectedDay = refreshJobData[3];
+                        } else if (this.selectedTimePeriod === 'monthly') {
+                            this.selectedMinute = refreshJobData[1];
+                            this.selectedHour = refreshJobData[2];
+                            this.selectedMonth = refreshJobData[3];
+                        }
+                        this.timePeriodChanged(this.selectedTimePeriod);
+                    }
+                })
+                .catch(error => {
+                    let errorStr = '';
+                    if (error.body !== undefined) {
+                        errorStr = error.body.message;
+                        console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+                    } else {
+                        errorStr = error.message;
+                        console.log('Error Detected - ' + error.message + ' | ' + error.stack);
+                    }
 
-                this.spinnerOff();
-            })
-            .catch(error => {
-                let errorStr = '';
-                if (error.body !== undefined)
-                {
-                    errorStr = error.body.message;
-                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-                } else {
-                    errorStr = error.message;
-                    console.log('Error Detected - ' + error.message + ' | ' + error.stack);
-                }
-
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Processing Error',
-                    message: 'There was an error loading the refresh job config - ' + errorStr,
-                    variant: 'error',
-                    mode: 'sticky'
-                }));
-                this.spinnerOff();
-                return;
-            });
-
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Processing Error',
+                        message: 'There was an error loading the refresh job config - ' + errorStr,
+                        variant: 'error',
+                        mode: 'sticky'
+                    }));
+                }).finally(() => {
+                    this.spinnerOff();
+                });
         }
     }
 
-    handleIsTurnedOnChange(event) {
+    handleIsTurnedOnChange() {
         this.spinnerOn();
 
         if (this.isTurnedOn === undefined)
@@ -175,7 +174,7 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
             this.scheduleText = 'Click to schedule automatic core list view refreshes';
             this.saveScheduledJobConfig('Not Scheduled');
 
-        //turning ON
+            //turning ON
         } else {
             this.scheduleText = 'Click to unschedule refreshes';
 
@@ -201,55 +200,49 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
 
         let parameters = new Map();
         parameters.set('RefreshJob', jobDataStr);
-        let strParamMap = JSON.stringify( Array.from(parameters) );
+        let strParamMap = JSON.stringify(Array.from(parameters));
         console.log('Field/Value  - ' + strParamMap);
 
-        saveOrgWideConfig({ paramStr: strParamMap})
-        .then(result => {
+        saveOrgWideConfig({ paramStr: strParamMap }).then(result => {
 
             //get the status
             let status = result.substring(0, result.indexOf(':'));
-            
+
             //get any associated message
-            let message = result.substring(result.indexOf(':')+1);
+            let message = result.substring(result.indexOf(':') + 1);
             if (message === '' && status === 'Ok') {
                 message = 'Refresh job configuration has been saved successfully.';
-            } else if (message === '' && status != 'Ok') {
+            } else if (message === '' && status !== 'Ok') {
                 message = 'There was an error saving the refresh job configuration.';
                 this.isTurnedOn = undefined;
             }
 
             if (status === 'Ok') {
-
                 scheduleRefreshJob()
-                .then(result => {    
-
-                    if (result == 'success')
-                    {
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'Save Successful!',
-                            message: message,
-                            variant: 'success',
-                            mode: 'dismissable'
-                        }));
-                        this.dispatchEvent(new CustomEvent('updated', { status: 'Ok' }));
+                    .then(data => {
+                        if (data === 'success') {
+                            this.dispatchEvent(new ShowToastEvent({
+                                title: 'Save Successful!',
+                                message: message,
+                                variant: 'success',
+                                mode: 'dismissable'
+                            }));
+                            this.dispatchEvent(new CustomEvent('updated', { status: 'Ok' }));
+                            this.spinnerOff();
+                        } else {
+                            this.dispatchEvent(new ShowToastEvent({
+                                title: 'Processing Error!',
+                                message: 'There was a problem scheduling the job',
+                                variant: 'error',
+                                mode: 'sticky'
+                            }));
+                            this.spinnerOff();
+                            this.isTurnedOn = undefined;
+                        }
+                    })
+                    .catch(() => {
                         this.spinnerOff();
-                    } else {
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'Processing Error!',
-                            message: 'There was a problem scheduling the job',
-                            variant: 'error',
-                            mode: 'sticky'
-                        }));
-                        this.spinnerOff();
-                        this.isTurnedOn = undefined;
-                        return;
-                    }
-                })
-                .catch(error => {
-                    this.spinnerOff();
-                    return;
-                });
+                    });
 
             } else {
                 this.dispatchEvent(new ShowToastEvent({
@@ -259,13 +252,10 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
                     mode: 'sticky'
                 }));
                 this.spinnerOff();
-                return;
             }
-        })
-        .catch(error => {
+        }).catch(error => {
             let errorStr = '';
-            if (error.body !== undefined)
-            {
+            if (error.body !== undefined) {
                 errorStr = error.body.message;
                 console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
             } else {
@@ -280,31 +270,42 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
                 mode: 'sticky'
             }));
             this.spinnerOff();
-            return;
         });
 
     }
 
     handleTimePeriodChange(event) {
-        this.timePeriodChanged(event.target.value);
+        try {
+            const { target } = event;
+            if (target?.value) {
+                this.timePeriodChanged(target.value);
+            }
+        } catch (error) {
+            SLVHelper.showErrorMessage(error);
+        }
     }
 
     periodValueChange(event) {
-        console.log('Selected time period - ' + this.selectedTimePeriod);
-        console.log('Selected value name  - ' + event.target.name);
-        console.log('Period value changed - ' + event.target.value);
+        try {
+            const { target } = event;
+            const { value, name } = target;
+            console.log('Selected time period - ' + this.selectedTimePeriod);
+            console.log('Selected value name  - ' + name);
+            console.log('Period value changed - ' + value);
 
-
-        if (event.target.name === 'X Minute List') {
-            this.selectedXMinutes = event.target.value;
-        } else if (event.target.name === 'Minute List') {
-            this.selectedMinute = event.target.value;
-        } else if (event.target.name === 'Hour List') {
-            this.selectedHour = event.target.value;
-        } else if (event.target.name === 'Day List') {
-            this.selectedDay = event.target.value;
-        } else if (event.target.name === 'Month List') {
-            this.selectedMonth = event.target.value;
+            if (name === 'X Minute List') {
+                this.selectedXMinutes = value;
+            } else if (name === 'Minute List') {
+                this.selectedMinute = value;
+            } else if (name === 'Hour List') {
+                this.selectedHour = value;
+            } else if (name === 'Day List') {
+                this.selectedDay = value;
+            } else if (name === 'Month List') {
+                this.selectedMonth = value;
+            }
+        } catch (error) {
+            SLVHelper.showErrorMessage(error);
         }
     }
 
@@ -315,37 +316,32 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
         this.displayDays = false;
         this.displayMonths = false;
         this.displayXMinutes = false;
-        
-        if (this.selectedTimePeriod === 'minutely')
-        {
+
+        if (this.selectedTimePeriod === 'minutely') {
             this.displayXMinutes = true;
             this.displayMinutes = false;
             this.displayHours = false;
             this.displayDays = false;
             this.displayMonths = false;
-        } else if (this.selectedTimePeriod === 'hourly')
-        {
+        } else if (this.selectedTimePeriod === 'hourly') {
             this.displayXMinutes = false;
             this.displayMinutes = true;
             this.displayHours = false;
             this.displayDays = false;
             this.displayMonths = false;
-        } else if (this.selectedTimePeriod === 'daily')
-        {
+        } else if (this.selectedTimePeriod === 'daily') {
             this.displayXMinutes = false;
             this.displayMinutes = true;
             this.displayHours = true;
             this.displayDays = false;
             this.displayMonths = false;
-        } else if (this.selectedTimePeriod === 'weekly')
-        {
+        } else if (this.selectedTimePeriod === 'weekly') {
             this.displayXMinutes = false;
             this.displayMinutes = true;
             this.displayHours = true;
             this.displayDays = true;
             this.displayMonths = false;
-        } else if (this.selectedTimePeriod === 'monthly')
-        {
+        } else if (this.selectedTimePeriod === 'monthly') {
             this.displayXMinutes = false;
             this.displayMinutes = true;
             this.displayHours = true;

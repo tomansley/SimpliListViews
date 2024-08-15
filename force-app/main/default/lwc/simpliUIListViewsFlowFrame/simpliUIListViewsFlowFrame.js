@@ -1,4 +1,5 @@
-import {LightningElement, api, wire, track} from 'lwc';
+/* eslint-disable no-console */
+import {LightningElement, api, track} from 'lwc';
 import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 import getListViewAction from '@salesforce/apex/ListViewController.getListViewAction';
@@ -49,7 +50,6 @@ export default class SimpliUIListViewsFlowFrame extends LightningElement {
             })
             .catch(error => {
                 console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
-                return;
             });
         }
 

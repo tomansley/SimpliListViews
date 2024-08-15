@@ -1,5 +1,5 @@
+/* eslint-disable no-console */
 import { LightningElement, wire, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 //------------------------ LABELS ------------------------
@@ -30,7 +30,7 @@ export default class SimpliUIListViewsStart extends LightningElement {
     @track batchId = '';                //indicates the batch Id of the list view batch process.
     @track inRenderedCallback = false;  //indicates whether the rendered callback method is processing
     @track calloutCount = 1;            //indicates the number of callouts made for this component
-    
+
     label = { Feature_Overview, Quick_Start, Issues_And_Questions, Configuration, Example_App_Descriptions }
 
     /*
@@ -38,68 +38,65 @@ export default class SimpliUIListViewsStart extends LightningElement {
      * but before it is rendered. We do have access to variables in this method.
      */
     async renderedCallback() {
-
         console.log('Starting simpliUIListViewsStart.renderedCallback');
-        if (this.config === undefined && this.hasConfig === true && this.inRenderedCallback === false)
-        {
+        if (this.config === undefined && this.hasConfig === true && this.inRenderedCallback === false) {
             this.inRenderedCallback = true;
             console.log('Starting getConfig()');
             this.getConfig();
         }
     }
 
-    @wire (getOrgWideDescriptions, { })
+    @wire(getOrgWideDescriptions, {})
     wiredOrgWideDescriptions({ error, data }) {
-        if (data) { 
+        if (data) {
             console.log('simpliUIListViewsStart CALLOUT - getOrgWideDescriptions - ' + this.calloutCount++);
-            console.log('Get Org Wide Descriptions called successfully - ' + data); 
-            this.orgWideDescs = data; 
-        } else if (error) { 
-            this.objectActionList = undefined; 
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Org Wide Descriptions', 'There was an error retrieving the org wide descriptions ', true)); 
-        }
-    }
-    
-    @wire (getComponentDescriptions, { })
-    wiredComponentDescriptions({ error, data }) {
-        if (data) { 
-            console.log('simpliUIListViewsStart CALLOUT - getComponentDescriptions - ' + this.calloutCount++);
-            console.log('Get Component Descriptions called successfully - ' + data); 
-            this.compDescs = data; 
-        } else if (error) { 
-            this.objectActionList = undefined; 
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Component Descriptions', 'There was an error retrieving the component descriptions ', true)); 
-        }
-    }
-    
-    @wire (getListViewDescriptions, { })
-    wiredListViewsDescriptions({ error, data }) {
-        if (data) { 
-            console.log('simpliUIListViewsStart CALLOUT - getListViewDescriptions - ' + this.calloutCount++);
-            console.log('Get List View Descriptions called successfully - ' + data); 
-            this.listViewDescs = data; 
-        } else if (error) { 
-            this.objectActionList = undefined; 
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Descriptions', 'There was an error retrieving the list view descriptions ', true)); 
+            console.log('Get Org Wide Descriptions called successfully - ' + data);
+            this.orgWideDescs = data;
+        } else if (error) {
+            this.objectActionList = undefined;
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Org Wide Descriptions', 'There was an error retrieving the org wide descriptions ', true));
         }
     }
 
-    getConfig()
-    {
+    @wire(getComponentDescriptions, {})
+    wiredComponentDescriptions({ error, data }) {
+        if (data) {
+            console.log('simpliUIListViewsStart CALLOUT - getComponentDescriptions - ' + this.calloutCount++);
+            console.log('Get Component Descriptions called successfully - ' + data);
+            this.compDescs = data;
+        } else if (error) {
+            this.objectActionList = undefined;
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Component Descriptions', 'There was an error retrieving the component descriptions ', true));
+        }
+    }
+
+    @wire(getListViewDescriptions, {})
+    wiredListViewsDescriptions({ error, data }) {
+        if (data) {
+            console.log('simpliUIListViewsStart CALLOUT - getListViewDescriptions - ' + this.calloutCount++);
+            console.log('Get List View Descriptions called successfully - ' + data);
+            this.listViewDescs = data;
+        } else if (error) {
+            this.objectActionList = undefined;
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving List View Descriptions', 'There was an error retrieving the list view descriptions ', true));
+        }
+    }
+
+    getConfig() {
         this.spinner = true;
         console.log('simpliUIListViewsStart CALLOUT - getOrgWideConfig - ' + this.calloutCount++);
         getOrgWideConfig()
-        .then(result => {
-            console.log('Org wide config retrieved successfully - ' + result);
-            this.hasConfig = true;
-            this.config = result;
-            this.spinner = false;
-        })
-        .catch(error => {
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error handling the config - ', true)); 
-            this.hasConfig = false;
-            this.isInitialized = false;
-            this.spinner = false;
-        });
+            .then(result => {
+                console.log('Org wide config retrieved successfully - ' + result);
+                this.hasConfig = true;
+                this.config = result;
+            })
+            .catch(error => {
+                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error handling the config - ', true));
+                this.hasConfig = false;
+                this.isInitialized = false;
+            }).finally(() => {
+                this.spinner = false;
+            })
     }
 }

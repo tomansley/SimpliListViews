@@ -50,7 +50,7 @@
                                             <template for:each={listViewAction.displayParameters} for:item="param">
                                                 <tr key={param.aPIName} class="slds-hint-parent" style="height: 41px; ">
                                                     <th class="" scope="col" style="width: 30%;">
-                                                        <div key={param.aPIName} class="slds-truncate" title={param.name}>{param.label}</div>
+                                                        <div class="slds-truncate" title={param.name}>{param.label}</div>
                                                     </th>
                                                     <td data-label={param.label} style="width: 70%;">
                                                         <template if:true={param.isString}>
