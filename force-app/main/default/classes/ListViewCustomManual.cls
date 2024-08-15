@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-08-2024
+ * @last modified on  : 08-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -53,6 +53,19 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             params.add(param);
         } else {
             params.add(paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR));
+        }
+
+        if (paramsByName.get(ListViewHelper.PARAM_CHILD_RECORD_COLOR) == null)
+        {      
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = ListViewHelper.PARAM_CHILD_RECORD_COLOR;
+            param.Parameter_Type__c   = 'Color';
+            param.Parameter_Value__c  = '';
+            param.Parameter_Label__c  = 'Child Row Color';
+            params.add(param);
+        } else {
+            params.add(paramsByName.get(ListViewHelper.PARAM_CHILD_RECORD_COLOR));
         }
 
         if (paramsByName.get(ListViewHelper.PARAM_RETURN_SIZE) == null)
@@ -205,7 +218,9 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             Map<String, Object> columnData = (Map<String, Object>) column;
 
             String fieldName = (String) columnData.get('fieldNameOrPath');
-            Boolean hidden   = (Boolean) columnData.get('hidden');
+            Boolean hidden   = false;
+            if (columnData.get('hidden') != null)
+                hidden = (Boolean) columnData.get('hidden');
 
             if (hidden == null || !hidden)
             {
@@ -263,27 +278,25 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         ListViewAbstract.RowsWrapper rows = new ListViewAbstract.RowsWrapper(listView, lvConfig);
         
         //get all columns from the list view
-        List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
-        List<Object> columns = new List<Object>();
+        Map<String, ListViewHelper.StandardColumn> cols = ListViewHelper.getColumnsFromJSON(listView.Core_ListView_Columns__c);
+        List<ListViewHelper.StandardColumn> columns = new List<ListViewHelper.StandardColumn>();
         Boolean addColumn = true;
 
         //set the COLUMN meta data into the rows wrapper
         Integer columnIndex = 1;
-        for (Object column: allColumns)
+        for (ListViewHelper.StandardColumn column: cols.values())
         {
-            Map<String, Object> columnData = (Map<String, Object>) column;
-
-            String fieldName = ((String) columnData.get('fieldNameOrPath'));
-
-            FieldWrapper field = new FieldWrapper((String) columnData.get('label'), 
-                                                    (String) columnData.get('type'),
-                                                    fieldName,
+            FieldWrapper field = new FieldWrapper(column.label, 
+                                                    column.type,
+                                                    column.fieldNameOrPath,
                                                     columnIndex);
 
-            if (sortDataByFieldName.containsKey(fieldName))
+            field.setFunction(column.function);
+
+            if (sortDataByFieldName.containsKey(column.fieldNameOrPath))
             {
-                field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
-                field.sortDir   = sortDataByFieldName.get(fieldName).sortDirection;
+                field.sortIndex = String.valueOf(sortDataByFieldName.get(column.fieldNameOrPath).sortIndex);
+                field.sortDir   = sortDataByFieldName.get(column.fieldNameOrPath).sortDirection;
             }
 
             rows.addFieldMetaData(field);
@@ -311,54 +324,56 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
             }    
         }
 
-
-
         if (dataRows == null)
             return rows;
 
-        System.debug(LoggingLevel.FINE, 'SObject row count - ' + dataRows.size());
+        //List<ListViewAbstract.FieldWrapper> fields = rows.getFieldMetaData();
         //for each row of data
         for (SObject row: dataRows)
         {
-            System.debug(LoggingLevel.FINE, 'SObject row Id - ' + row.Id);
+            System.debug(LoggingLevel.FINE, 'SObject row - ' + row);
             
             Map<String,Object> popFields = row.getPopulatedFieldsAsMap(); //a map of all populated fields 
-            Map<String,Object> normalFields = new Map<String, Object>(); //a map of all NON-CHILD fields
             Map<String,Object> childFields = new Map<String, Object>(); //a map of all CHILD fields
+
+            //Get CHILD data for the row. These will be handled last
             for (String field: popFields.keySet())
             {
                 //if its a relationship field
                 if (popFields.get(field) instanceof List<SObject>)
                 {
                     childFields.put(field, popFields.get(field));
-                } else {
-                    normalFields.put(field, popFields.get(field));
                 }
             }
+
+            System.debug(LoggingLevel.DEBUG, 'Child Fields - ' + childFields.keySet().toString());
 
             RowWrapper rowWrapper = new RowWrapper((String.valueOf(row.get('Id'))));
             rowWrapper.isDeleted = false;
             rowWrapper.recordTypeId = HelperSchema.getRecordTypeId(row);
 
-
             //this for loop ONLY GOES THROUGH NONE CHILD FIELDS
             for (FieldWrapper columnMetaData: rows.getFieldMetaData())
             {
-                //if its either a CORE field. i.e. Opportunity.Name or a lookup field i.e. Opportunity.Account.Name
-                //has to be done this way as CORE fields could come in blank but we need to still identify them so that we can inline edit them
-                if (!columnMetaData.name.contains('.') || normalFields.keySet().contains(columnMetaData.name.substringBefore('.')))
+                //specific logic to get column name as it could be Name (returns Name), Account.Name (returns Name), Opportunity.Account.Name (returns Opportunity.Account.Name)
+                String columnName = getColumnName(listView.Object_Name__c, columnMetaData);
+
+                if (columnName != null)
                 {
-                    HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnMetaData.name);
+                    HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnName);
+
                     System.debug(LoggingLevel.FINE, 'None Child Field Parent Obj Type - ' + fieldData.parentObjType + ', Field Data Type - ' + fieldData.getType() + ', Value - ' + fieldData.value);
 
                     FieldWrapper field = new FieldWrapper(fieldData.label, 
-                                                          fieldData.value, 
-                                                          fieldData.getType(),
-                                                          columnMetaData.name,
-                                                          columnMetaData.columnIndex,
-                                                          fieldData.parentObjType);
+                                                            fieldData.value, 
+                                                            fieldData.getType(),
+                                                            columnMetaData.name,
+                                                            columnMetaData.columnIndex,
+                                                            fieldData.parentObjType);
 
                     field.setIsEditable(fieldData.isEditable);
+
+                    field.setFunction(columnMetaData.getFunction());
 
                     //also set the editable state into the column data
                     if (rows.getFieldMetaData(field.getName()) != null)
@@ -373,8 +388,6 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                         field.setObjValueId(rowWrapper.getSalesforceId()); //if this is not a lookup then set its own wrappers SFDC Id
                     }
 
-                    System.debug(LoggingLevel.FINE, 'Field - ' + field);
-                    
                     if (ListViewAbstract.validNameColumnNames.contains(field.getName().substringAfterLast('.'))
                         || ListViewAbstract.validNameColumnNames.contains(field.getName())
                         || (field.objValue != null //if we have a lookup object
@@ -390,10 +403,10 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                         field.sortDir   = sortDataByFieldName.get(columnMetaData.name).sortDirection;
                     }
 
-                    rowWrapper.addField(field);
-                
+                    System.debug(LoggingLevel.FINE, 'Row Field - ' + field);
+                    
+                    rowWrapper.addField(field);                
                 }
-
             }
 
             //now go through all CHILD FIELDS
@@ -409,10 +422,18 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                     RowWrapper clonedWrapper = rowWrapper.cloneWrapper(deleteHeaderData);
                     rows.addRow(clonedWrapper);
 
-                    if (deleteHeaderData == false) 
+                    //HEADER ROW
+                    if (deleteHeaderData == false) {
                         deleteHeaderData = true; //once we have cloned the first wrapper with all fields this ensures all other rows have their header fields removed.
-                    else 
+
+                    //CHILD ROW
+                    } else {
                         clonedWrapper.setIsEditable(false); //no cloned wrappers can be editable after the header row.
+                        if (lvConfig.getParameter(ListViewHelper.PARAM_CHILD_RECORD_COLOR) != null)
+                            clonedWrapper.highlightColor = lvConfig.getParameter(ListViewHelper.PARAM_CHILD_RECORD_COLOR).getValue();
+                        else
+                            clonedWrapper.highlightColor = '#eaeaea';
+                    }
 
                     //this for loop ONLY GOES THROUGH CHILD FIELDS
                     for (FieldWrapper columnMetaData: rows.getFieldMetaData())
@@ -433,11 +454,10 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                                   columnMetaData.columnIndex,
                                                                   fieldData.parentObjType);
                             field.longName = columnMetaData.name;
+                            field.setFunction(columnMetaData.getFunction());
 
                             if (fieldData.objValueId != null)
                                 field.setObjValueId(fieldData.objValueId);
-        
-                            System.debug(LoggingLevel.FINE, 'Field - ' + field);
         
                             if ((ListViewAbstract.validNameColumnNames.contains(fieldData.name)             //if we have the name of the object
                                     || fieldData.parentObjType == 'Task' && fieldData.name == 'Subject')
@@ -540,6 +560,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                       fieldWrapper.columnIndex,
                                                       '');
                         totalField.setIsTotalsRow(true);
+                        totalField.setFunction(fieldWrapper.getFunction());
 
                         System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
 
@@ -589,4 +610,39 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         return rows;
     }
 
+    /**
+    * @description Method to find the column name that is used to find the data in the SObject row. This is needed
+    *              because the column name could be "weird" based on what is provided by the user. For example
+    *              Account.Name is valid as its the same as Name
+    *              Contacts.Name is invalid as its a child column name
+    *              Account.Name is valid as its a lookup on the contact to account
+    * @author tom@ansleyllc.com | 08-14-2024 
+    * @param objectName 
+    * @param columnMetaData 
+    * @return String 
+    **/
+    private static String getColumnName(String objectName, FieldWrapper columnMetaData)
+    {
+        //if no lookups (Opportunity.Name) or explicit names (Account.Name for account object) then return the name
+        if (!columnMetaData.name.contains('.'))
+            return columnMetaData.name;
+
+        List<String> fieldTokens = columnMetaData.name.split('\\.');
+
+        //if explicit name then remove name of object and return
+        if (fieldTokens[0] == objectName)
+            return columnMetaData.name.substringAfter(objectName + '.');
+
+        Schema.DescribeSObjectResult objSchema = HelperSchema.getObjectSchema(objectName);
+        List<Schema.ChildRelationship> objRels = objSchema.getChildRelationships();
+        for (Schema.ChildRelationship objRel: objRels)
+        {
+            if (objRel.getRelationshipName() == fieldTokens[0])
+            {
+                return null;
+            }
+        }
+
+        return columnMetaData.name;
+    }
 }
