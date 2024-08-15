@@ -228,7 +228,6 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
                                 mode: 'dismissable'
                             }));
                             this.dispatchEvent(new CustomEvent('updated', { status: 'Ok' }));
-                            this.spinnerOff();
                         } else {
                             this.dispatchEvent(new ShowToastEvent({
                                 title: 'Processing Error!',
@@ -236,11 +235,11 @@ export default class SimpliUIListViewsScheduleJob extends LightningElement {
                                 variant: 'error',
                                 mode: 'sticky'
                             }));
-                            this.spinnerOff();
                             this.isTurnedOn = undefined;
                         }
                     })
                     .catch(() => {
+                    }).finally(() => {
                         this.spinnerOff();
                     });
 
