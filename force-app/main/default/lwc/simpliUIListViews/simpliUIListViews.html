@@ -13,9 +13,9 @@
 
 -->
 <template>
-    <div onclick={hideHoverDetails} onmouseleave={hideHoverDetails} >
+    <div onclick={hideHoverDetails} onmouseleave={hideHoverDetails} class="mainwrapper">
         <template if:true={spinner}>
-            <lightning-spinner alternative-text={label.Loading} class="pageSpinnerHolder"></lightning-spinner>
+             <c-simpli-u-i-list-views-spinner text={label.Loading}></c-simpli-u-i-list-views-spinner>
         </template>
 
         <!-- ------------------------------------------------------------------------ -->
@@ -299,14 +299,14 @@
                 <template if:false={isModeSplitView}>
 
                     <div class={listwrapperstyle}>
-                        <table id="datatable" class={tablestyle} role="grid">
+                        <table id="datatable" class={tablestyle} role="grid" style="overflow: hidden;">
 
                             <!-- ------------------------- -->
                             <!-- HEADER DATA               -->
                             <!-- ------------------------- -->
                             <thead style="position:relative">
                                 <tr class="slds-line-height_reset">
-                                    <th class="slds-text-align_right" scope="col" style="width: 2rem;">
+                                    <th class="slds-text-align_right" scope="col" style="width: 32px;">
                                         <div class="slds-th__action slds-th__action_form">
                                             <div class="slds-checkbox">
                                                 <lightning-input type="checkbox" 
@@ -390,7 +390,7 @@
                                     <!-- -------------------- -->
                                     <template if:true={isEdited}>
                                         <th class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc slds-text-align_center" 
-                                            style="width:3.75rem"
+                                            style="width: 60px"
                                             scope="col">
                                             <div>
                                                 <lightning-button-icon title={label.Save_All_Data}
