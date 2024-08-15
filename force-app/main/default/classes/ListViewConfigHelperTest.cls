@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-25-2024
+ * @last modified on  : 08-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -831,15 +831,15 @@ private class ListViewConfigHelperTest {
 
         System.assert(result != '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'RefreshRate', '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
+        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', ListViewHelper.PARAM_REFRESH_RATE, '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'ReturnSize', '123', 'Return Size', ListViewHelper.TYPE_NUMBER);
+        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', ListViewHelper.PARAM_RETURN_SIZE, '123', 'Return Size', ListViewHelper.TYPE_NUMBER);
 
         System.assert(result == '');
 
-        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', 'AllRows', 'true', 'All Rows', ListViewHelper.TYPE_BOOLEAN);
+        result = ListViewConfigHelper.updateListViewParam('Account', 'simpli_lv__AllAccounts', ListViewHelper.PARAM_ALL_ROWS, 'true', 'All Rows', ListViewHelper.TYPE_BOOLEAN);
 
         System.assert(result == '');
 
