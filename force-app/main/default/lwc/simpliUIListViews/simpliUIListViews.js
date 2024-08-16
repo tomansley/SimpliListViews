@@ -2227,7 +2227,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     if (element.isDeleted === false) {
                         element.isEdited = true;
                     } else {
-                        this.dispatchEvent(SLVHelper.createToast('warning', '', 'Warning', 'This row has already been deleted. No updates can be made.', false));
+                        this.dispatchEvent(SLVHelper.createToast('info', '', 'Warning', 'This row has already been deleted. No updates can be made.', false));
                     }
                 }
             });
@@ -2280,7 +2280,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     });
             }
         } else {
-            this.dispatchEvent(SLVHelper.createToast('warning', '', 'Warning', 'There was no updated data to save.', false));
+            this.dispatchEvent(SLVHelper.createToast('info', '', 'Warning', 'There was no updated data to save.', false));
             this.spinnerOff('handleAllRowDataSave');
         }
     }
@@ -2334,7 +2334,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         });
                 }
             } else {
-                this.dispatchEvent(SLVHelper.createToast('warning', '', 'Warning', 'There was no updated data to save.', false));
+                this.dispatchEvent(SLVHelper.createToast('info', '', 'Warning', 'There was no updated data to save.', false));
                 this.spinnerOff('handleAllRowDataSave');
             }
         }
