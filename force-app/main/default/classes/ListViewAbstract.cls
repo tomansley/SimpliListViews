@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-14-2024
+ * @last modified on  : 08-16-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1451,12 +1451,22 @@ public with sharing abstract class ListViewAbstract {
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + objValueId;
             else if (parentObjType == 'CustomObject')
                 urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/' + objValueId;
-            else if (fieldObj != null)
-                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldObj.get('Id')) + '/view';
-            else if (this.name == 'id')
-                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(objValue) + '/view';
-            else
-                urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + objValueId + '/view';
+            else if (fieldObj != null) {
+                if (UserHelper.isStandardUser())
+                    urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(fieldObj.get('Id')) + '/view';
+                else
+                    urlStr = '/s/detail/' + String.valueOf(fieldObj.get('Id'));
+            } else if (this.name == 'id') {
+                if (UserHelper.isStandardUser())
+                    urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(objValue) + '/view';
+                else
+                    urlStr = '/s/detail/' + String.valueOf(objValue);
+            } else {
+                if (UserHelper.isStandardUser())
+                    urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + objValueId + '/view';
+                else
+                    urlStr = '/s/detail/' + objValueId;
+            }
             
             this.urlStr = urlStr;
             System.debug(LoggingLevel.FINE, 'createURL result - ' + urlStr);

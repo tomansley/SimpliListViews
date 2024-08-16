@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-05-2022
- * @last modified by  : tom.h.ansley@medtronic.com
+ * @last modified on  : 08-16-2024
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
  * 1.0   09-09-2020   tom@ansleyllc.com   Initial Version
@@ -21,6 +21,20 @@ public with sharing class UserHelper {
         }
         
         return currentUser;
+    }
+
+    public static Boolean isStandardUser()
+    {
+        Boolean isStandard = false;
+        if (currentUser == null)
+        {
+            currentUser = UserHelper.getUserDetails(UserInfo.getUserId());
+        }
+
+        if (currentUser.ContactId == null && currentUser.UserType == 'Standard')
+            isStandard = true;
+
+        return isStandard;
     }
 
     /*
@@ -55,7 +69,9 @@ public with sharing class UserHelper {
                         Profile.Name, 
                         IsActive,
                         UserRole.ParentRoleId, 
-                        Email
+                        Email,
+                        ContactId,
+                        UserType
                 FROM User 
                 WHERE Id IN :userIds]);
         
