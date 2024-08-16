@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import {LightningElement, api, track} from 'lwc';
+
 import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 import getListViewAction from '@salesforce/apex/ListViewController.getListViewAction';

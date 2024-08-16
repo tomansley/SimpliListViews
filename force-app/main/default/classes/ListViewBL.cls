@@ -1,7 +1,7 @@
 /**
  * @description       : Class which holds all business logic related to the list view.
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-25-2022
+ * @last modified on  : 08-09-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -203,4 +203,13 @@ public with sharing class ListViewBL {
         
     }
 
+    public static void deleteListViewConfigs(Map<Id, List_View__c> oldRecords)
+    {
+        Set<String> primaryKeys = HelperCollection.getStringFieldSet(oldRecords.values(), 'simpli_lv__Primary_Key__c');
+
+        Map<String, List_View_Config__c> configs = ListViewConfigHelper.getListViewConfigs(primaryKeys);
+        
+        HelperDatabase.deleteRecords(configs.values());
+
+    }
 }

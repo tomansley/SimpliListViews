@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-14-2024
+ * @last modified on  : 08-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -214,7 +214,7 @@ public with sharing class HelperTest {
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'TotalColumns';
+		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMNS;
 		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param.Parameter_Value__c = 'AnnualRevenue';
 		param.List_View_Config__c = config.Id;
@@ -222,7 +222,7 @@ public with sharing class HelperTest {
         params.add(param);
         
         param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'TotalColumnsColor';
+		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
 		param.Parameter_Type__c = 'Color';
 		param.Parameter_Value__c = '#E5F0FA';
 		param.List_View_Config__c = config.Id;
@@ -355,6 +355,14 @@ public with sharing class HelperTest {
 		param.Parameter_Value__c = '#E5F0FA';
 		param.List_View_Config__c = config.Id;
         param.Parameter_Label__c  = 'Total Column Color';
+        params.add(param);
+        
+        param = new List_View_Config_Parameter__c();
+		param.Parameter_Name__c = ListViewHelper.PARAM_CHILD_RECORD_COLOR;
+		param.Parameter_Type__c = 'Color';
+		param.Parameter_Value__c = '#E5F0FA';
+		param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = 'Child Row Color';
         params.add(param);
         
         param = new List_View_Config_Parameter__c();

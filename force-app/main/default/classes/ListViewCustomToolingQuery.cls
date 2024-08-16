@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-28-2024
+ * @last modified on  : 08-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -143,6 +143,9 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                                                         fieldName,
                                                         columnIndex);
 
+                if (columnData.containsKey('function'))
+                    field.setFunction((String) columnData.get('function'));
+
                 if (sortDataByFieldName.containsKey(fieldName))
                 {
                     field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
@@ -170,9 +173,10 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                 {
                     Map<String, Object> columnData = (Map<String, Object>) column;
 
-                    String fieldType = (String) columnData.get('type');
-                    String fieldName = (String) columnData.get('fieldNameOrPath');
-                    String label     = (String) columnData.get('label');
+                    String fieldType    = (String) columnData.get('type');
+                    String fieldName    = (String) columnData.get('fieldNameOrPath');
+                    String label        = (String) columnData.get('label');
+                    String function     = (String) columnData.get('function');
 
                     System.debug(LoggingLevel.FINE, 'Field - ' + fieldName + ', Type - ' + fieldType);
 
@@ -193,6 +197,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                                                         columnIndex,
                                                         fieldData.parentObjType);
                     field.objValueId = fieldData.objValueId;
+                    field.setFunction(function);
 
                     if (field.getName() == 'Name' || field.getName() == 'Id' || field.getType() == ListViewHelper.TYPE_LOOKUP) {
                         field.createURL();
@@ -214,22 +219,22 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
             //if totals have been configured
             if (lvConfig != null
-                && lvConfig.getParameter('TotalColumns') != null 
-                && !String.isEmpty(lvConfig.getParameter('TotalColumns').getValue()))
+                && lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS) != null 
+                && !String.isEmpty(lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS).getValue()))
             {
 
                 rows.hasTotalsRow = true;
 
                 System.debug(LoggingLevel.FINE, 'Starting total column calculations!');
 
-                String totalColumns = lvConfig.getParameter('TotalColumns').getValue();
+                String totalColumns = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS).getValue();
 
                 System.debug(LoggingLevel.FINE, 'TotalColumns - ' + totalColumns);
 
                 RowWrapper totalWrapper = new RowWrapper('000000000000000000');
                 totalWrapper.highlight = true;
-                if (lvConfig.getParameter('TotalColumnsColor') != null)
-                    totalWrapper.highlightColor = lvConfig.getParameter('TotalColumnsColor').getValue();
+                if (lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) != null)
+                    totalWrapper.highlightColor = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR).getValue();
                 else
                     totalWrapper.highlightColor = '#FFFFFF';
                 totalWrapper.isTotals = true;
@@ -270,6 +275,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                                                 fieldWrapper.columnIndex,
                                                 '');
                             totalField.setIsTotalsRow(true);
+                            totalField.setFunction(fieldWrapper.getFunction());
 
                             System.debug(LoggingLevel.FINE, 'Added total field - ' + totalField);
 

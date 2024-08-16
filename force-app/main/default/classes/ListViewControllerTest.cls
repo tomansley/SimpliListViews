@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 08-07-2024
+ * @last modified on  : 08-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -118,7 +118,7 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.processParamChange('Account', 'simpli_lv__AllAccounts', 'RefreshRate', '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
+        String result = ListViewController.processParamChange('Account', 'simpli_lv__AllAccounts', ListViewHelper.PARAM_REFRESH_RATE, '45', 'Refresh Rate', ListViewHelper.TYPE_NUMBER);
 
         System.assertEquals(result, 'Ok:');
 

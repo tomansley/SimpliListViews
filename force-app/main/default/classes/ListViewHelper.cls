@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-07-2024
+ * @last modified on  : 08-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -24,6 +24,8 @@
 global with sharing class ListViewHelper 
 {
     public static String LATEST_QUERY = '';
+    private static Boolean hasEnterprise = null;
+    private static Map<String, ListViewFunction2> functions = new Map<String, ListViewFunction2>();
     public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
    
@@ -77,6 +79,7 @@ global with sharing class ListViewHelper
     public static final String PARAM_REFRESH_RATE         = 'RefreshRate';
     public static final String PARAM_SINGLE_CLICK_REFRESH = 'SingleClickAutoDataRefresh';
     public static final String PARAM_TOTAL_COLUMN_COLOR   = 'TotalColumnsColor';
+    public static final String PARAM_CHILD_RECORD_COLOR   = 'ChildRowColor';
     public static final String PARAM_EXPORT_HEADER_TYPE   = 'ExportHeaderType';
     public static final String PARAM_ALL_ROWS             = 'AllRows';
     public static final String PARAM_PDF_ORIENT_PORTRAIT  = 'PDFOrientationPortrait';
@@ -100,6 +103,27 @@ global with sharing class ListViewHelper
 
     public static Integer offset           = -1;                  //used to hold the offset that is set when performing a query.
 
+    public static Object processFunction(String apexClass, Object value, Map<String, Object> context)
+    {
+        //if (!ListViewHelper.hasEnterprise()) return value;
+
+        ListViewFunction2 function;
+        if (ListViewHelper.functions.containsKey(apexClass)) { //get from cache if possible
+            function = ListViewHelper.functions.get(apexClass);
+        } else {
+            try {
+                Type t = HelperSchema.getClassType(apexClass);
+                function = (ListViewFunction2) t.newInstance();
+            } catch (Exception e) {
+                System.debug(LoggingLevel.ERROR, e.getMessage() + ' - ' + e.getStackTraceString());
+                throw new ListViewException('The ' + apexClass + ' could not be found when trying to process a column function.');
+            }
+            ListViewHelper.functions.put(apexClass, function);
+        }
+
+        return function.get(value, context);
+    }
+
     public static String getPrimaryKey(List_View__c listView)
     {
         return listView.Object_Name__c.replace(' ', '_') + ':' + listView.API_Name__c;
@@ -112,12 +136,16 @@ global with sharing class ListViewHelper
 
     public static Boolean hasEnterprise()
     {
-        if (HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) 
-            return true;
-        else if (HelperSchema.isObject('simpli_lv_ent__List_Views_Org_Connection__c')) //a hack for the enterprise org as its not installed
-            return true;
-        else
-            return false;
+        if (ListViewHelper.hasEnterprise == null)
+        {
+            if (HelperSchema.isPackageInstalled(HelperSchema.SLVE_NAMESPACE)) 
+                ListViewHelper.hasEnterprise = true;
+            else if (HelperSchema.isObject('simpli_lv_ent__List_Views_Org_Connection__c')) //a hack for the enterprise org as its not installed
+                ListViewHelper.hasEnterprise = true;
+            else
+                ListViewHelper.hasEnterprise = false;
+        }
+        return ListViewHelper.hasEnterprise;
     }
 
     /*
@@ -1316,9 +1344,9 @@ global with sharing class ListViewHelper
                 limitStr = ' LIMIT 1';
                 
             //if we have a list view limit then use it
-            } else if (lvConfigParams.get('ReturnSize') != null)
+            } else if (lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE) != null)
             {
-                Integer returnSize = Integer.valueOf(lvConfigParams.get('ReturnSize'));
+                Integer returnSize = Integer.valueOf(lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE));
                 limitStr = ' LIMIT ' + returnSize;
                 if (offset == null) offset = -1;
 
@@ -1366,10 +1394,10 @@ global with sharing class ListViewHelper
         //------------------------------------------------------
         String allRowsStr = '';
         if (offset == -1                                                   //Cannot use ALL ROWS with OFFSET
-            && lvConfigParams.get('AllRows') != null                      //if we have AllRows variable
-            && lvConfigParams.get('AllRows') == ListViewHelper.TTRUE                     //if AllRows = true
-            && lvConfigParams.get('ReturnSize') != null                    //if we have ReturnSize variable
-            && (Integer.valueOf(lvConfigParams.get('ReturnSize')) < 750)) //if ReturnSize < 750
+            && lvConfigParams.get(ListViewHelper.PARAM_ALL_ROWS) != null                      //if we have AllRows variable
+            && lvConfigParams.get(ListViewHelper.PARAM_ALL_ROWS) == ListViewHelper.TTRUE                     //if AllRows = true
+            && lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE) != null                    //if we have ReturnSize variable
+            && (Integer.valueOf(lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE)) < 750)) //if ReturnSize < 750
         {
             allRowsStr += ' ALL ROWS';
         }
@@ -1585,9 +1613,9 @@ global with sharing class ListViewHelper
                 limitStr = ' LIMIT 1';
                 
             //if we have a list view limit then use it
-            } else if (lvConfigParams.get('ReturnSize') != null)
+            } else if (lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE) != null)
             {
-                Integer returnSize = Integer.valueOf(lvConfigParams.get('ReturnSize'));
+                Integer returnSize = Integer.valueOf(lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE));
                 limitStr = ' LIMIT ' + returnSize;
                 if (offset == null) offset = -1;
 
@@ -1633,10 +1661,10 @@ global with sharing class ListViewHelper
         //------------------------------------------------------
         String allRowsStr = '';
         if (offset == -1                                                   //Cannot use ALL ROWS with OFFSET
-            && lvConfigParams.get('AllRows') != null                       //if we have AllRows variable
-            && lvConfigParams.get('AllRows') == ListViewHelper.TTRUE                     //if AllRows = true
-            && lvConfigParams.get('ReturnSize') != null                    //if we have ReturnSize variable
-            && (Integer.valueOf(lvConfigParams.get('ReturnSize')) < 750))  //if ReturnSize < 750
+            && lvConfigParams.get(ListViewHelper.PARAM_ALL_ROWS) != null                       //if we have AllRows variable
+            && lvConfigParams.get(ListViewHelper.PARAM_ALL_ROWS) == ListViewHelper.TTRUE                     //if AllRows = true
+            && lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE) != null                    //if we have ReturnSize variable
+            && (Integer.valueOf(lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE)) < 750))  //if ReturnSize < 750
         {
             allRowsStr += ' ALL ROWS';
         }
@@ -1811,9 +1839,9 @@ global with sharing class ListViewHelper
         if (soql.containsIgnoreCase(' LIMIT '))
             limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
 
-        if (lvConfigParams.get('ReturnSize') != null)
+        if (lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE) != null)
         {
-            Integer returnSize = Integer.valueOf(lvConfigParams.get('ReturnSize'));
+            Integer returnSize = Integer.valueOf(lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE));
             limitStr = ' LIMIT ' + returnSize;
             if (offset == null) offset = -1;
 
@@ -2505,6 +2533,14 @@ global with sharing class ListViewHelper
         param.Parameter_Label__c  = 'Total Row Color';
         params.add(param);
 
+        param = new List_View_Config_Parameter__c();
+        param.Parameter_Name__c = ListViewHelper.PARAM_CHILD_RECORD_COLOR;
+        param.Parameter_Type__c = 'Color';
+        param.Parameter_Value__c = '#eaeaea';
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Label__c  = 'Child Row Color';
+        params.add(param);
+        
         //---------------------------------------
         // 
         //---------------------------------------
@@ -2530,6 +2566,14 @@ global with sharing class ListViewHelper
         param.Parameter_Value__c = '#6C95BD';
         param.List_View_Config__c = config2.Id;
         param.Parameter_Label__c  = 'Total Row Color';
+        params.add(param);
+        
+        param = new List_View_Config_Parameter__c();
+        param.Parameter_Name__c = ListViewHelper.PARAM_CHILD_RECORD_COLOR;
+        param.Parameter_Type__c = 'Color';
+        param.Parameter_Value__c = '#eaeaea';
+        param.List_View_Config__c = config2.Id;
+        param.Parameter_Label__c  = 'Child Row Color';
         params.add(param);
         
         HelperDatabase.insertRecords(params);
@@ -3589,7 +3633,18 @@ global with sharing class ListViewHelper
         return visible;
     }
 
+    public static Map<String, StandardColumn> getColumnsFromJSON(String columnJSON)
+    {
+        //get all columns from the list view
+        List<StandardColumn> allColumns = (List<StandardColumn>) JSON.deserialize(columnJSON, List<StandardColumn>.class);
 
+        Map<String, StandardColumn> columns = new Map<String, StandardColumn>();
+        for (StandardColumn column: allColumns)
+            columns.put(column.fieldNameOrPath, column);
+
+        return columns;
+            
+    } 
 
 
 
@@ -3601,7 +3656,13 @@ global with sharing class ListViewHelper
     //================================================================================================================
     // INNER CLASSES
     //================================================================================================================
-
+    public class StandardColumn {
+        public String fieldNameOrPath;
+        public Boolean hidden;
+        public String type;
+        public String label;
+        public String function;
+    }
 
     public class ColumnSortData implements Comparable {
 

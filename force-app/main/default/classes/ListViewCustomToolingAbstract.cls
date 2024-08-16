@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-28-2024
+ * @last modified on  : 08-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -73,7 +73,7 @@ public with sharing abstract class ListViewCustomToolingAbstract extends ListVie
             param.Parameter_Label__c  = ListViewHelper.PARAM_TOTAL_COLUMNS;
             params.add(param);
         } else {
-            params.add(paramsByName.get('TotalColumns'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMNS));
         }
 
         if (paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) == null)
@@ -86,7 +86,7 @@ public with sharing abstract class ListViewCustomToolingAbstract extends ListVie
             param.Parameter_Label__c  = ListViewHelper.PARAM_TOTAL_COLUMN_COLOR;
             params.add(param);
         } else {
-            params.add(paramsByName.get('TotalColumnsColor'));
+            params.add(paramsByName.get(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR));
         }
 
         if (paramsByName.get(ListViewHelper.PARAM_RETURN_SIZE) == null)

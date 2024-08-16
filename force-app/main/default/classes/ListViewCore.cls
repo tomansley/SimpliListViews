@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-28-2024
+ * @last modified on  : 08-13-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -219,22 +219,17 @@ public with sharing class ListViewCore extends ListViewAbstract {
         List<ListViewColumn> listViewColumns = new List<ListViewColumn>();
 
         //get all columns from the list view
-        List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
+        Map<String, ListViewHelper.StandardColumn> cols = ListViewHelper.getColumnsFromJSON(listView.Core_ListView_Columns__c);
 
         //get the CORE SFDC COLUMN meta data
-        for (Object column: allColumns)
+        for (ListViewHelper.StandardColumn column: cols.values())
         {
-            Map<String, Object> columnData = (Map<String, Object>) column;
-
-            String fieldName = (String) columnData.get('fieldNameOrPath');
-            Boolean hidden   = (Boolean) columnData.get('hidden');
-
-            if (hidden == null || !hidden)
+            if (column.hidden == null || !column.hidden)
             {
-                HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, fieldName);
+                HelperSchema.FieldData d = HelperSchema.getFieldData(exampleRow, column.fieldNameOrPath);
          
                 if (d != null && !d.isChildRel)
-                    listViewColumns.add(new ListViewColumn(d.label, fieldName, d.getType()));
+                    listViewColumns.add(new ListViewColumn(d.label, column.fieldNameOrPath, d.getType()));
             }
             
         }
@@ -285,33 +280,30 @@ public with sharing class ListViewCore extends ListViewAbstract {
         rows.listView.offset = offset;
         
         //get all columns from the list view
-        List<Object> allColumns = (List<Object>) JSON.deserializeUntyped(listView.Core_ListView_Columns__c);
-        List<Object> columns = new List<Object>();
+        Map<String, ListViewHelper.StandardColumn> cols = ListViewHelper.getColumnsFromJSON(listView.Core_ListView_Columns__c);
+
+        List<ListViewHelper.StandardColumn> columns = new List<ListViewHelper.StandardColumn>();
         Boolean addColumn = true;
 
         //set the CORE SFDC COLUMN meta data into the rows wrapper
         Integer columnIndex = 1;
-        for (Object column: allColumns)
+        for (ListViewHelper.StandardColumn column: cols.values())
         {
-            Map<String, Object> columnData = (Map<String, Object>) column;
 
-            String fieldName = (String) columnData.get('fieldNameOrPath');
-            Boolean hidden   = (Boolean) columnData.get('hidden');
-
-            if (dataRows.size() > 0 && !hidden)
+            if (dataRows.size() > 0 && !column.hidden)
             {
 
-                HelperSchema.FieldData fieldData = HelperSchema.getFieldData(dataRows[0], fieldName);
+                HelperSchema.FieldData fieldData = HelperSchema.getFieldData(dataRows[0], column.fieldNameOrPath);
 
                 FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                       fieldData.getType(),
-                                                      fieldName,
+                                                      column.fieldNameOrPath,
                                                       columnIndex);
 
-                if (sortDataByFieldName.containsKey(fieldName))
+                if (sortDataByFieldName.containsKey(column.fieldNameOrPath))
                 {
-                    field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
-                    field.sortDir   = sortDataByFieldName.get(fieldName).sortDirection;
+                    field.sortIndex = String.valueOf(sortDataByFieldName.get(column.fieldNameOrPath).sortIndex);
+                    field.sortDir   = sortDataByFieldName.get(column.fieldNameOrPath).sortDirection;
                 }
 
                 rows.addFieldMetaData(field);
@@ -334,12 +326,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             System.debug(LoggingLevel.FINE, 'FIELDS - ' + fields);
 
-            //get the object type we are working with
-            //String objType = HelperSchema.getObjectType(dataRows[0]);
-
             for (String fieldName: fields)
             {
-
                 HelperSchema.FieldData fieldData = HelperSchema.getFieldData(dataRows[0], fieldName);
                 String label = fieldData.label;
                 String parentObjType = fieldData.parentObjType;
@@ -358,16 +346,15 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 rows.addFieldMetaData(field);
 
-                Map<String, Object> newColumn = new Map<String, Object>();
-                newColumn.put('type', fieldData.getType());
-                newColumn.put('fieldNameOrPath', fieldName);
-                newColumn.put('hidden', false);
-                newColumn.put('label', label);
+                ListViewHelper.StandardColumn newColumn = new ListViewHelper.StandardColumn();
+                newColumn.type = fieldData.getType();
+                newColumn.fieldNameOrPath = fieldName;
+                newColumn.hidden = false;
+                newColumn.label = label;
 
                 columns.add(newColumn);
 
                 columnIndex++;
-                
             }
         }
 
@@ -407,20 +394,12 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             //for each listview column
             columnIndex = 1;
-            for (Object column: columns)
+            for (ListViewHelper.StandardColumn column: columns)
             {
-                Map<String, Object> columnData = (Map<String, Object>) column;
-
-                String fieldType = (String) columnData.get('type');
-                String fieldName = (String) columnData.get('fieldNameOrPath');
-                Boolean hidden   = (Boolean) columnData.get('hidden');
-
-                System.debug(LoggingLevel.FINE, 'Field - ' + fieldName + ', Type - ' + fieldType);
-
                 //do not display hidden
-                if (hidden) continue;
+                if (column.hidden) continue;
 
-                HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, fieldName);
+                HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, column.fieldNameOrPath);
 
                 System.debug(LoggingLevel.FINE, 'Field Data - ' + fieldData);
 
@@ -432,7 +411,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                     fieldData.value,
                                                     fieldDataType,
-                                                    fieldName,
+                                                    column.fieldNameOrPath,
                                                     columnIndex,
                                                     parentObjType);
                 if (fieldData.objValueId != null)
@@ -455,10 +434,10 @@ public with sharing class ListViewCore extends ListViewAbstract {
                     field.createURL();
                 }
 
-                if (sortDataByFieldName.containsKey(fieldName))
+                if (sortDataByFieldName.containsKey(column.fieldNameOrPath))
                 {
-                    field.sortIndex = String.valueOf(sortDataByFieldName.get(fieldName).sortIndex);
-                    field.sortDir   = sortDataByFieldName.get(fieldName).sortDirection;
+                    field.sortIndex = String.valueOf(sortDataByFieldName.get(column.fieldNameOrPath).sortIndex);
+                    field.sortDir   = sortDataByFieldName.get(column.fieldNameOrPath).sortDirection;
                 }
 
                 rowWrapper.addField(field);

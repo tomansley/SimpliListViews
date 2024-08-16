@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-25-2022
+ * @last modified on  : 08-14-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -25,7 +25,7 @@ global with sharing class ListViewCustomToolingQueryTest {
 		List_View_Config__c config = [SELECT Id FROM List_View_Config__c WHERE Primary_Key__c = 'ApexLog:ApexLogs'];
 
 		List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
-		param.Parameter_Name__c = 'TotalColumns';
+		param.Parameter_Name__c = ListViewHelper.PARAM_TOTAL_COLUMNS;
 		param.Parameter_Type__c = ListViewHelper.TYPE_STRING;
 		param.Parameter_Value__c = 'DurationMilliseconds';
 		param.List_View_Config__c = config.Id;
