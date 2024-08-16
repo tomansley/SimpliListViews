@@ -682,11 +682,9 @@
                                                                         <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
                                                                     </div>
                                                                 </template>
-                                                                <template if:true={fieldData.isMultiPicklist}>
-                                                                    <div class="slds-truncate">
-                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
-                                                                            {fieldData.value}
-                                                                        </div>
+                                                                <template if:true={fieldData.isMultiPicklist} class="slds-truncate">
+                                                                    <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
+                                                                        {fieldData.value}
                                                                     </div>
                                                                 </template>
                                                             </template>

@@ -1,5 +1,5 @@
-/* eslint-disable no-console */
-import { LightningElement, track, api } from 'lwc';
+import { LightningElement, track, api  } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 import Not_Initialized from '@salesforce/label/c.Not_Initialized';
@@ -19,16 +19,16 @@ import updateAllListViews from '@salesforce/apex/ListViewController.updateAllLis
 export default class SimpliUIListViewsInitCard extends LightningElement {
 
     @api set batchId(value)                  //indicates the batch Id of the list view batch process.
-    {
-        this.apexBatchId = value;
-        if (value !== '') {
-            this.isInitialized = false;
-            this.showProgress = true;
+        {
+            this.apexBatchId = value;
+            if (value !== '') {
+                this.isInitialized = false;
+                this.showProgress = true;
+            }
         }
-    }
-    get batchId() {
-        return this.apexBatchId;
-    }
+        get batchId() {
+            return this.apexBatchId;
+        }
     @api alwaysDisplayed = undefined;
 
     @track apexBatchId = '';            //holds the batch Id to be monitored
@@ -37,18 +37,17 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
     @track isInitializedCheck = false;  //indicates whether the list views have been checked for initialization
     @track showProgress = false;        //indicates whether the progress bar should be displayed
 
-    label = {
-        Not_Initialized, Process_List_Views, List_View_Processing_Complete, List_Views_Need_Initialized_Verbage,
-        List_Views_Need_Initialized, Refresh_List_Views, Refresh, List_Views_Initialized, List_Views_Initialized_Verbage,
-        Processing_Status
-    };
+    label = { Not_Initialized, Process_List_Views, List_View_Processing_Complete, List_Views_Need_Initialized_Verbage, 
+              List_Views_Need_Initialized, Refresh_List_Views, Refresh, List_Views_Initialized, List_Views_Initialized_Verbage,
+              Processing_Status  };
 
     async renderedCallback() {
 
         console.log('Starting simpliUIListViewsInitCard.renderedCallback');
         console.log('Record id - ' + this.recordId);
 
-        if (this.isInitializedCheck === false) {
+        if (this.isInitializedCheck === false)
+        {
             this.isInitialized = await getIsInitialized({});
             this.handleIsInitialized();
         }
@@ -56,11 +55,12 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
 
     handleIsInitialized() {
         this.isInitializedCheck = true;
-        if (this.isInitialized === false) {
+        if (this.isInitialized === false)
+        {
             this.spinner = false; //a special case where we set it directly.
         }
         this.dispatchEvent(new CustomEvent('initializedcheck', { detail: this.isInitialized }));
-    }
+    }     
 
     spinnerOn(message) {
         this.spinner = true;
@@ -73,16 +73,17 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
     }
 
     //called when a user clicks the button to refresh the list views.
-    handleProcessListViewsButtonClick() {
+    handleProcessListViewsButtonClick(event) {
 
         this.spinnerOn('handleProcessListViewsButtonClick');
         console.log('Listview process button clicked');
 
-        updateAllListViews({})
+        updateAllListViews({ })
             .then(result => {
 
                 //if we have an error then send an ERROR toast.
-                if (result === 'failed') {
+                if (result === 'failed')
+                {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
                         message: 'There was an error processing the list views.',
@@ -91,7 +92,7 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
                     }));
                     this.spinnerOff('handleProcessListViewsButtonClick1');
 
-                    //else send a SUCCESS toast.
+                //else send a SUCCESS toast.
                 } else {
 
                     this.batchId = result;
@@ -118,7 +119,8 @@ export default class SimpliUIListViewsInitCard extends LightningElement {
                     mode: 'sticky'
                 }));
                 this.spinnerOff('handleProcessListViewsButtonClick3');
-            })
+            });
+
     }
 
 }

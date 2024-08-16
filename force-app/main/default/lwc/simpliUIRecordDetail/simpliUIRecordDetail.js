@@ -1,11 +1,11 @@
 /* eslint-disable vars-on-top */
 /* eslint-disable no-console */
 import { LightningElement, wire, track } from 'lwc';
-import LISTVIEW_MC from '@salesforce/messageChannel/SimpliListViewMessageChannel__c';
+import  LISTVIEW_MC  from '@salesforce/messageChannel/SimpliListViewMessageChannel__c';
 import { subscribe, unsubscribe, APPLICATION_SCOPE, MessageContext } from 'lightning/messageService';
 
 export default class simpliUIRecordDetail extends LightningElement {
-
+        
     @track recordId = '';
     @track recordURL = '';
     @track objectType = '';
@@ -26,7 +26,7 @@ export default class simpliUIRecordDetail extends LightningElement {
      */
     @wire(MessageContext)
     messageContext;
-
+    
     /*
      * Method which subscribes this component to a defined message channel. This subscription
      * allows the components to send messages to each other.
@@ -35,9 +35,9 @@ export default class simpliUIRecordDetail extends LightningElement {
         if (this.subscription) {
             return;
         }
-        this.subscription = subscribe(this.messageContext, LISTVIEW_MC,
+        this.subscription = subscribe(this.messageContext, LISTVIEW_MC, 
             (message) => { this.handleMessage(message); },
-            { scope: APPLICATION_SCOPE });
+                         { scope: APPLICATION_SCOPE     });
     }
 
     /*
@@ -58,9 +58,9 @@ export default class simpliUIRecordDetail extends LightningElement {
         this.receivedMessage = message;
         console.log('simpliUIRecordDetail received a message from ' + this.receivedMessage.uniqueComponentId);
 
-        this.recordId = this.receivedMessage.recordIds;
-        this.recordURL = window.location.origin + '/' + this.recordId;
-        this.objectType = this.receivedMessage.objectType;
+        this.recordId      = this.receivedMessage.recordIds;
+        this.recordURL     = window.location.origin + '/' + this.recordId;
+        this.objectType    = this.receivedMessage.objectType;
         this.isInitialized = true;
     }
 

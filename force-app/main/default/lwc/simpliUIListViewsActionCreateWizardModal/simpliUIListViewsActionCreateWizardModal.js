@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-import { LightningElement, track, api } from 'lwc';
+import { LightningElement, track, api  } from 'lwc';
 import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 //------------------------ LABELS ------------------------
@@ -55,50 +54,50 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
     get isStepTwo() { return this.currentStep === "2"; }
     get isStepThree() { return this.currentStep === "3"; }
     get isStepFour() { return this.currentStep === "4"; }
-    get isEnableNext() { return this.currentStep !== "4"; }
-    get isEnablePrev() { return this.currentStep !== "1"; }
+    get isEnableNext() { return this.currentStep != "4"; }
+    get isEnablePrev() { return this.currentStep != "1"; }
     get isEnableSave() { return this.currentStep === "4"; }
 
-    get strIsActive() { return this.booleanToYesNo(this.selectedActionIsActive); }
-    get strActionHasObject() { return this.booleanToYesNo(this.selectedActionHasObject); }
-    get strSpecificToLtn() { return this.booleanToYesNo(this.selectedActionHasComponent); }
+    get strIsActive() { return this.booleanToYesNo(this.selectedActionIsActive);}
+    get strActionHasObject() { return this.booleanToYesNo(this.selectedActionHasObject);}
+    get strSpecificToLtn() { return this.booleanToYesNo(this.selectedActionHasComponent);}
 
     booleanToYesNo(value) {
         if (value === 'true') return 'Yes';
-        return 'No';
+        else return 'No';
     }
 
     get actionRecordTypes() {
         return [
             { label: 'Core', value: 'Core' },
             { label: 'Custom', value: 'Custom' },
-        ];
+        ];    
     }
 
     get booleanList() {
         return [
-            { label: 'Yes', value: 'true' },
-            { label: 'No', value: 'false' },
+            { label: 'Yes', value: 'true'},
+            { label: 'No', value: 'false'},
         ];
     }
 
     get userPermissionsList() {
         return [
-            { label: 'Read', value: 'Read' },
-            { label: 'Create', value: 'Create' },
-            { label: 'Edit', value: 'Edit' },
-            { label: 'Delete', value: 'Delete' },
+            { label: 'Read', value: 'Read'},
+            { label: 'Create', value: 'Create'},
+            { label: 'Edit', value: 'Edit'},
+            { label: 'Delete', value: 'Delete'},
         ];
     }
 
     get recVisibleList() {
         return [
-            { label: 'Always Displayed', value: 'Always Displayed' },
-            { label: 'Displayed if multiple records are selected', value: 'Displayed if multiple records are selected' },
-            { label: 'Displayed if no records are selected', value: 'Displayed if no records are selected' },
-            { label: 'Displayed if one or more records are selected', value: 'Displayed if one or more records are selected' },
-            { label: 'Displayed if one record is selected', value: 'Displayed if one record is selected' },
-            { label: 'Displayed if zero or one record is selected', value: 'Displayed if zero or one record is selected' },
+            { label: 'Always Displayed', value: 'Always Displayed'},
+            { label: 'Displayed if multiple records are selected', value: 'Displayed if multiple records are selected'},
+            { label: 'Displayed if no records are selected', value: 'Displayed if no records are selected'},
+            { label: 'Displayed if one or more records are selected', value: 'Displayed if one or more records are selected'},
+            { label: 'Displayed if one record is selected', value: 'Displayed if one record is selected'},
+            { label: 'Displayed if zero or one record is selected', value: 'Displayed if zero or one record is selected'},
         ];
     }
 
@@ -144,7 +143,7 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
     }
 
     get massUpdateRowIndexes() {
-        return [2, 3, 4, 5, 6, 7, 8];
+        return [2,3,4,5,6,7,8];
     }
 
     label = { Close };
@@ -155,35 +154,36 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
     }
 
     renderedCallback() {
-        if (this.showModal === true && this.inRenderedCallback === false) {
+        if (this.showModal === true && this.inRenderedCallback === false) 
+        {
             this.inRenderedCallback = true;
         }
     }
-
+ 
     //-----------------------------------------------------------------------------
     // HANDLERS FOR MOVEMENT TO EACH STAGE
     //-----------------------------------------------------------------------------
 
-    handleNext() {
-        if (this.currentStep === "1") {
+    handleNext(){
+        if(this.currentStep === "1"){
             if (this.validateStepOne())
                 this.handleGoToStepTwo();
-        } else if (this.currentStep === "2") {
+        } else if(this.currentStep === "2"){
             if (this.validateStepTwo())
                 this.handleGoToStepThree();
-        } else if (this.currentStep === "3") {
+        } else if(this.currentStep === "3"){
             if (this.validateStepThree())
                 this.handleGoToStepFour();
         }
         console.log('Moved current step to - ' + this.currentStep);
     }
 
-    handlePrev() {
-        if (this.currentStep === "4")
+    handlePrev(){
+        if(this.currentStep === "4")
             this.handleGoToStepThree();
-        else if (this.currentStep === "3")
+        else if(this.currentStep === "3")
             this.handleGoToStepTwo();
-        else if (this.currentStep === "2")
+        else if(this.currentStep === "2")
             this.handleGoToStepOne();
     }
 
@@ -191,19 +191,22 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
         this.currentStep = "1";
         this.headerLabel = 'Basic Action Details';
     }
-
+    
     validateStepOne() {
+
         if (this.selectedActionRecordType === ''
             || this.selectedActionType === ''
             || this.selectedActionLabel === ''
-            || this.selectedActionIsActive === '') {
-            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false));
+            || this.selectedActionIsActive === '')
+        {
+            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false)); 
             return false;
         }
 
-        if (this.selectedActionType === 'ManageData' && this.selectedActionSubType === '') {
-            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false));
-            return false;
+        if (this.selectedActionType === 'ManageData' && this.selectedActionSubType === '')
+        {
+            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false)); 
+            return false;    
         }
 
         return true;
@@ -220,24 +223,28 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
     }
 
     validateStepTwo() {
-        if ((this.selectedActionType === 'Hyperlink' && this.actionParams.get('hyperlinkURL') === undefined)
-            || (this.selectedActionType === 'EmailTemplate' && this.actionParams.get('sendEmailTemplateFolderName') === undefined)
-            || (this.selectedActionType === 'LaunchFlow' && this.actionParams.get('launchFlowAPIName') === undefined)
-            || (this.selectedActionType === 'ScreenFlow' && this.actionParams.get('screenFlowAPIName') === undefined)
-            || (this.selectedActionType === 'Custom' && this.actionParams.get('customApexClassName') === undefined)
-        ) {
-            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false));
+
+        if ( (this.selectedActionType === 'Hyperlink' && this.actionParams.get('hyperlinkURL') === undefined) 
+                || (this.selectedActionType === 'EmailTemplate' && this.actionParams.get('sendEmailTemplateFolderName') === undefined) 
+                || (this.selectedActionType === 'LaunchFlow' && this.actionParams.get('launchFlowAPIName') === undefined) 
+                || (this.selectedActionType === 'ScreenFlow' && this.actionParams.get('screenFlowAPIName') === undefined) 
+                || (this.selectedActionType === 'Custom' && this.actionParams.get('customApexClassName') === undefined) 
+            )
+        {
+            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false)); 
             return false;
         }
 
+
         return true;
     }
-
+ 
     handleGoToStepThree() {
         this.currentStep = "3";
         this.headerLabel = 'Accessibility';
 
-        if (this.selectedActionRecordType === 'Custom') {
+        if (this.selectedActionRecordType === 'Custom')
+        {
             this.selectedActionHasObject = 'true';
             this.actionHasObject = true;
             this.selectedActionHasObjectDisabled = true;
@@ -247,25 +254,28 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
     }
 
     validateStepThree() {
+
         if (this.selectedActionHasObject === ''
             || this.selectedActionHasComponent === ''
-            || this.selectedActionRecordVisible === '') {
-            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false));
+            || this.selectedActionRecordVisible === '')
+        {
+            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false)); 
             return false;
         }
 
-        if ((this.selectedActionHasObject === 'true' && this.selectedActionObjectType === '')
-            || (this.selectedActionHasComponent === 'true' && this.selectedActionComponentName === '')) {
-            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false));
-            return false;
+        if ( (this.selectedActionHasObject === 'true' && this.selectedActionObjectType === '') 
+                || (this.selectedActionHasComponent === 'true' && this.selectedActionComponentName === '') )
+        {
+            this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false)); 
+            return false;    
         }
 
         return true;
     }
-
+ 
     handleGoToStepFour() {
         this.currentStep = "4";
-        this.headerLabel = 'Review And Save';
+        this.headerLabel = 'Review And Save';;
         this.actionParams.set('actionHasObject', this.selectedActionHasObject);
         this.actionParams.set('actionObjectType', this.selectedActionObjectType);
         this.actionParams.set('actionHasComponent', this.selectedActionHasComponent);
@@ -273,28 +283,30 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
         this.actionParams.set('actionRecordVisible', this.selectedActionRecordVisible);
         this.actionParams.set('actionUserPermissions', this.selectedActionUserPermissions);
     }
-
-    handleSave() {
+    
+    handleSave(){
         let params = JSON.stringify(Array.from(this.actionParams));
         this.spinnerOn();
         console.log('All params - ' + params);
         console.log(this.pageName + ' CALLOUT - createAction - ' + this.calloutCount++);
-        createAction({ actionFields: params })
-            .then(result => {
-                console.log('RESULT - ' + result);
-                if (result === 'success') {
-                    this.clearData();
-                    this.dispatchEvent(new CustomEvent('finished'));
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Action Created', 'Action successfully created.', false));
-                } else {
-                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Action Create Error', 'There was a problem creating the action - ' + result, false));
-                }
-            })
-            .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Action Create Error', 'There was a problem creating the action.', true));
-            }).finally(() => {
+        createAction({actionFields: params })
+        .then(result => {
+            console.log('RESULT - ' + result);
+            if (result === 'success')
+            {
+                this.clearData();
+                this.dispatchEvent(new CustomEvent('finished'));        
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Action Created', 'Action successfully created.', false));
                 this.spinnerOff();
-            });
+            } else {
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Action Create Error', 'There was a problem creating the action - ' + result, false)); 
+                this.spinnerOff();
+            }
+        })
+        .catch(error => {
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Action Create Error', 'There was a problem creating the action.', true)); 
+            this.spinnerOff();
+        });
     }
 
     handleCancelClick() {
@@ -310,164 +322,111 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
     //-----------------------------------------------------------------------------
     // HANDLERS FOR EACH FIELD UPDATE
     //-----------------------------------------------------------------------------
-
+    
     handleActionRecordTypeSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionRecordType = target?.value ?? '';
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionRecordType = event.target.value;
     }
 
     handleActionIsActiveSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionIsActive = target?.value ?? '';
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionIsActive = event.target.value;
     }
 
     handleActionLabelSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionLabel = target?.value ?? '';
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionLabel = event.target.value;
     }
 
     handleActionTypeSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionType = target?.value ?? '';
-            this.hasActionType = true;
+        this.selectedActionType = event.target.value;
+        this.hasActionType = true;
 
-            if (this.selectedActionType === 'ManageData')
-                this.showSubType = true;
-            else
-                this.showSubType = false;
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        if (this.selectedActionType === 'ManageData')
+            this.showSubType = true;
+        else
+            this.showSubType = false;
     }
 
     handleActionSubTypeSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionSubType = target?.value ?? '';
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionSubType = event.target.value;
     }
 
     handleActionHasObjectSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionHasObject = target?.value ?? '';
-            if (this.selectedActionHasObject === 'true')
-                this.actionHasObject = true;
-            else
-                this.actionHasObject = false;
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionHasObject = event.target.value;
+        if (this.selectedActionHasObject === 'true')
+            this.actionHasObject = true;
+        else 
+            this.actionHasObject = false;
     }
 
     handleActionObjectTypeSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionObjectType = target?.value ?? '';
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionObjectType = event.target.value;
     }
 
     handleActionRecordVisibleSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionRecordVisible = target?.value ?? '';
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionRecordVisible = event.target.value;
     }
 
     handleActionHasComponentSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionHasComponent = target?.value ?? '';
-            if (this.selectedActionHasComponent === 'true')
-                this.actionHasComponent = true;
-            else
-                this.actionHasComponent = false;
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionHasComponent = event.target.value;
+        if (this.selectedActionHasComponent === 'true')
+            this.actionHasComponent = true;
+        else 
+            this.actionHasComponent = false;
     }
 
     handleActionComponentNameSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionComponentName = target?.value ?? '';
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionComponentName = event.target.value;
+
+    }
+ 
+    handleActionRecordVisibleSelected(event) {
+        this.selectedActionRecordVisible = event.target.value;
     }
 
     handleActionUserPermissionsSelected(event) {
-        try {
-            const { target } = event;
-            this.selectedActionUserPermissions = target?.value ?? '';
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.selectedActionUserPermissions = event.target.value;
     }
-
-
+    
+    
     handleActionParameterAdded(event) {
-        try {
-            const { currentTarget, detail, target } = event;
-            if (currentTarget?.dataset?.paramName === undefined) {
-                let fieldValue = detail?.selectedValue ?? '';
-                let rowId = detail?.rowId ?? '';
-                let paramName = detail?.field ?? '';
-                if (paramName === 'simpli_lv__Type__c') //this field uses picklist widget so data comes in differently
-                    paramName = 'manageDataMassUpdateType' + rowId;
+
+        if (event.currentTarget.dataset.paramName === undefined)
+        {
+            let fieldValue = event.detail.selectedValue;
+            let rowId = event.detail.rowId;
+            let paramName  = event.detail.field;
+            if (paramName === 'simpli_lv__Type__c') //this field uses picklist widget so data comes in differently
+                paramName = 'manageDataMassUpdateType' + rowId;
+            else
+                paramName = paramName + rowId;
+
+            this.actionParams.set(paramName, fieldValue);     
+            console.log('Action param name/value - ' + paramName + '/' + fieldValue);
+
+        } else {
+            let paramName = event.currentTarget.dataset.paramName;
+            let fieldValue = event.target.value;
+            if (paramName === 'manageDataCreateRedirectField') //this field is a boolean so is handled differently
+            {
+                if (event.target.checked === true)
+                    fieldValue = 'true';
                 else
-                    paramName = paramName + rowId;
-
-                this.actionParams.set(paramName, fieldValue);
-                console.log('Action param name/value - ' + paramName + '/' + fieldValue);
-
-            } else {
-                let paramName = currentTarget?.dataset?.paramName ?? '';
-                let fieldValue = target?.value ?? '';
-                if (paramName === 'manageDataCreateRedirectField') //this field is a boolean so is handled differently
-                {
-                    if (target?.checked === true)
-                        fieldValue = 'true';
-                    else
-                        fieldValue = 'false';
-                }
-                if (currentTarget.dataset.paramRowIndex !== undefined)
-                    paramName = paramName + currentTarget.dataset.paramRowIndex;
-                this.actionParams.set(paramName, fieldValue);
-                console.log('Action param name/value - ' + paramName + '/' + fieldValue);
+                    fieldValue = 'false';
             }
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
+            if (event.currentTarget.dataset.paramRowIndex !== undefined)
+                paramName = paramName + event.currentTarget.dataset.paramRowIndex;
+            this.actionParams.set(paramName, fieldValue);
+            console.log('Action param name/value - ' + paramName + '/' + fieldValue);
         }
     }
 
     //-----------------------------------------------------------------------------
     // HELPER METHODS
     //-----------------------------------------------------------------------------
-
+    
     clearData() {
         this.currentStep = '1';
         this.headerLabel = 'Basic Action Details';
-
+    
         this.selectedActionRecordType = '';
         this.selectedActionHasObject = '';
         this.selectedActionType = '';
@@ -495,4 +454,6 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
         this.spinner = false;
         console.log('Spinner OFF for SimpliUIListViewsActionCreateWizardModal');
     }
+
+
 }

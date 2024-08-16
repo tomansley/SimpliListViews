@@ -1,10 +1,7 @@
-/* eslint-disable no-console */
-import { LightningElement, track, api } from 'lwc';
+import { LightningElement, wire, track, api  } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import createRecords from '@salesforce/apex/ListViewController.createRecords';
 import getListViewDataShell from '@salesforce/apex/ListViewController.getListViewDataShell';
-
-import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 import Create from '@salesforce/label/c.Create';
 import Cancel from '@salesforce/label/c.Cancel';
@@ -51,7 +48,7 @@ export default class SimpliUIListViewsMassCreateModal extends LightningElement {
         this.dispatchEvent(new CustomEvent('close'));
     }
 
-    handleCancelClick() {
+    handleCancelClick(event) {
         this.listViewData = undefined;
         this.updatedRowData = new Map();
 
@@ -63,146 +60,155 @@ export default class SimpliUIListViewsMassCreateModal extends LightningElement {
         console.log('Starting getListViewShell - ' + this.objectName + ' - ' + this.listViewName + ' - ' + this.masterObjField + ' - ' + this.joinData + ' for MassCreateModal');
         console.log('Selected list view - ' + this.listViewName + ' for MassCreateModal');
 
-        if (this.objectName !== undefined && this.listViewName !== undefined && this.listViewData === undefined && this.showModal) {
+        if (this.objectName !== undefined && this.listViewName !== undefined && this.listViewData === undefined && this.showModal)
+        {
             this.spinnerOn();
             console.log('Calling getListViewDataShell!');
-            getListViewDataShell({ objectName: this.objectName, listViewName: this.listViewName, joinFieldName: this.masterObjField, joinData: this.joinData })
-                .then(result => {
+            getListViewDataShell({objectName: this.objectName, listViewName: this.listViewName, joinFieldName: this.masterObjField, joinData: this.joinData })
+            .then(result => {
 
-                    console.log('result.coreListId - ' + result.coreListId + ' for MassCreateModal');
+                console.log('result.coreListId - ' + result.coreListId + ' for MassCreateModal');
+                
+                //initialize list view info
+                this.listViewData = result;
 
-                    //initialize list view info
-                    this.listViewData = result;
+                //initialize list view row data
+                this.listViewDataRows = result.rows;
 
-                    //initialize list view row data
-                    this.listViewDataRows = result.rows;
+                this.isInitialized = true;
 
-                    this.isInitialized = true;
+                this.spinnerOff();
+                
+                console.log('this.listViewData            - ' + this.listViewData + ' for MassCreateModal');
 
-                    console.log('this.listViewData            - ' + this.listViewData + ' for MassCreateModal');
-
-                })
-                .catch(error => {
-                    console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace + ' for MassCreateModal');
-                    this.listViewData = undefined;
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Error Retrieving Data',
-                        message: 'There was an error setting up the mass create page - ' + error.message,
-                        variant: 'error',
-                        mode: 'sticky'
-                    }));
-                }).finally(() => this.spinnerOff());
+            })
+            .catch(error => {
+                console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace + ' for MassCreateModal');
+                this.listViewData = undefined; 
+                this.spinnerOff();
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error Retrieving Data',
+                    message: 'There was an error setting up the mass create page - ' + error.message,
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
+            });
         }
 
     }
-
-    /*
-     * Method called when the CREATE button is clicked.
-     */
-    handleCreateClick() {
+    
+     /*
+      * Method called when the CREATE button is clicked.
+      */
+     handleCreateClick(event) {
 
         let rowData = this.updatedRowData; //map of maps
 
         this.spinnerOn();
 
-        if (rowData !== undefined) {
+        if (rowData !== undefined)
+        {
             let rowDataStr = '{'
-            rowData.forEach((element, key) => {
-                rowDataStr = rowDataStr + '"' + key + '":' + JSON.stringify(Array.from(element)) + ',';
-            });
+              rowData.forEach((element, key) => { 
+                rowDataStr = rowDataStr + '"' + key + '":' + JSON.stringify( Array.from(element)) + ',';
+            });        
 
             rowDataStr = rowDataStr.slice(0, -1) + '}';
-
+              
             console.log('SAVE RESULT - ' + rowDataStr + ' for MassCreateModal');
 
-            createRecords({ objType: this.objectName, rowData: rowDataStr })
-                .then(result => {
+            createRecords({objType: this.objectName, rowData: rowDataStr})
+            .then(result => {
 
-                    if (result.endsWith(':success')) {
-                        console.log('Create successful for MassCreateModal');
+                if (result.endsWith(':success'))
+                {
+                    console.log('Create successful for MassCreateModal');
+            
+                    const rowCount = result.split(':')[0];
 
-                        const rowCount = result.split(':')[0];
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Success',
+                        message: rowCount + ' record(s) created successfully.',
+                        variant: 'success',
+                        mode: 'dismissable'
+                    }));
 
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'Success',
-                            message: rowCount + ' record(s) created successfully.',
-                            variant: 'success',
-                            mode: 'dismissable'
-                        }));
-
-                        this.handleClose();
-                    } else {
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'Error',
-                            message: result,
-                            variant: 'error',
-                            mode: 'sticky'
-                        }));
-                    }
-                })
-                .catch(error => {
-                    console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace + ' for MassCreateModal');
+                    this.handleClose();
+                    this.spinnerOff();
+                } else {
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Error',
-                        message: 'There was an error creating the records. Please try again or see an administrator - ' + error.message,
+                        message: result,
                         variant: 'error',
                         mode: 'sticky'
                     }));
-                }).finally(() => this.spinnerOff());
+                    this.spinnerOff();
+                    }
+            })
+            .catch(error => {
+                console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace + ' for MassCreateModal');
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error',
+                    message: 'There was an error creating the records. Please try again or see an administrator - ' + error.message,
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
+                this.spinnerOff();
+            });
         }
+
     }
 
     /*
      * Method called when a row is edited and a field within that row is changed.
      */
     handleFieldDataChange(event) {
-        try {
-            const { currentTarget, detail, target } = event;
-            console.log('Field changed for MassCreateModal');
-            let fieldValue = '';
-            let rowId = '';
-            let fieldName = '';
+        console.log('Field changed for MassCreateModal');
 
-            //if data is coming in from a component
-            if (currentTarget.dataset.type === undefined) {
-                fieldValue = detail.selectedValue;
-                rowId = detail.rowId;
-                fieldName = detail.field;
+        let fieldValue = '';
+        let rowId = '';
+        let fieldName = '';
 
-            } else {
-                if (currentTarget.dataset.type === 'boolean') {
-                    if (target.checked === true) {
-                        fieldValue = 'true'; //have to turn boolean into string
-                    } else {
-                        fieldValue = 'false'
-                    }
-                    rowId = currentTarget.dataset.rowId;
-                    fieldName = currentTarget.dataset.field;
-                } else {
-                    fieldValue = target.value;
-                    rowId = currentTarget.dataset.rowId;
-                    fieldName = currentTarget.dataset.field;
+        //if data is coming in from a component
+        if (event.currentTarget.dataset.type === undefined)
+        {
+            fieldValue = event.detail.selectedValue;
+            rowId = event.detail.rowId;
+            fieldName  = event.detail.field;
+        
+        } else {
+            if (event.currentTarget.dataset.type === 'boolean') {
+                if (event.target.checked === true) {
+                    fieldValue = 'true'; //have to turn boolean into string
+                } else { 
+                    fieldValue = 'false'
                 }
+                rowId  = event.currentTarget.dataset.rowId;
+                fieldName  = event.currentTarget.dataset.field;    
+            } else {
+                fieldValue = event.target.value;
+                rowId  = event.currentTarget.dataset.rowId;
+                fieldName  = event.currentTarget.dataset.field;
             }
-
-            console.log('fieldValue - ' + fieldValue + ' for MassCreateModal');
-            console.log('rowId - ' + rowId + ' for MassCreateModal');
-            console.log('fieldName - ' + fieldName + ' for MassCreateModal');
-
-            let rowData = this.updatedRowData.get(rowId);
-
-            if (rowData === undefined) {
-                rowData = new Map();
-                this.updatedRowData.set(rowId, rowData);
-
-                if (this.masterObjField !== '')
-                    rowData.set(this.masterObjField, this.masterObjId);
-            }
-
-            rowData.set(fieldName, fieldValue);
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
         }
+
+        console.log('fieldValue - ' + fieldValue + ' for MassCreateModal');
+        console.log('rowId - ' + rowId + ' for MassCreateModal');
+        console.log('fieldName - ' + fieldName + ' for MassCreateModal');
+
+        let rowData = this.updatedRowData.get(rowId);
+
+        if (rowData === undefined)
+        {
+            rowData = new Map();
+            this.updatedRowData.set(rowId, rowData);
+
+            if (this.masterObjField !== '')
+                rowData.set(this.masterObjField, this.masterObjId);
+        }
+
+        rowData.set(fieldName, fieldValue);
+
     }
 
     spinnerOn() {
@@ -220,46 +226,39 @@ export default class SimpliUIListViewsMassCreateModal extends LightningElement {
      * Called when a user tries to change the width of a column.
      */
     calculateWidth(event) {
-        try {
-            const { target, clientX } = event;
-            const childObj = target
-            let parObj = childObj.parentNode;
-            while (parObj.tagName !== 'TH') {
-                parObj = parObj.parentNode;
-            }
-            console.log('Final tag name ' + parObj.tagName + ' for MassCreateModal');
-            const mouseStart = clientX;
-            this.mouseStart = mouseStart;
-            this.oldWidth = parObj.offsetWidth;
-            this.parentObj = parObj;
-            // Stop text selection event
-            if (event.stopPropagation) event.stopPropagation();
-            if (event.preventDefault) event.preventDefault();
-            event.cancelBubble = true;
-            event.returnValue = false;
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
+        var childObj = event.target
+        var parObj = childObj.parentNode;
+        while(parObj.tagName != 'TH') {
+            parObj = parObj.parentNode;
         }
-    }
+        console.log('Final tag name ' + parObj.tagName + ' for MassCreateModal');
+        var mouseStart=event.clientX;
+        this.mouseStart = mouseStart;
+        this.oldWidth = parObj.offsetWidth;
+        this.parentObj = parObj;
+        // Stop text selection event
+        if(event.stopPropagation) event.stopPropagation();
+        if(event.preventDefault) event.preventDefault();
+        event.cancelBubble=true;
+        event.returnValue=false;
+    };
 
     /*
      * Called when a user tries to change the width of a column.
      */
     setNewWidth(event) {
-        try {
-            if (this.mouseStart === undefined) return;
-            const { target, clientX } = event;
-            const childObj = target;
-            let parObj = childObj.parentNode;
-            while (parObj.tagName !== 'TH') {
-                parObj = parObj.parentNode;
-            }
-            const newWidth = clientX - parseFloat(this.mouseStart) + parseFloat(this.oldWidth);
-            this.parentObj.style.width = newWidth + 'px';
 
-            this.mouseStart = undefined;
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
+        if (this.mouseStart === undefined) return;
+
+        var childObj = event.target
+        var parObj = childObj.parentNode;
+        while(parObj.tagName != 'TH') {
+            parObj = parObj.parentNode;
         }
-    }
+        var newWidth = event.clientX- parseFloat(this.mouseStart)+parseFloat(this.oldWidth);
+        this.parentObj.style.width = newWidth+'px';
+
+        this.mouseStart = undefined;
+    };
+
 }

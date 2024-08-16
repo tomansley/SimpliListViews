@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { LightningElement, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import * as SLVHelper from 'c/simpliUIListViewsHelper';
 
 //------------------------ LABELS ------------------------
@@ -40,20 +41,19 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
 
     get booleanList() {
         return [
-            { label: 'Yes', value: 'true' },
-            { label: 'No', value: 'false' },
+            { label: 'Yes', value: 'true'},
+            { label: 'No', value: 'false'},
         ];
     }
 
-    label = {
-        Parameter_Name, Value, Select_A_Value, Available, Selected, Save, List_Views_Cleaned, List_Views_Click_For_Cleaning,
-        Clean, Clean_List_Views, Cleaning_Status, List_View_Cleaning_Complete, List_Views_Click_For_Cleaning_Verbage
-    }
+    label = { Parameter_Name, Value, Select_A_Value, Available, Selected, Save, List_Views_Cleaned, List_Views_Click_For_Cleaning,
+              Clean, Clean_List_Views, Cleaning_Status, List_View_Cleaning_Complete, List_Views_Click_For_Cleaning_Verbage }
 
     renderedCallback() {
         console.log('SimpliUIListViewsAdmin.renderedCallback started');
 
-        if (this.config === undefined && this.hasConfig === true) {
+        if (this.config === undefined && this.hasConfig === true)
+        {
             console.log('Starting getConfig()');
             this.getConfig();
         }
@@ -61,67 +61,62 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
     }
 
     handleInitializedCheck(event) {
-        try {
-            const { detail } = event;
-            this.isInitialized = detail;
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
-        }
+        this.isInitialized = event.detail;
     }
 
-    @wire(getObjectNames, {})
+    @wire (getObjectNames, {})
     wiredObjectListViews(wiredObjectListViewsResult) {
         this.spinnerOn();
-        console.log('Starting getObjectNames');
+        console.log('Starting getObjectNames'); 
         const { data, error } = wiredObjectListViewsResult;
-        if (data) {
-            console.log('Object names retrieval successful');
-            this.objNamesList = data;
-            console.log('Object names size - ' + this.objNamesList.length);
-            this.spinnerOff();
-        } else if (error) {
-            this.listViewList = undefined;
-            this.spinnerOff();
-            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Object Names', 'There was an error retrieving all object names - ', true));
+        if (data) { 
+            console.log('Object names retrieval successful'); 
+            this.objNamesList = data; 
+            console.log('Object names size - ' + this.objNamesList.length); 
+            this.spinnerOff(); 
+        } else if (error) { 
+            this.listViewList = undefined; 
+            this.spinnerOff(); 
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Object Names', 'There was an error retrieving all object names - ', true)); 
         }
-        console.log('Finished getObjectNames');
+        console.log('Finished getObjectNames'); 
     }
-
-    getConfig() {
+    
+    getConfig()
+    {
         this.spinnerOn();
         this.hasConfig = true;
         console.log('simpliUIListViewsAdmin CALLOUT - getOrgWideConfig - ' + this.calloutCount++);
         getOrgWideConfig()
-            .then(result => {
-                console.log('Org wide config retrieved successfully - ' + result);
-                this.config = result;
-            })
-            .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error handling the config - ', true));
-                this.hasConfig = false;
-                this.isInitialized = false;
-
-            }).finally(() => {
-                this.spinnerOff();
-            });
+        .then(result => {
+            console.log('Org wide config retrieved successfully - ' + result);
+            this.config = result;
+            this.spinnerOff();
+        })
+        .catch(error => {
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error handling the config - ', true)); 
+            this.hasConfig = false;
+            this.isInitialized = false;
+            this.spinnerOff();
+        });
     }
 
-    handleSaveClick() {
+    handleSaveClick(event) {
         if (this.parameters.size === 0) return;
 
         this.spinnerOn();
 
         let isConfirmed = true;
-        if (this.excListViewsStrChanged === true) {
-            // eslint-disable-next-line no-restricted-globals, no-alert
+        if (this.excListViewsStrChanged === true)
+        {
             isConfirmed = confirm("The Excluded List Views parameter was updated. This will force deletion of those core simpli list views that match the provided value.\n\n Click to confirm or cancel to go back!");
         }
 
         if (isConfirmed === true) {
 
-            let resultStr;
-            let valuesMap = new Map();
-            let strValuesMap;
+            var resultStr;
+            var valuesMap = new Map();
+            var strValuesMap;
 
 
             //get all the externally named values into a JSON string
@@ -130,40 +125,42 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
                 valuesMap.set(k, v);
             }
 
-            strValuesMap = JSON.stringify(Array.from(valuesMap));
+            strValuesMap = JSON.stringify( Array.from(valuesMap) );
             console.log('Field/Value  - ' + strValuesMap);
 
             console.log('simpliUIListViewsAdmin CALLOUT - saveOrgWideConfig - ' + this.calloutCount++);
-            saveOrgWideConfig({ paramStr: strValuesMap })
+            saveOrgWideConfig({ paramStr: strValuesMap})
                 .then(result => {
                     resultStr = result;
 
                     //get the status
                     let status = resultStr.substring(0, resultStr.indexOf(':'));
-
+                    
                     //get any associated message
-                    let message = resultStr.substring(resultStr.indexOf(':') + 1);
+                    let message = resultStr.substring(resultStr.indexOf(':')+1);
                     if (message === '' && status === 'Ok') {
                         message = 'All configuration has been saved successfully.';
-                    } else if (message === '' && status !== 'Ok') {
+                    } else if (message === '' && status != 'Ok') {
                         message = 'There was an error saving the configuration.';
                     }
 
                     if (status === 'Ok') {
-                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Save Successful!', message, false));
+                        this.dispatchEvent(SLVHelper.createToast('success', '', 'Save Successful!', message, false)); 
                         this.getConfig();
-
+                    
                     } else {
-                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', message, false));
+                        this.dispatchEvent(SLVHelper.createToast('error', '', 'Processing Error', message, false)); 
                         this.spinnerOff();
+                        return;
                     }
                 })
                 .catch(error => {
                     resultStr = undefined;
-                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error saving the admin config - ', true));
+                    this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error saving the admin config - ', true)); 
                     this.spinnerOff();
+                    return;
+            });
 
-                });
         } else {
             this.spinnerOff();
         }
@@ -177,69 +174,65 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         console.log('Listview cleaning button clicked and updating all list views');
 
         console.log('simpliUIListViewsAdmin CALLOUT - cleanListViews - ' + this.calloutCount++);
-        cleanListViews({})
-            .then(result => {
-                //if we have an error then send an ERROR toast.
-                if (result === 'failed') {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error cleaning the list views - ', true));
-                    //else send a SUCCESS toast.
-                } else {
-                    this.batchId = result;
-                    this.showCleanProgress = true;
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Cleaning', 'List view cleaning has started.', false));
-                    this.dispatchEvent(new CustomEvent('cleanlistviewclick'));
-                }
-            })
-            .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error cleaning the list views - ', true));
+        cleanListViews({ })
+        .then(result => {
 
-            }).finally(() => {
+            //if we have an error then send an ERROR toast.
+            if (result === 'failed')
+            {
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'Processing Error', 'There was an error cleaning the list views - ', true)); 
                 this.spinnerOff();
-            });
+
+            //else send a SUCCESS toast.
+            } else {
+                this.batchId = result;
+                this.showCleanProgress = true;
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Cleaning', 'List view cleaning has started.', false)); 
+                this.dispatchEvent(new CustomEvent('cleanlistviewclick'));
+                this.spinnerOff();
+            }
+        })
+        .catch(error => {
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error cleaning the list views - ', true)); 
+            this.spinnerOff();
+        });
+
     }
 
     handleParamUpdate(event) {
-        try {
-            const { target } = event;
-            const { name, value } = target;
+        var name = event.target.name;
+        var value = event.target.value;
 
-            console.log('Handling Param Update (Name/Value) - ' + name + '/' + value);
+        console.log('Handling Param Update (Name/Value) - ' + name + '/' + value );
 
-            this.parameters.set(name, value);
+        this.parameters.set(name, value);
 
-            if (name === 'ExcludedListViews') {
-                if (value === '')
-                    this.excListViewsStrChanged = false;
-                else
-                    this.excListViewsStrChanged = true;
-            }
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
+        if (name === 'ExcludedListViews')
+        {
+            if (value === '')
+                this.excListViewsStrChanged = false;
+            else
+                this.excListViewsStrChanged = true;
         }
     }
 
-    handleScheduleJobRefreshed() {
+    handleScheduleJobRefreshed(event) {
         this.getConfig();
     }
 
     handleConfigCreated(event) {
-        try {
-            const { detail } = event;
-            const { name, status } = detail;
-            console.log('NAME - ' + name);
-            console.log('STATUS - ' + status);
+        console.log('NAME - ' + event.detail.name);
+        console.log('STATUS - ' + event.detail.status);
 
-            if (name === 'createStart')
-                this.spinnerOn();
-            else if (name === 'createEnd')
-                this.getConfig();
-            else if (name === 'importStart')
-                this.spinnerOn();
-            else if (name === 'importEnd') {
-                this.spinnerOff();
-            }
-        } catch (error) {
-            SLVHelper.showErrorMessage(error);
+        if (event.detail.name === 'createStart')
+            this.spinnerOn();
+        else if (event.detail.name === 'createEnd')
+            this.getConfig();
+        else if (event.detail.name === 'importStart')
+            this.spinnerOn();
+        else if (event.detail.name === 'importEnd')
+        {
+            this.spinnerOff();
         }
     }
 
@@ -248,15 +241,15 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         console.log('Listview clear cache button clicked');
 
         console.log('simpliUIListViewsAdmin CALLOUT - clearCache - ' + this.calloutCount++);
-        clearCache({})
-            .then(() => {
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Simpli List Views Cache Cleared', '', false));
-            })
-            .catch(error => {
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error clearing the cache - ', true));
-            }).finally(() => {
-                this.spinnerOff();
-            });
+        clearCache({ })
+        .then(result => {
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'Simpli List Views Cache Cleared', '', false)); 
+            this.spinnerOff();
+        })
+        .catch(error => {
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error clearing the cache - ', true)); 
+            this.spinnerOff();
+        });
 
     }
 
@@ -265,19 +258,19 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         //this.getConfig();
     }
 
-    handleConfigImported() {
+    handleConfigImported(event) {
         this.getConfig();
     }
 
-    handleCreateActionClicked() {
+    handleCreateActionClicked(event) {
         this.showCreateActionWizardModal = true;
     }
 
-    handleCreateActionClose() {
+    handleCreateActionClose(event) {
         this.showCreateActionWizardModal = false;
     }
 
-    handleCreateActionFinished() {
+    handleCreateActionFinished(event) {
         this.showCreateActionWizardModal = false;
     }
 
