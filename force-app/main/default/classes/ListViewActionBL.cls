@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 05-23-2024
+ * @last modified on  : 08-01-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -57,6 +57,7 @@ public with sharing class ListViewActionBL {
                 action.addError('An apex class is required and must extend simpli_lv.ListViewAction');
             } else {
                 
+                //CLASS AND CONSTRUCTOR MUST BE GLOBAL FOR THIS TO WORK
                 if (!bogusClassNames.contains(action.Apex_Class_Name__c))
                 {
                     try {
