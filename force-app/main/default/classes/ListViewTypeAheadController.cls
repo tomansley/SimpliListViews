@@ -23,8 +23,7 @@ public with sharing class ListViewTypeAheadController {
                 if (String.isBlank(whereClauseJSON)) {
                     soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' LIMIT 100'; 
                 } else {
-                    WhereClause clause = (WhereClause) JSON.deserialize(whereClauseJSON, WhereClause.class);
-                    String whereStatement = clause.getWhereClause();
+                    String whereStatement = createWhereClause(whereClauseJSON);
                     soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + whereStatement + ' LIMIT 100'; 
                 }
             }
@@ -32,8 +31,7 @@ public with sharing class ListViewTypeAheadController {
                 if (String.isBlank(whereClauseJSON)) {
                     soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + String.escapeSingleQuotes(labelFieldName) + ' LIKE  \'%' + String.escapeSingleQuotes(searchTerm) + '%\' LIMIT 100';
                 } else {
-                    WhereClause clause = (WhereClause) JSON.deserialize(whereClauseJSON, WhereClause.class);
-                    String whereStatement = clause.getWhereClause();
+                    String whereStatement = createWhereClause(whereClauseJSON);
                     soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE ' + whereStatement + ' AND ' + String.escapeSingleQuotes(labelFieldName) + ' LIKE  \'%' + String.escapeSingleQuotes(searchTerm) + '%\' LIMIT 100';
                 }
             }
@@ -59,15 +57,14 @@ public with sharing class ListViewTypeAheadController {
 
                 if (hasWhereClause)
                 {
-                    WhereClause clause = (WhereClause) JSON.deserialize(whereClauseJSON, WhereClause.class);
-                    String whereStatement = clause.getWhereClause();
+                    List<WhereClause> clauses = (List<WhereClause>) JSON.deserialize(whereClauseJSON, List<WhereClause>.class);
 
-                    if (clause.operator == 'NOT IN')
+                    if (clauses[0].operator == 'NOT IN')
                         isInc = false;
                     else 
                         isInc = true;
 
-                    objs = clause.getValuesList();
+                    objs = clauses[0].getValuesList();
                 }
 
                 for (String apiName : objMap.keySet())
@@ -79,7 +76,7 @@ public with sharing class ListViewTypeAheadController {
                         String label = objMap.get(apiName);
                         if (searchTerm == '')                        
                             options.add(new ListViewController.SelectOption(apiName, label));
-                        else if (label.toLowerCase().contains(searchTerm))
+                        else if (label.toLowerCase().contains(searchTerm.toLowerCase()))
                             options.add(new ListViewController.SelectOption(apiName, label));         
                     }
 
@@ -104,6 +101,17 @@ public with sharing class ListViewTypeAheadController {
         String soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' WHERE Id = \'' + String.escapeSingleQuotes(selectedId) + '\'';
 
         return (String) Database.query(soql)[0].get(String.escapeSingleQuotes(labelFieldName));
+    }
+
+    private static String createWhereClause(String whereClauseJSON)
+    {
+        String whereStatement = '';
+        List<WhereClause> clauses = (List<WhereClause>) JSON.deserialize(whereClauseJSON, List<WhereClause>.class);
+        for (WhereClause clause: clauses)
+            whereStatement += clause.getWhereClause() + ' AND ';
+        whereStatement = whereStatement.removeEnd(' AND ');
+
+        return whereStatement;
     }
 
     public class WhereClause {

@@ -54,42 +54,42 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     //-----------
     //API FIELDS
     //-----------
-    @api mode = undefined;    //indicates the mode the page is in for displaying the list view. i.e. app, single etc.
-    @api virtual = false;        //indicates whether the list view is displaying data virtually from another org.
-    @api pageName = '';           //this is NOT the page name but the COMPONENT name
-    @api uniqueComponentId = '';           //identifies the component uniquely so that messages can be handled in a multi-component page.
-    @api hasMainTitle = undefined;    //indicates whether the component should display the main title
-    @api mainTitle = 'List Views'; //the main title of the component.
-    @api includedObjects = '';           //indicates the objects that should be included in the list view
-    @api excludedObjects = '';           //indicates the objects that should be excluded in the list view.
-    @api joinFieldName = '';           //if the component uses data coming in from the message channel this field identifies the lookup field to use that data for.
-    @api useMessageChannel = false;        //identifies if the message channel should be used or not. This is used when components should be passing data between each other for updates.
-    @api allowRefresh = false;        //config indicating whether the auto refresh checkbox is made available.
-    @api singleClickAutoRefresh = undefined;    //whether clicking a single or double time starts the auto refresh.
-    @api allowHorizontalScrolling = false;        //config indicating whether horizontal scrolling is available on the list view
-    @api allowInlineEditing = false;        //config indicating whether inline editing is available
-    @api displayRecordPopovers = false;        //config indicating whether record popovers should be displayed
-    @api allowAdmin = false;        //indicates whether the admin button should display to the user
+    @api mode = undefined; 
+    @api virtual = false;
+    @api pageName = ''; 
+    @api uniqueComponentId = '';
+    @api hasMainTitle = undefined;
+    @api mainTitle = 'List Views';
+    @api includedObjects = '';
+    @api excludedObjects = '';
+    @api joinFieldName = '';
+    @api useMessageChannel = false;
+    @api allowRefresh = false;
+    @api singleClickAutoRefresh = undefined;
+    @api allowHorizontalScrolling = false;
+    @api allowInlineEditing = false;
+    @api displayRecordPopovers = false;
+    @api allowAdmin = false;
     @api displayActions = false;
-    @api typeAheadListSearch = false;        //indicates whether a straight combobox or typeahead text will be used when selecting list views
-    @api typeAheadObjectSearch = false;        //indicates whether a straight combobox or typeahead text will be used when selecting objects
-    @api displayReprocess = false;        //indicates whether the reprocessing button should be displayed allowing core list views to be reprocessed
+    @api typeAheadListSearch = false;
+    @api typeAheadObjectSearch = false;
+    @api displayReprocess = false;
     @api displayURL = false;
     @api displayRowCount = false;
-    @api noSorting = false;        //indicates whether any sorting should be allowed on the listview
-    @api useSimpleSorting = false;        //indicates whether standard sorting should be used.
+    @api noSorting = false;
+    @api useSimpleSorting = false;
     @api displaySelectedCount = false;
-    @api displayOrigButton;                         //this is not used....deprecated.
+    @api displayOrigButton;
     @api displayModified = false;
     @api displayExportButton = false;
-    @api displayTextSearch = false;        //identifies whether the text search field should be displayed.
-    @api singleListViewObject = '';           //if in SINGLE mode holds the list view object to use.
-    @api singleListViewApiName = '';           //if in SINGLE mode holds the list view API name to use.
-    @api excludedRecordPopoverTypes = '';           //Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name.
-    @api displayAllRelatedRecords = false;        //Related List View Mode Only: Indicates whether all records should be displayed or scrolling should be used.
-    @api objectList = undefined;    //holds the list of objects from which a user can choose one.
-    @api listViewList = undefined;    //holds the set of list views for the chosen object
-    @api set actionList(value)                      //if in STANDALONE or VIRTUAL mode used when passing actions directly into the component
+    @api displayTextSearch = false;
+    @api singleListViewObject = '';
+    @api singleListViewApiName = '';
+    @api excludedRecordPopoverTypes = '';
+    @api displayAllRelatedRecords = false;
+    @api objectList = undefined;
+    @api listViewList = undefined;
+    @api set actionList(value)    
     {
         this.objectActionList = value;
         if (this.objectActionList !== undefined && this.objectActionList !== '')

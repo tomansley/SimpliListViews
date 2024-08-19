@@ -141,5 +141,5 @@ export function showErrorMessage({ message, body }) {
             errorMessage = body.message;
         }
     }
-    console.log("Error", errorMessage);
+    console.error("Error", errorMessage);
 }

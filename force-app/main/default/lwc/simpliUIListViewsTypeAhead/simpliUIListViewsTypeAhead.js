@@ -52,15 +52,17 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
         return this._fieldObjName;
     }
 
-    _whereClause;           //any additional criteria (in SOQL format without WHERE keyword) to be applied when displaying values
-    @api set whereClause(value) {
-        if (value !== this._whereClause) {
+    _whereClause = [];           //any additional criteria (in SOQL format without WHERE keyword) to be applied when displaying values
+    @api set whereClause(value) 
+         {
             this.searchTerm = '';
             this.oldSearchTerm = '';
-        }
-        this._whereClause = value;
-        this.search();
-    }
+            this._whereClause = [];
+            if (!SLVHelper.isEmpty(value)) {
+                this._whereClause.push(value);
+            }
+            this.search();
+         }
     get whereClause() {
         return this._whereClause;
     }
@@ -152,7 +154,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
                             this.isInitialized = true;
                         })
                         .catch(error => {
-                            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+                            SLVHelper.showErrorMessage(error);
                         });
                     this.isInitialized = true;
                 }
@@ -166,7 +168,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
     }
 
     search() {
-
+        console.log("searchTerm1", this.searchTerm);
         if ((this.searchType === 'sobject' && this.whereClause !== undefined && this.labelFieldName !== undefined && this.keyFieldName !== undefined && this.fieldObjName !== undefined)
             ||
             (this.searchType === 'schema' && this.fieldObjName !== undefined)
@@ -174,7 +176,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
             this.searchTerm.length > 1) {
             let whereClauseStr = JSON.stringify(this.whereClause);
 
-            console.log('Performing search - ' + this.searchType + ', ' + this.searchTerm + ', ' + this.fieldObjName + ', ' + this.labelFieldName + ', ' + this.keyFieldName + ', ' + this.whereClause)
+            console.log('Performing search - ' + this.searchType + ', ' + this.searchTerm + ', ' + this.fieldObjName + ', ' + this.labelFieldName + ', ' + this.keyFieldName + ', ' + this.whereClauseStr)
 
             search({ searchType: this.searchType, searchTerm: this.searchTerm, objName: this.fieldObjName, labelFieldName: this.labelFieldName, keyFieldName: this.keyFieldName, whereClauseJSON: whereClauseStr })
                 .then(result => {
@@ -187,7 +189,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
                         this.options = undefined;
                 })
                 .catch(error => {
-                    console.log('Error Detected - ' + error.message + ' | ' + error.stackTrace);
+                    SLVHelper.showErrorMessage(error);
                 });
 
         } else if (this.searchType === 'schema' && this.fieldObjName !== undefined) {
@@ -221,6 +223,7 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
 
         if (this.searchTerm === '')
             this.searchTerm = this.oldSearchTerm;
+        
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         this.blurTimeout = setTimeout(() => { this.boxClass = 'slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-has-focus' }, 300);
     }

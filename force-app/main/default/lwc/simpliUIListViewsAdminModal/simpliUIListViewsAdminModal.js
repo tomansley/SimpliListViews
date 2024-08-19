@@ -30,7 +30,7 @@ import Column_Styles from '@salesforce/label/c.Column_Styles';
 import Font from '@salesforce/label/c.Font';
 import Decoration from '@salesforce/label/c.Decoration';
 import Style from '@salesforce/label/c.Style';
-import constiant from '@salesforce/label/c.constiant';
+// import constiant from '@salesforce/label/c.constiant';
 import Transform from '@salesforce/label/c.Transform';
 import Weight from '@salesforce/label/c.Weight';
 import Alignment from '@salesforce/label/c.Alignment';
@@ -204,7 +204,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     label = {
         Close, List_View_Config, Settings, Parameter_Name, Value, Select_A_Value, Highlighting, Add_Remove, Field,
         Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition,
-        Update, Column_Styles, Font, Decoration, Style, constiant, Transform, Weight, Alignment
+        Update, Column_Styles, Font, Decoration, Style, Transform, Weight, Alignment
     }
 
     constructor() {
