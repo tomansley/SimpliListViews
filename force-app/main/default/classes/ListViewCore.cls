@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-13-2024
+ * @last modified on  : 08-30-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -348,7 +348,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
                 ListViewHelper.StandardColumn newColumn = new ListViewHelper.StandardColumn();
                 newColumn.type = fieldData.getType();
-                newColumn.fieldNameOrPath = fieldName;
+                newColumn.fieldNameOrPath = fieldName.removeStart(listView.Object_Name__c + '.'); //must remove the object name if its present. i.e. If we are looking for Account.Name on the Account just make it Name
                 newColumn.hidden = false;
                 newColumn.label = label;
 
