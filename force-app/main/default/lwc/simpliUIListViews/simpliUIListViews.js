@@ -534,8 +534,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 else
                     this.allowAdmin = false;
             }
-            if (SLVHelper.toBool(this.componentConfig.TypeAheadListSearch) === true) { this.typeAheadListSearch = true; }
-            if (SLVHelper.toBool(this.componentConfig.TypeAheadObjectSearch) === true) { this.typeAheadObjectSearch = true; }
+            if (SLVHelper.toBool(this.componentConfig.TypeAheadListSearch) === false) { this.typeAheadListSearch = false; }
+            if (SLVHelper.toBool(this.componentConfig.TypeAheadObjectSearch) === false) { this.typeAheadObjectSearch = false; }
             if (SLVHelper.toBool(this.componentConfig.DisplayActionsButton) === false) { this.displayActions = false; }
             if (SLVHelper.toBool(this.componentConfig.DisplayListViewReprocessingButton) === false) { this.displayReprocess = false; }
             if (SLVHelper.toBool(this.componentConfig.DisplayOriginalListViewButton) === false) { this.displayURL = false; }
