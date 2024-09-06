@@ -1,0 +1,58 @@
+<!-- sldsValidatorIgnore -->
+<template>
+    <template if:true={showModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container modalBody" style="align-items: center; width: 1000px;">
+                <header class="slds-modal__header" style="width: 1000px; height: 30px; padding-top:4px; border-style: solid; border-width: 1px;">
+                    <div style="display: inline-flex; width: 100%">
+                        <div style="width: 100%; font-weight:bold;">
+                            <h2 class="slds-text-heading_small">{heading}</h2>
+                        </div>
+                    </div>                                 
+                </header>
+                <div class="slds-modal__content slds-var-p-around_medium pageSpinnerHolder" id="modal-content-id-1" style="width: 1000px; overflow: auto; height: 200px; border-width: 1px; border-right-style: solid; border-left-style: solid;">
+                    <template if:true={spinner}>
+                        <c-simpli-u-i-list-views-spinner text={spinnerText} style-class="pageSpinnerHolder"></c-simpli-u-i-list-views-spinner>
+                    </template>
+                    <div style="padding-left:10px;">
+                        <lightning-layout>
+                            <template for:each={listData} for:item="data">
+                                <lightning-layout-item key={data.index} style="width:16%;">
+                                    <div style="height:180px;overflow: auto;border:#c9c9c9; border-style:solid; border-width: 1px;margin-right: 5px;">
+                                        <ul class="slds-listbox slds-listbox_vertical" role="listbox">
+                                            <template for:each={data.list} for:item="entry">
+                                                <li key={entry.value} role="presentation" class="slds-listbox__item" onclick={handleItemSelected} data-value={entry.value} data-index={data.index}>
+                                                    <div class="slds-listbox__option slds-listbox__option_plain slds-media slds-media_small slds-media_inline" aria-selected="false" role="option" tabindex="0">
+                                                        <span class="slds-media__body">
+                                                            <span class="slds-truncate" title="Option 1">{entry.label}</span>
+                                                        </span>
+                                                    </div>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </lightning-layout-item>
+                            </template>
+                        </lightning-layout>                        
+                    </div>
+                </div>
+                <footer class="slds-modal__footer" style="width: 1000px; padding:5px; border-width: 1px; border-right-style: solid; border-left-style: solid; border-bottom-style: solid;">
+                    <div style="width:100%; display: inline-flex;">
+                        <div style="width:80%; text-align: left; padding-left: 250px; padding-top: 5px;">
+                            <template if:true={selectedField}>
+                                <b>Field: </b>{selectedField}
+                            </template>
+                        </div>
+                        <div style="width:20%;">
+                            <button class="slds-button slds-button_neutral" onclick={handleCancelClick}>{cancelLabel}</button>
+                            <template if:true={showSelect}>
+                                <button class="slds-button slds-button_brand" onclick={handleSelectClick}>{okLabel}</button>
+                            </template>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

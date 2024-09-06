@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 07-24-2024
+  @last modified on  : 09-01-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -28,74 +28,77 @@
                     <lightning-tabset style="background-color: white;">
                         <lightning-tab label={label.Settings}>
                             <div class="scroll slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1100px;">
-                                <table class="slds-table slds-table_bordered">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">
-                                                <div class="slds-truncate" title={label.Parameter_Name}>{label.Parameter_Name}</div>
-                                            </th>
-                                            <th scope="col">
-                                                <div class="slds-truncate" title={label.Value}>{label.Value}</div>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <template for:each={listViewConfig.parameters} for:item="param">
-                                            <tr key={param.name} class="slds-hint-parent">
-                                                <td style="width: 30%;">
-                                                    <div class="slds-truncate" title={param.name}>
-                                                        {param.label}
-                                                        &nbsp;
-                                                        <div class="slds-wrap" style="white-space:normal; font-size:0.75em" title={param.name}>
-                                                            {param.description}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td data-label={param.name}>
-                                                    <div class="slds-form-element__control" title={param.value}>
-                                                        <template if:true={param.updateImmediate}>
-                                                            <template if:true={param.isBoolean}>
-                                                                <lightning-combobox placeholder={label.Select_A_Value}
-                                                                                    onblur={handleParamUpdate}
-                                                                                    onfocus={handleParamLoad}
-                                                                                    options={booleanList}
-                                                                                    variant=label-hidden
-                                                                                    value={param.value}
-                                                                                    name={param.name}
-                                                                                    label={param.label}
-                                                                                    data-type={param.type}>
-                                                                </lightning-combobox>                        
-                                                            </template>
-                                                            <template if:false={param.isBoolean}>
-                                                                <lightning-input type={param.type} 
-                                                                                    variant="label-hidden" 
-                                                                                    name={param.name} 
-                                                                                    onchange={handleParamUpdate}
-                                                                                    placeholder={param.placeHolder}
-                                                                                    value={param.value}
-                                                                                    label={param.label}
-                                                                                    data-type={param.type}>
-                                                                </lightning-input>
-                                                            </template>
-                                                        </template>
-                                                        <template if:false={param.updateImmediate}>
-                                                            <lightning-input type={param.type} 
-                                                                                variant="label-hidden" 
-                                                                                name={param.name} 
-                                                                                onfocus={handleParamLoad}
-                                                                                onblur={handleParamUpdate}
-                                                                                placeholder={param.placeHolder}
-                                                                                value={param.value}
-                                                                                label={param.label}
-                                                                                data-type={param.type}>
-                                                            </lightning-input>
-                                                        </template>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </template>            
-                                    </tbody>
-                                </table>      
+                                <lightning-layout multiple-rows>
+
+                                    <!-- HEADER -->
+                                    <lightning-layout-item size=4 style="font-weight: bold; padding: 7px; background:#f3f3f3; border-top-color: #cecece; border-top-width: 1px; border-top-style: solid;">
+                                        <div class="slds-truncate" title={label.Parameter_Name}>{label.Parameter_Name}</div>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size=8 style="font-weight: bold; padding: 7px; background:#f3f3f3; border-top-color: #cecece; border-top-width: 1px; border-top-style: solid;">
+                                        <div class="slds-truncate" title={label.Value}>{label.Value}</div>
+                                    </lightning-layout-item>
+
+                                    <template for:each={listViewConfig.parameters} for:item="param">
+                                        <lightning-layout-item size=4 key={param.name} style="padding: 7px;  border-top-color: #cecece; border-top-width: 1px; border-top-style: solid;">
+                                            <div class="slds-truncate" title={param.name}>
+                                                {param.label}
+                                                &nbsp;
+                                                <div class="slds-wrap" style="white-space:normal; font-size:0.75em" title={param.name}>
+                                                    {param.description}
+                                                </div>
+                                            </div>
+                                        </lightning-layout-item>
+                                        <lightning-layout-item size=8 key={param.name} style="display:flex; padding: 7px;  border-top-color: #cecece; border-top-width: 1px; border-top-style: solid;">
+                                            <div class="slds-form-element__control" style="width:100%;" title={param.value}>
+                                                <template if:true={param.updateImmediate}>
+                                                    <template if:true={param.isBoolean}>
+                                                        <lightning-combobox placeholder={label.Select_A_Value}
+                                                                            onblur={handleParamUpdate}
+                                                                            onfocus={handleParamLoad}
+                                                                            options={booleanList}
+                                                                            variant=label-hidden
+                                                                            value={param.value}
+                                                                            name={param.name}
+                                                                            label={param.label}
+                                                                            data-type={param.type}>
+                                                        </lightning-combobox>                        
+                                                    </template>
+                                                    <template if:false={param.isBoolean}>
+                                                        <lightning-input type={param.type} 
+                                                                            variant="label-hidden" 
+                                                                            name={param.name} 
+                                                                            onchange={handleParamUpdate}
+                                                                            placeholder={param.placeHolder}
+                                                                            value={param.value}
+                                                                            label={param.label}
+                                                                            data-type={param.type}>
+                                                        </lightning-input>
+                                                    </template>
+                                                </template>
+                                                <template if:false={param.updateImmediate}>
+                                                    <lightning-input type={param.type} 
+                                                                        variant="label-hidden" 
+                                                                        name={param.name} 
+                                                                        onfocus={handleParamLoad}
+                                                                        onblur={handleParamUpdate}
+                                                                        placeholder={param.placeHolder}
+                                                                        value={param.value}
+                                                                        label={param.label}
+                                                                        data-type={param.type}>
+                                                    </lightning-input>
+                                                </template>
+                                            </div>
+                                            <template if:true={param.hasFunction}>
+                                                <template if:true={param.isAdditionalFields}>
+                                                    <div class="slds-form-element__control" style="text-align:center; min-width: 130px;" title={param.value}>
+                                                        <lightning-button variant="base" label="Field Selector" title="Field Selector" onclick={handleShowFieldSelectorModal} class="slds-m-left_x-small"></lightning-button>
+                                                        <lightning-helptext style="padding-left: 5px;" content="Click to add a field using the UI"></lightning-helptext>
+                                                    </div>                                
+                                                </template>
+                                            </template>
+                                        </lightning-layout-item>
+                                    </template>
+                                </lightning-layout>
                             </div>        
                         </lightning-tab>
 
@@ -535,4 +538,14 @@
             <div class="slds-backdrop slds-backdrop_open"></div>
         </div>
     </template>
+
+    <c-simpli-u-i-list-views-field-selector show-modal={showFieldSelectorModal}
+                            object-start-list={fieldSelectorObjectStartList}
+                            heading="Select Field"
+                            ok-label="Select"
+                            cancel-label="Cancel"
+                            oncancel={handleFieldSelectorCancel}
+                            onselect={handleFieldSelectorSelect}>
+    </c-simpli-u-i-list-views-field-selector>
+
 </template>

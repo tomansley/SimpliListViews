@@ -30,7 +30,7 @@ import Column_Styles from '@salesforce/label/c.Column_Styles';
 import Font from '@salesforce/label/c.Font';
 import Decoration from '@salesforce/label/c.Decoration';
 import Style from '@salesforce/label/c.Style';
-// import constiant from '@salesforce/label/c.constiant';
+import Variant from '@salesforce/label/c.Variant';
 import Transform from '@salesforce/label/c.Transform';
 import Weight from '@salesforce/label/c.Weight';
 import Alignment from '@salesforce/label/c.Alignment';
@@ -46,10 +46,19 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     currentPageReference;
 
     @api showModal;                     //indicates whether this modal dialog should be displayed or not.
-    @api listViewObject;                //the object of the list view.
+    _listViewObject;
+    @api get listViewObject() { return this._listViewObject; }; //the object of the list view.
+         set listViewObject(value) { 
+            this._listViewObject = value;
+            this.fieldSelectorObjectStartList = [];
+            if (!SLVHelper.isEmpty(value)) {
+                this.fieldSelectorObjectStartList.push({ label: value + ' >', value: value, type: 'Object', relationshipObj: value});
+            }
+        }
+
     //have to use get/set methods as we are not using the wired approach
     @api get listViewName() { return this.lvName; }
-    set listViewName(value) { this.lvName = value; this.getListViewConfig(); }
+         set listViewName(value) { this.lvName = value; this.getListViewConfig(); }
     @api listViewMode;                  //indicates the mode of the list view calling the admin page.
 
     @track spinner = false;             //identifies if the spinner should be displayed or not.
@@ -69,6 +78,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track configChanged;               //identifies if a change has been made which needs to force a data refresh
     @track lvName;                      //the name of the list view.
     @track closeDisabled = undefined;
+    @track showFieldSelectorModal = false;
+    @track fieldSelectorObjectStartList = [];
 
     @track firstColumnStyleField;         //the first condition in the fields list
     @track newColumnStyleField;
@@ -77,7 +88,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track newColumnStyleDecoration;
     @track newColumnStyleStyle;
     @track newColumnStyleTransform;
-    @track newColumnStyleconstiant;
+    @track newColumnStyleVariant;
     @track newColumnStyleWeight;
     @track newColumnStyleAlignment;
 
@@ -126,7 +137,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         ];
     }
 
-    get constiantStyleList() {
+    get variantStyleList() {
         return [
             { label: 'Normal', value: 'normal' },
             { label: 'Small Caps', value: 'small-caps' },
@@ -204,7 +215,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     label = {
         Close, List_View_Config, Settings, Parameter_Name, Value, Select_A_Value, Highlighting, Add_Remove, Field,
         Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition,
-        Update, Column_Styles, Font, Decoration, Style, Transform, Weight, Alignment
+        Update, Column_Styles, Font, Decoration, Style, Transform, Weight, Alignment, Variant
     }
 
     constructor() {
@@ -257,7 +268,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Error Retrieving List View Config',
                         message: 'There was an error retrieving the list view configuration - ' + error.body.message,
-                        constiant: 'error',
+                        variant: 'error',
                         mode: 'sticky'
                     }));
                 });
@@ -301,7 +312,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error Retrieving List View Column Labels',
                 message: 'There was an error retrieving the list view column labels - ' + error.body.message + '\n\n' + error.body.stackTrace,
-                constiant: 'error',
+                variant: 'error',
                 mode: 'sticky'
             }));
         }
@@ -322,6 +333,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             SLVHelper.showErrorMessage(error);
         }
     }
+
 
     //called when a value is changed.
     handleParamUpdate(event) {
@@ -351,49 +363,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
             console.log('Param being processed');
 
-            processParamChange({ objectName: this.listViewObject, listViewName: this.listViewName, paramName: name, paramValue: value, paramLabel: label, paramType: type })
-                .then(result => {
-                    const resultStr = result;
-
-                    //get the status
-                    let status = resultStr.substring(0, resultStr.indexOf(':'));
-
-                    //get any associated message
-                    let message = resultStr.substring(resultStr.indexOf(':') + 1);
-                    if (message === '' && status !== 'Ok') {
-                        message = 'There was an error processing the records.';
-                    }
-
-                    if (status === 'Ok') {
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'Parameter Updated Successfully!',
-                            message: message,
-                            constiant: 'success',
-                            mode: 'dismissable'
-                        }));
-                        this.configChanged = true;
-                        this.getListViewConfig(); //reget the config
-
-                    } else {
-                        this.dispatchEvent(new ShowToastEvent({
-                            title: 'Processing Error!',
-                            message: message,
-                            constiant: 'error',
-                            mode: 'sticky'
-                        }));
-                        return;
-                    }
-                })
-                .catch(error => {
-                    console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
-                    this.dispatchEvent(new ShowToastEvent({
-                        title: 'Processing Error',
-                        message: 'There was an error processing the param changes - ' + error.body.message,
-                        constiant: 'error',
-                        mode: 'sticky'
-                    }));
-                    return;
-                });
+            this.processParamChange(this.listViewObject, this.listViewName, name, value, label, type);
 
             this.paramValueLoad = undefined;
             this.paramNameLoad = undefined;
@@ -401,6 +371,96 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             SLVHelper.showErrorMessage(error);
         }
     }
+
+    processParamChange(objectName, listViewName, paramName, paramValue, paramLabel, paramType) {
+
+        processParamChange({ objectName: objectName, listViewName: listViewName, paramName: paramName, paramValue: paramValue, paramLabel: paramLabel, paramType: paramType })
+        .then(result => {
+            const resultStr = result;
+
+            //get the status
+            let status = resultStr.substring(0, resultStr.indexOf(':'));
+
+            //get any associated message
+            let message = resultStr.substring(resultStr.indexOf(':') + 1);
+            if (message === '' && status !== 'Ok') {
+                message = 'There was an error processing the records.';
+            }
+
+            if (status === 'Ok') {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Parameter Updated Successfully!',
+                    message: message,
+                    variant: 'success',
+                    mode: 'dismissable'
+                }));
+                this.configChanged = true;
+                this.closeDisabled = undefined;
+                this.getListViewConfig(); //reget the config
+
+            } else {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Processing Error!',
+                    message: message,
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
+                return;
+            }
+        })
+        .catch(error => {
+            console.log('Error Detected - ' + error.body.message + ' | ' + error.body.stackTrace);
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Processing Error',
+                message: 'There was an error processing the param changes - ' + error.body.message,
+                variant: 'error',
+                mode: 'sticky'
+            }));
+            return;
+        });
+
+    }
+
+    handleShowFieldSelectorModal() {
+        this.showFieldSelectorModal = true;
+    }
+
+    handleFieldSelectorCancel() {
+        this.showFieldSelectorModal = false;
+    }
+
+    handleFieldSelectorSelect(event) {
+        let fieldSelectorField = event.detail;
+        let updatedParam;
+
+        this.listViewConfig.parameters.forEach(param => {
+            if (param.name === 'AdditionalFields') {
+                if (SLVHelper.isEmpty(param.value)) {
+                    param.value = fieldSelectorField;
+                } else if (param.value.endsWith(',')) {
+                    param.value = param.value + fieldSelectorField;
+                } else {
+                    param.value = param.value + ', ' + fieldSelectorField;
+                }
+                updatedParam = param;
+            }
+        })
+
+        this.showFieldSelectorModal = false;
+
+        //if (updatedParam !== undefined) {
+        //    this.processParamChange(this.listViewObject, this.listViewName, updatedParam.name, updatedParam.value, updatedParam.label, updatedParam.type);
+        //}
+
+        let inputFields = this.template.querySelectorAll('lightning-input');
+        inputFields.forEach(element => { 
+            if (element.name === updatedParam.name)
+                element.focus(); 
+        });
+
+    }
+
+
 
     //---------------------------------------------------------------------------------------------------------
     // CONDITION METHODS
@@ -436,7 +496,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Condition Error',
                         message: errorMsg,
-                        constiant: 'error',
+                        variant: 'error',
                         mode: 'sticky'
                     }));
                     this.spinner = false;
@@ -473,18 +533,19 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'Condition Updated Successfully!',
                             message: message,
-                            constiant: 'success',
+                            variant: 'success',
                             mode: 'dismissable'
                         }));
                         this.getListViewConfig();
                         this.configChanged = true;
+                        this.closeDisabled = undefined;
                         this.resetNewCondition();
 
                     } else {
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'Processing Error!',
                             message: message,
-                            constiant: 'error',
+                            variant: 'error',
                             mode: 'sticky'
                         }));
                         return;
@@ -497,7 +558,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
                         message: 'There was an error processing the condition changes - ' + error.body.message,
-                        constiant: 'error',
+                        variant: 'error',
                         mode: 'sticky'
                     }));
                     return;
@@ -616,7 +677,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Style Error',
                         message: errorMsg,
-                        constiant: 'error',
+                        variant: 'error',
                         mode: 'sticky'
                     }));
                     this.spinner = false;
@@ -628,7 +689,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 valuesMap.set('decoration', this.newColumnStyleDecoration);
                 valuesMap.set('style', this.newColumnStyleStyle);
                 valuesMap.set('transform', this.newColumnStyleTransform);
-                valuesMap.set('constiant', this.newColumnStyleconstiant);
+                valuesMap.set('variant', this.newColumnStyleVariant);
                 valuesMap.set('weight', this.newColumnStyleWeight);
                 valuesMap.set('alignment', this.newColumnStyleAlignment);
 
@@ -653,18 +714,19 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'Style Updated Successfully!',
                             message: message,
-                            constiant: 'success',
+                            variant: 'success',
                             mode: 'dismissable'
                         }));
                         this.getListViewConfig();
                         this.configChanged = true;
+                        this.closeDisabled = undefined;
                         this.resetNewColumnStyle();
                     } else {
                         message = 'There was an error processing the column style.';
                         this.dispatchEvent(new ShowToastEvent({
                             title: 'Processing Error!',
                             message: message,
-                            constiant: 'error',
+                            variant: 'error',
                             mode: 'sticky'
                         }));
                     }
@@ -676,7 +738,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     this.dispatchEvent(new ShowToastEvent({
                         title: 'Processing Error',
                         message: 'There was an error processing the column style changes - ' + error.body.message,
-                        constiant: 'error',
+                        variant: 'error',
                         mode: 'sticky'
                     }));
                 });
@@ -699,7 +761,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         this.newColumnStyleDecoration = 'none';
         this.newColumnStyleStyle = 'normal';
         this.newColumnStyleTransform = 'none';
-        this.newColumnStyleconstiant = 'normal';
+        this.newColumnStyleVariant = 'normal';
         this.newColumnStyleWeight = 'normal';
         this.newColumnStyleAlignment = 'left';
     }
@@ -714,7 +776,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
             if (name === 'style') this.newColumnStyleStyle = value;
             else if (name === 'transform') this.newColumnStyleTransform = value;
-            else if (name === 'constiant') this.newColumnStyleconstiant = value;
+            else if (name === 'variant') this.newColumnStyleVariant = value;
             else if (name === 'fieldName') this.newColumnStyleField = value;
             else if (name === 'decoration') this.newColumnStyleDecoration = value;
             else if (name === 'font') this.newColumnStyleFont = value;
@@ -742,7 +804,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         this.dispatchEvent(new ShowToastEvent({
             title: 'Config Updated',
             message: 'Config updated successfully!',
-            constiant: 'success',
+            variant: 'success',
             mode: 'dismissable'
         }));
     }

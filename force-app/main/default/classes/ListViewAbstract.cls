@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-16-2024
+ * @last modified on  : 09-01-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1459,13 +1459,17 @@ public with sharing abstract class ListViewAbstract {
             } else if (this.name == 'id') {
                 if (UserHelper.isStandardUser())
                     urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(objValue) + '/view';
-                else
-                    urlStr = '/s/detail/' + String.valueOf(objValue);
+                else {
+                    String site = HelperURL.getSiteFromURL(URL.getCurrentRequestUrl().toExternalForm());
+                    urlStr = site + '/s/detail/' + String.valueOf(objValue);
+                }
             } else {
                 if (UserHelper.isStandardUser())
                     urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + objValueId + '/view';
-                else
-                    urlStr = '/s/detail/' + objValueId;
+                else {
+                    String site = HelperURL.getSiteFromURL(URL.getCurrentRequestUrl().toExternalForm());
+                    urlStr = site + '/s/detail/' + objValueId;
+                }
             }
             
             this.urlStr = urlStr;
@@ -2107,7 +2111,7 @@ public with sharing abstract class ListViewAbstract {
         public String type;
         public String description;
         public Boolean readonly;
-
+ 
         public ListViewParam(String label, String name, String value, String type, Boolean readonly)
         {
             this.label = label;
@@ -2122,6 +2126,22 @@ public with sharing abstract class ListViewAbstract {
         public Boolean getReadOnly()
         {
             return readonly;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getHasFunction()
+        {
+            if (name == 'AdditionalFields')
+                return true;
+            return false;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsAdditionalFields()
+        {
+            if (name == 'AdditionalFields')
+                return true;
+            return false;
         }
 
         @AuraEnabled(cacheable=true)
