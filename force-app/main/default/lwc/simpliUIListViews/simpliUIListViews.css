@@ -12,10 +12,13 @@
 
 .dataSpinnerHolder {
     position: relative;
-    display: inline-block;
-    margin-left: 30px;
+    display: flex;
+    /* margin-left: 30px; */
     vertical-align: middle;
     white-space: nowrap;
+    justify-content: center;
+    align-items: center;
+    min-height: 32px;
 }
 
 .pageSpinnerHolder {
@@ -118,14 +121,6 @@ th {
 
 .toastMessage.forceActionsText {
     white-space: pre-line !important;
-}
-
-.dataSpinnerHolder {
-    position: relative;
-    display: inline-block;
-    margin-left: 30px;
-    vertical-align: middle;
-    white-space: nowrap;
 }
 
 .pageSpinnerHolder {
