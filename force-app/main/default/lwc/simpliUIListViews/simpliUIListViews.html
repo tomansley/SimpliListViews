@@ -38,11 +38,11 @@
                     </template>
                 </template>
                 
-                <lightning-layout multiple-rows={headerCanWrap}>
+                <lightning-layout multiple-rows={headerCanWrap} class="slds-wrap">
 
                     <template if:true={hasTitle}>
                         <template if:false={isModeApp}>
-                            <lightning-layout-item padding="horizontal-small" style="width: 20%;">
+                            <lightning-layout-item padding="around-small" style="width: 20%;">
                                 <h2 style="font-weight: bold; font-size: 1.3em; padding: 5px">
                                     {mainTitle}
                                 </h2>
@@ -54,7 +54,7 @@
                     <!-- OBJECT PICKLIST       -->
                     <!-- --------------------- -->
                     <template if:true={displayObjectNames}>
-                        <lightning-layout-item class={objectlistdropdownstyle} padding="horizontal-small">
+                        <lightning-layout-item class={objectlistdropdownstyle} padding="around-small">
                             <template if:true={typeAheadObjectSearch}>
                                 <c-simpli-u-i-list-views-type-ahead search-type="schema" 
                                                                     label-field-name="Label"
@@ -82,7 +82,7 @@
                     <!-- --------------------- -->
                     <template if:true={displayListViewNames}>
                         <template if:true={selectedObject}>
-                            <lightning-layout-item class={listviewdropdownstyle} style="padding-left:10px;">
+                            <lightning-layout-item class={listviewdropdownstyle} style="padding-left:10px;" padding="around-small">
                                 <template if:true={typeAheadListSearch}>
                                     <c-simpli-u-i-list-views-type-ahead search-type="sobject"
                                                                         label-field-name="simpli_lv__Label__c"
@@ -110,11 +110,11 @@
                     <!-- --------------------- -->
                     <!-- DATA SPINNER          -->
                     <!-- --------------------- -->
-                    <lightning-layout-item style="width: 3%;">
+                    <lightning-layout-item padding="around-small">
                         <div style="font-size: 1.1rem;">
                             <template if:true={dataSpinner}>
                                 <div class="dataSpinnerHolder">
-                                    <lightning-spinner alternative-text={label.Loading} size="small"></lightning-spinner>
+                                    <lightning-spinner alternative-text={label.Loading} size="x-small"></lightning-spinner>
                                 </div>
                             </template>
                         </div>
@@ -126,7 +126,7 @@
                     <template if:true={displayURL}>
                         <template if:true={listViewData}>
                             <template if:true={listViewData.isCoreListView}>
-                                <lightning-layout-item padding="horizontal-small">
+                                <lightning-layout-item padding="around-small">
                                     <a href={listViewData.coreListViewURL} target="_blank">
                                         <lightning-button-icon title={label.Go_To_Original} 
                                                                 size="medium" 
@@ -141,7 +141,7 @@
                     <!-- REFRESH BUTTON            -->
                     <!-- ------------------------- -->
                     <template if:true={canReprocess}>
-                        <lightning-layout-item>
+                        <lightning-layout-item padding="around-small">
                             <lightning-button-icon title={refreshTitle} 
                                                 size="medium" 
                                                 icon-name="action:new_task" 
@@ -155,7 +155,7 @@
                     <!-- ------------------------- -->
                     <template if:true={canPin}>
                         <template if:true={listViewData}>
-                            <lightning-layout-item padding="horizontal-small">
+                            <lightning-layout-item padding="around-small">
                                 <template if:false={isPinned}>
                                     <lightning-button-icon title={label.Pin_List_View}
                                                             size="medium" 
@@ -180,12 +180,12 @@
                     <template if:true={displayRowCount}>
                         <template if:true={listViewData}>
                             <template if:true={displayExportButton}>
-                                <lightning-layout-item title={label.Export_All} padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                <lightning-layout-item title={label.Export_All} padding="around-small" style="display: flex; justify-content: center; align-items: center;">
                                     {label.Rows}:&nbsp;<a onclick={handleDownloadData}>{listViewDataRowsSize}</a>
                                 </lightning-layout-item>
                             </template>
                             <template if:false={displayExportButton}>
-                                <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                <lightning-layout-item padding="around-small" style="display: flex; justify-content: center; align-items: center;">
                                     {label.Rows}: {listViewDataRowsSize}
                                 </lightning-layout-item>
                             </template>
@@ -198,19 +198,19 @@
                     <template if:true={displaySelectedCount}>
                         <template if:true={listViewData}>
                             <template if:true={displayExportButton}>
-                                <lightning-layout-item title={label.Export_Selected} padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                <lightning-layout-item title={label.Export_Selected} padding="around-small" style="display: flex; justify-content: center; align-items: center;">
                                     {label.Selected}:&nbsp;<a onclick={handleSelectedDownloadData}>{selectedRecordCount}</a>
                                 </lightning-layout-item>
                             </template>
                             <template if:false={displayExportButton}>
-                                <lightning-layout-item padding="horizontal-small" style="display: flex; justify-content: center; align-items: center;">
+                                <lightning-layout-item padding="around-small" style="display: flex; justify-content: center; align-items: center;">
                                     {label.Selected}: {selectedRecordCount}
                                 </lightning-layout-item>
                             </template>
                         </template>
                     </template>
 
-                    <lightning-layout-item alignment-bump="left" padding="horizontal-small">
+                    <lightning-layout-item alignment-bump="left" padding="around-small">
                         <lightning-layout>
 
                             <!-- ------------------------- -->
@@ -252,7 +252,7 @@
                             <!-- ------------------------- -->
                             <template if:true={listViewData}>
                                 <template if:true={allowRefresh}>
-                                    <lightning-layout-item  padding="horizontal-small">
+                                    <lightning-layout-item padding="horizontal-small">
                                         <template if:true={isRefreshing}>
                                             <lightning-button-icon title={label.Stop_Auto_Refresh} 
                                                                     size="medium" 
