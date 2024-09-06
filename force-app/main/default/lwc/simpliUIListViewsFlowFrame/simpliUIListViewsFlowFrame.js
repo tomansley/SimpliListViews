@@ -24,12 +24,16 @@ export default class SimpliUIListViewsFlowFrame extends LightningElement {
             });
         }
 
-        //the LWC object that is required for the lightning-flow component
-        this._recordIds = [{
-            name: 'recordIds',
-            type: 'String',
-            value: this._recordIds
-        }];
+        if (this._recordIds.length > 0)
+        {
+            //the LWC object that is required for the lightning-flow component
+            this._recordIds = [{
+                name: 'recordIds',
+                type: 'String',
+                value: this._recordIds
+            }];
+        
+        }
     }
     
     get recordIds() 
