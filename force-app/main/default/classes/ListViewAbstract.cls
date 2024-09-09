@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-01-2024
+ * @last modified on  : 09-06-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1460,14 +1460,14 @@ public with sharing abstract class ListViewAbstract {
                 if (UserHelper.isStandardUser())
                     urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + String.valueOf(objValue) + '/view';
                 else {
-                    String site = HelperURL.getSiteFromURL(URL.getCurrentRequestUrl().toExternalForm());
+                    String site = HelperString.getSiteFromURL(URL.getCurrentRequestUrl().toExternalForm());
                     urlStr = site + '/s/detail/' + String.valueOf(objValue);
                 }
             } else {
                 if (UserHelper.isStandardUser())
                     urlStr = URL.getSalesforceBaseUrl().toExternalForm() + '/lightning/r/' + objValueId + '/view';
                 else {
-                    String site = HelperURL.getSiteFromURL(URL.getCurrentRequestUrl().toExternalForm());
+                    String site = HelperString.getSiteFromURL(URL.getCurrentRequestUrl().toExternalForm());
                     urlStr = site + '/s/detail/' + objValueId;
                 }
             }

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 04-29-2024
+ * @last modified on  : 09-06-2024
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperString {
@@ -118,4 +118,13 @@ public with sharing class HelperString {
     {
         System.debug(LoggingLevel.DEBUG, label + ' - ' + JSON.serialize(obj));
     }
+
+    /*
+        System.debug('Site - ' + HelperString.getSiteFromURL('https://deliverymg000000000--full.sandbox.my.site.com/logistics/s/detail/0037y00000W7yLDAAZ'));
+        */
+    public static String getSiteFromURL(String url)
+    {
+        return url.substringBetween('my.site.com/', '/s/');
+    }
+
 }
