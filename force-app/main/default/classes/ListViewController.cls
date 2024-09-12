@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-24-2024
+ * @last modified on  : 09-09-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -15,7 +15,7 @@
  * 7.0   08-25-2021   tom@ansleyllc.com   renamed getListViewColumnLabels() to getListViewColumns()
  * 8.0   12-15-2021   tom@ansleyllc.com   Pulled out creating types due to different methods for handling types with package names etc.
  **/
-public without sharing class ListViewController
+public with sharing class ListViewController
 {
 
     public static final String SUCCESS = 'success';
