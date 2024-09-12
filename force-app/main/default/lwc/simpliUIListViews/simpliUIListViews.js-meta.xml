@@ -8,7 +8,6 @@
         <target>lightning__RecordPage</target>
         <target>lightning__HomePage</target>
         <target>lightning__UtilityBar</target>
-        <target>lightning__Tab</target>
         <target>lightning__FlowScreen</target>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
