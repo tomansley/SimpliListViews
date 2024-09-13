@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-21-2022
+ * @last modified on  : 09-13-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -127,7 +127,7 @@ public with sharing class ListViewCustomManualSObjects { //extends ListViewCusto
             Schema.SobjectType row = dataRows.get(objName);
             System.debug(LoggingLevel.FINE, 'Schema.SobjectType label - ' + row.getDescribe().getLabel());
             
-            RowWrapper rowWrapper = new RowWrapper(row.getDescribe().getKeyPrefix());
+            RowWrapper rowWrapper = new RowWrapper(row.getDescribe().getKeyPrefix(), rows);
             rowWrapper.isDeleted = false;
 
             for (FieldWrapper columnMetaData: rows.getFieldMetaData())

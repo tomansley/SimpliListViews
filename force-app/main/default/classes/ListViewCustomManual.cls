@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-14-2024
+ * @last modified on  : 09-13-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -348,7 +348,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
             System.debug(LoggingLevel.DEBUG, 'Child Fields - ' + childFields.keySet().toString());
 
-            RowWrapper rowWrapper = new RowWrapper((String.valueOf(row.get('Id'))));
+            RowWrapper rowWrapper = new RowWrapper((String.valueOf(row.get('Id'))), rows);
             rowWrapper.isDeleted = false;
             rowWrapper.recordTypeId = HelperSchema.getRecordTypeId(row);
 
@@ -404,7 +404,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                     }
 
                     System.debug(LoggingLevel.FINE, 'Row Field - ' + field);
-                    
+
                     rowWrapper.addField(field);                
                 }
             }
@@ -478,6 +478,11 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                         
                             if (lvConfig != null)
                                 clonedWrapper.calculateHighlighting(lvConfig.conditions);
+
+                            if (lvConfig != null) {
+                                clonedWrapper.calculateCSSStyles(lvConfig.columnStyles);
+                            }
+                    
                         }
                     }
                 }
@@ -489,10 +494,6 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
                 if (lvConfig != null)
                     rowWrapper.calculateHighlighting(lvConfig.conditions);
-            }
-
-            if (lvConfig != null) {
-                rowWrapper.calculateCSSStyles(lvConfig.columnStyles);
             }
 
         }
@@ -513,7 +514,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
             System.debug(LoggingLevel.DEBUG, 'TotalColumns - ' + totalColumns);
 
-            RowWrapper totalWrapper = new RowWrapper('000000000000000000');
+            RowWrapper totalWrapper = new RowWrapper('000000000000000000', rows);
             totalWrapper.highlight = true;
             if (lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) != null)
                 totalWrapper.highlightColor = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR).getValue();

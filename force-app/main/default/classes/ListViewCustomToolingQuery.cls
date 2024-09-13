@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-14-2024
+ * @last modified on  : 09-13-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -163,7 +163,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
             {
                 Map<String, Object> data = apiData.get(count);
 
-                RowWrapper rowWrapper = new RowWrapper((String) data.get('Id'));
+                RowWrapper rowWrapper = new RowWrapper((String) data.get('Id'), rows);
                 rowWrapper.isDeleted = false;
                 rows.addRow(rowWrapper);
 
@@ -231,7 +231,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
 
                 System.debug(LoggingLevel.FINE, 'TotalColumns - ' + totalColumns);
 
-                RowWrapper totalWrapper = new RowWrapper('000000000000000000');
+                RowWrapper totalWrapper = new RowWrapper('000000000000000000', rows);
                 totalWrapper.highlight = true;
                 if (lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) != null)
                     totalWrapper.highlightColor = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR).getValue();

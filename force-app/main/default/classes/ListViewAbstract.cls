@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-06-2024
+ * @last modified on  : 09-13-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -426,7 +426,6 @@ public with sharing abstract class ListViewAbstract {
         public void addRow(RowWrapper row)
         {
             rows.add(row);
-            row.parentWrapper = this;
             row.rowId = row.rowId + ':' + getRowCount();
 
         }
@@ -573,8 +572,9 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isEditable;               //indicates whether the row is editable or not.
         public Boolean isDisplayed;              //indicates whether the row should be displayed or not. (used with text search)
 
-        public RowWrapper(String rowId)
+        public RowWrapper(String rowId, RowsWrapper parentWrapper)
         {
+            this.parentWrapper  = parentWrapper;
             this.sfdcId         = rowId;
             this.rowId          = rowId;
             this.highlight      = false;
@@ -821,8 +821,7 @@ public with sharing abstract class ListViewAbstract {
         {
 
             //Clone ROW
-            RowWrapper rowClone = new RowWrapper(rowId);
-            rowClone.parentWrapper  = this.parentWrapper;
+            RowWrapper rowClone = new RowWrapper(rowId, this.parentWrapper);
             rowClone.highlight      = this.highlight;
             rowClone.sfdcId         = this.sfdcId;
             rowClone.highlightColor = this.highlightColor;
@@ -900,12 +899,10 @@ public with sharing abstract class ListViewAbstract {
             //for each condition
             for (ListViewColumnStyle style: columnStyles)
             {
-                System.debug(LoggingLevel.FINE, 'Working style with field name - ' + style.getFieldName());
-
                 //go through each field
                 for (FieldWrapper field: fields.values())
                 {
-                    System.debug(LoggingLevel.FINE, 'Working field with name - ' + field.name.toLowerCase() + ' (' + field.getLongName().toLowerCase() + ')');
+                    if (String.isBlank(field.label)) continue;
                     if (style.getFieldName().toLowerCase() == field.name.toLowerCase() || style.getFieldName().toLowerCase() == field.getLongName().toLowerCase())
                     {
                         field.setCSSStyle(style.getCSSString());

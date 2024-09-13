@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-30-2024
+ * @last modified on  : 09-12-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -381,7 +381,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
         for (SObject row: dataRows)
         {
 
-            RowWrapper rowWrapper = new RowWrapper((String.valueOf(row.get('Id'))));
+            RowWrapper rowWrapper = new RowWrapper((String.valueOf(row.get('Id'))), rows);
             
             if (HelperSchema.isValidSFDCFieldName(listview.Object_Name__c, 'IsDeleted'))
                 rowWrapper.isDeleted = (Boolean) row.get('IsDeleted');
@@ -467,7 +467,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             System.debug(LoggingLevel.DEBUG, 'TotalColumns - ' + totalColumns);
 
-            RowWrapper totalWrapper = new RowWrapper('000000000000000000');
+            RowWrapper totalWrapper = new RowWrapper('000000000000000000', rows);
             totalWrapper.highlight = true;
             if (lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) != null)
                 totalWrapper.highlightColor = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR).getValue();
