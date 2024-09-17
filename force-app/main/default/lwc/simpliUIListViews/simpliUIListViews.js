@@ -89,6 +89,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api displayAllRelatedRecords = false;
     @api objectList = undefined;
     @api listViewList = undefined;
+    @api allowImmediateRefresh = false;
+    @api immediatelyRefresh = false;
     @api set actionList(value)    
     {
         this.objectActionList = value;
@@ -215,6 +217,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track pinnedObject = undefined;    //the object that is pinned if there is a pinned list view.
     @track isRefreshing = false;        //identifies whether this list views data is being refreshed AT INTERVALS.
     @track refreshTime = Date.now();    //the timestamp for when the data was refreshed.
+    @track refreshRate = '';            //the refresh rate in seconds if the list view is auto refreshing.
+    @track refreshTitle = 'Click to perform full list view refresh';
+
     @track spinner = false;             //identifies if the PAGE spinner should be displayed or not.
     @track dataSpinner = false;         //identifies if the DATA spinner should be displayed or not.
     @track firstListViewGet = true;     //indicates whether this is the first time the list views are being retrieved.
@@ -238,7 +243,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track quickDataOldFieldValue;
     @track offset = -1;
     @track rowLimit = -1;
-    @track refreshRate = '';                    //the refresh rate in seconds if the list view is auto refreshing.
+
     //for handling hover changes
     @track hoverSFDCId;
     @track hoverAPIName;
@@ -269,7 +274,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track batchId = '';                //indicates the batch Id of the list view batch process.
     @track isInitializing = true;       //indicates whether we are initializing the page or not.
     @track inRenderedCallback = false;  //indicates whether the rendered callback method is processing
-    @track refreshTitle = 'Click to perform full list view refresh';
+
     //for message channel handlers
     subscription = null;
     receivedMessage;
@@ -358,6 +363,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.selectedObject = this.singleListViewObject;
                 this.selectedListView = this.singleListViewApiName;
                 this.refreshAllListViewData();
+                if (this.immediatelyRefresh && this.allowImmediateRefresh) {
+                    this.singleClickAutoRefresh = 'true';
+                    this.handleAutoRefreshButtonClick();
+                }
+
             } else if (this.mode === 'Related List View') {
                 if (this.singleListViewObject === '' || this.singleListViewApiName === '' || this.joinFieldName === '') {
                     this.dispatchEvent(SLVHelper.createToast('error', '', 'Related List View Configuration Error', 'If using Related List View mode the list view object, list view API name and join field name must be provided.', false));
@@ -397,6 +407,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.displayActions = false;
                 this.displayRecordPopovers = false;
                 this.allowRefresh = false;
+                this.allowImmediateRefresh = false;
                 this.displayURL = false;
                 this.displayReprocess = false;
                 this.listviewdropdownstyle = 'splitviewlistviewdropdown';
@@ -547,6 +558,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (this.displayTextSearch === true) { this.canDisplayTextSearch = true; }
             if (SLVHelper.toBool(this.componentConfig.AllowDataExport) === false) { this.displayExportButton = false; }
             if (SLVHelper.toBool(this.componentConfig.AllowAutomaticDataRefresh) === false) { this.allowRefresh = false; }
+            if (this.allowImmediateRefresh === true) { this.allowImmediateRefresh = SLVHelper.toBool(this.componentConfig.AllowImmediateRefresh); }
             if (SLVHelper.toBool(this.componentConfig.AllowInlineEditing) === false) { this.allowInlineEditing = false; }
             if (SLVHelper.toBool(this.componentConfig.AllowHorizontalScrolling) === false) { this.allowHorizontalScrolling = false; }
             if (SLVHelper.toBool(this.componentConfig.DisplayRecordPopovers) === false) { this.displayRecordPopovers = false; }
@@ -573,8 +585,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('List view sort fields size - ' + listViewSortFields.listviews.length);
             //EXAMPLE JSON - {"listviews": [{"name": "Account:Simpli_LV_Acct_1","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"}]}, {"name": "Account:PlatinumandGoldSLACustomers","fields": [{"sortIndex": "0", "fieldName": "Name", "sortDirection": "true"},{"sortIndex": "1", "fieldName": "BillingState", "sortDirection": "false"},{"sortIndex": "2", "fieldName": "Id", "sortDirection": "false"}]}]}
             // eslint-disable-next-line guard-for-in
-            for (let m in listViewSortFields.listviews) {
-                let listviewSorting = listViewSortFields.listviews[m];
+            for (let lv in listViewSortFields.listviews) {
+                let listviewSorting = listViewSortFields.listviews[lv];
                 //if we are working with the current list view
                 if (listviewSorting.name === this.pinnedObject + ':' + this.pinnedListView
                     || listviewSorting.name === this.selectedObject + ':' + this.selectedListView
@@ -647,13 +659,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             SLVHelper.showErrorMessage(error);
         }
     }
-    getListViewActions() {
+    async getListViewActions() {
         console.log('Starting getListViewActions');
         if (this.virtual) {
             this.dispatchEvent(new CustomEvent('getactions', { detail: { pageName: this.pageName, compType: this.mode, objectName: this.selectedObject, listViewName: this.selectedListView } }));
         } else {
             console.log(this.pageName + ' CALLOUT - getListViewActions - ' + this.calloutCount++);
-            getListViewActions({ objectType: this.selectedObject, listViewName: this.selectedListView, componentName: this.pageName }).then(result => {
+            await getListViewActions({ objectType: this.selectedObject, listViewName: this.selectedListView, componentName: this.pageName }).then(result => {
                 console.log(this.pageName + ' CALLOUT - getListViewActions - ' + this.calloutCount++);
                 this.objectActionList = result;
                 this.handleListViewActions(0);
@@ -769,14 +781,15 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             //if the offset has not changed or the row size has not changed then we are done.
             if (this.offset === listViewDataResult.listView.offset || oldDataRowsSize === this.listViewDataRowsSize) {
                 this.dataSpinnerOff();
-                //update offset (which will trigger another request for data)
+            
+            //update offset (which will trigger another request for data)
             } else {
                 this.dataSpinnerOn();
                 this.offset = listViewDataResult.listView.offset;
                 this.rowLimit = listViewDataResult.listView.rowLimit;
                 this.getListViewDataPage();
             }
-            //if we have reached our max limit
+        //if we have reached our max limit
         } else {
             this.dataSpinnerOff();
         }
@@ -862,6 +875,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         this.selectedListView = this.pinnedListView;
                         this.selectedListViewExportName = this.selectedListView + '.csv';
                         this.refreshAllListViewData();
+                        if (this.immediatelyRefresh && this.allowImmediateRefresh) {
+                            this.singleClickAutoRefresh = 'true';
+                            this.handleAutoRefreshButtonClick();
+                        }
+
                         //if we do not then bail.
                     } else {
                         console.log('Did NOT find a list view with the pinned list view name for ' + this.pageName);
@@ -992,6 +1010,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
         }
     }
+
     handleAutoRefreshData() {
         console.log('Refreshing data for ' + this.pageName);
         if (this.isRefreshing) {
@@ -1004,10 +1023,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             setTimeout(this.handleAutoRefreshData.bind(this), this.refreshRate * 1000); //change to milliseconds
         }
     }
+
     async handleAutoRefreshButtonClick() {
         console.log('Refresh button clicked for ' + this.pageName);
         console.log('Auto refresh was set to ' + this.isRefreshing + ' for ' + this.pageName);
         console.log('Refresh time was ' + this.refreshTime + ' for ' + this.pageName);
+
         //if we do not have the single/double click refresh setting then get it
         if (this.singleClickAutoRefresh === undefined) {
             console.log(this.pageName + ' CALLOUT - getListViewConfigParameter(SingleClickAutoDataRefresh) - ' + this.calloutCount++);
@@ -1032,6 +1053,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 if (this.refreshRate === undefined || this.refreshRate === null || this.refreshRate === '') {
                     this.refreshRate = '45'; //default to 45s if nothing returned
                 }
+                if (this.immediatelyRefresh && this.allowImmediateRefresh && Number(this.refreshRate) < 60) {
+                    this.refreshRate = '60';
+                }
             }
             this.dispatchEvent(SLVHelper.createToast('success', '', 'Auto Refresh Started', 'Refreshing every ' + this.refreshRate + 's', false));
             this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'autoRefreshOn', status: 'finished' } }));
@@ -1044,6 +1068,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Refreshed', 'Click within 5 seconds of data loading to auto refresh.', false));
         }
     }
+
     async getConfigParameter(paramName) {
         return getListViewConfigParameter({ objectName: this.selectedObject, listViewName: this.selectedListView, paramName: paramName });
     }
@@ -2284,6 +2309,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             case 'displayModified': this.displayModified = SLVHelper.toBool(value); break;
             case 'displayExportButton': this.displayExportButton = SLVHelper.toBool(value); break;
             case 'displayTextSearch': this.displayTextSearch = SLVHelper.toBool(value); break;
+            case 'allowImmediateRefresh': this.allowImmediateRefresh = SLVHelper.toBool(value); break;
             default: break;
         }
     }

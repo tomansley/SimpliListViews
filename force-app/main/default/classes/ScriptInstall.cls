@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-01-2024
+ * @last modified on  : 09-17-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -67,6 +67,27 @@ global with sharing class ScriptInstall implements InstallHandler {
     public void upgrade(InstallContext context)
     {
         CacheHelper.clearAllCache();
+
+        List_View_Config__c orgWideConfig = ListViewConfigHelper.getListViewConfig('All', 'All');  
+        
+        //put params into a map by name
+        Map<String, List_View_Config_Parameter__c> orgParams = new Map<String, List_View_Config_Parameter__c>();
+        for (List_View_Config_Parameter__c param: orgWideConfig.List_View_Config_Parameters__r)
+            orgParams.put(param.Parameter_Name__c, param);
+
+            if (orgParams.get('AllowImmediateRefresh') == null)
+            {
+                List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+                param.List_View_Config__c = orgWideConfig.Id;
+                param.Parameter_Name__c   = 'AllowImmediateRefresh';
+                param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+                param.Parameter_Value__c  = ListViewHelper.FFALSE;
+                param.Parameter_Label__c  = 'Allow Immediate Refresh';
+                orgParams.put(param.Parameter_Name__c, param);
+            }
+    
+            HelperDatabase.upsertRecords(orgParams.values());
+
 
         //send email notifying of the upgrade
         HelperEmail.sendInstallEmail('Upgraded');

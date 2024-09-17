@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-14-2024
+ * @last modified on  : 09-17-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2331,6 +2331,14 @@ global with sharing class ListViewHelper
         param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
         param.Parameter_Value__c  = ListViewHelper.TTRUE;
         param.Parameter_Label__c  = 'Display Row Count';
+        params.add(param);
+
+        param = new List_View_Config_Parameter__c();
+        param.List_View_Config__c = config.Id;
+        param.Parameter_Name__c   = 'AllowImmediateRefresh';
+        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+        param.Parameter_Value__c  = ListViewHelper.FFALSE;
+        param.Parameter_Label__c  = 'Allow Immediate Refresh';
         params.add(param);
 
         param = new List_View_Config_Parameter__c();
