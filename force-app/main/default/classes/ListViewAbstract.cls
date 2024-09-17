@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-13-2024
+ * @last modified on  : 09-16-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -565,6 +565,7 @@ public with sharing abstract class ListViewAbstract {
         public String recordTypeId;              //the record type id if it exists
         public String rowId;                     //the SFDC record id + row # in dataset. i.e. 001ZZZZ:1. USed to identify rows on the UI
         public Boolean highlight;                //indicates whether the row should be highlighted due to conditions set by user
+        public Boolean highlightRow;             //indicates whether the entire row should be highlighted or not.
         public String highlightColor;            //the color the row should be set to if being highlighted.
         public Boolean isTotals;                 //indicates whether this row is a totals row.
         public Boolean isDeleted;                //indicates whether this row is for a deleted record.
@@ -578,6 +579,7 @@ public with sharing abstract class ListViewAbstract {
             this.sfdcId         = rowId;
             this.rowId          = rowId;
             this.highlight      = false;
+            this.highlightRow   = false;
             this.highlightColor = '';
             fields              = new Map<String, FieldWrapper>();
             isTotals            = false;
@@ -824,6 +826,7 @@ public with sharing abstract class ListViewAbstract {
             RowWrapper rowClone = new RowWrapper(rowId, this.parentWrapper);
             rowClone.highlight      = this.highlight;
             rowClone.sfdcId         = this.sfdcId;
+            rowClone.highlightRow   = this.highlightRow;
             rowClone.highlightColor = this.highlightColor;
             rowClone.isTotals       = this.isTotals;
             rowClone.isDeleted      = this.isDeleted;
@@ -842,11 +845,18 @@ public with sharing abstract class ListViewAbstract {
             return rowClone;
         }
 
+        public void calcRowCSS(ListViewConfigWrapper lvConfig)
+        {
+            calculateHighlighting(lvConfig.conditions);
+            System.debug(LoggingLevel.DEBUG, 'RUNNING CAL CSS STYLE WITH HIGHLIGHT = ' + highlight);
+            calculateCSSStyles(lvConfig.columnStyles);
+        }
+
         /*
          * Method to calculate and set the conditional highlighting of rows based on provided configuration conditions.
          * We pass in the condition details each time as its a complex object that cannot be passed to the lightning UI
          */
-        public void calculateHighlighting(List<ListViewCondition> conditions)
+        private void calculateHighlighting(List<ListViewCondition> conditions)
         {
             System.debug(LoggingLevel.FINE, 'Calculating highlighting for row!');
             System.debug(LoggingLevel.FINE, 'Conditions are - ' + conditions);
@@ -877,9 +887,15 @@ public with sharing abstract class ListViewAbstract {
 
                         System.debug(LoggingLevel.FINE, 'Condition validation result = ' + color);
 
-                        //get the highlight color as well regardless.
-                        if (color != '')
-                            highlightColor = color;
+                        if (color != '') {
+                            if (condition.highlightCellOnly) {
+                                field.highlightCol = color;
+                            } else {
+                                highlightColor = color;
+                                highlightRow = true;
+                            }
+                            highlight = true;
+                        }
                     }
 
                 }
@@ -890,26 +906,66 @@ public with sharing abstract class ListViewAbstract {
         /*
          * Method to calculate and set the css styles for fields and columns based on provided configuration styles.
          */
-        public void calculateCSSStyles(List<ListViewColumnStyle> columnStyles)
+        private void calculateCSSStyles(List<ListViewColumnStyle> columnStyles)
         {
             System.debug(LoggingLevel.FINE, 'Calculating css styles for row!');
             HelperString.debug(columnStyles, 'Column styles are');
             HelperString.debug(fields.keySet(), 'Fields keyset');
 
-            //for each condition
+            //for each column style
             for (ListViewColumnStyle style: columnStyles)
             {
                 //go through each field
                 for (FieldWrapper field: fields.values())
                 {
+                    HelperString.debug(field, 'Field is');
                     if (String.isBlank(field.label)) continue;
-                    if (style.getFieldName().toLowerCase() == field.name.toLowerCase() || style.getFieldName().toLowerCase() == field.getLongName().toLowerCase())
+
+                    System.debug(LoggingLevel.DEBUG, 'STYLE FIELD NAME - ' + style.getFieldName().toLowerCase() + ', FIELD - NAME = ' + field.name.toLowerCase() + ', LONG NAME = ' + field.getLongName().toLowerCase());
+                    if ((String.isBlank(field.getLongName()) 
+                            && style.getFieldName().toLowerCase() == field.name.toLowerCase()) 
+                        || style.getFieldName().toLowerCase() == field.getLongName().toLowerCase())
                     {
-                        field.setCSSStyle(style.getCSSString());
+                        field.setCSSStyle(style.getCSSString()); //this only sets the styles for the COLUMN
+
+                        //if we are not highlighting the row and we are not highlighting the field and we have a background color
+                        if (!highlightRow && String.isBlank(field.highlightCol) && !String.isBlank(style.getBackgroundColor())) {
+                            field.cssStyle += 'background:' + style.getBackgroundColor() + ';';
+                        
+                        //if we are not highlighting the row and we are highlighting the field
+                        } else if (!highlightRow && !String.isBlank(field.highlightCol)) {
+                            field.cssStyle += 'background:' + field.highlightCol + ';';
+                        }             
                     }
+
                 }
             }
 
+            //we might not have a column style but we might have cell highlighting so need to go through fields and check
+            for (FieldWrapper field: fields.values())
+            {
+                Boolean hasStyle = false;
+
+                //for each column style
+                for (ListViewColumnStyle style: columnStyles)
+                {
+                    if ((String.isBlank(field.getLongName()) 
+                            && style.getFieldName().toLowerCase() == field.name.toLowerCase()) 
+                        || style.getFieldName().toLowerCase() == field.getLongName().toLowerCase())
+                    {
+                        hasStyle = true;
+                        break;
+                    }
+                }
+
+                //if we do not have a style then we set the highlight color by itself if there is a highlight to set
+                if (!hasStyle) {
+                    if (!highlightRow && !String.isBlank(field.highlightCol)) {
+                        field.cssStyle += 'background:' + field.highlightCol + ';';
+                    }      
+                }
+
+            }
         }
 
     }
@@ -1124,6 +1180,7 @@ public with sharing abstract class ListViewAbstract {
         public String columnWidth;     //indicates the preset column width.
         public String cssStyle;        //the css style that should be applied to this field based on the column styles configured
         public String functionApexClass;//if the field is to be calculated based on a provided function this is the apex class to use
+        public String highlightCol;     //indicates whether a conditional color should be used instead of style and what color it is.
 
         public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
         {
@@ -1137,6 +1194,7 @@ public with sharing abstract class ListViewAbstract {
             this.parentObjType = parentObjType;
             this.longName      = '';
             this.isTotalsRow   = false;
+            this.cssStyle      = '';
             this.setValue(objValue);
             this.setType(type); //must be below setValue() as it uses value to determine type in some cases.
             
@@ -1159,6 +1217,7 @@ public with sharing abstract class ListViewAbstract {
             this.columnIndex = columnIndex;
             this.isSortable  = true;
             this.isTotalsRow = false;
+            this.cssStyle    = '';
 
             this.setType(type);
 
@@ -1762,21 +1821,25 @@ public with sharing abstract class ListViewAbstract {
         public String variant;
         public String weight;
         public String alignment;
+        public String backgroundColor;
+        public String textColor;
         public String id;
         public String cssStr = null;
 
         public ListViewColumnStyle(List_View_Config_Column_Style__c columnStyle)
         {
             this.columnStyle = columnStyle;
-            fieldName      = columnStyle.Field_Name__c;
-            decoration     = columnStyle.Style_Decoration__c;
-            font           = columnStyle.Style_Font__c;
-            style          = columnStyle.Style_Style__c;
-            transform      = columnStyle.Style_Transform__c;
-            variant        = columnStyle.Style_Variant__c;
-            weight         = columnStyle.Style_Weight__c;
-            alignment      = columnStyle.Style_Alignment__c;
-            id             = columnStyle.Id;
+            fieldName        = columnStyle.Field_Name__c;
+            decoration       = columnStyle.Style_Decoration__c;
+            font             = columnStyle.Style_Font__c;
+            style            = columnStyle.Style_Style__c;
+            transform        = columnStyle.Style_Transform__c;
+            variant          = columnStyle.Style_Variant__c;
+            weight           = columnStyle.Style_Weight__c;
+            alignment        = columnStyle.Style_Alignment__c;
+            backgroundColor  = columnStyle.Style_Background_Color__c;
+            textColor        = columnStyle.Style_Text_Color__c;
+            id               = columnStyle.Id;
         }
 
         public List_View_Config_Column_Style__c getColumnStyle()
@@ -1833,11 +1896,29 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
+        public String getBackgroundColor()
+        {
+            return backgroundColor;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getTextColor()
+        {
+            return textColor;
+        }
+
+        @AuraEnabled(cacheable=true)
         public String getId()
         {
             return id;
         }
 
+        /**
+        * @description Method to create the CSS style string for the field cell.
+        * @author tom@ansleyllc.com | 09-13-2024 
+        * @param hasHighlight if the cell has been highlighted due to a condition then this is true. Conditional highlighting has precedence.
+        * @return String 
+        **/
         public String getCSSString()
         {
             if (this.cssStr == null) {
@@ -1849,8 +1930,8 @@ public with sharing abstract class ListViewAbstract {
                 if (!String.isBlank(variant)) this.cssStr += 'font-variant:' + variant + ';';
                 if (!String.isBlank(weight)) this.cssStr += 'font-weight:' + weight + ';';
                 if (!String.isBlank(alignment)) this.cssStr += 'text-align:' + alignment + ';';
+                if (!String.isBlank(textColor)) this.cssStr += 'color:' + textColor + ';';
             }
-
             return cssStr;
         }
     }
@@ -1864,6 +1945,7 @@ public with sharing abstract class ListViewAbstract {
         public String order;
         public String color;
         public String id;
+        public Boolean highlightCellOnly;
 
         public ListViewCondition(List_View_Config_Condition__c condition)
         {
@@ -1874,6 +1956,7 @@ public with sharing abstract class ListViewAbstract {
             order          = condition.Order__c;
             color          = condition.Highlight_Color__c;
             id             = condition.Id;
+            highlightCellOnly = condition.Highlight_Cell_Only__c;
         }
 
         public List_View_Config_Condition__c getCondition()
@@ -1909,6 +1992,14 @@ public with sharing abstract class ListViewAbstract {
         public String getColor()
         {
             return color;
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getHighlightCellOnly()
+        {
+            if (highlightCellOnly == false)
+                return null;
+            return highlightCellOnly;
         }
 
         @AuraEnabled(cacheable=true)

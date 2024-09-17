@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 08-14-2024
+ * @last modified on  : 09-13-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -248,15 +248,17 @@ public with sharing class HelperTest {
         List<List_View_Config_Column_Style__c> styles = new List<List_View_Config_Column_Style__c>();
 
         List_View_Config_Column_Style__c style = new List_View_Config_Column_Style__c();
-        style.Field_Name__c       = 'AnnualRevenue';
-        style.Style_Decoration__c = 'none';
-        style.Style_Font__c       = 'Times New Roman';
-        style.Style_Style__c      = 'normal';
-        style.Style_Transform__c  = 'none';
-        style.Style_Variant__c    = 'normal';
-        style.Style_Weight__c     = 'bold';
-        style.Style_Alignment__c  = 'center';
-        style.List_View_Config__c = config.Id;
+        style.Field_Name__c             = 'AnnualRevenue';
+        style.Style_Decoration__c       = 'none';
+        style.Style_Font__c             = 'Times New Roman';
+        style.Style_Style__c            = 'normal';
+        style.Style_Transform__c        = 'none';
+        style.Style_Variant__c          = 'normal';
+        style.Style_Weight__c           = 'bold';
+        style.Style_Alignment__c        = 'center';
+        style.Style_Background_Color__c = '#FFFFFF';
+        style.Style_Text_Color__c       = '#000000';
+        style.List_View_Config__c       = config.Id;
 
         styles.add(style);
 

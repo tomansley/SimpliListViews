@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 08-14-2024
+ * @last modified on  : 09-16-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -128,15 +128,15 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.processConditionChange('Account', 'simpli_lv__AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"]]');
+        String result = ListViewController.processConditionChange('Account', 'simpli_lv__AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"],["highlightCellOnly",false]]');
 
-        System.assertEquals(result, 'Ok:');
+        System.assertEquals('Ok:', result);
 
         List_View_Config_Condition__c condition = [SELECT ID FROM List_View_Config_Condition__c WHERE Value__c = 'Dickenson plc'];
 
         result = ListViewController.processConditionChange('Account', 'simpli_lv__AllAccounts', 'remove', condition.Id);
 
-        System.assertEquals(result, 'Ok:');
+        System.assertEquals('Ok:', result);
 
     }
 
@@ -174,6 +174,9 @@ global class ListViewControllerTest {
         System.assertNotEquals(params[0].getDescription(), null);
         System.assertNotEquals(params[0].getUpdateImmediate(), null);
         System.assertNotEquals(params[0].getIsBoolean(), null);
+        System.assertEquals(true, params[0].getHasFunction());
+        System.assertEquals(true, params[0].getIsAdditionalFields());
+
 
         List<ListViewAbstract.ListViewCondition> conditions = lvConfig.getConditions();
         System.assert(conditions.size() > 0);
@@ -188,6 +191,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(lvConfig.getColumnStyles(), null);
         List<ListViewAbstract.ListViewColumnStyle> styles = lvConfig.getColumnStyles();
         System.assert(styles.size() > 0);
+        System.assertNotEquals(styles[0].getTextColor(), null);
         System.assertNotEquals(styles[0].getAlignment(), null);
         System.assertNotEquals(styles[0].getCSSString(), null);
         System.assertNotEquals(styles[0].getDecoration(), null);
@@ -276,6 +280,7 @@ global class ListViewControllerTest {
         System.assertNotEquals(rows.getUserTimeZone(), null);
         System.assertNotEquals(rows.getIsEdited(), null);
         System.assertNotEquals(rows.getIsCoreListView(), null);
+        rows.setIsDefaultSort(false);
         System.assertNotEquals(rows.getHasTotalsRow(), null);
         System.assertNotEquals(rows.getListViewConfig(), null);
         System.assertNotEquals(rows.getQueryString(), null);
@@ -615,6 +620,18 @@ global class ListViewControllerTest {
         ListViewMetadataAPIService.ReadListViewResult r3 = new ListViewMetadataAPIService.ReadListViewResult();
         ListViewMetadataAPIService.readListViewResponse_element r4 = new ListViewMetadataAPIService.readListViewResponse_element();
 
+        ListViewMetadataAPIService.updateMetadataResponse_element r5 = new ListViewMetadataAPIService.updateMetadataResponse_element();
+        ListViewMetadataAPIService.upsertMetadataResponse_element r6 = new ListViewMetadataAPIService.upsertMetadataResponse_element();
+        ListViewMetadataAPIService.deleteMetadataResponse_element r7 = new ListViewMetadataAPIService.deleteMetadataResponse_element();
+        ListViewMetadataAPIService.upsertMetadata_element r8 = new ListViewMetadataAPIService.upsertMetadata_element();
+        ListViewMetadataAPIService.createMetadata_element r9 = new ListViewMetadataAPIService.createMetadata_element();
+        ListViewMetadataAPIService.updateMetadata_element r10 = new ListViewMetadataAPIService.updateMetadata_element();
+        ListViewMetadataAPIService.deleteMetadata_element r11 = new ListViewMetadataAPIService.deleteMetadata_element();
+        ListViewMetadataAPIService.UpsertResult r12 = new ListViewMetadataAPIService.UpsertResult();
+        ListViewMetadataAPIService.SaveResult r13 = new ListViewMetadataAPIService.SaveResult();
+        ListViewMetadataAPIService.DeleteResult r14 = new ListViewMetadataAPIService.DeleteResult();
+
+
         System.assert(true);
     }
 
@@ -622,7 +639,7 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String jsonStyle = '[["field","Email"],["font","Times New Roman"],["decoration","none"],["style","normal"],["transform","none"],["variant","normal"],["weight","bold"],["alignment","center"]]';
+        String jsonStyle = '[["field","Email"],["font","Times New Roman"],["decoration","none"],["style","normal"],["transform","none"],["variant","normal"],["weight","bold"],["alignment","center"],["textColor","#FFFFFF"],["backgroundColor","#000000"]]';
 
         Test.startTest();
             ListViewController.processColumnStyleChange('Account', 'simpli_lv__AllAccounts', 'add', jsonStyle);

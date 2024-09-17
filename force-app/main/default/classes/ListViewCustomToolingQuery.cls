@@ -214,7 +214,7 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                 }
 
                 if (lvConfig != null)
-                    rowWrapper.calculateHighlighting(lvConfig.conditions);
+                    rowWrapper.calcRowCSS(lvConfig);
             }
 
             //if totals have been configured

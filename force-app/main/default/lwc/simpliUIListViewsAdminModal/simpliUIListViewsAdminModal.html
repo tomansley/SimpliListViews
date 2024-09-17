@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 09-01-2024
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 09-15-2024
+  @last modified by  : 
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom@ansleyllc.com   Initial Version
@@ -16,7 +16,7 @@
             <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
                 <div class="slds-modal__container" style="align-items: center; overflow: initial;">
                     
-                    <header class="slds-modal__header" style="min-width: 1100px;">
+                    <header class="slds-modal__header" style="min-width: 1300px;">
                         <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
                             title={label.Close} onclick={handleClose}>
                             <lightning-icon icon-name="utility:close" alternative-text={label.Close} variant="warning"></lightning-icon>
@@ -27,7 +27,7 @@
 
                     <lightning-tabset style="background-color: white;">
                         <lightning-tab label={label.Settings}>
-                            <div class="scroll slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1100px;">
+                            <div class="scroll slds-modal__content slds-p-around_xx-small" id="modal-param-content" style="min-width: 1300px;">
                                 <lightning-layout multiple-rows>
 
                                     <!-- HEADER -->
@@ -105,8 +105,8 @@
                         <!-- ====================================================================================================================================== -->
                         <!-- CONDITIONS                                                                                                                             -->
                         <!-- ====================================================================================================================================== -->
-                        <lightning-tab label={label.Highlighting}>
-                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-condition-content" style="min-width: 1100px; overflow: initial;">
+                        <lightning-tab label={label.Conditional_Highlighting}>
+                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-condition-content" style="min-width: 1300px; overflow: initial;">
                                 <template if:true={spinner}>
                                     <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
                                 </template>
@@ -127,6 +127,11 @@
                                             </th>
                                             <th class="" scope="col">
                                                 <div class="slds-truncate" style="padding-left:5px;" title={label.Color}>{label.Color}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Color}>{label.Highlight_Cell_Only}
+                                                    <lightning-helptext content="Indicates whether the whole record or just the cell should be highlighted."></lightning-helptext>
+                                                </div>
                                             </th>
                                             <th class="" scope="col" style="width:1.25rem">
                                                 <div class="slds-truncate" style="padding-left:5px;" title={label.Add_Remove}></div>
@@ -167,6 +172,16 @@
                                                                             onchange={handleConditionColorChange}
                                                                             value={condition.color}
                                                                             disabled="">
+                                                        </lightning-input>
+                                                    </div>
+                                                </td>
+                                                <td data-label={condition.highlightCellOnly} style="text-align:center;">
+                                                    <div class="slds-truncate" title={label.Highlight_Cell_Only}>
+                                                        <lightning-input type="checkbox" 
+                                                                        variant="label-hidden" 
+                                                                        checked={condition.highlightCellOnly} 
+                                                                        onchange={handleConditionHighlightCellOnlyChange}
+                                                                        disabled="">
                                                         </lightning-input>
                                                     </div>
                                                 </td>
@@ -305,6 +320,14 @@
                                                     </lightning-input>
                                                 </div>
                                             </td>
+                                            <td style="width:50px; text-align:center">
+                                                <div title={label.Highlight_Cell_Only}>
+                                                    <lightning-input type="checkbox" 
+                                                                    variant="label-hidden" 
+                                                                    onchange={handleConditionHighlightCellOnlyChange}>
+                                                    </lightning-input>
+                                                </div>
+                                            </td>
                                             <td style="width:50px">
                                                 <div>
                                                     <lightning-button-icon icon-name="utility:add"  
@@ -325,7 +348,7 @@
                         <!-- COLUMN STYLES                                                                                                                          -->
                         <!-- ====================================================================================================================================== -->
                         <lightning-tab label={label.Column_Styles}>
-                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-style-content" style="min-width: 1100px; overflow: initial;">
+                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-style-content" style="min-width: 1300px; overflow: initial;">
                                 <template if:true={spinner}>
                                     <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
                                 </template>
@@ -355,6 +378,12 @@
                                             </th>
                                             <th class="" scope="col">
                                                 <div class="slds-truncate" style="padding-left:5px;" title={label.Alignment}>{label.Alignment}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Alignment}>{label.Background_Color}</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" style="padding-left:5px;" title={label.Alignment}>{label.Text_Color}</div>
                                             </th>
                                             <th class="" scope="col" style="width:1.25rem">
                                                 <div class="slds-truncate" style="padding-left:5px;" title={label.Add_Remove}></div>
@@ -406,6 +435,16 @@
                                                 <td data-label={style.alignment}>
                                                     <div title={label.Alignment}>
                                                         <lightning-formatted-text style="padding-left:5px;" value={style.alignment}></lightning-formatted-text>
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.backgroundcolor}>
+                                                    <div title={label.Background_Color}>
+                                                        <lightning-input type="color" variant="label-hidden" value={style.backgroundColor} disabled></lightning-input>
+                                                    </div>
+                                                </td>
+                                                <td data-label={style.textcolor}>
+                                                    <div title={label.Text_Color}>
+                                                        <lightning-input type="color" variant="label-hidden" value={style.textColor} disabled></lightning-input>
                                                     </div>
                                                 </td>
                                                 <td data-label={style.fieldName} style="width:1.25rem">
@@ -510,6 +549,28 @@
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
+                                            <td style="width:100px">
+                                                <div title="">
+                                                    <lightning-input type="color"
+                                                                     placeholder={label.Background_Color}
+                                                                     value={newColumnStyleBackgroundColor}
+                                                                     name="backgroundColor"
+                                                                     onchange={handleColumnStyleFieldChange}
+                                                                     variant=label-hidden>
+                                                    </lightning-input>                        
+                                                </div>
+                                            </td>
+                                            <td style="width:100px">
+                                                <div title="">
+                                                    <lightning-input type="color"
+                                                                     placeholder={label.Text_Color}
+                                                                     value={newColumnStyleTextColor}
+                                                                     name="textColor"
+                                                                     onchange={handleColumnStyleFieldChange}
+                                                                     variant=label-hidden>
+                                                    </lightning-input>                        
+                                                </div>
+                                            </td>
                                             <td style="width:50px">
                                                 <div>
                                                     <lightning-button-icon icon-name="utility:add"  
@@ -528,7 +589,7 @@
 
                     </lightning-tabset>
 
-                    <footer class="slds-modal__footer" style="min-width: 1100px;z-index:1">
+                    <footer class="slds-modal__footer" style="min-width: 1300px;z-index:1">
                         <button class="slds-button slds-button_brand" onclick={handleUpdateClick}>{label.Update}</button>
                         <button class="slds-button slds-button_brand" disabled={closeDisabled} onclick={handleClose}>{label.Close}</button>
                     </footer>

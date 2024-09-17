@@ -14,12 +14,15 @@ import Settings from '@salesforce/label/c.Settings';
 import Parameter_Name from '@salesforce/label/c.Parameter_Name';
 import Value from '@salesforce/label/c.Value';
 import Select_A_Value from '@salesforce/label/c.Select_A_Value';
+import Conditional_Highlighting from '@salesforce/label/c.Conditional_Highlighting';
 import Highlighting from '@salesforce/label/c.Highlighting';
 import Add_Remove from '@salesforce/label/c.Add_Remove';
 import Field from '@salesforce/label/c.Field';
 import Operator from '@salesforce/label/c.Operator';
 import Precedence from '@salesforce/label/c.Precedence';
 import Color from '@salesforce/label/c.Color';
+import Background_Color from '@salesforce/label/c.Background_Color';
+import Text_Color from '@salesforce/label/c.Text_Color';
 import Field_Name from '@salesforce/label/c.Field_Name';
 import Remove_Condition from '@salesforce/label/c.Remove_Condition';
 import Select_A_Column from '@salesforce/label/c.Select_A_Column';
@@ -34,6 +37,7 @@ import Variant from '@salesforce/label/c.Variant';
 import Transform from '@salesforce/label/c.Transform';
 import Weight from '@salesforce/label/c.Weight';
 import Alignment from '@salesforce/label/c.Alignment';
+import Highlight_Cell_Only from '@salesforce/label/c.Highlight_Cell_Only';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
 import getListViewColumns from '@salesforce/apex/ListViewController.getListViewColumns';
@@ -75,6 +79,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track newConditionValue;
     @track newConditionOrder = '1';
     @track newConditionColor;
+    @track newConditionHighlightCellOnly;
     @track configChanged;               //identifies if a change has been made which needs to force a data refresh
     @track lvName;                      //the name of the list view.
     @track closeDisabled = undefined;
@@ -91,6 +96,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track newColumnStyleVariant;
     @track newColumnStyleWeight;
     @track newColumnStyleAlignment;
+    @track newColumnStyleBackgroundColor;
+    @track newColumnStyleTextColor;
 
     get fontStyleList() {
         return [
@@ -215,7 +222,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     label = {
         Close, List_View_Config, Settings, Parameter_Name, Value, Select_A_Value, Highlighting, Add_Remove, Field,
         Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition,
-        Update, Column_Styles, Font, Decoration, Style, Transform, Weight, Alignment, Variant
+        Update, Column_Styles, Font, Decoration, Style, Transform, Weight, Alignment, Variant, Background_Color,
+        Text_Color, Highlight_Cell_Only, Conditional_Highlighting
     }
 
     constructor() {
@@ -508,6 +516,11 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 valuesMap.set('value', this.newConditionValue);
                 valuesMap.set('order', this.newConditionOrder);
                 valuesMap.set('color', this.newConditionColor);
+                if (this.newConditionHighlightCellOnly === undefined) {
+                    valuesMap.set('highlightCellOnly', false);
+                } else {
+                    valuesMap.set('highlightCellOnly', true);
+                }
 
                 strParamsMap = JSON.stringify(Array.from(valuesMap));
                 console.log('Params Field/Value  - ' + strParamsMap);
@@ -579,6 +592,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             this.newConditionField = this.listViewColumns[0].value;
         }
         this.newConditionValue = undefined;
+        this.newConditionHighlightCellOnly = undefined;
         this.newConditionColor = '#DBFFB4';
         this.newConditionOperator = 'Equals';
         this.newConditionOrder = '1';
@@ -630,6 +644,16 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             const { target } = event;
             this.newConditionOrder = target.value ?? '';
             console.log('New Condition Order Change - ' + this.newConditionOrder);
+        } catch (error) {
+            SLVHelper.showErrorMessage(error);
+        }
+    }
+
+    handleConditionHighlightCellOnlyChange(event) {
+        try {
+            const { target } = event;
+            this.newConditionHighlightCellOnly = target.checked;
+            console.log('New Condition Highlight Cell Only Change - ' + this.newConditionHighlightCellOnly);
         } catch (error) {
             SLVHelper.showErrorMessage(error);
         }
@@ -692,6 +716,9 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 valuesMap.set('variant', this.newColumnStyleVariant);
                 valuesMap.set('weight', this.newColumnStyleWeight);
                 valuesMap.set('alignment', this.newColumnStyleAlignment);
+                valuesMap.set('backgroundColor', this.newColumnStyleBackgroundColor);
+                valuesMap.set('textColor', this.newColumnStyleTextColor);
+
 
                 strParamsMap = JSON.stringify(Array.from(valuesMap));
                 console.log('Params Field/Value  - ' + strParamsMap);
@@ -764,6 +791,9 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         this.newColumnStyleVariant = 'normal';
         this.newColumnStyleWeight = 'normal';
         this.newColumnStyleAlignment = 'left';
+        this.newColumnStyleBackgroundColor = '#FFFFFF';
+        this.newColumnStyleTextColor = '#000000';
+
     }
 
     handleColumnStyleFieldChange(event) {
@@ -782,6 +812,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             else if (name === 'font') this.newColumnStyleFont = value;
             else if (name === 'weight') this.newColumnStyleWeight = value;
             else if (name === 'alignment') this.newColumnStyleAlignment = value;
+            else if (name === 'backgroundColor') this.newColumnStyleBackgroundColor = value;
+            else if (name === 'textColor') this.newColumnStyleTextColor = value;
         } catch (error) {
             SLVHelper.showErrorMessage(error);
         }

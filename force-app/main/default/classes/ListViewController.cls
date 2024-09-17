@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 09-09-2024
- * @last modified by  : tom@ansleyllc.com
+ * @last modified on  : 09-15-2024
+ * @last modified by  : 
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -692,7 +692,8 @@ public with sharing class ListViewController
                                                           (String) mapValues.get('operator'),
                                                           (String) mapValues.get('value'),
                                                           (String) mapValues.get('order'),
-                                                          (String) mapValues.get('color'));
+                                                          (String) mapValues.get('color'),
+                                                          (Boolean) mapValues.get('highlightCellOnly'));
                 CacheListViewConfig.remove(objectName, listViewName);
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
@@ -749,7 +750,9 @@ public with sharing class ListViewController
                                                             (String) mapValues.get('transform'),
                                                             (String) mapValues.get('variant'),
                                                             (String) mapValues.get('weight'),
-                                                            (String) mapValues.get('alignment'));
+                                                            (String) mapValues.get('alignment'),
+                                                            (String) mapValues.get('backgroundColor'),
+                                                            (String) mapValues.get('textColor'));
                 CacheListViewConfig.remove(objectName, listViewName);
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();

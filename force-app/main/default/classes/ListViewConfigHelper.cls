@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 08-07-2024
+ * @Last Modified By   : 
+ * @Last Modified On   : 09-15-2024
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -313,19 +313,20 @@ global with sharing class ListViewConfigHelper {
         
     }
 
-    public static void addListViewCondition(String objectName, String listViewName, String fieldName, String fieldOperator, String fieldValue, String fieldOrder, String fieldColor)
+    public static void addListViewCondition(String objectName, String listViewName, String fieldName, String fieldOperator, String fieldValue, String fieldOrder, String fieldColor, Boolean highlightCellOnly)
     {
 
         //get the list view config for the parameter
         List_View_Config__c lvConfig = getListViewConfig(objectName, listViewName);
 
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = fieldName;
-        condition.Highlight_Color__c  = fieldColor;
-        condition.Operator__c         = fieldOperator;
-        condition.Order__c            = fieldOrder;
-        condition.Value__c            = fieldValue;
-        condition.List_View_Config__c = lvConfig.Id;
+        condition.Field_Name__c          = fieldName;
+        condition.Highlight_Cell_Only__c = highlightCellOnly;
+        condition.Highlight_Color__c     = fieldColor;
+        condition.Operator__c            = fieldOperator;
+        condition.Order__c               = fieldOrder;
+        condition.Value__c               = fieldValue;
+        condition.List_View_Config__c    = lvConfig.Id;
 
         System.debug(LoggingLevel.DEBUG, 'ADDING CONDITION - ' + condition);
         HelperDatabase.insertRecord(condition);
@@ -335,22 +336,24 @@ global with sharing class ListViewConfigHelper {
 
     }
 
-    public static void addListViewColumnStyle(String objectName, String listViewName, String fieldName, String decoration, String font, String style, String transform, String variant, String weight, String alignment)
+    public static void addListViewColumnStyle(String objectName, String listViewName, String fieldName, String decoration, String font, String style, String transform, String variant, String weight, String alignment, String backgroundColor, String textColor)
     {
 
         //get the list view config for the column style
         List_View_Config__c lvConfig = getListViewConfig(objectName, listViewName);
 
         List_View_Config_Column_Style__c columnStyle = new List_View_Config_Column_Style__c();
-        columnStyle.Field_Name__c        = fieldName;
-        columnStyle.List_View_Config__c  = lvConfig.Id;
-        columnStyle.Style_Decoration__c  = decoration;
-        columnStyle.Style_Font__c        = font;
-        columnStyle.Style_Style__c       = style;
-        columnStyle.Style_Transform__c   = transform;
-        columnStyle.Style_Variant__c     = variant;
-        columnStyle.Style_Weight__c      = weight;
-        columnStyle.Style_Alignment__c   = alignment;
+        columnStyle.Field_Name__c             = fieldName;
+        columnStyle.List_View_Config__c       = lvConfig.Id;
+        columnStyle.Style_Decoration__c       = decoration;
+        columnStyle.Style_Font__c             = font;
+        columnStyle.Style_Style__c            = style;
+        columnStyle.Style_Transform__c        = transform;
+        columnStyle.Style_Variant__c          = variant;
+        columnStyle.Style_Weight__c           = weight;
+        columnStyle.Style_Alignment__c        = alignment;
+        columnStyle.Style_Background_Color__c = backgroundColor;
+        columnStyle.Style_Text_Color__c       = textColor;
 
         System.debug(LoggingLevel.DEBUG, 'ADDING COLUMN STYLE - ' + columnStyle);
         HelperDatabase.insertRecord(columnStyle);
@@ -439,6 +442,7 @@ global with sharing class ListViewConfigHelper {
                         ORDER BY Parameter_Label__c),
                         (SELECT Field_Name__c,
                                     Highlight_Color__c,
+                                    Highlight_Cell_Only__c,
                                     Operator__c,
                                     Order__c,
                                     Value__c
@@ -451,7 +455,9 @@ global with sharing class ListViewConfigHelper {
                                 Style_Transform__c,
                                 Style_Variant__c,
                                 Style_Weight__c,
-                                Style_Alignment__c
+                                Style_Alignment__c,
+                                Style_Background_Color__c,
+                                Style_Text_Color__c
                          FROM List_View_Config_Column_Styles__r
                          ORDER BY Field_Name__c)
             FROM List_View_Config__c
@@ -494,6 +500,7 @@ global with sharing class ListViewConfigHelper {
                                                 ORDER BY Parameter_Label__c),
                                                 (SELECT Field_Name__c,
                                                             Highlight_Color__c,
+                                                            Highlight_Cell_Only__c,
                                                             Operator__c,
                                                             Order__c,
                                                             Value__c
@@ -506,7 +513,9 @@ global with sharing class ListViewConfigHelper {
                                                         Style_Transform__c,
                                                         Style_Variant__c,
                                                         Style_Weight__c,
-                                                        Style_Alignment__c
+                                                        Style_Alignment__c,
+                                                        Style_Background_Color__c,
+                                                        Style_Text_Color__c
                                                 FROM List_View_Config_Column_Styles__r
                                                 ORDER BY Field_Name__c)
                                     FROM List_View_Config__c
@@ -539,6 +548,7 @@ global with sharing class ListViewConfigHelper {
                     ORDER BY Parameter_Label__c),
                     (SELECT Field_Name__c,
                                 Highlight_Color__c,
+                                Highlight_Cell_Only__c,
                                 Operator__c,
                                 Order__c,
                                 Value__c
@@ -551,7 +561,9 @@ global with sharing class ListViewConfigHelper {
                             Style_Transform__c,
                             Style_Variant__c,
                             Style_Weight__c,
-                            Style_Alignment__c
+                            Style_Alignment__c,
+                            Style_Background_Color__c,
+                            Style_Text_Color__c
                     FROM List_View_Config_Column_Styles__r
                     ORDER BY Field_Name__c)
         FROM List_View_Config__c

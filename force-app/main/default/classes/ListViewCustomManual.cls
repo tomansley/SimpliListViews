@@ -476,11 +476,8 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
                             clonedWrapper.addField(field);
                         
-                            if (lvConfig != null)
-                                clonedWrapper.calculateHighlighting(lvConfig.conditions);
-
                             if (lvConfig != null) {
-                                clonedWrapper.calculateCSSStyles(lvConfig.columnStyles);
+                                clonedWrapper.calcRowCSS(lvConfig);
                             }
                     
                         }
@@ -493,7 +490,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 rows.addRow(rowWrapper);
 
                 if (lvConfig != null)
-                    rowWrapper.calculateHighlighting(lvConfig.conditions);
+                    rowWrapper.calcRowCSS(lvConfig);
             }
 
         }

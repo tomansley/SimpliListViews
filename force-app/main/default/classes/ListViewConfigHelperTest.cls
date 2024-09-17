@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 08-14-2024
+ * @last modified on  : 09-16-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -795,7 +795,7 @@ private class ListViewConfigHelperTest {
         Boolean conditionAdded = true;
 
         try {
-            ListViewConfigHelper.addListViewCondition('Account', 'simpli_lv__AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '1', '#000000');
+            ListViewConfigHelper.addListViewCondition('Account', 'simpli_lv__AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '1', '#000000', false);
 
             List_View_Config_Condition__c condition = [SELECT Id FROM List_View_Config_Condition__c WHERE Value__c = 'Testerson'];
 

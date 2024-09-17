@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-12-2024
+ * @last modified on  : 09-16-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -446,8 +446,9 @@ public with sharing class ListViewCore extends ListViewAbstract {
             }
 
             if (lvConfig != null && !isShell) {
-                rowWrapper.calculateHighlighting(lvConfig.conditions);
-                rowWrapper.calculateCSSStyles(lvConfig.columnStyles);
+                rowWrapper.calcRowCSS(lvConfig);
+            } else {
+                System.debug(LoggingLevel.DEBUG, 'No LV Config');
             }
         }
 
