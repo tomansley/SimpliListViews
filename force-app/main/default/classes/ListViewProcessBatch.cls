@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 08-07-2024
+ * @last modified on  : 10-07-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -47,7 +47,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	{
         String procSize = ListViewConfigHelper.getOrgWideConfigParam('ProcessingSize');
 
-        if (procSize != null)
+        if (!String.isEmpty(procSize))
             batchSize = Integer.valueOf(procSize);
 
 		database.executebatch(this, batchSize);
