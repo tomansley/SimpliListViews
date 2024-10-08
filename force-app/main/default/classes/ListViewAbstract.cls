@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-16-2024
+ * @last modified on  : 10-08-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1369,6 +1369,8 @@ public with sharing abstract class ListViewAbstract {
 
         public void setType(String type)
         {
+            type = type.toLowerCase();
+            
             if (type == ListViewHelper.TYPE_STRING && this.name.contains('.Name'))
                 this.type = ListViewHelper.TYPE_LOOKUP;
             else if (type == ListViewHelper.TYPE_STRING  && this.getValue().contains('<img src='))
