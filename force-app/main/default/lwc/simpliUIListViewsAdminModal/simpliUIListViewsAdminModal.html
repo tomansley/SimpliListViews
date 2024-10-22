@@ -3,8 +3,8 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 09-15-2024
-  @last modified by  : 
+  @last modified on  : 10-22-2024
+  @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   08-12-2020   tom@ansleyllc.com   Initial Version
@@ -106,7 +106,7 @@
                         <!-- CONDITIONS                                                                                                                             -->
                         <!-- ====================================================================================================================================== -->
                         <lightning-tab label={label.Conditional_Highlighting}>
-                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-condition-content" style="min-width: 1300px; overflow: initial;">
+                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-condition-content" style="min-width: 1300px; overflow: auto;">
                                 <template if:true={spinner}>
                                     <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
                                 </template>
@@ -348,7 +348,7 @@
                         <!-- COLUMN STYLES                                                                                                                          -->
                         <!-- ====================================================================================================================================== -->
                         <lightning-tab label={label.Column_Styles}>
-                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-style-content" style="min-width: 1300px; overflow: initial;">
+                            <div class="scroll slds-modal__content slds-p-around_xx-small pageSpinnerHolder" id="modal-style-content" style="min-width: 1300px; overflow: auto;">
                                 <template if:true={spinner}>
                                     <lightning-spinner alternative-text="Loading" size="medium" class="spinnerClass"></lightning-spinner>
                                 </template>
