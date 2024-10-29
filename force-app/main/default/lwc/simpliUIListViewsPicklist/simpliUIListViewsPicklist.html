@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 07-26-2024
+  @last modified on  : 10-29-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -11,18 +11,20 @@
     <template if:true={isPicklist}>
         <template if:false={hasError}>
             <template if:true={isOptionsSet}>
-                <lightning-combobox id="dependentPickList"
-                                    name={compName}
-                                    label={label}
-                                    value={value}
-                                    placeholder={label.None_Dash}
-                                    variant={variant}
-                                    options={options}
-                                    onchange={handleChange}
-                                    field-level-help={fieldLevelHelp}
-                                    required={required}
-                                    style={fieldStyle}>
-                </lightning-combobox>
+                <div class="picklist-container">
+                    <lightning-combobox id="dependentPickList"
+                                        name={compName}
+                                        label={label}
+                                        value={value}
+                                        placeholder={label.None_Dash}
+                                        variant={variant}
+                                        options={options}
+                                        onchange={handleChange}
+                                        field-level-help={fieldLevelHelp}
+                                        required={required}
+                                        style={fieldStyle}>
+                    </lightning-combobox>
+                </div>
             </template>
         </template>
         <template if:true={hasError}>
@@ -32,18 +34,20 @@
     <template if:true={isMultiPicklist}>
         <template if:false={hasError}>
             <template if:true={isOptionsSet}>
-                <lightning-dual-listbox name={compName}
-                                        source-label={sourceLabel}
-                                        selected-label={selectedLabel}
-                                        options={options}
-                                        onchange={handleChange}
-                                        variant={variant}
-                                        value={value}
-                                        size={size}
-                                        field-level-help={fieldLevelHelp}
-                                        required={required}
-                                        style={fieldStyle}>
-                </lightning-dual-listbox>
+                <div class="multi-picklist-container">
+                    <lightning-dual-listbox name={compName}
+                                            source-label={sourceLabel}
+                                            selected-label={selectedLabel}
+                                            options={options}
+                                            onchange={handleChange}
+                                            variant={variant}
+                                            value={value}
+                                            size={size}
+                                            field-level-help={fieldLevelHelp}
+                                            required={required}
+                                            style={fieldStyle}>
+                    </lightning-dual-listbox>
+                </div>
             </template>
         </template>
         <template if:true={hasError}>
