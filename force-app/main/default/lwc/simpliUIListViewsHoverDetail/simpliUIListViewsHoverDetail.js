@@ -22,4 +22,10 @@ export default class SimpliUIListViewsHoverDetail extends LightningElement {
     handleHoverError() {
         this.dispatchEvent(new CustomEvent('error', { detail: this.recordApiName }));
     }
+
+    hideHoverDetails() {
+        this.isDisplayed = false;
+        this.dispatchEvent(new CustomEvent('hide', { detail: this.recordApiName }));
+    }
+
 }

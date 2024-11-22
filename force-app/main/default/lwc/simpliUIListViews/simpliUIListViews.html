@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 09-13-2024
+  @last modified on  : 11-22-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -13,7 +13,7 @@
 
 -->
 <template>
-    <div onclick={hideHoverDetails} onmouseleave={hideHoverDetails} class="mainwrapper">
+    <div class="mainwrapper">
         <template if:true={spinner}>
              <c-simpli-u-i-list-views-spinner text={label.Loading}></c-simpli-u-i-list-views-spinner>
         </template>
@@ -71,7 +71,8 @@
                                                     value={selectedObject} 
                                                     onchange={handleObjectChange} 
                                                     options={objectList}
-                                                    variant=label-hidden>
+                                                    variant=label-hidden
+                                                    dropdown-alignment="auto">
                                 </lightning-combobox>                        
                             </template>
                         </lightning-layout-item>
@@ -100,7 +101,8 @@
                                                         onchange={handleListViewChanged} 
                                                         options={listViewList}
                                                         variant=label-hidden
-                                                        title={modifiedText}>
+                                                        title={modifiedText}
+                                                        dropdown-alignment="auto">
                                     </lightning-combobox>
                                 </template>
                             </lightning-layout-item>
@@ -241,7 +243,8 @@
                                                             value={label.Select_Action}
                                                             onchange={handleActionSelect} 
                                                             options={displayedActionList}
-                                                            variant=label-hidden>
+                                                            variant=label-hidden
+                                                            dropdown-alignment="auto">
                                         </lightning-combobox>
                                     </lightning-layout-item>
                                 </template>
@@ -877,7 +880,8 @@
                                             record-label-name={hoverLabelName}
                                             position-left={hoverPositionLeft}
                                             position-top={hoverPositionTop}
-                                            onerror={processHoverError}>
+                                            onerror={processHoverError}
+                                            onhide={processHoverHide}>
     </c-simpli-u-i-list-views-hover-detail>
 
     <!-- ---------------------------------------------------------------------------------- -->

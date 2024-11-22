@@ -2,12 +2,12 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 10-22-2021
+  @last modified on  : 11-18-2024
   @last modified by  : tom@ansleyllc.com
 -->
 <template>
     <template if:true={isDisplayed} >
-    <div data-id="hoverDetails" style="position: absolute; opacity: 1;display: block;" class="ModelTooltip">
+    <div onmouseleave={hideHoverDetails} data-id="hoverDetails" style="position: absolute; opacity: 1;display: block;" class="ModelTooltip">
         <section class="slds-popover slds-popover_panel slds-nubbin_left-top" role="dialog">
             <button class="slds-button slds-button_icon slds-button_icon slds-button_icon-small slds-float_right slds-popover__close" title="Close dialog">
                 <lightning-icon class="slds-icon slds-icon-text-default" icon-name="utility:close" size="xx-small" title="Close dialog"></lightning-icon>
