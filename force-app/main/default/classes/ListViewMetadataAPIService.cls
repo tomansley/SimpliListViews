@@ -36,6 +36,7 @@ global class ListViewMetadataAPIService {
         service.SessionHeader = new SessionHeader_element();
         if (!Test.isRunningTest())
             service.SessionHeader.sessionId = HelperREST.getSessionIdFromVFPage(Page.SessionId);
+        service.timeout_x = 120000;
         return service;
     }    
 
