@@ -1,8 +1,8 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 07-12-2023
-  @last modified by  : tom@ansleyllc.com
+  @last modified on  : 09-22-2024
+  @last modified by  : 
   Modifications Log 
   Ver   Date         Author                       Modification
   1.0   07-20-2021   tom@ansleyllc.com   Initial Version
@@ -22,7 +22,9 @@
                                                     onclick={handleClick} 
                                                     onblur={handleBlur} 
                                                     onchange={onChange}
-                                                    variant="label-hidden" 
+                                                    variant={variant}
+                                                    label={label} 
+                                                    field-level-help={fieldLevelHelp}
                                                     autocomplete="off" 
                                                     placeholder={label.Search_Dot}>
                                 </lightning-input>

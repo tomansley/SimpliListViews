@@ -54,41 +54,41 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     //-----------
     //API FIELDS
     //-----------
-    @api mode = undefined; 
-    @api virtual = false;
-    @api pageName = ''; 
-    @api uniqueComponentId = '';
-    @api hasMainTitle = undefined;
-    @api mainTitle = 'List Views';
-    @api includedObjects = '';
-    @api excludedObjects = '';
-    @api joinFieldName = '';
-    @api useMessageChannel = false;
-    @api allowRefresh = false;
-    @api singleClickAutoRefresh = undefined;
-    @api allowHorizontalScrolling = false;
-    @api allowInlineEditing = false;
-    @api displayRecordPopovers = false;
-    @api allowAdmin = false;
-    @api displayActions = false;
-    @api typeAheadListSearch = false;
-    @api typeAheadObjectSearch = false;
-    @api displayReprocess = false;
-    @api displayURL = false;
-    @api displayRowCount = false;
-    @api noSorting = false;
-    @api useSimpleSorting = false;
-    @api displaySelectedCount = false;
-    @api displayOrigButton;
-    @api displayModified = false;
-    @api displayExportButton = false;
-    @api displayTextSearch = false;
-    @api singleListViewObject = '';
-    @api singleListViewApiName = '';
-    @api excludedRecordPopoverTypes = '';
-    @api displayAllRelatedRecords = false;
-    @api objectList = undefined;
-    @api listViewList = undefined;
+    @api mode                       = undefined;    //indicates the mode the page is in for displaying the list view. i.e. app, single etc.
+    @api virtual                    = false;        //indicates whether the list view is displaying data virtually from another org.
+    @api pageName                   = '';           //this is NOT the page name but the COMPONENT name
+    @api uniqueComponentId          = '';           //identifies the component uniquely so that messages can be handled in a multi-component page.
+    @api hasMainTitle               = undefined;    //indicates whether the component should display the main title
+    @api mainTitle                  = 'List Views'; //the main title of the component.
+    @api includedObjects            = '';           //indicates the objects that should be included in the list view
+    @api excludedObjects            = '';           //indicates the objects that should be excluded in the list view.
+    @api joinFieldName              = '';           //if the component uses data coming in from the message channel this field identifies the lookup field to use that data for.
+    @api useMessageChannel          = false;        //identifies if the message channel should be used or not. This is used when components should be passing data between each other for updates.
+    @api allowRefresh               = false;        //config indicating whether the auto refresh checkbox is made available.
+    @api singleClickAutoRefresh     = undefined;    //whether clicking a single or double time starts the auto refresh.
+    @api allowHorizontalScrolling   = false;        //config indicating whether horizontal scrolling is available on the list view
+    @api allowInlineEditing         = false;        //config indicating whether inline editing is available
+    @api displayRecordPopovers      = false;        //config indicating whether record popovers should be displayed
+    @api allowAdmin                 = false;        //indicates whether the admin button should display to the user
+    @api displayActions             = false;
+    @api typeAheadListSearch        = false;        //indicates whether a straight combobox or typeahead text will be used when selecting list views
+    @api typeAheadObjectSearch      = false;        //indicates whether a straight combobox or typeahead text will be used when selecting objects
+    @api displayReprocess           = false;        //indicates whether the reprocessing button should be displayed allowing core list views to be reprocessed
+    @api displayURL                 = false;
+    @api displayRowCount            = false;
+    @api noSorting                  = false;        //indicates whether any sorting should be allowed on the listview
+    @api useSimpleSorting           = false;        //indicates whether standard sorting should be used.
+    @api displaySelectedCount       = false;
+    @api displayOrigButton;                         //this is not used....deprecated.
+    @api displayModified            = false;
+    @api displayExportButton        = false;
+    @api displayTextSearch          = false;        //identifies whether the text search field should be displayed.
+    @api singleListViewObject       = '';           //if in SINGLE mode holds the list view object to use.
+    @api singleListViewApiName      = '';           //if in SINGLE mode holds the list view API name to use.
+    @api excludedRecordPopoverTypes = '';           //Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name.
+    @api displayAllRelatedRecords   = false;        //Related List View Mode Only: Indicates whether all records should be displayed or scrolling should be used.
+    @api objectList                 = undefined;    //holds the list of objects from which a user can choose one.
+    @api listViewList               = undefined;    //holds the set of list views for the chosen object
     @api allowImmediateRefresh = false;
     @api immediatelyRefresh = false;
     @api set actionList(value)    
@@ -241,7 +241,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track quickDataObjectName;
     @track quickDataComponentId;      //the HTML field name that called the quick data modal. Used to set the focus back on the component
     @track quickDataOldFieldValue;
-    @track offset = -1;
+    @track offset = -1;                 //the offset for getting list view records
+    @track listviewOffset = 0;          //the offset for getting list views.
     @track rowLimit = -1;
 
     //for handling hover changes
@@ -848,53 +849,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         }
     }
     async getListViewsForObject() {
-        if (this.listViewListObject !== this.selectedObject && this.typeAheadListSearch === false) //only get the list views if its for a new object and we are not doing type ahead
+        if ((this.listViewListObject !== this.selectedObject || this.listviewOffset !== 0) && this.typeAheadListSearch === false) //only get the list views if its for a new object OR we are getting the next batch and we are not doing type ahead
         {
             this.listViewListObject = this.selectedObject;
             console.log(this.pageName + ' CALLOUT - getObjectListViews(' + this.selectedObject + ') - ' + this.calloutCount++);
-            this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'refreshListViews', status: 'started', object: this.selectedObject } }));
-            await getObjectListViews({ objectName: this.selectedObject }).then(result => {
-                console.log('Object list view retrieval successful for ' + this.pageName);
-                this.listViewList = result;
-                console.log('Object list view size - ' + this.listViewList.length + ' for ' + this.pageName);
-                console.log('Pinned list view      - ' + this.pinnedListView + ' for ' + this.pageName);
-                console.log('First List View Get   - ' + this.firstListViewGet + ' for ' + this.pageName);
-                //if we have no list views to display then either the object name is bad or the user does not have access to the object.
-                if (this.listViewList.length === 0) {
-                    this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Retrieving Object List Views', 'No list views available as the user does not have access to this object.', false));
-                } else if (this.urlListView !== undefined) {
-                    this.selectedListView = this.urlListView;
-                    this.selectedListViewExportName = this.selectedListView + '.csv';
-                } else if (this.pinnedListView !== undefined && this.firstListViewGet === true) {
-                    console.log('We have a pinned list view for ' + this.pageName);
-                    //check if we have the list view in the list. (it could be a stale pinning)
-                    const found = this.listViewList.find(element => element.value === this.pinnedListView);
-                    //if we have a valid list view name
-                    if (found !== undefined) {
-                        console.log('Found a list view with the pinned list view name for ' + this.pageName);
-                        this.selectedListView = this.pinnedListView;
-                        this.selectedListViewExportName = this.selectedListView + '.csv';
-                        this.refreshAllListViewData();
-                        if (this.immediatelyRefresh && this.allowImmediateRefresh) {
-                            this.singleClickAutoRefresh = 'true';
-                            this.handleAutoRefreshButtonClick();
-                        }
+            if (this.listviewOffset === 0) {
+                this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'refreshListViews', status: 'started', object: this.selectedObject } }));
+            }
+            let result = await getObjectListViews({ objectName: this.selectedObject, offset: this.listviewOffset });
+            this.handleListViewsForObject(result);
 
-                        //if we do not then bail.
-                    } else {
-                        console.log('Did NOT find a list view with the pinned list view name for ' + this.pageName);
-                        this.isInitializing = false;
-                    }
-                    this.firstListViewGet = false;
-                }
-                this.refreshTitle = 'Click to perform a refresh on all ' + this.selectedObject + ' list views';
-                this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'refreshListViews', status: 'finished', count: this.listViewList.length, object: this.selectedObject } }));
-                this.spinnerOff('getListViewsForObject');
-            }).catch(error => {
-                this.spinnerOff('getListViewsForObject');
-                this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Object List Views', 'Error retrieving ' + this.selectedObject + ' list views data. This usually indicates the user does not have read access to the object. if you believe this to be an error', true));
-            });
-            //if we
         } else if (this.typeAheadListSearch === true) {
             if (this.pinnedListView !== undefined && this.firstListViewGet === true) {
                 console.log('We have a pinned list view for ' + this.pageName);
@@ -926,6 +890,56 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             }
         } else {
             this.spinner = false; //cannot use spinnerOff() here as we might be initializing
+        }
+    }
+    handleListViewsForObject(result) {
+        console.log('Object list view retrieval successful for ' + this.pageName);
+                
+        if (this.listviewOffset === 0) { //the first batch of list views
+            this.listViewList = result;
+        } else {
+            this.listViewList.push(...result); //all other batches get added to the first batch
+        }
+
+        if (result.length === 15) { //if we have more list views then go get them.
+            this.listviewOffset += 15;
+            this.getListViewsForObject();
+        } else {
+            this.listViewList = JSON.parse(JSON.stringify(this.listViewList)); //a hack to force the page to recognize a change to the picklist values
+            console.log('Object list view size - ' + this.listViewList.length + ' for ' + this.pageName);
+            console.log('Pinned list view      - ' + this.pinnedListView + ' for ' + this.pageName);
+            console.log('First List View Get   - ' + this.firstListViewGet + ' for ' + this.pageName);
+            //if we have no list views to display then either the object name is bad or the user does not have access to the object.
+            if (this.listViewList.length === 0) {
+                this.dispatchEvent(SLVHelper.createToast('error', '', 'Error Retrieving Object List Views', 'No list views available. The user may not have access to this object.', false));
+            } else if (this.urlListView !== undefined) {
+                this.selectedListView = this.urlListView;
+                this.selectedListViewExportName = this.selectedListView + '.csv';
+            } else if (this.pinnedListView !== undefined && this.firstListViewGet === true) {
+                console.log('We have a pinned list view for ' + this.pageName);
+                //check if we have the list view in the list. (it could be a stale pinning)
+                const found = this.listViewList.find(element => element.value === this.pinnedListView);
+                //if we have a valid list view name
+                if (found !== undefined) {
+                    console.log('Found a list view with the pinned list view name for ' + this.pageName);
+                    this.selectedListView = this.pinnedListView;
+                    this.selectedListViewExportName = this.selectedListView + '.csv';
+                    this.refreshAllListViewData();
+                    if (this.immediatelyRefresh && this.allowImmediateRefresh) {
+                        this.singleClickAutoRefresh = 'true';
+                        this.handleAutoRefreshButtonClick();
+                    }
+
+                    //if we do not then bail.
+                } else {
+                    console.log('Did NOT find a list view with the pinned list view name for ' + this.pageName);
+                    this.isInitializing = false;
+                }
+                this.firstListViewGet = false;
+            }
+            this.refreshTitle = 'Click to perform a refresh on all ' + this.selectedObject + ' list views';
+            this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'refreshListViews', status: 'finished', count: this.listViewList.length, object: this.selectedObject } }));
+            this.spinnerOff('getListViewsForObject');
         }
     }
     /*
@@ -2198,7 +2212,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     }
     displayHoverDetails(event) {
         try {
-            const { currentTarget, pageY, pageX } = event;
+            const { currentTarget, clientY, clientX } = event;
             const { dataset } = currentTarget;
             const { sfdcId, apiName, labelName } = dataset;
             if (this.displayRecordPopovers === true) {
@@ -2206,17 +2220,18 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.hoverAPIName = apiName;
                 this.hoverLabelName = labelName;
                 this.hoverIsDisplayed = true;
-                this.hoverPositionTop = pageY - 170;
-                this.hoverPositionLeft = pageX + 10;
+                this.hoverPositionTop = clientY - 140;
+                this.hoverPositionLeft = clientX - 1;
             }
         } catch (error) {
             SLVHelper.showErrorMessage(error);
         }
     }
-    hideHoverDetails() {
+    processHoverHide() {
         this.hoverIsDisplayed = false;
     }
     processHoverError(event) {
+        console.log('Processing error');
         try {
             const { detail } = event;
             this.hideHoverDetails(event);

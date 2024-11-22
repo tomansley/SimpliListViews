@@ -14,6 +14,9 @@ export default class SimpliUIListViewsTypeAhead extends LightningElement {
 
     //THESE TWO TO BE REMOVED IF POSSIBLE
     @api initialName = '';  //the initial string value of the field for display purposes only
+    @api variant = 'label-hidden';  //the variant of the component. Helps to indicate label position
+    @api label = '';                //the label of the component if there is one.
+    @api fieldLevelHelp = '';       //any field level help that should be provided
 
     _initialId;          //the initial value of the field.
     @api set initialId(value) {

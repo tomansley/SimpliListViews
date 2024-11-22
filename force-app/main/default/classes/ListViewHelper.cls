@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-17-2024
+ * @last modified on  : 11-20-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -453,7 +453,7 @@ global with sharing class ListViewHelper
             return false;
 
         //get SLV list views
-        Map<String, List_View__c> slvListViews = getListViewsByObjectCache(objectName, true);
+        Map<String, List_View__c> slvListViews = getListViewsByObject(objectName, true, null);
 
         //Remove valid core list views
         for (ListView coreListView: coreListViews)
@@ -1094,6 +1094,70 @@ global with sharing class ListViewHelper
                 WHERE Object_Name__c = :objAPIName
                     AND RecordTypeId IN :rtIds
                 ORDER BY Label__c]);
+
+        Map<Id, List_View__c> listviews = new Map<Id, List_View__c>( (List<List_View__c>) dec.getRecords());
+
+        //now check security
+        Map<Id, List_View__c> listviewsById = getVisibleListViews(listviews, 'getListViewsByObject(' + objAPIName + ')');
+
+        Map<String, List_View__c> listviewsByName = new Map<String, List_View__c>();
+
+        for (List_View__c listview: listviewsById.values())
+            listViewsByName.put(listview.API_Name__c, listview);
+
+        return listviewsByName;
+    }
+
+    public static Map<String, List_View__c> getListViewsByObject(String objAPIName, Boolean onlyCore, Integer offset)
+    {
+
+        System.debug(LoggingLevel.FINE, 'objAPIName - ' + objAPIName + ', onlyCore - ' + onlyCore + ', offset - ' + offset);
+
+        Integer limitt = 15;
+        if (offset == null) { //offset = null means get everything
+            offset = 0;
+            limitt = 2000;
+        }
+
+        Set<Id> rtIds = new Set<Id>();
+        rtIds.add(ListViewHelper.coreRTId);
+        if (!onlyCore)
+            rtIds.add(ListViewHelper.customRTId);
+
+        //get list view data
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Label__c,
+                        Describe__c,
+                        Core_ListView_Id__c,
+                        Object_Name__c,
+                        Primary_Key__c,
+                        API_Name__c,
+                        Core_ListView_Columns__c,
+                        Core_ListView_Query__c,
+                        OwnerId,
+                        All_Internal_Users__c,
+                        Boolean_Filter__c,
+                        Filter_Scope__c,
+                        Groups__c,
+                        Roles__c,
+                        Roles_And_Subordinates__c,
+                        Territories__c,
+                        Territories_And_Subordinates__c,
+                        LastModifiedDate,
+                        LastModifiedBy.Name,
+                        RecordType.Name,
+                        Custom_Apex_Class__c,
+                        Subtype__c,
+                        Is_Private__c,
+                        Is_Non_Editable__c,
+                        Default_Sort_Order__c
+                FROM List_View__c
+                WHERE Object_Name__c = :objAPIName
+                    AND RecordTypeId IN :rtIds
+                ORDER BY Label__c
+                LIMIT :limitt
+                OFFSET :offset]);
 
         Map<Id, List_View__c> listviews = new Map<Id, List_View__c>( (List<List_View__c>) dec.getRecords());
 
@@ -3648,7 +3712,11 @@ global with sharing class ListViewHelper
 
         Map<String, StandardColumn> columns = new Map<String, StandardColumn>();
         for (StandardColumn column: allColumns)
+        {
+            if (column.hidden == null)
+                column.hidden = false;
             columns.put(column.fieldNameOrPath, column);
+        }
 
         return columns;
             
@@ -3670,6 +3738,11 @@ global with sharing class ListViewHelper
         public String type;
         public String label;
         public String function;
+
+        public StandardColumn()
+        {
+            hidden = false;
+        }
     }
 
     public class ColumnSortData implements Comparable {

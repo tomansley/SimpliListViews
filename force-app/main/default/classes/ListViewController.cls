@@ -2,8 +2,8 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 09-15-2024
- * @last modified by  : 
+ * @last modified on  : 11-20-2024
+ * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
  * 1.0   08-04-2020   tom@ansleyllc.com   Initial Version
@@ -133,11 +133,11 @@ public with sharing class ListViewController
     }
 
     @AuraEnabled
-    public static List<SelectOption> getObjectListViews(String objectName)
+    public static List<SelectOption> getObjectListViews(String objectName, Integer offset)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getObjectListViews(' + objectName + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getObjectListViews(' + objectName + ', ' + offset + ')');
 
-        Map<String, List_View__c> listviews = ListViewHelper.getListViewsByObject(objectName);
+        Map<String, List_View__c> listviews = ListViewHelper.getListViewsByObject(objectName, false, offset);
 
         List<SelectOption> configListOptions = new List<SelectOption>();
 
