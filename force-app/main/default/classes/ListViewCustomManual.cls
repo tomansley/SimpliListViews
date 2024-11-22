@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-13-2024
+ * @last modified on  : 11-20-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -286,23 +286,26 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
         Integer columnIndex = 1;
         for (ListViewHelper.StandardColumn column: cols.values())
         {
-            FieldWrapper field = new FieldWrapper(column.label, 
-                                                    column.type,
-                                                    column.fieldNameOrPath,
-                                                    columnIndex);
-
-            field.setFunction(column.function);
-
-            if (sortDataByFieldName.containsKey(column.fieldNameOrPath))
+            if (dataRows?.size() > 0 && !column.hidden)
             {
-                field.sortIndex = String.valueOf(sortDataByFieldName.get(column.fieldNameOrPath).sortIndex);
-                field.sortDir   = sortDataByFieldName.get(column.fieldNameOrPath).sortDirection;
+                FieldWrapper field = new FieldWrapper(column.label, 
+                                                        column.type,
+                                                        column.fieldNameOrPath,
+                                                        columnIndex);
+
+                field.setFunction(column.function);
+
+                if (sortDataByFieldName.containsKey(column.fieldNameOrPath))
+                {
+                    field.sortIndex = String.valueOf(sortDataByFieldName.get(column.fieldNameOrPath).sortIndex);
+                    field.sortDir   = sortDataByFieldName.get(column.fieldNameOrPath).sortDirection;
+                }
+
+                rows.addFieldMetaData(field);
+
+                columns.add(column);            
+                columnIndex++;
             }
-
-            rows.addFieldMetaData(field);
-
-            columns.add(column);            
-            columnIndex++;
         }
 
         //get all preset column widths
