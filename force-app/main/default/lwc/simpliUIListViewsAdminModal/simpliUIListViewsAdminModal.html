@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 10-22-2024
+  @last modified on  : 11-22-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -60,7 +60,8 @@
                                                                             value={param.value}
                                                                             name={param.name}
                                                                             label={param.label}
-                                                                            data-type={param.type}>
+                                                                            data-type={param.type}
+                                                                            dropdown-alignment="auto">
                                                         </lightning-combobox>                        
                                                     </template>
                                                     <template if:false={param.isBoolean}>
@@ -146,7 +147,8 @@
                                                         <lightning-combobox read-only="true"
                                                                             value={condition.fieldName}
                                                                             options={listViewColumns}
-                                                                            variant=label-hidden>
+                                                                            variant=label-hidden
+                                                                            dropdown-alignment="auto">
                                                         </lightning-combobox>
                                                     </div>
                                                 </td>
@@ -205,7 +207,8 @@
                                                                         onchange={handleConditionFieldChange} 
                                                                         options={listViewColumns}
                                                                         value={firstConditionField}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>
                                                 </div>
                                             </td>
@@ -215,7 +218,8 @@
                                                                         value="Equals"
                                                                         onchange={handleConditionOperatorChange}
                                                                         options={operatorList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
@@ -229,7 +233,8 @@
                                                                                     variant=label-hidden
                                                                                     value={newConditionValue}
                                                                                     name={newConditionColumn.value}
-                                                                                    label={newConditionColumn.label}>
+                                                                                    label={newConditionColumn.label}
+                                                                                    dropdown-alignment="auto">
                                                                 </lightning-combobox>                        
                                                         </template>
                                                         <template if:true={newConditionColumn.isString}>
@@ -260,10 +265,11 @@
                                                                 </div>
                                                                 <div style="float: right; width: 148px">
                                                                     <lightning-combobox placeholder="Or..."
-                                                                        value={newConditionValue}
-                                                                        options={dateList}
-                                                                        onchange={handleConditionValueChange}
-                                                                        variant=label-hidden>
+                                                                                        value={newConditionValue}
+                                                                                        options={dateList}
+                                                                                        onchange={handleConditionValueChange}
+                                                                                        variant=label-hidden
+                                                                                        dropdown-alignment="auto">
                                                                     </lightning-combobox>                        
                                                                 </div>
                                                             </div>
@@ -275,10 +281,11 @@
                                                                 </div>
                                                                 <div style="float: right; width: 198px">
                                                                     <lightning-combobox placeholder="Or..."
-                                                                        value={newConditionValue}
-                                                                        options={dateList}
-                                                                        onchange={handleConditionValueChange}
-                                                                        variant=label-hidden>
+                                                                                        value={newConditionValue}
+                                                                                        options={dateList}
+                                                                                        onchange={handleConditionValueChange}
+                                                                                        variant=label-hidden
+                                                                                        dropdown-alignment="auto">
                                                                     </lightning-combobox>                        
                                                                 </div>
                                                             </div>
@@ -307,7 +314,8 @@
                                                                         value="1" 
                                                                         onblur={handleConditionOrderChange}
                                                                         options={orderList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
@@ -398,7 +406,8 @@
                                                         <lightning-combobox read-only="true"
                                                                             value={style.fieldName}
                                                                             options={listViewColumns}
-                                                                            variant=label-hidden>
+                                                                            variant=label-hidden
+                                                                            dropdown-alignment="auto">
                                                         </lightning-combobox>
                                                     </div>
                                                 </td>
@@ -468,7 +477,8 @@
                                                                         name="fieldName" 
                                                                         options={styleListViewColumns}
                                                                         value={firstColumnStyleField}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>
                                                 </div>
                                             </td>
@@ -479,7 +489,8 @@
                                                                         name="font"
                                                                         onchange={handleColumnStyleFieldChange}
                                                                         options={fontStyleList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
@@ -490,7 +501,8 @@
                                                                         name="decoration"
                                                                         onchange={handleColumnStyleFieldChange}
                                                                         options={decorationStyleList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
@@ -501,7 +513,8 @@
                                                                         name="style"
                                                                         onchange={handleColumnStyleFieldChange}
                                                                         options={styleStyleList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
@@ -512,7 +525,8 @@
                                                                         name="transform"
                                                                         onchange={handleColumnStyleFieldChange}
                                                                         options={transformStyleList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
@@ -523,7 +537,8 @@
                                                                         name="variant"
                                                                         onchange={handleColumnStyleFieldChange}
                                                                         options={variantStyleList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
@@ -534,7 +549,8 @@
                                                                         name="weight"
                                                                         onchange={handleColumnStyleFieldChange}
                                                                         options={weightStyleList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>
@@ -545,7 +561,8 @@
                                                                         name="alignment"
                                                                         onchange={handleColumnStyleFieldChange}
                                                                         options={alignmentList}
-                                                                        variant=label-hidden>
+                                                                        variant=label-hidden
+                                                                        dropdown-alignment="auto">
                                                     </lightning-combobox>                        
                                                 </div>
                                             </td>

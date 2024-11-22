@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 01-11-2022
+  @last modified on  : 11-22-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                 Modification
@@ -36,7 +36,8 @@
                                                     value={selectedTemplateName}
                                                     options={templateList}
                                                     onchange={handleTemplateChange}
-                                                    variant=label-hidden>
+                                                    variant=label-hidden
+                                                    dropdown-alignment="auto">
                                 </lightning-combobox>                        
                             </div>
                             <template if:true={selectedTemplate}>

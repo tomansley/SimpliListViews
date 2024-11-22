@@ -2,7 +2,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 07-17-2023
+  @last modified on  : 11-22-2024
   @last modified by  : tom@ansleyllc.com
 -->
 <template>
@@ -46,7 +46,8 @@
                                                 options={actionRecordTypes}
                                                 onchange={handleActionRecordTypeSelected}
                                                 style="padding-top: 10px;"
-                                                required>
+                                                required
+                                                dropdown-alignment="auto">
                             </lightning-combobox>
                             <lightning-combobox name="action_type"
                                                 label="Action Type"
@@ -56,7 +57,8 @@
                                                 options={actionTypes}
                                                 onchange={handleActionTypeSelected}
                                                 required
-                                                style="padding-top: 10px;">
+                                                style="padding-top: 10px;"
+                                                dropdown-alignment="auto">
                             </lightning-combobox>
                             <template if:true={hasActionType}>
                                 <template if:true={showSubType}>
@@ -67,7 +69,8 @@
                                                         options={actionSubTypes}
                                                         onchange={handleActionSubTypeSelected}
                                                         required 
-                                                        style="padding-top: 10px;">
+                                                        style="padding-top: 10px;"
+                                                        dropdown-alignment="auto">
                                     </lightning-combobox>
                                 </template>
                                 <lightning-input type="text" 
@@ -78,7 +81,8 @@
                                                 onchange={handleActionLabelSelected}
                                                 required 
                                                 minlength="3"
-                                                style="padding-top: 10px;">
+                                                style="padding-top: 10px;"
+                                                dropdown-alignment="auto">
                                 </lightning-input>
                                 <lightning-combobox name="action_is_active"
                                                     label="Is action immediately available?"
@@ -88,7 +92,8 @@
                                                     options={booleanList}
                                                     onchange={handleActionIsActiveSelected}
                                                     required
-                                                    style="padding-top: 10px;">
+                                                    style="padding-top: 10px;"
+                                                    dropdown-alignment="auto">
                                 </lightning-combobox>
                             </template>
                         </template>
@@ -336,7 +341,8 @@
                                                                 data-param-name="manageDataMassUpdateOrder"
                                                                 data-param-row-index="1"
                                                                 required
-                                                                style="padding-top: 10px;">
+                                                                style="padding-top: 10px;"
+                                                                dropdown-alignment="auto">
                                             </lightning-combobox>
                                         </lightning-layout-item>
     
@@ -399,7 +405,8 @@
                                                                     data-param-name="manageDataMassUpdateOrder"
                                                                     data-param-row-index={rowIndex}
                                                                     style="padding-top: 10px;"
-                                                                    variant=label-hidden>
+                                                                    variant=label-hidden
+                                                                    dropdown-alignment="auto">
                                                 </lightning-combobox>
                                             </lightning-layout-item>
         
@@ -539,7 +546,8 @@
                                                 options={booleanList}
                                                 onchange={handleActionHasObjectSelected}
                                                 required 
-                                                style="padding-top: 10px;">
+                                                style="padding-top: 10px;"
+                                                dropdown-alignment="auto">
                             </lightning-combobox>
 
                             <template if:true={actionHasObject}>
@@ -561,7 +569,8 @@
                                                 options={booleanList}
                                                 onchange={handleActionHasComponentSelected}
                                                 required 
-                                                style="padding-top: 10px;">
+                                                style="padding-top: 10px;"
+                                                dropdown-alignment="auto">
                             </lightning-combobox>
 
                             <template if:true={actionHasComponent}>
@@ -583,7 +592,8 @@
                                                 options={recVisibleList}
                                                 onchange={handleActionRecordVisibleSelected}
                                                 required 
-                                                style="padding-top: 10px;">
+                                                style="padding-top: 10px;"
+                                                dropdown-alignment="auto">
                             </lightning-combobox>
 
                             <lightning-dual-listbox name="action_user_permissions"

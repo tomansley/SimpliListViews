@@ -1,7 +1,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 04-13-2022
+  @last modified on  : 11-22-2024
   @last modified by  : tom@ansleyllc.com
 -->
 <template>
@@ -33,7 +33,8 @@
                                 onchange={handleTimePeriodChange} 
                                 options={timePeriodsList}
                                 label={label.Select_Time_Period}
-                                disabled={isTurnedOn}>
+                                disabled={isTurnedOn}
+                                dropdown-alignment="auto">
             </lightning-combobox>
         </lightning-layout-item>
 
@@ -44,7 +45,8 @@
                                     onchange={periodValueChange} 
                                     options={monthPeriodsList}
                                     label={label.Select_Month}
-                                    disabled={isTurnedOn}>
+                                    disabled={isTurnedOn}
+                                    dropdown-alignment="auto">
                 </lightning-combobox>
             </lightning-layout-item>    
         </template>
@@ -56,7 +58,8 @@
                                     onchange={periodValueChange} 
                                     options={dayPeriodsList}
                                     label={label.Select_Day}
-                                    disabled={isTurnedOn}>
+                                    disabled={isTurnedOn}
+                                    dropdown-alignment="auto">
                 </lightning-combobox>
             </lightning-layout-item>    
         </template>
@@ -68,7 +71,8 @@
                                     onchange={periodValueChange} 
                                     options={hourPeriodsList}
                                     label={label.Select_Hour}
-                                    disabled={isTurnedOn}>
+                                    disabled={isTurnedOn}
+                                    dropdown-alignment="auto">
                 </lightning-combobox>
             </lightning-layout-item>    
         </template>
@@ -80,7 +84,8 @@
                                     onchange={periodValueChange} 
                                     options={minutePeriodsList}
                                     label={label.Select_Minute}
-                                    disabled={isTurnedOn}>
+                                    disabled={isTurnedOn}
+                                    dropdown-alignment="auto">
                 </lightning-combobox>
             </lightning-layout-item>    
         </template>
@@ -92,7 +97,8 @@
                                     onchange={periodValueChange} 
                                     options={xMinutePeriodsList}
                                     label={label.Select_X_Minute}
-                                    disabled={isTurnedOn}>
+                                    disabled={isTurnedOn}
+                                    dropdown-alignment="auto">
                 </lightning-combobox>
             </lightning-layout-item>    
         </template>

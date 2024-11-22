@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 02-01-2022
+  @last modified on  : 11-22-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -170,7 +170,8 @@
                                                             value={param.value}
                                                             name={param.name}
                                                             label={param.label}
-                                                            disabled={param.readOnly}>
+                                                            disabled={param.readOnly}
+                                                            dropdown-alignment="auto">
                                         </lightning-combobox>                        
                                     </template>
                                     <template if:false={param.isBoolean}>
