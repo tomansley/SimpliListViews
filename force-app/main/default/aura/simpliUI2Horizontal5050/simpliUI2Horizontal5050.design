@@ -1,0 +1,6 @@
+<design:component label="Two Rows. 50% Vertical Each Row">
+    <flexipage:template >
+            <flexipage:region name="top" label="Top Region" defaultWidth="XLARGE" />
+            <flexipage:region name="bottom" label="Bottom Region" defaultWidth="XLARGE" />
+       </flexipage:template>
+</design:component>

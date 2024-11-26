@@ -1,0 +1,7 @@
+<design:component label="Three Rows. 25%/37%/38% Vertical Each Row">
+    <flexipage:template >
+        <flexipage:region name="top" label="Top Region" defaultWidth="XLARGE" />
+        <flexipage:region name="middle" label="Middle Region" defaultWidth="XLARGE" />
+        <flexipage:region name="bottom" label="Bottom Region" defaultWidth="XLARGE" />
+    </flexipage:template>
+</design:component>

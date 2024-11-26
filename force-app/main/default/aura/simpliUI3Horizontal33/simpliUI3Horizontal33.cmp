@@ -1,0 +1,29 @@
+<aura:component implements="lightning:appHomeTemplate" description="Designed for Simpli List Views. Page is broken into
+three regions. 33% vertically and 100% horizontally.">
+    <aura:attribute name="top" type="Aura.Component[]" />
+    <aura:attribute name="middle" type="Aura.Component[]" />
+    <aura:attribute name="bottom" type="Aura.Component[]" />
+
+    <div style="height:25%; overflow-y: auto; max-height: 17vh;">
+        <lightning:layout>
+            <lightning:layoutItem size="12">
+                {!v.top}
+            </lightning:layoutItem>
+        </lightning:layout>
+    </div>
+    <div style="height:37%; overflow-y: auto; max-height: 40vh; padding-top: 5px;">
+        <lightning:layout>
+            <lightning:layoutItem size="12">
+                {!v.middle}
+            </lightning:layoutItem>
+        </lightning:layout>
+    </div>
+    <div style="height:38%; overflow-y: auto; max-height: 40vh; padding-top: 5px;">
+        <lightning:layout>
+            <lightning:layoutItem size="12">
+                {!v.bottom}
+            </lightning:layoutItem>
+        </lightning:layout>
+    </div>
+    
+</aura:component>
