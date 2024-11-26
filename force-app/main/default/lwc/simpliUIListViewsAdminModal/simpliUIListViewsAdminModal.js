@@ -51,7 +51,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
     @api showModal;                     //indicates whether this modal dialog should be displayed or not.
     _listViewObject;
-    @api get listViewObject() { return this._listViewObject; }; //the object of the list view.
+    @api get listViewObject() { return this._listViewObject; } //the object of the list view.
          set listViewObject(value) { 
             this._listViewObject = value;
             this.fieldSelectorObjectStartList = [];

@@ -64,8 +64,8 @@ export default class SimpliUIListViewsFieldSelector extends LightningElement {
     handleItemSelected(event) {
         let index = Number(event.currentTarget.dataset.index);
         let value = event.currentTarget.dataset.value;
-        let type = undefined;
-        let relObj = undefined;
+        let type;
+        let relObj;
 
         console.log('Item Selected - ' + value + ' @ index ' + index);
 
@@ -105,7 +105,7 @@ export default class SimpliUIListViewsFieldSelector extends LightningElement {
 
     }
 
-    handleCancelClick(event) {
+    handleCancelClick() {
         this.dispatchEvent(new CustomEvent('cancel', { detail: {value: false}}));
 
         //reset values
@@ -116,7 +116,7 @@ export default class SimpliUIListViewsFieldSelector extends LightningElement {
         }];
     }
 
-    handleSelectClick(event) {
+    handleSelectClick() {
         console.log('Field Selected - ' + this.selectedField);
         this.dispatchEvent(new CustomEvent('select', { detail: this.selectedField}));
         
