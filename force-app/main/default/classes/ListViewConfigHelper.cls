@@ -3,8 +3,8 @@
  * @Description        : 
  * @Author             : tom@ansleyllc.com
  * @Group              : 
- * @Last Modified By   : 
- * @Last Modified On   : 09-15-2024
+ * @Last Modified By   : tom@ansleyllc.com
+ * @Last Modified On   : 11-26-2024
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -470,7 +470,7 @@ global with sharing class ListViewConfigHelper {
             throw new ListViewException('Found more than one list view config with name - ' + listViewName + ' and object - ' + objectName);
         else if (configs.size() == 0) {
             if (objectName == 'All' && listViewName == 'All')
-                throw new ListViewException('Global config not found. Go to the admin page and either import a config file or create a new config');
+                configs.add(ListViewHelper.insertCoreGlobalConfig());
             else
                 return null;
                 //throw new ListViewException('No list view config was found with name - ' + listViewName + ' and object - ' + objectName);
