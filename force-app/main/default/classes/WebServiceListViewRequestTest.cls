@@ -17,7 +17,7 @@ public with sharing class WebServiceListViewRequestTest {
             List<ListViewController.SelectOption> options = ListViewTypeAheadController.search('schema', 'Acc', 'SObject', 'Label', 'Name', null);
             System.assert(options.size() > 0);
 
-            options = ListViewTypeAheadController.search('schema', 'Contact', 'SObject', 'Label', 'Name', 'simpli_lv__Object_Name__c NOT IN [\'Contact\']');
+            options = ListViewTypeAheadController.search('schema', 'Contact', 'SObject', 'Label', 'Name', '[{"field":"simpli_lv__Object_Name__c","operator":"NOT IN","values":"Contact"}]');
 
             Test.stopTest();
     }

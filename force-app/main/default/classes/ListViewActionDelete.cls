@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 08-07-2024
+ * @last modified on  : 12-17-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -16,6 +16,12 @@ global with sharing class ListViewActionDelete  extends ListViewAction {
 
     }
 
+    /*
+        ListViewActionDelete d = new ListViewActionDelete();
+        List<String> recordIds = new List<String>();
+        recordIds.add('a003h00000C6MhXAAV');
+        d.process(recordIds, new Map<String, Object>());
+     */
     public override String process(List<String> recordIds, Map<String, Object> fieldValues)
 	{
         String returnStr = ListViewAction.RESULT_OK + ':';
@@ -47,6 +53,8 @@ global with sharing class ListViewActionDelete  extends ListViewAction {
                 deletedObjs.put(recordId.substringBefore(':'), obj);
             }
 
+            System.debug(LoggingLevel.DEBUG, 'About to delete records');
+            System.debug(LoggingLevel.DEBUG, 'deletedObjs - ' + deletedObjs);
             HelperDatabase.deleteRecords(deletedObjs.values());
 
             if (deletedObjs.size() == 1)
@@ -56,7 +64,7 @@ global with sharing class ListViewActionDelete  extends ListViewAction {
 
         } catch (Exception e) {
             String message = ListViewAction.RESULT_ERROR + ':There was an error deleting the ' + objType + '. Please see a system admin.';
-            if (ListViewConfigHelper.isDebuggingOn())
+            //if (ListViewConfigHelper.isDebuggingOn())
                 message += ' Exception during ListViewActionDelete.process() ' + ListViewException.getExtendedString(e);
             ListViewErrorHelper.createFutureUsageError(message); 
             returnStr = message;

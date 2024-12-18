@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 09-17-2024
+ * @last modified on  : 12-17-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -259,7 +259,7 @@ global class ListViewControllerTest {
         System.assert(objs.size() > 0);
         
 
-        List<ListViewController.SelectOption> listviews = ListViewController.getObjectListViews('Account');
+        List<ListViewController.SelectOption> listviews = ListViewController.getObjectListViews('Account', 0);
 
         System.assertNotEquals(listviews, null);
         System.assert(listviews.size() > 0);

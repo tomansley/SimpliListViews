@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 09-16-2024
+ * @last modified on  : 11-26-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -62,6 +62,26 @@ private class ListViewConfigHelperTest {
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
         System.assert(result == '');
+        //-------------------------------------------------------------------------------------
+
+        //-------------------------------------------------------------------------------------
+        //DOES NOT CONTAIN
+        condition.Operator__c         = ListViewConfigHelper.OPER_DOES_NOT_CONTAIN;
+        condition.Value__c            = 'Burlington';
+        value = 'Burlington Coat Factory';
+        type = ListViewHelper.TYPE_STRING;
+
+        //NEGATIVE TEST
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == '');
+
+        //NEGATIVE TEST
+        value = 'Sterlington Coat Factory';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == HIGHLIGHT_COLOR);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 02-02-2022
+ * @last modified on  : 12-17-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -69,7 +69,7 @@ private class ListViewActionTest {
 
         Test.startTest();
 
-            String result = ListViewController.processAction('Delete:ListViewActionDelete:Core:null', '["' + acct.Id + '"]', '[]');
+            String result = ListViewController.processAction('Delete:ListViewActionDelete:Core:null', '["' + acct.Id + '"]', '');
 
         Test.stopTest();
 
