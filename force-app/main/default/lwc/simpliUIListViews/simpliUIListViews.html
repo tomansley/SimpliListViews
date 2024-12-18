@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 11-22-2024
+  @last modified on  : 12-06-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -29,10 +29,10 @@
         <!-- Section which holds all picklist and buttons for list view functionality           -->
         <!-- ---------------------------------------------------------------------------------- -->
         <template if:true={isInitialized}>
-            <lightning-card>
+            <div class="header">
                 <template if:true={hasTitle}>
                     <template if:true={isModeApp}>
-                        <div slot="title" style="padding:0px;">
+                        <div slot="title" style="font-weight: bold; font-size: 1.3em; padding: 5px">
                             {mainTitle}
                         </div>
                     </template>
@@ -42,7 +42,7 @@
 
                     <template if:true={hasTitle}>
                         <template if:false={isModeApp}>
-                            <lightning-layout-item padding="around-small" style="width: 20%;">
+                            <lightning-layout-item style="padding-left:5px;">
                                 <h2 style="font-weight: bold; font-size: 1.3em; padding: 5px">
                                     {mainTitle}
                                 </h2>
@@ -54,7 +54,7 @@
                     <!-- OBJECT PICKLIST       -->
                     <!-- --------------------- -->
                     <template if:true={displayObjectNames}>
-                        <lightning-layout-item class={objectlistdropdownstyle} padding="around-small">
+                        <lightning-layout-item class={objectlistdropdownstyle}>
                             <template if:true={typeAheadObjectSearch}>
                                 <c-simpli-u-i-list-views-type-ahead search-type="schema" 
                                                                     label-field-name="Label"
@@ -83,7 +83,7 @@
                     <!-- --------------------- -->
                     <template if:true={displayListViewNames}>
                         <template if:true={selectedObject}>
-                            <lightning-layout-item class={listviewdropdownstyle} style="padding-left:10px;" padding="around-small">
+                            <lightning-layout-item class={listviewdropdownstyle} style="padding-left:5px;">
                                 <template if:true={typeAheadListSearch}>
                                     <c-simpli-u-i-list-views-type-ahead search-type="sobject"
                                                                         label-field-name="simpli_lv__Label__c"
@@ -112,7 +112,7 @@
                     <!-- --------------------- -->
                     <!-- DATA SPINNER          -->
                     <!-- --------------------- -->
-                    <lightning-layout-item padding="around-small">
+                    <lightning-layout-item>
                         <div style="font-size: 1.1rem;">
                             <template if:true={dataSpinner}>
                                 <div class="dataSpinnerHolder">
@@ -128,7 +128,7 @@
                     <template if:true={displayURL}>
                         <template if:true={listViewData}>
                             <template if:true={listViewData.isCoreListView}>
-                                <lightning-layout-item padding="around-small">
+                                <lightning-layout-item style="padding-left:5px;">
                                     <a href={listViewData.coreListViewURL} target="_blank">
                                         <lightning-button-icon title={label.Go_To_Original} 
                                                                 size="medium" 
@@ -143,7 +143,7 @@
                     <!-- REFRESH BUTTON            -->
                     <!-- ------------------------- -->
                     <template if:true={canReprocess}>
-                        <lightning-layout-item padding="around-small">
+                        <lightning-layout-item style="padding-left:5px;">
                             <lightning-button-icon title={refreshTitle} 
                                                 size="medium" 
                                                 icon-name="action:new_task" 
@@ -157,7 +157,7 @@
                     <!-- ------------------------- -->
                     <template if:true={canPin}>
                         <template if:true={listViewData}>
-                            <lightning-layout-item padding="around-small">
+                            <lightning-layout-item style="padding-left:5px;">
                                 <template if:false={isPinned}>
                                     <lightning-button-icon title={label.Pin_List_View}
                                                             size="medium" 
@@ -182,12 +182,12 @@
                     <template if:true={displayRowCount}>
                         <template if:true={listViewData}>
                             <template if:true={displayExportButton}>
-                                <lightning-layout-item title={label.Export_All} padding="around-small" style="display: flex; justify-content: center; align-items: center;">
+                                <lightning-layout-item title={label.Export_All} style="height:32px; padding-left:10px; display: flex; justify-content: center; align-items: center;">
                                     {label.Rows}:&nbsp;<a onclick={handleDownloadData}>{listViewDataRowsSize}</a>
                                 </lightning-layout-item>
                             </template>
                             <template if:false={displayExportButton}>
-                                <lightning-layout-item padding="around-small" style="display: flex; justify-content: center; align-items: center;">
+                                <lightning-layout-item style="height:32px; padding-left:10px; display: flex; justify-content: center; align-items: center;">
                                     {label.Rows}: {listViewDataRowsSize}
                                 </lightning-layout-item>
                             </template>
@@ -200,19 +200,19 @@
                     <template if:true={displaySelectedCount}>
                         <template if:true={listViewData}>
                             <template if:true={displayExportButton}>
-                                <lightning-layout-item title={label.Export_Selected} padding="around-small" style="display: flex; justify-content: center; align-items: center;">
+                                <lightning-layout-item title={label.Export_Selected} style="height:32px; padding-left:10px; display: flex; justify-content: center; align-items: center;">
                                     {label.Selected}:&nbsp;<a onclick={handleSelectedDownloadData}>{selectedRecordCount}</a>
                                 </lightning-layout-item>
                             </template>
                             <template if:false={displayExportButton}>
-                                <lightning-layout-item padding="around-small" style="display: flex; justify-content: center; align-items: center;">
+                                <lightning-layout-item style="height:32px; padding-left:10px; display: flex; justify-content: center; align-items: center;">
                                     {label.Selected}: {selectedRecordCount}
                                 </lightning-layout-item>
                             </template>
                         </template>
                     </template>
 
-                    <lightning-layout-item alignment-bump="left" padding="around-small">
+                    <lightning-layout-item alignment-bump="left">
                         <lightning-layout>
 
                             <!-- ------------------------- -->
@@ -220,7 +220,7 @@
                             <!-- ------------------------- -->
                             <template if:true={displayTextSearch}>
                                 <template if:true={listViewData}>
-                                    <lightning-layout-item padding="horizontal-small">
+                                    <lightning-layout-item style="padding-left:5px;">
                                         <lightning-input placeholder={label.Search_List_Dot}
                                                             type="text"
                                                             value={textSearchText}
@@ -237,7 +237,7 @@
                             <!-- ------------------------- -->
                             <template if:true={canDisplayActions}>
                                 <template if:true={listViewData}>
-                                    <lightning-layout-item padding="horizontal-small">
+                                    <lightning-layout-item style="padding-left:5px;">
                                         <lightning-combobox name="Action List"
                                                             placeholder={label.Select_Action}
                                                             value={label.Select_Action}
@@ -255,7 +255,7 @@
                             <!-- ------------------------- -->
                             <template if:true={listViewData}>
                                 <template if:true={allowRefresh}>
-                                    <lightning-layout-item padding="horizontal-small">
+                                    <lightning-layout-item style="padding-left:5px;">
                                         <template if:true={isRefreshing}>
                                             <lightning-button-icon title={label.Stop_Auto_Refresh} 
                                                                     size="medium" 
@@ -278,7 +278,7 @@
                                 <!-- ------------------------- -->
                                 <template if:true={allowAdmin}>
                                     <template if:false={listViewData.listView.isNonEditable}>
-                                        <lightning-layout-item>
+                                        <lightning-layout-item style="padding-left:5px;">
                                             <lightning-button-icon title={label.List_View_Admin} 
                                                                     size="medium" 
                                                                     icon-name="utility:settings" 
@@ -291,7 +291,7 @@
                         </lightning-layout>
                     </lightning-layout-item>
                 </lightning-layout>
-            </lightning-card>
+            </div>
         </template>
 
         <!-- ---------------------------------------------------------------------------------- -->

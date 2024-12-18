@@ -88,7 +88,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @api excludedRecordPopoverTypes = '';           //Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name.
     @api displayAllRelatedRecords   = false;        //Related List View Mode Only: Indicates whether all records should be displayed or scrolling should be used.
     @api objectList                 = undefined;    //holds the list of objects from which a user can choose one.
-    @api listViewList               = undefined;    //holds the set of list views for the chosen object
+    @api listViewList               = [];          //holds the set of list views for the chosen object
     @api allowImmediateRefresh = false;
     @api immediatelyRefresh = false;
     @api set actionList(value)    
@@ -285,6 +285,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         Refresh, List_View_Admin, Sort_By, Save_All_Data, Reset_All_Data, Save_Row_Data, Search_List_Dot,
         Reset_Row_Data
     };
+
     /*
      * Method which gets called after the class has been instantiated
      * but before it is rendered. We do have access to variables in this method.
@@ -535,6 +536,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'standAloneRendering', status: 'finished' } }));
         this.spinnerOff('handleStandAloneRowData');
     }
+
     handleComponentConfig() {
         try {
             console.log('Component configs retrieved successfully - ' + JSON.stringify(this.componentConfig) + ' size ' + this.componentConfig.length);
@@ -579,6 +581,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Config', 'Error retrieving the user config.', true));
         }
     }
+
     handleUserSortConfigs() {
         try {
             console.log('User sort configs retrieved successful - ' + this.userSortConfigs + ' for ' + this.pageName);
@@ -627,9 +630,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving User Sorting', 'Error retrieving the user sorting config.', true));
         }
     }
+
     createWhereClause(field, operator, values) {
         return { field: field, operator: operator, values: values };
     }
+
     handleTypeAheadWhereClauses() {
         if (!SLVHelper.isEmpty(this.includedObjects)) {
             this.whereClauseObject = this.createWhereClause('simpli_lv__Object_Name__c', 'IN', this.includedObjects);
@@ -643,6 +648,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('whereClauseListView - ' + JSON.stringify(this.whereClauseListView));
         }
     }
+
     /*
      * Used for handling the message channel
      */
@@ -660,6 +666,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             SLVHelper.showErrorMessage(error);
         }
     }
+
     async getListViewActions() {
         console.log('Starting getListViewActions');
         if (this.virtual) {
@@ -673,11 +680,12 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'refreshActions', status: 'finished', listView: this.selectedListView, object: this.selectedObject, count: this.displayedActionList.length } }));
             }).catch(error => {
                 this.objectActionList = undefined;
-                this.spinnerOff('getObjectsList');
+                this.spinnerOff('getListViewActions');
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Actions', 'Error retrieving the list view actions.', true));
             });
         }
     }
+
     handleListViewActions(numSelectedRecords) {
         if (this.objectActionList.length === 0 || this.displayActions === false) {
             this.canDisplayActions = false;
@@ -702,7 +710,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 }
             });
         }
+        console.log('Can display actions - ' + this.canDisplayActions + ' for ' + this.pageName)
+        console.log('Action list size - ' + this.objectActionList.length + ' for ' + this.pageName)
+        console.log('Displayed action list size - ' + this.displayedActionList.length + ' for ' + this.pageName)
     }
+
     async refreshAllListViewData() {
         try {
             this.offset = -1;
@@ -719,6 +731,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             SLVHelper.showErrorMessage(error);
         }
     }
+
     async getListViewDataPage() {
         try {
             console.log(this.pageName + ' CALLOUT - getListViewData(' + this.pageName + ', ' + this.mode + ', ' + this.selectedObject + ', ' + this.selectedListView + ', ' + this.columnSortDataStr + ', ' + this.joinFieldName + ', ' + this.joinData + ', ' + this.offset + ', ' + this.textSearchText + ')');
@@ -848,6 +861,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             });
         }
     }
+
     async getListViewsForObject() {
         if ((this.listViewListObject !== this.selectedObject || this.listviewOffset !== 0) && this.typeAheadListSearch === false) //only get the list views if its for a new object OR we are getting the next batch and we are not doing type ahead
         {
@@ -892,6 +906,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.spinner = false; //cannot use spinnerOff() here as we might be initializing
         }
     }
+
     handleListViewsForObject(result) {
         console.log('Object list view retrieval successful for ' + this.pageName);
                 
@@ -905,6 +920,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.listviewOffset += 15;
             this.getListViewsForObject();
         } else {
+            this.listviewOffset = 0;
             this.listViewList = JSON.parse(JSON.stringify(this.listViewList)); //a hack to force the page to recognize a change to the picklist values
             console.log('Object list view size - ' + this.listViewList.length + ' for ' + this.pageName);
             console.log('Pinned list view      - ' + this.pinnedListView + ' for ' + this.pageName);
@@ -942,6 +958,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.spinnerOff('getListViewsForObject');
         }
     }
+
     /*
      * Method which subscribes this component to a defined message channel. This subscription
      * allows the components to send messages to each other.
@@ -958,6 +975,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             { scope: APPLICATION_SCOPE }
         );
     }
+
     /*
      * Method which unsubscribes this component from any channels. 
      * This method will be called automatically by the SFDC framework.
@@ -966,6 +984,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         unsubscribe(this.subscription);
         this.subscription = null;
     }
+
     /*
      * called when a component within the same APP as this component sends a message that records
      * have just been selected by that component.
@@ -1107,6 +1126,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         downloadElement.click();
         this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'downloadData', status: 'finished', data: dataStr, object: this.selectedObject, listView: this.selectedListView } }));
     }
+
     /*
      * Called when the user clicks the SELECTED data download button.
      * This returns the data for the current list view in CSV format.
@@ -1141,6 +1161,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         downloadElement.click();
         this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'downloadSelectedData', status: 'finished', data: dataStr, object: this.selectedObject, listView: this.selectedListView } }));
     }
+    
     /*
      * Called when a user checks a box next to a record for 
      * selection to be processed. This method is really for
@@ -1955,7 +1976,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                             this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'dataSaved', status: 'finished', rowId: rowId, listView: this.selectedListView, object: this.selectedObject } }));
                             this.refreshAllListViewData();
                         } else {
-                            this.dispatchEvent(SLVHelper.createToast('error', '', 'Error', 'There was a validation exception - ' + result, false));
+                            this.dispatchEvent(SLVHelper.createToast('error', '', 'Error', result, false));
+                            this.spinnerOff('handleRowDataSave');
                         }
                     }).catch(error => {
                         this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'Error saving the record.', true));
@@ -1986,24 +2008,30 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     this.spinnerOff('handleAllRowDataSave');
                 } else {
                     console.log(this.pageName + ' CALLOUT - updateRecords - ' + this.calloutCount++);
-                    updateRecords({ rowData: rowDataStr }).then(() => {
-                        console.log('Save successful for ' + this.pageName);
-                        let rowCount = 0;
-                        if (this.updatedRowData !== undefined) {
-                            rowCount = this.updatedRowData.size;
+                    updateRecords({ rowData: rowDataStr }).then(result => {
+
+                        if (result === '') {
+                            console.log('Save successful for ' + this.pageName);
+                            let rowCount = 0;
+                            if (this.updatedRowData !== undefined) {
+                                rowCount = this.updatedRowData.size;
+                            }
+                            if (rowCount > 0) {
+                                this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', rowCount + ' record(s) saved successfully.', false));
+                                this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'dataSaved', status: 'finished', object: this.selectedObject, listView: this.selectedListView, rowCount: rowCount } }));
+                            }
+                            this.refreshAllListViewData();
+                            if (this.listViewDataRows?.length) {
+                                this.listViewDataRows.forEach(element => {
+                                    element.isEdited = false;
+                                });
+                            }
+                            this.updatedRowData = new Map();
+                            this.isEdited = false;
+                        } else {
+                            this.dispatchEvent(SLVHelper.createToast('error', '', 'Error', result, false));
+                            this.spinnerOff('handleAllRowDataSave');
                         }
-                        if (rowCount > 0) {
-                            this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', rowCount + ' record(s) saved successfully.', false));
-                            this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'dataSaved', status: 'finished', object: this.selectedObject, listView: this.selectedListView, rowCount: rowCount } }));
-                        }
-                        this.refreshAllListViewData();
-                        if (this.listViewDataRows?.length) {
-                            this.listViewDataRows.forEach(element => {
-                                element.isEdited = false;
-                            });
-                        }
-                        this.updatedRowData = new Map();
-                        this.isEdited = false;
                     }).catch(error => {
                         this.dispatchEvent(SLVHelper.createToast('error', error, 'Error', 'Error saving the records.', true));
                         this.spinnerOff('handleAllRowDataSave');
@@ -2215,13 +2243,13 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             const { currentTarget, clientY, clientX } = event;
             const { dataset } = currentTarget;
             const { sfdcId, apiName, labelName } = dataset;
-            if (this.displayRecordPopovers === true) {
+            if (this.displayRecordPopovers === true && this.hoverSFDCId !== sfdcId) {
                 this.hoverSFDCId = sfdcId;
                 this.hoverAPIName = apiName;
                 this.hoverLabelName = labelName;
                 this.hoverIsDisplayed = true;
-                this.hoverPositionTop = clientY - 140;
-                this.hoverPositionLeft = clientX - 1;
+                this.hoverPositionTop = clientY - 170;
+                this.hoverPositionLeft = clientX - 15;
             }
         } catch (error) {
             SLVHelper.showErrorMessage(error);
