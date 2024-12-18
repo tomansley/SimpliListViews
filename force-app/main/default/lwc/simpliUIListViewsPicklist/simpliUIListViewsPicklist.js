@@ -26,6 +26,8 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
     @api fieldLevelHelp = '';         //field level help.
     @api fieldStyle = '';
     @api recordTypeId;                //if a record type exists then it should be provided.
+    @api defaultValue;                //the default value to be displayed.
+    @api picklistValues;              //the picklist values to be displayed if not using an object.field set of values
 
     @track compName;
     @track value;
@@ -77,10 +79,22 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             this.isMultiPicklist = true;
         }
 
-        this.compName = this.rowId + ':' + this.pickListFieldApiName;
+        //if we have options provided to us
+        if (this.picklistValues !== undefined) {
+            this.options = this.picklistValues;
+            this.isOptionsSet = true;
+            this.compName = this.rowId + ':';
+            this.selectedValue(this.defaultValue);
+        
+        //if we are getting the options from an object field.
+        } else {
+            this.compName = this.rowId + ':' + this.pickListFieldApiName;
 
-        if (SLVHelper.isEmpty(this.recordTypeId)) {
-            this.recordTypeId = await getRecordTypeId({ recordId: this.sfdcId });
+            if (SLVHelper.isEmpty(this.recordTypeId)) {
+                console.log('Getting record type for id - ' + this.sfdcId);
+                this.recordTypeId = await getRecordTypeId({ recordId: this.sfdcId });
+            }
+        
         }
 
         console.log('In simpliUIListViewsPicklist.renderedCallback');

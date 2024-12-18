@@ -229,6 +229,7 @@ public with sharing class ListViewActionWrapper {
         public String label;
         public String placeHolderText;
         public Decimal displayOrder;
+        public List<SelectOption> picklistValues;
 
         private Object defaultValue = null;
         public String parentObjType;   //the API name of the object that this field looks up to
@@ -242,6 +243,14 @@ public with sharing class ListViewActionWrapper {
             label             = param.Label__c;
             this.defaultValue = param.Default_Value__c;
             this.paramType    = param.Type__c.toLowerCase();
+
+            if (!String.isEmpty(param.Picklist_Values__c))
+            {
+                picklistValues = new List<SelectOption>();
+                List<String> values = param.Picklist_Values__c.split(',');
+                for (String val : values)
+                    picklistValues.add(new SelectOption(val, val));
+            }
         }
 
         @AuraEnabled(cacheable=true)
@@ -396,6 +405,12 @@ public with sharing class ListViewActionWrapper {
         }
 
         @AuraEnabled(cacheable=true)
+        public List<SelectOption> getPicklistValues()
+        {
+            return picklistValues;
+        }
+
+        @AuraEnabled(cacheable=true)
         public Boolean getIsRichTextArea()
         {
             if (paramType == ListViewHelper.TYPE_RICH_TEXTAREA) return true;
@@ -528,4 +543,25 @@ public with sharing class ListViewActionWrapper {
             return false;    
         }
     }
+
+    /* 
+    * Have to build our own SelectOption object as Lightning cannot use System.SelectOption
+    */
+    public class SelectOption implements Comparable {
+        public SelectOption(String value, String label) {
+            this.value = value;
+            this.label = label;
+        }
+
+        @AuraEnabled
+        public String label { get;set; }
+        @AuraEnabled
+        public String value { get;set; }
+
+        public Integer compareTo(Object compareTo) {
+            SelectOption option2 = (SelectOption) compareTo;
+            return label.compareTo(option2.label);
+        }
+    }
+
 }
