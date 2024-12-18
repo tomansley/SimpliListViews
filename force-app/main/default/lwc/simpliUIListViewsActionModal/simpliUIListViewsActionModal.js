@@ -21,14 +21,15 @@ export default class simpliUIListViewsActionModal extends LightningElement {
     @api showModal;                     //indicates whether this modal dialog should be displayed or not.
     @api actionApiName;                 //the action that was clicked on.
     @api recordIds;                     //the record ids of the records to be updated
-    @api virtual = false;      //indicates whether the list view is displaying data virtually from another org.
+    @api virtual = false;               //indicates whether the list view is displaying data virtually from another org.
     @track recordCount;                 //the number of record Ids passed in. Only used in the UI.
     @track listViewAction;              //holds the action data for the provided action API name.
-    @track hasParameters = true;       //indicates whether the action has parameters
+    @track hasParameters = true;        //indicates whether the action has parameters
     @track requestDataMap = new Map();  //holds the map of field/value request data
-    @track spinner = false;      //identifies if the spinner should be displayed or not.
+    @track spinner = false;             //identifies if the spinner should be displayed or not.
     @track isInitialized = false;
-    @track calloutCount = 1;          //indicates the number of callouts made for this component
+    @track calloutCount = 1;            //indicates the number of callouts made for this component
+    @track recordId;                    //if there is only one record Id its put into this variable
 
     label = { Close, Value, Field_Name, Process, Cancel, Continue_Processing, Selected_Records_With, Action };
 
@@ -44,6 +45,7 @@ export default class simpliUIListViewsActionModal extends LightningElement {
             this.recordCount = parsedIds.length;
 
             if (this.recordCount === 1) {
+                this.recordId = parsedIds[0];
                 this.spinner = true;
                 console.log('simpliUIListViewsActionModal CALLOUT - getActionAndData - ' + this.calloutCount++);
                 getListViewActionAndData({ actionName: this.actionApiName, dataIds: this.recordIds })

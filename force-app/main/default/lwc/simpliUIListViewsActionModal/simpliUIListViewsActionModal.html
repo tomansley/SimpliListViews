@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 09-18-2024
+  @last modified on  : 12-05-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -134,11 +134,12 @@
                                                             <div id={param.aPIName} title={param.value}>
                                                                 <c-simpli-u-i-list-views-picklist type="picklist"
                                                                                                 row-id={param.aPIName} 
-                                                                                                sfdc-id=""
+                                                                                                sfdc-id={recordId}
                                                                                                 record-type-id=""
                                                                                                 object-api-name={listViewAction.objectType} 
                                                                                                 selected-value={param.value}  
                                                                                                 pick-list-field-api-name={param.aPIName}
+                                                                                                picklist-values={param.picklistValues}
                                                                                                 onpicklistchange={handleValueUpdate}
                                                                                                 variant=label-hidden>
                                                                 </c-simpli-u-i-list-views-picklist>
