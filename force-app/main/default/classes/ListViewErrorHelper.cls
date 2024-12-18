@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 05-28-2024
+ * @Last Modified On   : 12-05-2024
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -67,17 +67,20 @@ global with sharing class ListViewErrorHelper {
     }
 
     @future
-    global static void processFutureLogs(String jsonString)
+    private static void processFutureLogsFuture(String jsonString)
     {
         List<List_View_Error__c> logs = (List<List_View_Error__c>) JSON.deserialize(jsonString, List<List_View_Error__c>.class);
         HelperDatabase.insertRecords(logs);
     }
 
-    /*
-     * Method to create a usage error record which can be used for debugging purposes.
-     */
+    global static void processFutureLogs(String jsonString)
+    {
+        if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
+            processFutureLogsFuture(jsonString);
+    }
+
     @future
-    global static void createFutureUsageError(String message)
+    private static void createFutureUsageErrorFuture(String message)
     {
         System.debug(LoggingLevel.ERROR, 'Error - ' + message);
         if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
@@ -90,6 +93,14 @@ global with sharing class ListViewErrorHelper {
     
             System.debug(LoggingLevel.ERROR, 'Error record created - ' + error);
         }
+    }
+    /*
+     * Method to create a usage error record which can be used for debugging purposes.
+     */
+    global static void createFutureUsageError(String message)
+    {
+        if (Limits.getFutureCalls() < Limits.getLimitFutureCalls())
+            createFutureUsageErrorFuture(message);
     }
 
     global static void createNonFutureUsageError(String message) 
