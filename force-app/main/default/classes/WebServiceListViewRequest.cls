@@ -3,6 +3,15 @@ global with sharing class WebServiceListViewRequest {
 
     /*
      * Web service which gets all simpli list views
+
+     {"parameters":{"valuesMap":"AllOrNone$$true$$$DMLType$$insert","action":"Import:simpli_lv_ent.ListViewActionImportAll:Core:null","recordIds":"001aj00000JB03OAAT,001aj00000JB03QAAT,001aj00000JB03NAAT"},"name":"runAction"}
+     {"parameters":{"valuesMap":"AllOrNone$$true$$$DMLType$$insert","action":"Delete:ListViewActionDelete:Core:null","recordIds":"001aj00000JB03OAAT,001aj00000JB03QAAT,001aj00000JB03NAAT"},"name":"runAction"}
+
+        String jsonStr = '{"parameters":{"valuesMap":"AllOrNone$$true$$$DMLType$$insert","action":"Delete:ListViewActionDelete:Core:null","recordIds":"001aj00000JB03OAAT,001aj00000JB03QAAT,001aj00000JB03NAAT"},"name":"runAction"}';
+        RestContext.request = new RestRequest();
+        RestContext.request.requestBody = Blob.valueOf(jsonStr);
+        WebServiceListViewRequest.makeRequest();
+
      */
     @HttpPost
     global static Response makeRequest()
@@ -64,14 +73,14 @@ global with sharing class WebServiceListViewRequest {
             List<ListViewController.SelectOption> options = ListViewController.getObjectListViews(request.parameters.get('objectName'));
             resp.objectListViews = options;
 */
-        } else if (request.name == 'runAction') {
-            String response = ListViewActionHelper.processAction(request.parameters.get('action'), 
-                                                                 request.parameters.get('recordIds'), 
-                                                                 request.parameters.get('valuesMap'));
+        } else if (request.name == 'runAction') { 
+            String response = ListViewActionHelper.processVirtualAction(request.parameters.get('action'), 
+                                                                        request.parameters.get('recordIds'), 
+                                                                        request.parameters.get('valuesMap'));
             //if we have an error then wrapit in a JSON
             if (response.startsWith(ListViewAction.RESULT_ERROR + ':'))
                 response = '{"error":"' + response.removeStart(ListViewAction.RESULT_ERROR + ':') + '"}';
-            response = response.replace('"', '\\"'); //need to encode so that it can be deserialized on the other side
+            //response = response.replace('"', '\\"'); //need to encode so that it can be deserialized on the other side
             resp.runActionResponse = '{"response":"' + response + '"}';
         }
 
@@ -82,7 +91,6 @@ global with sharing class WebServiceListViewRequest {
     global class Request {
         global String name {get; set;}
         global Map<String, String> parameters {get; set;}
-
         global Request() {
             parameters = new Map<String, String>();
         }
