@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-20-2024
+ * @last modified on  : 12-02-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -125,7 +125,8 @@ public with sharing class ListViewController
         try {
             isInitialized = Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam('IsInitialized'));
         } catch(Exception e) {
-            //no global config!
+            ListViewHelper.insertCoreGlobalConfig();
+            isInitialized = true;
         }
         ListViewErrorHelper.processLogs(true);
 

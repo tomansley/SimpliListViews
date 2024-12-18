@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 11-26-2024
+ * @Last Modified On   : 12-02-2024
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -27,6 +27,7 @@ global with sharing class ListViewConfigHelper {
     public static final String OPER_GREATER = 'Greater Than';
     public static final String OPER_LESS = 'Less Than';
     public static final String OPER_CONTAINS = 'Contains';
+    public static final String OPER_DOES_NOT_CONTAIN = 'Does Not Contain';
 
     public static final String TODAY = 'Today';
     public static final String TOMORROW = 'Tomorrow';
@@ -418,6 +419,40 @@ global with sharing class ListViewConfigHelper {
         return config;
     }
     
+    /**
+    * @description Method to get a shortened global config FROM THE DATABASE DIRECTLY
+    *              We need a way to circumvent forcing a global config create when searching
+    *              for the config. This method should only get called by the core global config
+    *              initialization method. The method only returns basic data to determine if the
+    *              global config and parameters exist.
+    * @author tom@ansleyllc.com | 12-02-2024 
+    * @return List_View_Config__c the global config if one exists.
+    **/
+    public static List_View_Config__c forceGetGlobalConfig()
+    {
+        System.debug(LoggingLevel.FINE, 'Starting forceGetGlobalConfig()');
+
+        SObjectAccessDecision dec = 
+            Security.stripInaccessible(AccessType.READABLE,
+                [SELECT Name,
+                        (SELECT Parameter_Name__c,
+                                Parameter_Value__c
+                        FROM List_View_Config_Parameters__r
+                        ORDER BY Parameter_Label__c)
+                        FROM List_View_Config__c
+                    WHERE Name = 'All'
+                        AND List_View_Object__c = 'All']);
+
+        List<List_View_Config__c> configs = (List<List_View_Config__c>) dec.getRecords();
+
+        if (configs.size() > 1)
+            throw new ListViewException('Found more than one global config!');
+        else if (configs.size() == 0)
+            return null;
+        System.debug(LoggingLevel.FINE, 'Returning configs - ' + configs[0]);
+        return configs[0];
+    }
+
     /*
      * 
        delete [SELECT Id FROM List_View_Config__c WHERE CreatedDate > 2021-10-12T12:00:00Z];
@@ -801,7 +836,12 @@ global with sharing class ListViewConfigHelper {
                     || type == ListViewHelper.TYPE_PERCENT
                     || type == ListViewHelper.TYPE_CURRENCY) throw new ListViewException('Cannot use "Contains" operator on DateTime, Date, Time, Percent or Currency types');
                 if (String.valueOf(value).contains(condition.Value__c)) return condition.Highlight_Color__c;
+
+            //DOES NOT CONTAIN
+            } else if (condition.Operator__c == OPER_DOES_NOT_CONTAIN) {
+                if (!String.valueOf(value).contains(condition.Value__c)) return condition.Highlight_Color__c;
             }
+
         } catch (Exception e) {
             String message = 'Exception during ListViewController.validateFieldCondition(' + value + ',' + type + ',' + condition + ')  ' + ListViewException.getExtendedString(e);
             if (!HelperLimits.hasReachedLimit('DMLStatements'))

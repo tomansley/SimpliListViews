@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-17-2024
+ * @last modified on  : 12-03-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -349,19 +349,44 @@ global class ListViewAdminControllerTest {
     @IsTest
     static void createGlobalConfigTest()
     {
+        List_View_Config__c orgWideConfig = ListViewConfigHelper.getListViewConfig('All', 'All');
+        delete orgWideConfig;
+        
+        ListViewHelper.clearCache();
+
         Test.startTest();
+
             Boolean result = ListViewAdminController.createGlobalConfig();
             System.assertEquals(true, result);
 
-            //make sure it cannot run twice!
-            try {
-                result = ListViewAdminController.createGlobalConfig();
-            } catch (Exception e) {
-                result = false;
+            orgWideConfig = ListViewConfigHelper.getListViewConfig('All', 'All');
+            System.assertNotEquals(null, orgWideConfig);
+
+            //check that IsInitialized exists
+            List_View_Config_Parameter__c isInitialized;
+            for (List_View_Config_Parameter__c param: orgWideConfig.List_View_Config_Parameters__r)
+            {
+                if (param.Parameter_Name__c == 'IsInitialized')
+                    isInitialized = param;
             }
+            System.assertNotEquals(null, isInitialized);
+
+            //delete the IsInitialized param
+            delete isInitialized;
+
+            result = ListViewAdminController.createGlobalConfig();
+            System.assertEquals(true, result);
+
+            //check that IsInitialized has been recreated
+            for (List_View_Config_Parameter__c param: orgWideConfig.List_View_Config_Parameters__r)
+            {
+                if (param.Parameter_Name__c == 'IsInitialized')
+                    isInitialized = param;
+            }
+            System.assertNotEquals(null, isInitialized);
+
         Test.stopTest();
 
-        System.assertEquals(false, result);
     }
 
     @IsTest

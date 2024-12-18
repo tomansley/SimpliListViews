@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 07-02-2024
+ * @last modified on  : 11-26-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -45,16 +45,15 @@ public with sharing class ListViewAdminController {
         try {
             getOrgWideConfig();
         } catch (Exception e) {
-            canCreate = true;
+            ListViewErrorHelper.createFutureUsageError('The global config could not be created!'); 
+            canCreate = false;
         }
 
-        if (!canCreate)
-            throw new ListViewException('global config already exists!');
-        
         try {
-
-            ListViewHelper.insertCoreGlobalConfig();
-            isCreated = true;
+            if (!canCreate) {
+                ListViewHelper.insertCoreGlobalConfig();
+                isCreated = true;
+            }
         } catch (Exception e) {
             throw new ListViewException(ListViewException.getExtendedString(e));
         }
