@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 07-31-2024
+ * @last modified on  : 12-17-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -264,7 +264,8 @@ global with sharing class ListViewActionHelper {
                                 Type__c,
                                 Default_Value__c,
                                 Placeholder_Text__c,
-                                Lookup_Type__c
+                                Lookup_Type__c,
+                                Picklist_Values__c
                         FROM List_View_Action_Parameters__r
                         ORDER BY Display_Order__c NULLS LAST)
                 FROM List_View_Action__c
@@ -301,8 +302,9 @@ global with sharing class ListViewActionHelper {
                             Type__c,
                             Default_Value__c,
                             Placeholder_Text__c,
-                            Lookup_Type__c
-                    FROM List_View_Action_Parameters__r
+                            Lookup_Type__c,
+                            Picklist_Values__c
+                FROM List_View_Action_Parameters__r
                     ORDER BY Display_Order__c NULLS LAST)
             FROM List_View_Action__c
             WHERE Id IN :actionIds
@@ -342,7 +344,8 @@ global with sharing class ListViewActionHelper {
                                 Type__c,
                                 Default_Value__c,
                                 Placeholder_Text__c,
-                                Lookup_Type__c
+                                Lookup_Type__c,
+                                Picklist_Values__c
                          FROM List_View_Action_Parameters__r
                          ORDER BY Display_Order__c NULLS LAST)
                 FROM List_View_Action__c
@@ -382,7 +385,8 @@ global with sharing class ListViewActionHelper {
                                 Type__c,
                                 Default_Value__c,
                                 Placeholder_Text__c,
-                                Lookup_Type__c
+                                Lookup_Type__c,
+                                Picklist_Values__c
                          FROM List_View_Action_Parameters__r
                          ORDER BY Display_Order__c NULLS LAST)
                 FROM List_View_Action__c
@@ -403,7 +407,7 @@ global with sharing class ListViewActionHelper {
     **/
     public static List<ListViewActionWrapper> getListViewActions(String objectType, String listViewName, String componentName)
     {
-        debugString += 'getListViewActions(' + objectType + ', ' + listViewName + ')';
+        debugString += 'getListViewActions(' + objectType + ', ' + listViewName + ')\n';
 
         List<ListViewActionWrapper> actions = new List<ListViewActionWrapper>();
 
@@ -422,7 +426,7 @@ global with sharing class ListViewActionHelper {
         {
             List_View_Action__c action = lvActions.get(actionName);
             if (canPerformAction(objectType, componentName, action))
-                actions.add(new ListViewActionWrapper(action));         
+                actions.add(new ListViewActionWrapper(action));       
         }
 
         System.debug(LoggingLevel.DEBUG, debugString);
@@ -447,16 +451,16 @@ global with sharing class ListViewActionHelper {
         if (listview.RecordTypeId == ListViewHelper.customRTId)
         {
             rt = ListViewActionHelper.customRTId;
-            debugString += 'List View RT - Custom(' + rt + '), ';
+            debugString += 'List View RT - Custom(' + rt + '), \n';
         } else {
-            debugString += 'List View RT - Core(' + rt + '), ';
+            debugString += 'List View RT - Core(' + rt + '), \n';
         }
 
         Set<String> subTypes = new Set<String>();
         if (listview.RecordTypeId == ListViewHelper.customRTId)
             subTypes.add(listview.Subtype__c);
 
-        debugString += 'List View Subtypes - ' + subTypes + ', ';
+        debugString += 'List View Subtypes - ' + subTypes + ', \n';
 
             //get list view data
             SObjectAccessDecision dec = 
@@ -485,7 +489,8 @@ global with sharing class ListViewActionHelper {
                                 Type__c,
                                 Default_Value__c,
                                 Placeholder_Text__c,
-                                Lookup_Type__c
+                                Lookup_Type__c,
+                                Picklist_Values__c
                         FROM List_View_Action_Parameters__r
                         ORDER BY Display_Order__c NULLS LAST)
                     FROM List_View_Action__c
@@ -499,7 +504,7 @@ global with sharing class ListViewActionHelper {
 
         List<List_View_Action__c> actions = (List<List_View_Action__c>) dec.getRecords();
 
-        debugString += 'List views returned - ' + actions.size() + ', ';
+        debugString += 'List views returned - ' + actions.size() + ', \n';
 
         Map<String, List_View_Action__c> actionsByName = new Map<String, List_View_Action__c>();
         for (List_View_Action__c action: actions)
@@ -527,7 +532,7 @@ global with sharing class ListViewActionHelper {
         if (!String.isEmpty(action.Component_Name__c) && action.Component_Name__c != componentName)
             result = false;
 
-        debugString += 'canPerformAction - ' + result + ' - ' + objectType + ' - ' + componentName + ' - ' + action.Primary_Key__c + ', ';
+        debugString += 'canPerformAction - ' + result + ' - ' + objectType + ' - ' + componentName + ' - ' + action.Primary_Key__c + ', \n';
         return result;
     }
 
@@ -540,10 +545,84 @@ global with sharing class ListViewActionHelper {
         return actionsJSON;
     }
 
+    /**
+    * @description Method to process an action given the action key, data ids and values map.
+    *              Note that the valuesMap is a delimited string. Example - AllOrNone$$true$$$DMLType$$insert
+    *              The records are separated by $$$ and the key/value pairs are separated by $$.
+    * @author tom@ansleyllc.com | 12-17-2024 
+    * @param actionKey the primary key of the action
+    * @param dataIds a comma delimited set of record ids to be passed into the action.
+    * @param valuesMap any key/value pairs passed in from the web request to be used during processing.
+    * @return String the result of the action. Ok: = good.
+
+        ListViewActionHelper.processVirtualAction('Delete:ListViewActionDelete:Core:null', '001aj00000JB03OAAT,001aj00000JB03QAAT,001aj00000JB03NAAT', 'AllOrNone$$true$$$DMLType$$insert');
+    **/
+    public static String processVirtualAction(String actionKey, String dataIds, String valuesMap)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewActionHelper.processVirtualAction(' + actionKey + ', ' + dataIds + ',' + valuesMap + ')');
+
+        //get the list of Ids of the records that are to be processed.
+        List<String> listIds = new List<String>();
+        if (!String.isBlank(dataIds))
+            listIds = dataIds.split(',');
+
+        System.debug(LoggingLevel.DEBUG, 'List Ids - ' + listIds);
+
+        //get the field/value pairs of the valuesMap. Example - AllOrNone$$true$$$DMLType$$insert
+        Map<String, Object> mapValues = new Map<String, Object>();
+        if (!String.isBlank(valuesMap))
+        {
+            List<String> listValues = valuesMap.split('\\$\\$\\$');
+            for (String keyValue: listValues)
+            {
+                System.debug(LoggingLevel.DEBUG, 'KEY VALUE - ' + keyValue);
+                List<String> keyValues = keyValue.split('\\$\\$');
+                mapValues.put(keyValues[0], keyValues[1]);
+                System.debug(LoggingLevel.DEBUG, 'Map Values - ' + keyValues[0] + ', ' + keyValues[1]);
+            }
+        }
+
+        return processAction(actionKey, listIds, mapValues);
+    }
+
+    /**
+    * @description Method to process an action given the action key, data ids and values map.
+    *              Note that the valuesMap is a JSON string.
+    * @author tom@ansleyllc.com | 12-17-2024 
+    * @param actionKey the primary key of the action
+    * @param dataIds a comma delimited set of record ids to be passed into the action.
+    * @param valuesMap any key/value pairs passed in from the UI or action to be used during processing.
+    * @return String the result of the action. Ok: = good.
+
+        ListViewActionHelper.processAction('Delete:ListViewActionDelete:Core:null', '001aj00000JB03OAAT,001aj00000JB03QAAT,001aj00000JB03NAAT', '[["AllOrNone","true"],["DMLType","insert"]]');
+    **/
     global static String processAction(String actionKey, String dataIds, String valuesMap)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewActionHelper.processAction(' + actionKey + ', ' + dataIds + ',' + valuesMap + ')');
     
+        List<Object> listIds = new List<Object>();
+        if (!String.isBlank(dataIds))
+            listIds = (List<Object>) JSON.deserializeUntyped(dataIds);
+        List<String> listStrIds = new List<String>();
+        for (Object listId: listIds)
+            listStrIds.add((String) listId);
+
+        //get the field/value pairs of the update data
+        List<Object> listValues = new List<Object>();
+        if (!String.isBlank(valuesMap))
+            listValues = (List<Object>) JSON.deserializeUntyped(valuesMap);
+        Map<String, Object> mapValues = new Map<String, Object>();
+        for (Object key: listValues)
+        {
+            List<Object> keyValues = (List<Object>) key;
+            mapValues.put( (String) keyValues[0], keyValues[1]);
+        }
+
+        return processAction(actionKey, listStrIds, mapValues);
+    }
+
+    private static String processAction(String actionKey, List<String> dataIds, Map<String, Object> valuesMap)
+    {
         String responseStr = ListViewAction.RESULT_OK;
         List_View_Action__c action = null;
 
@@ -567,25 +646,6 @@ global with sharing class ListViewActionHelper {
             return responseStr; 
         }
         
-        //get the list of Ids of the records that are to be processed.
-        List<Object> listIds = new List<Object>();
-        if (!String.isBlank(dataIds))
-            listIds = (List<Object>) JSON.deserializeUntyped(dataIds);
-        List<String> listStrIds = new List<String>();
-        for (Object listId: listIds)
-            listStrIds.add((String) listId);
-
-        //get the field/value pairs of the update data
-        List<Object> listValues = new List<Object>();
-        if (!String.isBlank(valuesMap))
-            listValues = (List<Object>) JSON.deserializeUntyped(valuesMap);
-        Map<String, Object> mapValues = new Map<String, Object>();
-        for (Object key: listValues)
-        {
-            List<Object> keyValues = (List<Object>) key;
-            mapValues.put( (String) keyValues[0], keyValues[1]);
-        }
-
         //create the object from configuration.
         ListViewAction actionJob = null;
         
@@ -603,7 +663,7 @@ global with sharing class ListViewActionHelper {
 
         //process the object
         try {
-            responseStr = actionJob.process(listStrIds, mapValues);
+            responseStr = actionJob.process(dataIds, valuesMap);
         } catch (Exception e) {
             responseStr = ListViewAction.RESULT_ERROR + ':' + e.getMessage();
             String message = 'Exception during ListViewActionHelper.processAction(' + actionKey + ', ' + dataIds + ', ' + valuesMap + ')  ' + ListViewException.getExtendedString(e);
@@ -612,8 +672,10 @@ global with sharing class ListViewActionHelper {
         
         ListViewErrorHelper.processLogs(true);
 
-        ListViewUserActivityHelper.registerAction('', '', actionKey, action.Id, listIds.size());
+        ListViewUserActivityHelper.registerAction('', '', actionKey, action.Id, dataIds.size());
 
         return responseStr;
+
     }
+
 }
