@@ -205,6 +205,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 { label: 'Greater Than', value: 'Greater Than' },
                 { label: 'Less Than', value: 'Less Than' },
                 { label: 'Contains', value: 'Contains' },
+                { label: 'Does Not Contain', value: 'Does Not Contain' },
             ];
         }
     }
