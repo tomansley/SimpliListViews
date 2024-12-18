@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-20-2024
+ * @last modified on  : 12-03-2024
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -2300,254 +2300,361 @@ global with sharing class ListViewHelper
     //---------------------------------------
     public static List_View_Config__c insertCoreGlobalConfig()
     {
-        List_View_Config__c config = new List_View_Config__c();
-        config.Name                = 'All';
-        config.List_View_Object__c = 'All';
-        config.List_View_Label__c   = 'Org Wide Configuration';
-        config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
-        
-        config = (List_View_Config__c) HelperDatabase.insertRecord(config);
+        //check whether some of the core config exists already.
+        List_View_Config__c config = ListViewConfigHelper.forceGetGlobalConfig();
+
+        Boolean hasConfig = config == null ? false : true;
+
+        if (!hasConfig) {
+            config = new List_View_Config__c();
+            config.Name                = 'All';
+            config.List_View_Object__c = 'All';
+            config.List_View_Label__c   = 'Org Wide Configuration';
+            config.Primary_Key__c      = config.List_View_Object__c + ':' + config.Name;
+            
+            config = (List_View_Config__c) HelperDatabase.insertRecord(config);
+        }
 
         List<List_View_Config_Parameter__c> params = new List<List_View_Config_Parameter__c>();
-        List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'ListViewObjects';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param.Parameter_Value__c  = '';
-        param.Parameter_Label__c  = 'List View Objects';
-        params.add(param);
+        Map<String, List_View_Config_Parameter__c> paramsByName = new Map<String, List_View_Config_Parameter__c>();
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'IncludedObjectTypes';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param.Parameter_Value__c  = '';
-        param.Parameter_Label__c  = 'Included Object Types';
-        params.add(param);
+        System.debug(LoggingLevel.DEBUG, 'hasConfig - ' + hasConfig);
+        System.debug(LoggingLevel.DEBUG, 'config - ' + config);
+        if (hasConfig) {
+            for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
+                paramsByName.put(param.Parameter_Name__c, param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'ExcludedObjectTypes';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution,VoiceCall,VoiceCallChangeEvent,VoiceCallRecordingShare,Shift,ShiftFeed,ShiftHistory,ShiftShare,ShiftStatus,MessagingChannel,MsgChannelLanguageKeyword,MessagingChannelSkill,MessagingDeliveryError,MessagingLink,MessagingSession,MessagingSessionFeed,MessagingSessionHistory,MessagingSessionShare,MessagingTemplate,MessagingEndUser,MessagingEndUserHistory,MessagingEndUserShare,MessagingConfiguration,CommSubscription,CommSubscriptionHistory,CommSubscriptionChannelType,CommSubscriptionChannelTypeHistory,CommSubscriptionChannelTypeFeed,CommSubscriptionChannelTypeShare,CommSubscriptionConsent,CommSubscriptionConsentHistory,CommSubscriptionConsentFeed,CommSubscriptionConsentShare,CommSubscriptionFeed,CommSubscriptionShare,CommSubscriptionTiming,CommSubscriptionTimingHistory,CommSubscriptionTimingFeed,AuthorizationForm,AuthorizationFormConsent,AuthorizationFormConsentChangeEvent,AuthorizationFormConsentHistory,AuthorizationFormConsentShare,AuthorizationFormDataUse,AuthorizationFormDataUseHistory,AuthorizationFormDataUseShare,AuthorizationFormHistory,AuthorizationFormShare,AuthorizationFormText,AuthorizationFormTextHistory';
-        param.Parameter_Label__c  = 'Excluded Object Types';
-        params.add(param);
+        List_View_Config_Parameter__c param;
+        if (!paramsByName.containsKey('ListViewObjects'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'ListViewObjects';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+            param.Parameter_Value__c  = '';
+            param.Parameter_Label__c  = 'List View Objects';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'DisplayActionsButton';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Display Actions Button';
-        params.add(param);
+        if (!paramsByName.containsKey('IncludedObjectTypes'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'IncludedObjectTypes';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+            param.Parameter_Value__c  = '';
+            param.Parameter_Label__c  = 'Included Object Types';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'AllowAdmin';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Display Admin Button';
-        params.add(param);
+        if (!paramsByName.containsKey('ExcludedObjectTypes'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'ExcludedObjectTypes';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+            param.Parameter_Value__c  = 'FlowInterview,CollaborationGroup,Idea,OperatingHours,ServiceAppointment,WorkType,Solution,VoiceCall,VoiceCallChangeEvent,VoiceCallRecordingShare,Shift,ShiftFeed,ShiftHistory,ShiftShare,ShiftStatus,MessagingChannel,MsgChannelLanguageKeyword,MessagingChannelSkill,MessagingDeliveryError,MessagingLink,MessagingSession,MessagingSessionFeed,MessagingSessionHistory,MessagingSessionShare,MessagingTemplate,MessagingEndUser,MessagingEndUserHistory,MessagingEndUserShare,MessagingConfiguration,CommSubscription,CommSubscriptionHistory,CommSubscriptionChannelType,CommSubscriptionChannelTypeHistory,CommSubscriptionChannelTypeFeed,CommSubscriptionChannelTypeShare,CommSubscriptionConsent,CommSubscriptionConsentHistory,CommSubscriptionConsentFeed,CommSubscriptionConsentShare,CommSubscriptionFeed,CommSubscriptionShare,CommSubscriptionTiming,CommSubscriptionTimingHistory,CommSubscriptionTimingFeed,AuthorizationForm,AuthorizationFormConsent,AuthorizationFormConsentChangeEvent,AuthorizationFormConsentHistory,AuthorizationFormConsentShare,AuthorizationFormDataUse,AuthorizationFormDataUseHistory,AuthorizationFormDataUseShare,AuthorizationFormHistory,AuthorizationFormShare,AuthorizationFormText,AuthorizationFormTextHistory';
+            param.Parameter_Label__c  = 'Excluded Object Types';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Display List View Reprocessing Button';
-        params.add(param);
+        if (!paramsByName.containsKey('DisplayActionsButton'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'DisplayActionsButton';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Display Actions Button';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'DisplayOriginalListViewButton';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Display Original List View Button';
-        params.add(param);
+        if (!paramsByName.containsKey('AllowAdmin'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'AllowAdmin';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Display Admin Button';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'DisplaySelectedCount';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Display Selected Count';
-        params.add(param);
+        if (!paramsByName.containsKey('DisplayListViewReprocessingButton'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'DisplayListViewReprocessingButton';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Display List View Reprocessing Button';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'AllowDataExport';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Allow Data Export';
-        params.add(param);
+        if (!paramsByName.containsKey('DisplayOriginalListViewButton'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'DisplayOriginalListViewButton';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Display Original List View Button';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'AllowAutomaticDataRefresh';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Allow Automatic Data Refresh';
-        params.add(param);
+        if (!paramsByName.containsKey('DisplaySelectedCount'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'DisplaySelectedCount';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Display Selected Count';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'DisplayRowCount';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Display Row Count';
-        params.add(param);
+        if (!paramsByName.containsKey('AllowDataExport'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'AllowDataExport';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Allow Data Export';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'AllowImmediateRefresh';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.FFALSE;
-        param.Parameter_Label__c  = 'Allow Immediate Refresh';
-        params.add(param);
+        if (!paramsByName.containsKey('AllowAutomaticDataRefresh'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'AllowAutomaticDataRefresh';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Allow Automatic Data Refresh';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'MaxRowsDisplayed';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
-        param.Parameter_Value__c  = '2500';
-        param.Parameter_Label__c  = 'Max Rows Displayed';
-        params.add(param);
+        if (!paramsByName.containsKey('DisplayRowCount'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'DisplayRowCount';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Display Row Count';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'QueryPagingSize';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
-        param.Parameter_Value__c  = '250';
-        param.Parameter_Label__c  = 'Query Paging Size';
-        params.add(param);
+        if (!paramsByName.containsKey('AllowImmediateRefresh'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'AllowImmediateRefresh';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Allow Immediate Refresh';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'IsInitialized';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.FFALSE;
-        param.Parameter_Label__c  = 'Is Initialized';
-        params.add(param);
+        if (!paramsByName.containsKey('MaxRowsDisplayed'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'MaxRowsDisplayed';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
+            param.Parameter_Value__c  = '2500';
+            param.Parameter_Label__c  = 'Max Rows Displayed';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'AllowInlineEditing';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Allow Inline Editing';
-        params.add(param);
+        if (!paramsByName.containsKey('QueryPagingSize'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'QueryPagingSize';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
+            param.Parameter_Value__c  = '250';
+            param.Parameter_Label__c  = 'Query Paging Size';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'DisplayAllRelatedRecords';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.FFALSE;
-        param.Parameter_Label__c  = 'Display All Related Records';
-        params.add(param);
+        if (!paramsByName.containsKey('IsInitialized'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'IsInitialized';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Is Initialized';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'AllowHorizontalScrolling';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.FFALSE;
-        param.Parameter_Label__c  = 'Allow Horizontal Scrolling';
-        params.add(param);
+        if (!paramsByName.containsKey('AllowInlineEditing'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'AllowInlineEditing';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Allow Inline Editing';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'DisplayTextSearch';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Display Text Search';
-        params.add(param);
+        if (!paramsByName.containsKey('DisplayAllRelatedRecords'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'DisplayAllRelatedRecords';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Display All Related Records';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'DisplayRecordPopovers';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Display Record Popovers';
-        params.add(param);
+        if (!paramsByName.containsKey('AllowHorizontalScrolling'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'AllowHorizontalScrolling';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Allow Horizontal Scrolling';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'TypeAheadListSearch';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.FFALSE;
-        param.Parameter_Label__c  = 'Use Type-Ahead For List View Search';
-        params.add(param);
+        if (!paramsByName.containsKey('DisplayTextSearch'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'DisplayTextSearch';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Display Text Search';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'TypeAheadObjectSearch';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.FFALSE;
-        param.Parameter_Label__c  = 'Use Type-Ahead For Object Search';
-        params.add(param);
+        if (!paramsByName.containsKey('DisplayRecordPopovers'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'DisplayRecordPopovers';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Display Record Popovers';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'ExcludedRecordPopoverTypes';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param.Parameter_Value__c  = '';
-        param.Parameter_Label__c  = 'Excluded Record Popover Types';
-        params.add(param);
+        if (!paramsByName.containsKey('TypeAheadListSearch'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'TypeAheadListSearch';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Use Type-Ahead For List View Search';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'Debug';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.FFALSE;
-        param.Parameter_Label__c  = 'Debug';
-        params.add(param);
+        if (!paramsByName.containsKey('TypeAheadObjectSearch'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'TypeAheadObjectSearch';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Use Type-Ahead For Object Search';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'ProcessingSize';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
-        param.Parameter_Value__c  = '40';
-        param.Parameter_Label__c  = 'List View Processing Batch Size';
-        params.add(param);
+        if (!paramsByName.containsKey('ExcludedRecordPopoverTypes'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'ExcludedRecordPopoverTypes';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+            param.Parameter_Value__c  = '';
+            param.Parameter_Label__c  = 'Excluded Record Popover Types';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'RefreshJob';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
-        param.Parameter_Label__c  = 'Scheduled Refresh Job';
-        params.add(param);
+        if (!paramsByName.containsKey('Debug'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'Debug';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Debug';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'ExcludedListViews';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
-        param.Parameter_Value__c  = '';
-        param.Parameter_Label__c  = 'Excluded List Views';
-        params.add(param);
+        if (!paramsByName.containsKey('ProcessingSize'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'ProcessingSize';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
+            param.Parameter_Value__c  = '40';
+            param.Parameter_Label__c  = 'List View Processing Batch Size';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'AddObjNameOnLookupLabels';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.FFALSE;
-        param.Parameter_Label__c  = 'Add Object Name On Lookup Labels';
-        params.add(param);
+        if (!paramsByName.containsKey('RefreshJob'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'RefreshJob';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+            param.Parameter_Value__c  = HelperScheduler.NOT_SCHEDULED;
+            param.Parameter_Label__c  = 'Scheduled Refresh Job';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'UseSimpleSorting';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Use Standard Single Column Sorting';
-        params.add(param);
+        if (!paramsByName.containsKey('ExcludedListViews'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'ExcludedListViews';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_STRING;
+            param.Parameter_Value__c  = '';
+            param.Parameter_Label__c  = 'Excluded List Views';
+            params.add(param);
+        }
 
-        param = new List_View_Config_Parameter__c();
-        param.List_View_Config__c = config.Id;
-        param.Parameter_Name__c   = 'NoSorting';
-        param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
-        param.Parameter_Value__c  = ListViewHelper.TTRUE;
-        param.Parameter_Label__c  = 'Do Not Allow Sorting';
-        params.add(param);
+        if (!paramsByName.containsKey('AddObjNameOnLookupLabels'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'AddObjNameOnLookupLabels';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Add Object Name On Lookup Labels';
+            params.add(param);
+        }
+
+        if (!paramsByName.containsKey('UseSimpleSorting'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'UseSimpleSorting';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Use Standard Single Column Sorting';
+            params.add(param);
+        }
+
+        if (!paramsByName.containsKey('NoSorting'))
+        {
+            param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = config.Id;
+            param.Parameter_Name__c   = 'NoSorting';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Do Not Allow Sorting';
+            params.add(param);
+        }
 
         HelperDatabase.insertRecords(params);
 
