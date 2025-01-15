@@ -3,10 +3,34 @@
 }
 
 .header {
-    padding: 5px;
+    padding-top: 5px;
     background: white;
     border-radius: 5px 5px 0px 0px;
+    padding-left: 10px;
+    padding-right: 5px;
+    padding-bottom: 2px;
 }
+
+.virtualtext {
+    background: white; 
+    font-weight: bold; 
+    padding-left:10px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    padding-top: 5px; 
+    padding-bottom: 5px; 
+    color: crimson;
+}
+
+.title {
+    font-weight: bold; 
+    font-size: 1.3em; 
+    padding-right: 5px; 
+    padding-top: 3px;
+    padding-left: 5px;
+}
+
 .button-short {
     line-height: inherit;
 }

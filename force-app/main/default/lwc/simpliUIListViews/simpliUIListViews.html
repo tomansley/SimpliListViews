@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 12-06-2024
+  @last modified on  : 12-23-2024
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -32,7 +32,7 @@
             <div class="header">
                 <template if:true={hasTitle}>
                     <template if:true={isModeApp}>
-                        <div slot="title" style="font-weight: bold; font-size: 1.3em; padding: 5px">
+                        <div slot="title" class="title">
                             {mainTitle}
                         </div>
                     </template>
@@ -42,8 +42,8 @@
 
                     <template if:true={hasTitle}>
                         <template if:false={isModeApp}>
-                            <lightning-layout-item style="padding-left:5px;">
-                                <h2 style="font-weight: bold; font-size: 1.3em; padding: 5px">
+                            <lightning-layout-item>
+                                <h2 class="title">
                                     {mainTitle}
                                 </h2>
                             </lightning-layout-item>
@@ -299,6 +299,20 @@
         <!-- ---------------------------------------------------------------------------------- -->
         <template if:true={isInitialized}>
             <template if:true={listViewData}>
+
+                <!-- --------------------------- -->
+                <!-- ROW SELECT COUNT AND EXPORT -->
+                <!-- --------------------------- -->
+                 <template if:true={virtualText}>
+                    <template if:true={displayVirtualText}>
+                        <lightning-layout title={virtualText}>
+                            <lightning-layout-item size="12" title={virtualText} class="virtualtext">
+                                Virtual Data: {virtualText}
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </template>
+                </template>
+
                 <template if:false={isModeSplitView}>
 
                     <div class={listwrapperstyle}>

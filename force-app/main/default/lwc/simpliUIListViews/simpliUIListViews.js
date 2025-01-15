@@ -56,6 +56,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     //-----------
     @api mode                       = undefined;    //indicates the mode the page is in for displaying the list view. i.e. app, single etc.
     @api virtual                    = false;        //indicates whether the list view is displaying data virtually from another org.
+    @api virtualText                = undefined;    //the text to be displayed to the user if list view is virtual
+    @api displayVirtualText         = false;        //indicates whether the virtual text should be displayed to the user
     @api pageName                   = '';           //this is NOT the page name but the COMPONENT name
     @api uniqueComponentId          = '';           //identifies the component uniquely so that messages can be handled in a multi-component page.
     @api hasMainTitle               = undefined;    //indicates whether the component should display the main title
