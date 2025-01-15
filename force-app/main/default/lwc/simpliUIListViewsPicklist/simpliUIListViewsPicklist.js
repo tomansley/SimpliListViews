@@ -84,7 +84,9 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             this.options = this.picklistValues;
             this.isOptionsSet = true;
             this.compName = this.rowId + ':';
-            this.selectedValue(this.defaultValue);
+            if (!SLVHelper.isEmpty(this.defaultValue)) {
+                this.selectedValue(this.defaultValue);
+            }
         
         //if we are getting the options from an object field.
         } else {
@@ -130,11 +132,11 @@ export default class SimpliUIListViewsPicklist extends LightningElement {
             console.log('Options - ', JSON.stringify(this.options));
 
             //if the selected value has NOT been provided then default it.
-            if (SLVHelper.isEmpty(this.selectedValue)) {
+            if (SLVHelper.isEmpty(this.selectedValue())) {
                 if (this.type === 'picklist') {
                     this.value = { label: '--None--', value: "" }.value;
                 } else if (this.type === 'multipicklist') {
-                    this.value = this.selectedValue;
+                    this.value = this.selectedValue();
                 }
 
                 //otherwise set it based on provided value/s
