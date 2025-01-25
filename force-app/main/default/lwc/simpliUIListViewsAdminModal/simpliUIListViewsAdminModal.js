@@ -72,7 +72,6 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track error;                        //holds any error details.
     @track paramNameLoad;               //on entry into a param value the name is set here.
     @track paramValueLoad;              //on entry into a param value the value is set here.
-    @track firstConditionField;         //the first condition in the fields list
     @track newConditionField;
     @track newConditionColumn;          //the complex column object set when field is selected
     @track newConditionOperator;
@@ -587,15 +586,14 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     }
 
     resetNewCondition() {
-        if (this.listViewColumns !== undefined && this.listViewColumns.length > 0) {
-            this.firstConditionField = this.listViewColumns[0].value;
+        if (this.listViewColumns !== undefined && this.listViewColumns.length > 0 && this.newConditionField === undefined) {
             this.newConditionColumn = this.listViewColumns[0];
             this.newConditionField = this.listViewColumns[0].value;
         }
+
         this.newConditionValue = undefined;
         this.newConditionHighlightCellOnly = undefined;
         this.newConditionColor = '#DBFFB4';
-        this.newConditionOperator = 'Equals';
         this.newConditionOrder = '1';
     }
 
