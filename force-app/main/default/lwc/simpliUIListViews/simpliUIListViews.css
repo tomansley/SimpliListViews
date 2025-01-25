@@ -42,12 +42,12 @@
 .dataSpinnerHolder {
     position: relative;
     display: flex;
-    /* margin-left: 30px; */
-    vertical-align: middle;
     white-space: nowrap;
     justify-content: center;
     align-items: center;
     min-height: 32px;
+    min-width: 30px;
+    margin-left: 5px;
 }
 
 .pageSpinnerHolder {
