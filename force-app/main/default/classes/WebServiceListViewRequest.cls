@@ -2,7 +2,7 @@
 global with sharing class WebServiceListViewRequest {
 
     /*
-     * Web service which gets all simpli list views
+     * Web service which gets all ListViewAnything list views
 
      {"parameters":{"valuesMap":"AllOrNone$$true$$$DMLType$$insert","action":"Import:simpli_lv_ent.ListViewActionImportAll:Core:null","recordIds":"001aj00000JB03OAAT,001aj00000JB03QAAT,001aj00000JB03NAAT"},"name":"runAction"}
      {"parameters":{"valuesMap":"AllOrNone$$true$$$DMLType$$insert","action":"Delete:ListViewActionDelete:Core:null","recordIds":"001aj00000JB03OAAT,001aj00000JB03QAAT,001aj00000JB03NAAT"},"name":"runAction"}

@@ -114,7 +114,7 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         let isConfirmed = true;
         if (this.excListViewsStrChanged === true) {
             // eslint-disable-next-line no-restricted-globals, no-alert
-            isConfirmed = confirm("The Excluded List Views parameter was updated. This will force deletion of those core simpli list views that match the provided value.\n\n Click to confirm or cancel to go back!");
+            isConfirmed = confirm("The Excluded List Views parameter was updated. This will force deletion of those core ListViewAnything list views that match the provided value.\n\n Click to confirm or cancel to go back!");
         }
 
         if (isConfirmed === true) {

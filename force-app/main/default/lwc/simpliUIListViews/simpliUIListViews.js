@@ -294,7 +294,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      */
     async renderedCallback() {
         if (this.pageName === '') {
-            this.dispatchEvent(SLVHelper.createToast('error', '', 'List View Configuration Error', 'A page/component name must be provided for all simpli list view components.', false));
+            this.dispatchEvent(SLVHelper.createToast('error', '', 'List View Configuration Error', 'A page/component name must be provided for all ListViewAnything view components.', false));
             return;
         }
         console.log('Starting simpliUIListViews.renderedCallback for ' + this.pageName);
