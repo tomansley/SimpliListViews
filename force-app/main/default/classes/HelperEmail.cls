@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-29-2022
+ * @last modified on  : 01-15-2025
  * @last modified by  : tom@ansleyllc.com
  * 1.0   04-01-2020   tom@ansleyllc.com   Initial Version
  * 2.0   01-06-2022   tom@ansleyllc.com   Added getEmailTemplate(), getEmailTemplates(), sendEmailsFromTemplate() methods.
@@ -152,8 +152,8 @@ public with sharing class HelperEmail {
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
             List<String> toAddr = new List<String>();
             toAddr.add('tom@ansleyllc.com');
-            String subject = 'Simpli List Views ' + type + ' Successfully';
-            String htmlBody = 'Simpli List Views ' + type + ' Successfully - ';
+            String subject = 'ListViewAnything ' + type + ' Successfully';
+            String htmlBody = 'ListViewAnything ' + type + ' Successfully - ';
 
             Organization org = [SELECT Name, IsSandbox, OrganizationType, Country, PrimaryContact FROM Organization LIMIT 1];
 

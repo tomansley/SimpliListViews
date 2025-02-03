@@ -3,7 +3,7 @@
   @description       : 
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 12-19-2024
+  @last modified on  : 01-15-2025
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author                       Modification
@@ -82,7 +82,7 @@
                     <p style="padding-bottom: 10px; padding-top: 10px; font-weight:bold;">View All List Views In One Component</p>
                     <ol style="list-style-type:decimal; list-style-position: inside;">
                         <li style="padding-bottom: 5px;">Initialize List Views - Go to the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Admin">Admin tab</a> in the SLV Admin app. Click the Refresh button and wait for initialization to complete</li>
-                        <li style="padding-bottom: 5px;">Go to Simpli List Views Examples App - The home tab will be the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Example_1">Everything Example</a> tab. The objects and list views will be displayed.</li>
+                        <li style="padding-bottom: 5px;">Go to ListViewAnything Examples App - The home tab will be the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Example_1">Everything Example</a> tab. The objects and list views will be displayed.</li>
                     </ol>
                 </div>
             </div>
@@ -104,7 +104,7 @@
                         <li style="padding-bottom: 5px;">Create Standard List View - Go to any object and create a new list view. Add any columns etc. that need to be viewed</li>
                         <li style="padding-bottom: 5px;">Reinitialize List Views - Go to the <a target="_blank" href="/lightning/n/simpli_lv__List_Views_Admin">Admin tab</a> in the SLV Admin app. Click the Refresh button and wait for updating to complete</li>
                         <li style="padding-bottom: 5px;">Create new LWC page using Lightning App Builder</li>
-                        <li style="padding-bottom: 5px;">Drag Simpli List Views component on to the new LWC page. Configure list view and add column totals, highlighting, refresh rates etc. to make your list view awesome!</li>
+                        <li style="padding-bottom: 5px;">Drag ListViewAnything component on to the new LWC page. Configure list view and add column totals, highlighting, refresh rates etc. to make your list view awesome!</li>
                     </ol>
                 </div>
             </div>
@@ -226,7 +226,7 @@
                 <div>
                     <b>Org-Wide Custom Settings</b>
                     <br/><br/>
-                    <p>These settings are maintained in the Simpli List Views Admin App on the List Views Admin tab. They affect all Simpli list views displayed in the SFDC org and are typically set by a system administrator at initial setup.</p>
+                    <p>These settings are maintained in the ListViewAnything Admin App on the List Views Admin tab. They affect all ListViewAnything list views displayed in the SFDC org and are typically set by a system administrator at initial setup.</p>
                     <br/>
                     <div style="padding-left: 20px;">
                         <ol style="list-style-type:decimal; list-style-position: inside;">
@@ -258,7 +258,7 @@
                 <div>
                 <b>List View Settings</b>
                 <br/><br/>
-                    <p>These settings are maintained by clicking on the cog icon when a list view is being displayed. They affect individual Simpli list views for a specific page and are typically created after the list view has been created.</p>
+                    <p>These settings are maintained by clicking on the cog icon when a list view is being displayed. They affect individual ListViewAnything list views for a specific page and are typically created after the list view has been created.</p>
                     <br/>
                     <div style="padding-left: 20px;">
                         <ol style="list-style-type:decimal; list-style-position: inside;">
@@ -286,7 +286,7 @@
                         </ol>
                     </div>
                     <br/>
-                    <p>These settings are maintained by the Simpli List View app and should not under normal circumstances be changed by an admin.</p>
+                    <p>These settings are maintained by the ListViewAnything app and should not under normal circumstances be changed by an admin.</p>
                 </div>
             </div>
         </lightning-card>
@@ -296,13 +296,13 @@
         <lightning-card title={label.Example_App_Descriptions} icon-name="standard:settings">
             <div class="slds-var-m-around_medium">
 
-                <p>Below is a description of each of the tabs in the Simpli List Views Examples App. The example tabs provide many different scenarios that SLV might be used for. These patterns can be copied by users of SLV to quickly create useful applications.</p>
+                <p>Below is a description of each of the tabs in the ListViewAnything Examples App. The example tabs provide many different scenarios that SLV might be used for. These patterns can be copied by users of SLV to quickly create useful applications.</p>
                 <br/>
                 <div style="padding-left: 20px;">
                     <ol style="list-style-type:circle; list-style-position: inside;">
                         <li style="padding-bottom: 5px;"><b>Everything Example</b> - showcases the plain vanilla SLV component in App Page component mode. No features have been turned off or changed. This is the scenario where the SLV component is simply dragged on to a page and then displayed. It is more than likely the case that some kind of configuration will want to be performed against the plain component.</li>
                         <li style="padding-bottom: 5px;"><b>Admin Example</b> - shows how a page could be configured to display useful list views for admins. Two objects available include ApexLog and ApexClass which are not available in standard Salesforce. Data for those list views are retrieved using metadata.</li>
-                        <li style="padding-bottom: 5px;"><b>List Views Example</b> - shows an SLV component which only allows the Simpli List Views objects list views to be displayed. Also, most of the functionality of the SLV capabilities has been turned off.</li>
+                        <li style="padding-bottom: 5px;"><b>List Views Example</b> - shows an SLV component which only allows the ListViewAnything objects list views to be displayed. Also, most of the functionality of the SLV capabilities has been turned off.</li>
                         <li style="padding-bottom: 5px;"><b>Locked Down Example</b> - shows an SLV component which has been locked down using the page and component attributes. Only Account,Contact and Opportunity list views are allowed to be displayed. Also, most of the functionality available in SLV has been turned off.</li>
                         <li style="padding-bottom: 5px;"><b>Multi Component Example</b> - shows a basic SLV component with a standard SFDC component to the right.</li>
                         <li style="padding-bottom: 5px;"><b>2 List Views Example</b> - showing how 2 list views can be displayed on the same page and a selection in one list view can alter whats displayed on the second list view.</li>

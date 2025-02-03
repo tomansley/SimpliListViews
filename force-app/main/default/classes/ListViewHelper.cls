@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-03-2024
+ * @last modified on  : 01-15-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -605,7 +605,7 @@ global with sharing class ListViewHelper
 
                 updatedListViews.put(simpliListView.Primary_Key__c, simpliListView);
 
-                System.debug(LoggingLevel.FINE, 'Updated Simpli List View - ' + simpliListView);
+                System.debug(LoggingLevel.FINE, 'Updated ListViewAnything - ' + simpliListView);
 
                 //use the metadata API to try and enrich the listview data.
                 enrichListViewFromMetadata(simpliListView);

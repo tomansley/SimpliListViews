@@ -250,7 +250,7 @@ export default class SimpliUIListViewsAdmin extends NavigationMixin(LightningEle
         console.log('simpliUIListViewsAdmin CALLOUT - clearCache - ' + this.calloutCount++);
         clearCache({})
             .then(() => {
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'Simpli List Views Cache Cleared', '', false));
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'ListViewAnything Cache Cleared', '', false));
             })
             .catch(error => {
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'There was an error clearing the cache - ', true));

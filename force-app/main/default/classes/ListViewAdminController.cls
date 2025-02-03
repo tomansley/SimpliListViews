@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-26-2024
+ * @last modified on  : 01-29-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -125,7 +125,7 @@ public with sharing class ListViewAdminController {
         for (List_View_Config_Parameter__c param: orgWideConfig.List_View_Config_Parameters__r)
             params.add(param);
 
-        ListViewAbstract.ListViewConfigWrapper config = new ListViewAbstract.ListViewConfigWrapper(null, orgWideConfig, params, 'App Page');
+        ListViewAbstract.ListViewConfigWrapper config = new ListViewAbstract.ListViewConfigWrapper(null, orgWideConfig, params, 'App Page', null);
 
         ListViewErrorHelper.processLogs(true);
 

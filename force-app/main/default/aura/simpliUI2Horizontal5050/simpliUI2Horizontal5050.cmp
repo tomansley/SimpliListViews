@@ -1,4 +1,4 @@
-<aura:component access="global" implements="lightning:appHomeTemplate" description="Designed for Simpli List Views. Page is broken into
+<aura:component access="global" implements="lightning:appHomeTemplate" description="Designed for ListViewAnything. Page is broken into
 two regions that both take up 50% of the screen vertically and 100% horizontally.">
     <aura:attribute access="global" name="top" type="Aura.Component[]" />
     <aura:attribute access="global" name="bottom" type="Aura.Component[]" />
