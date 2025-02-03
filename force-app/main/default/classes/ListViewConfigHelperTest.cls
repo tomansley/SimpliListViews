@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 11-26-2024
+ * @last modified on  : 01-30-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -36,13 +36,10 @@ private class ListViewConfigHelperTest {
     @IsTest
     static void testValidateStringFieldConditions()
     {
-
-        String HIGHLIGHT_COLOR = '#c59e9e';
-
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = 'Name';
         condition.Order__c            = '1';
-        condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
+        condition.Highlight_Color__c  = '#c59e9e';
 
         //-------------------------------------------------------------------------------------
         //CONTAINS
@@ -52,16 +49,16 @@ private class ListViewConfigHelperTest {
         String type = ListViewHelper.TYPE_STRING;
 
         //POSITIVE TEST
-        String result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+        Boolean result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = 'Sterlington Coat Factory';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -74,14 +71,14 @@ private class ListViewConfigHelperTest {
         //NEGATIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = 'Sterlington Coat Factory';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -93,14 +90,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = 'Burlington Coat Factory';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -112,14 +109,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = 'Burlington Coat Factory';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -131,14 +128,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = 'Burlington2';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -150,14 +147,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = 'Burlington2';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
     }
@@ -165,13 +162,10 @@ private class ListViewConfigHelperTest {
     @IsTest
     static void testValidateDecimalFieldConditions()
     {
-
-        String HIGHLIGHT_COLOR = '#c59e9e';
-
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = 'AccountNumber';
         condition.Order__c            = '1';
-        condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
+        condition.Highlight_Color__c  = '#c59e9e';
 
         //-------------------------------------------------------------------------------------
         //CONTAINS
@@ -181,16 +175,16 @@ private class ListViewConfigHelperTest {
         String type = ListViewHelper.TYPE_DECIMAL;
 
         //POSITIVE TEST
-        String result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+        Boolean result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Decimal.valueOf('1234');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -202,14 +196,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Decimal.valueOf('4');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -221,14 +215,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = Decimal.valueOf('4');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -240,14 +234,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = Decimal.valueOf('6');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -259,14 +253,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Decimal.valueOf('6');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
     }
@@ -274,13 +268,10 @@ private class ListViewConfigHelperTest {
     @IsTest
     static void testValidateIntegerFieldConditions()
     {
-
-        String HIGHLIGHT_COLOR = '#c59e9e';
-
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = 'AccountNumber';
         condition.Order__c            = '1';
-        condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
+        condition.Highlight_Color__c  = '#c59e9e';
 
         //-------------------------------------------------------------------------------------
         //CONTAINS
@@ -290,16 +281,16 @@ private class ListViewConfigHelperTest {
         String type = ListViewHelper.TYPE_INTEGER;
 
         //POSITIVE TEST
-        String result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+        Boolean result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Integer.valueOf('1234');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -311,14 +302,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Integer.valueOf('4');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -330,14 +321,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = Integer.valueOf('4');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -349,14 +340,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = Integer.valueOf('6');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -368,14 +359,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Integer.valueOf('6');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
     }
@@ -383,13 +374,10 @@ private class ListViewConfigHelperTest {
     @IsTest
     static void testValidateDoubleFieldConditions()
     {
-
-        String HIGHLIGHT_COLOR = '#c59e9e';
-
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = 'AccountNumber';
         condition.Order__c            = '1';
-        condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
+        condition.Highlight_Color__c  = '#c59e9e';
 
         //-------------------------------------------------------------------------------------
         //CONTAINS
@@ -399,16 +387,16 @@ private class ListViewConfigHelperTest {
         String type = ListViewHelper.TYPE_DOUBLE;
 
         //POSITIVE TEST
-        String result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+        Boolean result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Double.valueOf('1234');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -420,14 +408,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Double.valueOf('4');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -439,14 +427,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = Double.valueOf('4');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -458,14 +446,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = Double.valueOf('6');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -477,14 +465,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = Double.valueOf('6');
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
     }
@@ -492,13 +480,10 @@ private class ListViewConfigHelperTest {
     @IsTest
     static void testValidateDateFieldConditions()
     {
-
-        String HIGHLIGHT_COLOR = '#c59e9e';
-
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = 'AccountDate';
         condition.Order__c            = '1';
-        condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
+        condition.Highlight_Color__c  = '#c59e9e';
 
         //-------------------------------------------------------------------------------------
         //CONTAINS
@@ -508,16 +493,16 @@ private class ListViewConfigHelperTest {
         String type = ListViewHelper.TYPE_DATE;
 
         //POSITIVE TEST
-        String result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+        Boolean result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = '1625547600000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -529,14 +514,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = '1725549000000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -548,14 +533,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = '1635547600000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -567,17 +552,17 @@ private class ListViewConfigHelperTest {
         //EQUAL TEST
         value = '1625547600000';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = '1615547500000';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == '');
+        System.assert(result == false);
 
         //POSITIVE TEST
         value = '1665547700000';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -589,14 +574,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = '1625547700000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
     }
@@ -604,13 +589,10 @@ private class ListViewConfigHelperTest {
     @IsTest
     static void testValidateDateTimeFieldConditions()
     {
-
-        String HIGHLIGHT_COLOR = '#c59e9e';
-
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = 'AccountDateTime';
         condition.Order__c            = '1';
-        condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
+        condition.Highlight_Color__c  = '#c59e9e';
 
         //-------------------------------------------------------------------------------------
         //CONTAINS
@@ -621,16 +603,16 @@ private class ListViewConfigHelperTest {
         String type = ListViewHelper.TYPE_DATETIME;
 
         //POSITIVE TEST
-        String result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+        Boolean result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = '1625578020000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -642,14 +624,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = '1625578030000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -661,14 +643,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = '1625577020000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -680,14 +662,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = '1625578030000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -699,14 +681,14 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = '1625588020000';
         
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
     }
@@ -714,13 +696,10 @@ private class ListViewConfigHelperTest {
     @IsTest
     static void testValidateTimeFieldConditions()
     {
-
-        String HIGHLIGHT_COLOR = '#c59e9e';
-
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
         condition.Field_Name__c       = 'AccountTime';
         condition.Order__c            = '1';
-        condition.Highlight_Color__c  = HIGHLIGHT_COLOR;
+        condition.Highlight_Color__c  = '#c59e9e';
 
         //-------------------------------------------------------------------------------------
         //CONTAINS
@@ -731,13 +710,13 @@ private class ListViewConfigHelperTest {
 
         //POSITIVE TEST
         String value = '06:45:00 AM';
-        String result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == '');
+        Boolean result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+        System.assert(result == false);
 
         //NEGATIVE TEST
         value = '06:45:00 AM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -748,12 +727,12 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         value = '06:45:00 AM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = '06:45:00 PM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -764,12 +743,12 @@ private class ListViewConfigHelperTest {
         //NEGATIVE TEST
         value = '06:45:00 AM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == '');
+        System.assert(result == false);
 
         //POSITIVE TEST
         value = '06:45:01 AM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -780,12 +759,12 @@ private class ListViewConfigHelperTest {
         //NEGATIVE TEST
         value = '06:44:00 AM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == '');
+        System.assert(result == false);
 
         //POSITIVE TEST
         value = '06:45:01 AM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -796,12 +775,12 @@ private class ListViewConfigHelperTest {
         //POSITIVE TEST
         value = '06:44:59 AM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == HIGHLIGHT_COLOR);
+        System.assert(result == true);
 
         //NEGATIVE TEST
         value = '06:45:01 AM';
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
-        System.assert(result == '');
+        System.assert(result == false);
         //-------------------------------------------------------------------------------------
 
     }
@@ -815,10 +794,19 @@ private class ListViewConfigHelperTest {
         Boolean conditionAdded = true;
 
         try {
-            ListViewConfigHelper.addListViewCondition('Account', 'simpli_lv__AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '1', '#000000', false);
+            //ADD
+            ListViewConfigHelper.upsertListViewCondition('Account', 'simpli_lv__AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '1', '#000000', false, false, '');
 
             List_View_Config_Condition__c condition = [SELECT Id FROM List_View_Config_Condition__c WHERE Value__c = 'Testerson'];
 
+            //UPDATE
+            ListViewConfigHelper.upsertListViewCondition('Account', 'simpli_lv__AllAccounts', 'CreatedBy.Name', 'Equals', 'Testerson', '2', '#000000', false, false, condition.Id);
+
+            condition = [SELECT Id, Order__c FROM List_View_Config_Condition__c WHERE Value__c = 'Testerson'];
+
+            System.assertEquals('2', condition.Order__c);
+
+            //DELETE
             ListViewConfigHelper.deleteListViewCondition(condition.Id);
 
         } catch (Exception e) {

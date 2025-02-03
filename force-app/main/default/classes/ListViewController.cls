@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-02-2024
+ * @last modified on  : 01-30-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -675,7 +675,8 @@ public with sharing class ListViewController
 
         String rtnStr = 'Ok:';
 
-        if (action == 'add')
+
+        if (action == 'add' || action == 'update')
         {
             //get the field/value pairs of the update data
             List<Object> listValues = (List<Object>) JSON.deserializeUntyped(conditionData);
@@ -686,24 +687,26 @@ public with sharing class ListViewController
                 mapValues.put( (String) keyValues[0], keyValues[1]);
             }
 
-            try {
-                ListViewConfigHelper.addListViewCondition(objectName, 
-                                                          listViewName, 
-                                                          (String) mapValues.get('field'), 
-                                                          (String) mapValues.get('operator'),
-                                                          (String) mapValues.get('value'),
-                                                          (String) mapValues.get('order'),
-                                                          (String) mapValues.get('color'),
-                                                          (Boolean) mapValues.get('highlightCellOnly'));
+            try {            
+                ListViewConfigHelper.upsertListViewCondition(objectName, 
+                                                        listViewName, 
+                                                        (String) mapValues.get('field'), 
+                                                        (String) mapValues.get('operator'),
+                                                        (String) mapValues.get('value'),
+                                                        (String) mapValues.get('order'),
+                                                        (String) mapValues.get('color'),
+                                                        (Boolean) mapValues.get('highlightCellOnly'),
+                                                        (Boolean) mapValues.get('filterListViewData'),
+                                                        (String) mapValues.get('id'));
                 CacheListViewConfig.remove(objectName, listViewName);
+
             } catch (Exception e) {
                 rtnStr = 'Failed:' + e.getMessage();
                 String message = 'Exception during ListViewController.processConditionChange(' + objectName + ', ' + listViewName + ', ' + action + ', ' + conditionData + ')  ' + ListViewException.getExtendedString(e);
                 ListViewErrorHelper.createFutureUsageError(message); 
-                }
+            }
 
-        } else if (action == 'remove')
-        {
+        } else if (action == 'remove') {
             try {
                 ListViewConfigHelper.deleteListViewCondition(conditionData);
                 CacheListViewConfig.remove(objectName, listViewName);

@@ -25,6 +25,7 @@ import Background_Color from '@salesforce/label/c.Background_Color';
 import Text_Color from '@salesforce/label/c.Text_Color';
 import Field_Name from '@salesforce/label/c.Field_Name';
 import Remove_Condition from '@salesforce/label/c.Remove_Condition';
+import Update_Condition from '@salesforce/label/c.Update_Condition';
 import Select_A_Column from '@salesforce/label/c.Select_A_Column';
 import Enter_A_Value from '@salesforce/label/c.Enter_A_Value';
 import Add_Condition from '@salesforce/label/c.Add_Condition';
@@ -38,6 +39,7 @@ import Transform from '@salesforce/label/c.Transform';
 import Weight from '@salesforce/label/c.Weight';
 import Alignment from '@salesforce/label/c.Alignment';
 import Highlight_Cell_Only from '@salesforce/label/c.Highlight_Cell_Only';
+import Filter_List_View_Data from '@salesforce/label/c.Filter_List_View_Data';
 
 import getListViewConfig from '@salesforce/apex/ListViewController.getListViewConfig';
 import getListViewColumns from '@salesforce/apex/ListViewController.getListViewColumns';
@@ -74,11 +76,12 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     @track paramValueLoad;              //on entry into a param value the value is set here.
     @track newConditionField;
     @track newConditionColumn;          //the complex column object set when field is selected
-    @track newConditionOperator;
+    @track newConditionOperator = 'Equals';
     @track newConditionValue;
     @track newConditionOrder = '1';
     @track newConditionColor;
     @track newConditionHighlightCellOnly;
+    @track newFilterListViewData;
     @track configChanged;               //identifies if a change has been made which needs to force a data refresh
     @track lvName;                      //the name of the list view.
     @track closeDisabled = undefined;
@@ -223,7 +226,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         Close, List_View_Config, Settings, Parameter_Name, Value, Select_A_Value, Highlighting, Add_Remove, Field,
         Operator, Precedence, Color, Field_Name, Remove_Condition, Select_A_Column, Enter_A_Value, Add_Condition,
         Update, Column_Styles, Font, Decoration, Style, Transform, Weight, Alignment, Variant, Background_Color,
-        Text_Color, Highlight_Cell_Only, Conditional_Highlighting
+        Text_Color, Highlight_Cell_Only, Conditional_Highlighting, Filter_List_View_Data, Update_Condition
     }
 
     constructor() {
@@ -269,6 +272,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     console.log('List View Config - ' + JSON.stringify(result));
                     this.listViewConfig = result;
                     this.setStyleColumns();
+                    this.setConditionColumnData(this.listViewConfig, this.listViewColumns);
                 })
                 .catch(error => {
                     console.log('Error Detected - ' + JSON.stringify(error));
@@ -282,6 +286,23 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 });
         }
 
+    }
+
+    setConditionColumnData(config, columns) {
+
+        console.log('STARTING CONDITION COLUMN DATA');
+        if (config !== undefined && columns !== undefined) {
+            config.conditions.forEach(condition => {
+                console.log('CONDITION - ' + JSON.stringify(condition));
+                columns.forEach(column => {
+                    console.log('COLUMN - ' + JSON.stringify(column));
+                    if (condition.field === column.value) {
+                        condition.column = column;
+                    }
+                });
+            });
+        }
+        console.log('ENDING CONDITION COLUMN DATA');
     }
 
     setStyleColumns() {
@@ -310,6 +331,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     wiredListViewColumns({ error, data }) {
         if (data) {
             console.log('List view column label retrieval successful');
+            console.log('List View Columns - ' + JSON.stringify(data));
             this.listViewColumns = data;
             this.setStyleColumns();
             this.resetNewCondition();
@@ -473,12 +495,15 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
     //---------------------------------------------------------------------------------------------------------
     // CONDITION METHODS
     //---------------------------------------------------------------------------------------------------------
-    handleConditionChange(event) {
+    handleConditionUpdate(event) {
         this.spinner = true;
         try {
-            const { target } = event;
+            const { target, currentTarget } = event;
             const id = target?.name ?? '';
             const action = target?.value ?? '';
+            const { dataset } = currentTarget;
+            let conditionId = dataset?.rowId;
+
             let resultStr;
             const valuesMap = new Map();
             let strParamsMap;
@@ -496,8 +521,8 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 //if we are ADDING we need to pass all condition information
             } else if (action === 'add') {
 
-                if (this.newConditionField === undefined || this.newConditionField === '') { errorMsg = 'The condition field must be provided.' }
-                else if (this.newConditionValue === undefined || this.newConditionValue === '') { errorMsg = 'The condition value must be provided.' }
+                if (SLVHelper.isEmpty(this.newConditionField)) { errorMsg = 'The condition field must be provided.' }
+                else if (SLVHelper.isEmpty(this.newConditionValue)) { errorMsg = 'The condition value must be provided.' }
 
                 //if we have an error
                 if (errorMsg !== '') {
@@ -511,6 +536,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     return;
                 }
 
+                valuesMap.set('id', '');
                 valuesMap.set('field', this.newConditionField);
                 valuesMap.set('operator', this.newConditionOperator);
                 valuesMap.set('value', this.newConditionValue);
@@ -521,10 +547,49 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                 } else {
                     valuesMap.set('highlightCellOnly', true);
                 }
+                if (this.newFilterListViewData === undefined) {
+                    valuesMap.set('filterListViewData', false);
+                } else {
+                    valuesMap.set('filterListViewData', true);
+                }
 
                 strParamsMap = JSON.stringify(Array.from(valuesMap));
                 console.log('Params Field/Value  - ' + strParamsMap);
 
+            } else if (action === 'update') {
+
+                let condition;
+                this.listViewConfig.conditions.forEach(cond => {
+                    if (cond.id === conditionId) {
+                        condition = cond;
+                    }
+                });
+    
+                if (SLVHelper.isEmpty(condition.value)) { errorMsg = 'The condition value must be provided.' }
+
+                //if we have an error
+                if (errorMsg !== '') {
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Condition Error',
+                        message: errorMsg,
+                        variant: 'error',
+                        mode: 'sticky'
+                    }));
+                    this.spinner = false;
+                    return;
+                }
+
+                valuesMap.set('id', condition.id);
+                valuesMap.set('field', condition.fieldName);
+                valuesMap.set('operator', condition.operator);
+                valuesMap.set('value', condition.value);
+                valuesMap.set('order', condition.order);
+                valuesMap.set('color', condition.color);
+                valuesMap.set('highlightCellOnly', SLVHelper.toBool(condition.highlightCellOnly));
+                valuesMap.set('filterListViewData', SLVHelper.toBool(condition.filterListViewData));
+
+                strParamsMap = JSON.stringify(Array.from(valuesMap));
+                console.log('Params Field/Value  - ' + strParamsMap);
             }
 
             processConditionChange({ objectName: this.listViewObject, listViewName: this.listViewName, action: action, conditionData: strParamsMap })
@@ -593,11 +658,37 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
 
         this.newConditionValue = undefined;
         this.newConditionHighlightCellOnly = undefined;
+        this.newFilterListViewData = undefined;
         this.newConditionColor = '#DBFFB4';
         this.newConditionOrder = '1';
     }
 
-    handleConditionFieldChange(event) {
+    handleExistingConditionFieldChange(event) {
+        try {
+            const { target, currentTarget } = event;
+            const { dataset } = currentTarget;
+
+            let conditionId = dataset?.rowId;
+            let field = dataset?.field;
+
+            this.listViewConfig.conditions.forEach(condition => {
+                if (condition.id === conditionId) {
+                    if (field === 'highlightCellOnly' || field === 'filterListViewData') {
+                        condition[field] = target.checked;
+                    } else {
+                        condition[field] = target?.value ?? '';
+                    }
+                    condition.isUpdated = true;
+                    condition.updated = 'updated';
+                }
+            });
+
+        } catch (error) {
+            SLVHelper.showErrorMessage(error);
+        }
+    }
+
+    handleNewConditionFieldChange(event) {
         try {
             const { target } = event;
             this.newConditionField = target?.value ?? '';
@@ -618,7 +709,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         }
     }
 
-    handleConditionOperatorChange(event) {
+    handleNewConditionOperatorChange(event) {
         try {
             const { target } = event;
             this.newConditionOperator = target?.value ?? '';
@@ -628,7 +719,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         }
     }
 
-    handleConditionValueChange(event) {
+    handleNewConditionValueChange(event) {
         try {
             const { target } = event;
             this.newConditionValue = target?.value ?? '';
@@ -638,7 +729,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         }
     }
 
-    handleConditionOrderChange(event) {
+    handleNewConditionOrderChange(event) {
         try {
             const { target } = event;
             this.newConditionOrder = target.value ?? '';
@@ -648,7 +739,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         }
     }
 
-    handleConditionHighlightCellOnlyChange(event) {
+    handleNewConditionHighlightCellOnlyChange(event) {
         try {
             const { target } = event;
             this.newConditionHighlightCellOnly = target.checked;
@@ -658,7 +749,17 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
         }
     }
 
-    handleConditionColorChange(event) {
+    handleNewConditionFilterListViewDataChange(event) {
+        try {
+            const { target } = event;
+            this.newFilterListViewData = target.checked;
+            console.log('New Condition Filter List View Data Change - ' + this.newFilterListViewData);
+        } catch (error) {
+            SLVHelper.showErrorMessage(error);
+        }
+    }
+
+    handleNewConditionColorChange(event) {
         try {
             const { target } = event;
             this.newConditionColor = target?.value ?? '';

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-17-2024
+ * @last modified on  : 01-27-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -128,7 +128,7 @@ global class ListViewControllerTest {
     {
         HelperTest.createCoreListViews();
 
-        String result = ListViewController.processConditionChange('Account', 'simpli_lv__AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"],["highlightCellOnly",false]]');
+        String result = ListViewController.processConditionChange('Account', 'simpli_lv__AllAccounts', 'add', '[["field","Account Name"],["operator","Equals"],["value","Dickenson plc"],["order","1"],["color","#A02929"],["highlightCellOnly",false],["filterListViewData",false]]');
 
         System.assertEquals('Ok:', result);
 

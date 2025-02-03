@@ -7,3 +7,7 @@
 .pageSpinnerHolder {
     position: relative;
 }
+
+.updated {
+    border-right: 4px solid red;
+  }

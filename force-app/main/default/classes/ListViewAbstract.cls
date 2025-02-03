@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 10-08-2024
+ * @last modified on  : 01-30-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -108,7 +108,7 @@ public with sharing abstract class ListViewAbstract {
         this.listview = listview;
         config = ListViewConfigHelper.getListViewConfig(listview.Object_Name__c, listview.API_Name__c);
         List<List_View_Config_Parameter__c> params = getConfigParams(config);
-        lvConfig = new ListViewConfigWrapper(listview, config, params, listViewMode);
+        lvConfig = new ListViewConfigWrapper(listview, config, params, listViewMode, getColumnData());
     }
 
     public void setJoinData(String joinField, String joinData)
@@ -847,9 +847,53 @@ public with sharing abstract class ListViewAbstract {
 
         public void calcRowCSS(ListViewConfigWrapper lvConfig)
         {
+            System.debug(LoggingLevel.FINE, 'Conditions for row CSS calc - ' + lvConfig.conditions);
+            System.debug(LoggingLevel.FINE, 'Filter conditions for row CSS calc - ' + lvConfig.filterConditions);
+            calculateHighlightConditionFiltering(lvConfig.filterConditions);
             calculateHighlighting(lvConfig.conditions);
             System.debug(LoggingLevel.DEBUG, 'RUNNING CAL CSS STYLE WITH HIGHLIGHT = ' + highlight);
             calculateCSSStyles(lvConfig.columnStyles);
+        }
+
+        /*
+         * Method to calculate and filter list view data based on provided configuration conditions.
+         * We pass in the condition details each time as its a complex object that cannot be passed to the lightning UI
+         */
+        private void calculateHighlightConditionFiltering(List<ListViewCondition> filterConditions)
+        {
+            System.debug(LoggingLevel.FINE, 'Calculating filtering for row!');
+
+            if (filterConditions.isEmpty()) return;
+
+            //for each filter condition
+            Boolean isValidRow = false;
+            for (ListViewCondition condition: filterConditions)
+            {
+                System.debug(LoggingLevel.FINE, 'Working with - ' + condition.getFieldName());
+
+                //go through each field
+                for (FieldWrapper field: fields.values())
+                {
+
+                    //if we have a match between field name and condition field name
+                    if (condition.getFieldName() == field.name.toLowerCase() || condition.getFieldName() == field.getLongName().toLowerCase())
+                    {
+
+                        System.debug(LoggingLevel.FINE, 'We have a matching condition!');
+
+                        if (ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, condition.getCondition()))
+                        {
+                            isValidRow = true;
+                            break;
+                        }
+
+                    }
+
+                }
+            }
+
+            if (!isValidRow) isDisplayed = false;
+
         }
 
         /*
@@ -859,7 +903,6 @@ public with sharing abstract class ListViewAbstract {
         private void calculateHighlighting(List<ListViewCondition> conditions)
         {
             System.debug(LoggingLevel.FINE, 'Calculating highlighting for row!');
-            System.debug(LoggingLevel.FINE, 'Conditions are - ' + conditions);
 
             //REVERSE conditions due to precedence
             List<ListViewCondition> revConditions = new List<ListViewCondition>();
@@ -883,7 +926,9 @@ public with sharing abstract class ListViewAbstract {
 
                         System.debug(LoggingLevel.FINE, 'We have a matching condition!');
 
-                        String color = ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, condition.getCondition());
+                        String color = '';
+                        if (ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, condition.getCondition()))
+                            color = condition.getColor();
 
                         System.debug(LoggingLevel.FINE, 'Condition validation result = ' + color);
 
@@ -1941,6 +1986,7 @@ public with sharing abstract class ListViewAbstract {
     public class ListViewCondition
     {
         public List_View_Config_Condition__c condition;
+        public ListViewColumn column;
         public String fieldName;
         public String operator;
         public String value;
@@ -1948,17 +1994,20 @@ public with sharing abstract class ListViewAbstract {
         public String color;
         public String id;
         public Boolean highlightCellOnly;
+        public Boolean filterListViewData;
 
-        public ListViewCondition(List_View_Config_Condition__c condition)
+        public ListViewCondition(List_View_Config_Condition__c condition, ListViewColumn column)
         {
             this.condition = condition;
+            this.column    = column;
             fieldName      = condition.Field_Name__c;
             operator       = condition.Operator__c;
             value          = condition.Value__c;
             order          = condition.Order__c;
             color          = condition.Highlight_Color__c;
             id             = condition.Id;
-            highlightCellOnly = condition.Highlight_Cell_Only__c;
+            highlightCellOnly  = condition.Highlight_Cell_Only__c;
+            filterListViewData = condition.Filter_List_View_Data__c;
         }
 
         public List_View_Config_Condition__c getCondition()
@@ -2005,11 +2054,132 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
+        public Boolean getFilterListViewData()
+        {
+            if (filterListViewData == false)
+                return null;
+            return filterListViewData;
+        }
+
+        @AuraEnabled(cacheable=true)
         public String getId()
         {
             return id;
         }
 
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsString()
+        {
+            return column.getIsString();   
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTextArea()
+        {
+            return column.getIsTextArea();
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsURL()
+        {
+            return column.getIsURL();  
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsBoolean()
+        {
+            return column.getIsBoolean();
+        }
+                
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsLookup()
+        {
+            return column.getIsLookup();
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsCurrency()
+        {
+            return column.getIsCurrency();   
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDate()
+        {
+            return column.getIsDate();   
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDateTime()
+        {
+            return column.getIsDateTime();
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsTime()
+        {
+            return column.getIsTime();   
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPicklist()
+        {
+            return column.getIsPicklist();  
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsMultiPicklist()
+        {
+            return column.getIsMultiPicklist();   
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDecimal()
+        {
+            return column.getIsDecimal();  
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsInteger()
+        {
+            return column.getIsInteger();  
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsDouble()
+        {
+            return column.getIsDouble();   
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPercent()
+        {
+            return column.getIsPercent(); 
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsPhone()
+        {
+            return column.getIsPhone();  
+        }
+        
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsEmail()
+        {
+            return column.getIsEmail();
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Boolean getIsRichTextArea()
+        {
+            return column.getIsRichTextArea();
+        }
+
+        @AuraEnabled(cacheable=true)
+        public String getFieldAPIName()
+        {
+            return column.name;
+        }
     }
 
     //-------------------------------------------------------------------
@@ -2020,31 +2190,35 @@ public with sharing abstract class ListViewAbstract {
     public class ListViewConfigWrapper
     {
         public List_View__c listView;
-        public String listViewMode;
+        public String listViewMode;                     //mode of the list view. Important for if its split view mode as we don't pass back all parameters.
         public List_View_Config__c listViewConfig;
         public DateTime lastModifiedDate;
         public String lastModifiedBy;
         public Map<String, ListViewParam> parameters;
         public List<ListViewCondition> conditions;
+        public List<ListViewCondition> filterConditions; //the subset of conditions that have filtering specified
         public List<ListViewColumnStyle> columnStyles;
-        public String name;
+        public String name;                             //the name of the list view
         public String label;
-        public String obj;
+        public String obj;                              //the name of the object associated to thelist view.
+        public Map<String, ListViewColumn> columns;     //the column data for the columns displayed in the list view mapped by field name
 
-        public ListViewConfigWrapper(String name, String obj, String listViewMode)
+        public ListViewConfigWrapper(String obj, String name, String listViewMode)
         {
             this.name         = name;
             this.obj          = obj;
             this.listViewMode = listViewMode;
             parameters        = new Map<String,ListViewParam>();
             conditions        = new List<ListViewCondition>();
+            filterConditions  = new List<ListViewCondition>();
             columnStyles      = new List<ListViewColumnStyle>();
+            this.columns      = new Map<String, ListViewColumn>();
         }
 
         /*
          * Constructor for if the params were not created yet and were created in this transaction.
          */
-        public ListViewConfigWrapper(List_View__c listView, List_View_Config__c listViewConfig, List<List_View_Config_Parameter__c> params, String listViewMode)
+        public ListViewConfigWrapper(List_View__c listView, List_View_Config__c listViewConfig, List<List_View_Config_Parameter__c> params, String listViewMode, List<ListViewColumn> columns)
         {
             this.listViewMode   = listViewMode;
             this.listView       = listView;
@@ -2056,7 +2230,14 @@ public with sharing abstract class ListViewAbstract {
             lastModifiedBy      = listViewConfig.LastModifiedBy.Name;
             parameters          = new Map<String,ListViewParam>();
             conditions          = new List<ListViewCondition>();
+            filterConditions    = new List<ListViewCondition>();
             columnStyles        = new List<ListViewColumnStyle>();
+            this.columns = new Map<String, ListViewColumn>();
+
+            if (columns != null) {
+                for (ListViewColumn column: columns)
+                    this.columns.put(column.getValue(), column);
+            }
 
             for (List_View_Config_Parameter__c param: params)
             {
@@ -2075,7 +2256,12 @@ public with sharing abstract class ListViewAbstract {
             System.debug(LoggingLevel.FINE, 'All config params - ' + parameters);
 
             for (List_View_Config_Condition__c condition: listViewConfig.List_View_Config_Conditions__r)
-                conditions.add(new ListViewCondition(condition));
+            {
+                conditions.add(new ListViewCondition(condition, this.columns.get(condition.Field_Name__c)));
+
+                if (condition.Filter_List_View_Data__c)
+                    filterConditions.add(new ListViewCondition(condition, this.columns.get(condition.Field_Name__c)));
+            }
             
             for (List_View_Config_Column_Style__c columnStyle: listViewConfig.List_View_Config_Column_Styles__r)
                 columnStyles.add(new ListViewColumnStyle(columnStyle));
