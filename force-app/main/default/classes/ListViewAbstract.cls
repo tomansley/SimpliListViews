@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-30-2025
+ * @last modified on  : 02-04-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -920,8 +920,13 @@ public with sharing abstract class ListViewAbstract {
                 for (FieldWrapper field: fields.values())
                 {
 
+                    String condField = condition.getFieldName();
+                    
+                    if (condField.contains('.'))
+                        condField = condField.substringAfterLast('.').toLowerCase();
+
                     //if we have a match between field name and condition field name
-                    if (condition.getFieldName() == field.name.toLowerCase() || condition.getFieldName() == field.getLongName().toLowerCase())
+                    if (condField == field.name.toLowerCase() || condField == field.getLongName().toLowerCase())
                     {
 
                         System.debug(LoggingLevel.FINE, 'We have a matching condition!');
@@ -2257,6 +2262,10 @@ public with sharing abstract class ListViewAbstract {
 
             for (List_View_Config_Condition__c condition: listViewConfig.List_View_Config_Conditions__r)
             {
+
+                ListViewColumn column = this.columns.get(condition.Field_Name__c);
+                if (column == null) continue;
+
                 conditions.add(new ListViewCondition(condition, this.columns.get(condition.Field_Name__c)));
 
                 if (condition.Filter_List_View_Data__c)
