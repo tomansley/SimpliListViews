@@ -610,7 +610,6 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     }
 
                     this.columnSortDataStr = JSON.stringify(Array.from(this.columnSortData));
-                    console.log('XXXX Column Sort Data Str - ' + this.columnSortDataStr);
                     this.listViewSortData.set(listviewSorting.name, this.columnSortData);
                     //for all other list views
                 } else {
@@ -1100,7 +1099,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } else {
             this.refreshAllListViewData();
             this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'autoRefreshOnce', status: 'finished' } }));
-            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Refreshed', 'Click within 5 seconds of data loading to auto refresh.', false));
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Refreshed', 'Click again within 5 seconds of data loading to start auto refreshing.', false));
         }
     }
 
