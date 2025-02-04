@@ -522,7 +522,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
             } else if (action === 'add') {
 
                 if (SLVHelper.isEmpty(this.newConditionField)) { errorMsg = 'The condition field must be provided.' }
-                else if (SLVHelper.isEmpty(this.newConditionValue)) { errorMsg = 'The condition value must be provided.' }
+                //else if (SLVHelper.isEmpty(this.newConditionValue)) { errorMsg = 'The condition value must be provided.' }
 
                 //if we have an error
                 if (errorMsg !== '') {
@@ -565,7 +565,7 @@ export default class simpliUIListViewsAdminModal extends NavigationMixin(Lightni
                     }
                 });
     
-                if (SLVHelper.isEmpty(condition.value)) { errorMsg = 'The condition value must be provided.' }
+                //if (SLVHelper.isEmpty(condition.value)) { errorMsg = 'The condition value must be provided.' }
 
                 //if we have an error
                 if (errorMsg !== '') {

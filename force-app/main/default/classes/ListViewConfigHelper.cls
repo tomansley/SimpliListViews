@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 01-30-2025
+ * @Last Modified On   : 02-04-2025
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -725,24 +725,30 @@ global with sharing class ListViewConfigHelper {
     public static Boolean validateFieldCondition(Object value, String type, List_View_Config_Condition__c condition)
     {
         try {
-            System.debug(LoggingLevel.FINE, 'Starting validateFieldCondition(' + value + ',' + type + ')');
-            System.debug(LoggingLevel.FINE, 'Conditions - ' + condition);
+            System.debug(LoggingLevel.DEBUG, 'Starting validateFieldCondition(' + value + ',' + type + ')');
+            System.debug(LoggingLevel.DEBUG, 'Conditions - ' + condition);
 
-            if (value == null || condition == null) return false;
+            System.debug(LoggingLevel.DEBUG, 'Value     = ' + value);
+            System.debug(LoggingLevel.DEBUG, 'condValue = ' + condition?.Value__c);
+            System.debug(LoggingLevel.DEBUG, 'Type      = ' + type);
+            System.debug(LoggingLevel.DEBUG, 'Operator  = ' + condition?.Operator__c);
+
+
+            if (condition == null) return false;
         
-            System.debug(LoggingLevel.FINE, 'Value     = ' + value);
-            System.debug(LoggingLevel.FINE, 'Type      = ' + type);
-            System.debug(LoggingLevel.FINE, 'Operator  = ' + condition.Operator__c);
-            System.debug(LoggingLevel.FINE, 'condValue = ' + condition.Value__c);
-
             //if we have a meaningless comparison then skip
-            if ((value == null || value == '') && type != ListViewHelper.TYPE_STRING) return false;
+            if ((value == null || value == '') && (type != ListViewHelper.TYPE_STRING && type != ListViewHelper.TYPE_EMAIL)) return false;
 
             //EQUAL
             if (condition.Operator__c == OPER_EQUAL) {
-                if (type == ListViewHelper.TYPE_DOUBLE) {
+
+                if (value == null && condition.Value__c == '' || value == '' && condition.Value__c == null) return true;
+
+                else if (value != null && String.isEmpty(condition.Value__c)) return false;
+
+                else if (type == ListViewHelper.TYPE_DOUBLE) {
                     if (value == Double.valueOf(condition.Value__c)) return true;
-                }else if (type == ListViewHelper.TYPE_DATE) {
+                } else if (type == ListViewHelper.TYPE_DATE) {
                     
                     Date dte = getDateValue(condition.Value__c);
                     if (HelperDate.convertMillisToDate((String) value) == dte) return true;
@@ -754,11 +760,29 @@ global with sharing class ListViewConfigHelper {
 
                 } else if (type == ListViewHelper.TYPE_TIME) {
                     if (HelperDate.getTimeFromString((String) value) == HelperDate.getTimeFromString(condition.Value__c)) return true;
-                } else if (String.valueOf(value) == condition.Value__c) return true;
+                }
+                else 
+                    if (String.valueOf(value) == condition.Value__c) return true;
 
             //NOT EQUAL
             } else if (condition.Operator__c == OPER_NOT_EQUAL) {
-                if (type == ListViewHelper.TYPE_DOUBLE) {
+
+                System.debug(LoggingLevel.DEBUG, 'NE Value     = ' + value);
+                System.debug(LoggingLevel.DEBUG, 'NE condValue = ' + condition?.Value__c);
+
+                System.debug(LoggingLevel.DEBUG, 'Test 1');
+
+                if ((value == null || value == '') && !String.isEmpty(condition.Value__c)) {
+                    System.debug(LoggingLevel.DEBUG, 'Test 2');
+                    return true; 
+
+
+                } else if ((value == null || value == '') && (String.isEmpty(condition.Value__c))) {
+                    System.debug(LoggingLevel.DEBUG, 'Test 3');
+  
+                    return false;
+
+                } else if (type == ListViewHelper.TYPE_DOUBLE) {
                     if (value != Double.valueOf(condition.Value__c)) return true;
                 } else if (type == ListViewHelper.TYPE_DATE) {
                     
@@ -772,7 +796,12 @@ global with sharing class ListViewConfigHelper {
 
                 } else if (type == ListViewHelper.TYPE_TIME) {
                     if (HelperDate.getTimeFromString((String) value) != HelperDate.getTimeFromString(condition.Value__c)) return true;
-                } else if (String.valueOf(value) != condition.Value__c) return true;
+                }
+                else 
+                    if (String.valueOf(value) != condition.Value__c) {
+                        System.debug(LoggingLevel.DEBUG, 'Test 4');
+                        return true;
+                    }
 
             //GREATER THAN
             } else if (condition.Operator__c == OPER_GREATER) {
