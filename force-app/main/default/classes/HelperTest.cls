@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 09-13-2024
+ * @last modified on  : 02-04-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -234,7 +234,7 @@ public with sharing class HelperTest {
         List<List_View_Config_Condition__c> conditions = new List<List_View_Config_Condition__c>();
         
         List_View_Config_Condition__c condition = new List_View_Config_Condition__c();
-        condition.Field_Name__c       = 'AnnualRevenue';
+        condition.Field_Name__c       = 'BillingPostalCode';
         condition.Highlight_Color__c  = '#000000';
         condition.Operator__c         = 'Equals';
         condition.Order__c            = '1';
