@@ -20,7 +20,7 @@ public with sharing class ListViewTypeAheadController {
             String soql = null;
 
             if(searchTerm == ''){
-                if (String.isBlank(whereClauseJSON)) {
+                if (String.isBlank(whereClauseJSON) || whereClauseJSON == '[]') {
                     soql = 'SELECT Id, ' + String.escapeSingleQuotes(labelFieldName) + ', ' + String.escapeSingleQuotes(keyFieldName) + ' FROM ' + String.escapeSingleQuotes(objName) + ' LIMIT 100'; 
                 } else {
                     String whereStatement = createWhereClause(whereClauseJSON);
