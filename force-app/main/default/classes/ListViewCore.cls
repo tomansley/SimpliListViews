@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-16-2024
+ * @last modified on  : 02-04-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -235,14 +235,34 @@ public with sharing class ListViewCore extends ListViewAbstract {
         }
 
         //set the CUSTOM COLUMN meta data into the rows wrapper
+        List<String> fields = new List<String>();
         if (lvConfig != null 
             && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS) != null 
             && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue() != null
             && lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue() != '')
         {
             //get the field names in a list
-            List<String> fields = lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue().deleteWhitespace().split(',');
+            fields = lvConfig.getParameter(ListViewHelper.PARAM_ADD_FIELDS).getValue().deleteWhitespace().split(',');
 
+        } else if (config != null
+            && !config.List_View_Config_Parameters__r.isEmpty())
+        {
+            String fieldStr = '';
+            for (List_View_Config_Parameter__c param: config.List_View_Config_Parameters__r)
+            {
+                if (param.Parameter_Name__c == ListViewHelper.PARAM_ADD_FIELDS)
+                {
+                    fieldStr = param.Parameter_Value__c != null ? param.Parameter_Value__c : '';
+                    break;
+                }
+            }
+
+            //get the field names in a list
+            fields = fieldStr.deleteWhitespace().split(',');
+        }
+
+        if (!fields.isEmpty())
+        {
             System.debug(LoggingLevel.FINE, 'Additional Fields - ' + fields);
 
             for (String fieldName: fields)
@@ -252,6 +272,8 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 if (d != null)
                     listViewColumns.add(new ListViewColumn(d.label, fieldName, d.getType()));
             }
+        
+
         }
 
         return listViewColumns;
