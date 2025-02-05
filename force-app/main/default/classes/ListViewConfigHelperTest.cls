@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-30-2025
+ * @last modified on  : 02-05-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -98,6 +98,39 @@ private class ListViewConfigHelperTest {
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
         System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -117,6 +150,64 @@ private class ListViewConfigHelperTest {
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
         System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = 'Test';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = 'Test';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = 'Test';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -171,7 +262,7 @@ private class ListViewConfigHelperTest {
         //CONTAINS
         condition.Operator__c         = ListViewConfigHelper.OPER_CONTAINS;
         condition.Value__c            = '5';
-        Decimal value = Decimal.valueOf('34657');
+        Object value = Decimal.valueOf('34657');
         String type = ListViewHelper.TYPE_DECIMAL;
 
         //POSITIVE TEST
@@ -185,6 +276,63 @@ private class ListViewConfigHelperTest {
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
         System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '5';
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '5';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = '5';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = '5';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -204,6 +352,63 @@ private class ListViewConfigHelperTest {
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
         System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '5';
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '5';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = '5';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = '5';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -223,6 +428,63 @@ private class ListViewConfigHelperTest {
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
         System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '5';
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = '';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == false);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '5';
+        value = null;
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = null;
+        value = '5';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
+        //EMPTY STRING/NULL TEST
+        condition.Value__c            = '';
+        value = '5';
+        
+        result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
+
+        System.assert(result == true);
+
         //-------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------
@@ -367,6 +629,7 @@ private class ListViewConfigHelperTest {
         result = ListViewConfigHelper.validateFieldCondition(value, type, condition);
 
         System.assert(result == false);
+
         //-------------------------------------------------------------------------------------
 
     }

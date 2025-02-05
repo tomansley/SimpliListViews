@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 02-04-2025
+ * @Last Modified On   : 02-05-2025
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -742,7 +742,7 @@ global with sharing class ListViewConfigHelper {
             //EQUAL
             if (condition.Operator__c == OPER_EQUAL) {
 
-                if (value == null && condition.Value__c == '' || value == '' && condition.Value__c == null) return true;
+                if (value == null && condition.Value__c == '' || value == '' && condition.Value__c == null || value == null && condition.Value__c == null || value == '' && condition.Value__c == '') return true;
 
                 else if (value != null && String.isEmpty(condition.Value__c)) return false;
 
