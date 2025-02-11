@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 02-05-2025
+ * @Last Modified On   : 02-06-2025
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -736,15 +736,12 @@ global with sharing class ListViewConfigHelper {
 
             if (condition == null) return false;
         
-            //if we have a meaningless comparison then skip
-            if ((value == null || value == '') && (type != ListViewHelper.TYPE_STRING && type != ListViewHelper.TYPE_EMAIL)) return false;
-
             //EQUAL
             if (condition.Operator__c == OPER_EQUAL) {
 
                 if (value == null && condition.Value__c == '' || value == '' && condition.Value__c == null || value == null && condition.Value__c == null || value == '' && condition.Value__c == '') return true;
 
-                else if (value != null && String.isEmpty(condition.Value__c)) return false;
+                else if ((value != null && String.isEmpty(condition.Value__c)) || (value == null && !String.isEmpty(condition.Value__c))) return false;
 
                 else if (type == ListViewHelper.TYPE_DOUBLE) {
                     if (value == Double.valueOf(condition.Value__c)) return true;
@@ -767,21 +764,12 @@ global with sharing class ListViewConfigHelper {
             //NOT EQUAL
             } else if (condition.Operator__c == OPER_NOT_EQUAL) {
 
-                System.debug(LoggingLevel.DEBUG, 'NE Value     = ' + value);
-                System.debug(LoggingLevel.DEBUG, 'NE condValue = ' + condition?.Value__c);
-
-                System.debug(LoggingLevel.DEBUG, 'Test 1');
-
                 if ((value == null || value == '') && !String.isEmpty(condition.Value__c)) {
-                    System.debug(LoggingLevel.DEBUG, 'Test 2');
                     return true; 
-
-
-                } else if ((value == null || value == '') && (String.isEmpty(condition.Value__c))) {
-                    System.debug(LoggingLevel.DEBUG, 'Test 3');
-  
+                } else if ((value == null || value == '') && String.isEmpty(condition.Value__c)) {
                     return false;
-
+                } else if ((value != null && value != '') && String.isEmpty(condition.Value__c)) {
+                    return true;
                 } else if (type == ListViewHelper.TYPE_DOUBLE) {
                     if (value != Double.valueOf(condition.Value__c)) return true;
                 } else if (type == ListViewHelper.TYPE_DATE) {
@@ -799,13 +787,19 @@ global with sharing class ListViewConfigHelper {
                 }
                 else 
                     if (String.valueOf(value) != condition.Value__c) {
-                        System.debug(LoggingLevel.DEBUG, 'Test 4');
                         return true;
                     }
 
             //GREATER THAN
             } else if (condition.Operator__c == OPER_GREATER) {
-                if ((type == ListViewHelper.TYPE_STRING 
+                if ((value == null || value == '') && !String.isEmpty(condition.Value__c)) {
+                    return false; 
+                } else if ((value == null || value == '') && String.isEmpty(condition.Value__c)) {
+                    return false;
+                } else if ((value != null && value != '') && String.isEmpty(condition.Value__c)) {
+                    return true;
+
+                } else if ((type == ListViewHelper.TYPE_STRING 
                         || type == ListViewHelper.TYPE_EMAIL 
                         || type == ListViewHelper.TYPE_MULTI_PICK 
                         || type == ListViewHelper.TYPE_PHONE 
@@ -835,7 +829,14 @@ global with sharing class ListViewConfigHelper {
         
             //LESS THAN
             } else if (condition.Operator__c == OPER_LESS) {
-                if ((type == ListViewHelper.TYPE_STRING 
+                if ((value == null || value == '') && !String.isEmpty(condition.Value__c)) {
+                    return true; 
+                } else if ((value == null || value == '') && String.isEmpty(condition.Value__c)) {
+                    return false;
+                } else if ((value != null && value != '') && String.isEmpty(condition.Value__c)) {
+                    return false;
+
+                } else if ((type == ListViewHelper.TYPE_STRING 
                         || type == ListViewHelper.TYPE_EMAIL 
                         || type == ListViewHelper.TYPE_MULTI_PICK 
                         || type == ListViewHelper.TYPE_PHONE 
@@ -869,16 +870,30 @@ global with sharing class ListViewConfigHelper {
                     || type == ListViewHelper.TYPE_DATE
                     || type == ListViewHelper.TYPE_TIME
                     || type == ListViewHelper.TYPE_PERCENT
-                    || type == ListViewHelper.TYPE_CURRENCY) throw new ListViewException('Cannot use "Contains" operator on DateTime, Date, Time, Percent or Currency types');
+                    || type == ListViewHelper.TYPE_CURRENCY) return false;
+
+                System.debug(LoggingLevel.DEBUG, 'WE ARE CHECKING DECIMAL/CONTAINS');
+                if (value == null && String.isEmpty(condition.Value__c)) return true;
+                if ((value == null && !String.isEmpty(condition.Value__c)) || (value != null && String.isEmpty(condition.Value__c))) return false;
                 if (String.valueOf(value).contains(condition.Value__c)) return true;
 
             //DOES NOT CONTAIN
             } else if (condition.Operator__c == OPER_DOES_NOT_CONTAIN) {
-                if (!String.valueOf(value).contains(condition.Value__c)) return true;
+
+                if ((value == null || value == '') && !String.isEmpty(condition.Value__c)) {
+                    return true; 
+                } else if ((value == null || value == '') && String.isEmpty(condition.Value__c)) {
+                    return false;
+                } else if ((value != null && value != '') && String.isEmpty(condition.Value__c)) {
+                    return true;
+                } else if (!String.valueOf(value).contains(condition.Value__c)) {
+                    return true;
+                }
             }
 
         } catch (Exception e) {
             String message = 'Exception during ListViewController.validateFieldCondition(' + value + ',' + type + ',' + condition + ')  ' + ListViewException.getExtendedString(e);
+            System.debug(LoggingLevel.DEBUG, 'XXX ' + message);
             if (!HelperLimits.hasReachedLimit('DMLStatements'))
                 ListViewErrorHelper.createFutureUsageError(message); 
         }
