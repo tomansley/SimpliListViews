@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-13-2024
+ * @last modified on  : 02-11-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -216,6 +216,27 @@ public with sharing class ListViewCustomToolingQuery extends ListViewCustomTooli
                 if (lvConfig != null)
                     rowWrapper.calcRowCSS(lvConfig);
             }
+
+            //get all preset column widths
+            List_View_User_Config__c columnWidths = ListViewUserConfigHelper.getCurrentUserConfigByName(pageName, 'columnWidths:' + listView.Primary_Key__c);
+            Map<Integer, String> widthsByIndex = new Map<Integer, String>();
+            if (columnWidths != null && !String.isEmpty(columnWidths.Value__c))
+            {
+                List<String> columnWidthsStr = columnWidths.Value__c.split(';');  
+
+                for (String columnWidthStr: columnWidthsStr)
+                {
+                    List<String> values = columnWidthStr.split(':');
+                    widthsByIndex.put(Integer.valueOf(values[0]), values[1]);
+                }
+
+                for (ListViewAbstract.FieldWrapper column: rows.getFieldMetaData())
+                {
+                    column.setColumnWidth(widthsByIndex.get(column.columnIndex));
+                }    
+            }
+
+
 
             //if totals have been configured
             if (lvConfig != null

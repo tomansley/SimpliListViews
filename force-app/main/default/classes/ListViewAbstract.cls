@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-04-2025
+ * @last modified on  : 02-11-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -1227,7 +1227,7 @@ public with sharing abstract class ListViewAbstract {
         public Boolean isEditable;     //identifies whether the field can be edited inline.
         public String parentObjType;   //the API name of the object that this field looks up to
         public Boolean isTotalsRow;    //identifies whether the row this field is a part of is a totals row.
-        public String columnWidth;     //indicates the preset column width.
+        public String columnWidth = '200';     //indicates the preset column width.
         public String cssStyle;        //the css style that should be applied to this field based on the column styles configured
         public String functionApexClass;//if the field is to be calculated based on a provided function this is the apex class to use
         public String highlightCol;     //indicates whether a conditional color should be used instead of style and what color it is.
@@ -1325,6 +1325,12 @@ public with sharing abstract class ListViewAbstract {
                 return 'width: ' + columnWidth + 'px;';
             else
                 return '';
+        }
+
+        public void setColumnWidth(String columnWidth)
+        {
+            if (!String.isEmpty(columnWidth))
+                this.columnWidth = columnWidth;
         }
         
         @AuraEnabled(cacheable=true)

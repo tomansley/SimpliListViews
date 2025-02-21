@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 11-20-2024
+ * @last modified on  : 02-11-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -323,7 +323,7 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
 
             for (ListViewAbstract.FieldWrapper column: rows.getFieldMetaData())
             {
-                column.columnWidth = widthsByIndex.get(column.columnIndex);
+                column.setColumnWidth(widthsByIndex.get(column.columnIndex));
             }    
         }
 

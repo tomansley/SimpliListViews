@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-04-2025
+ * @last modified on  : 02-11-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -395,7 +395,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             for (ListViewAbstract.FieldWrapper column: rows.getFieldMetaData())
             {
-                column.columnWidth = widthsByIndex.get(column.columnIndex);
+                column.setColumnWidth(widthsByIndex.get(column.columnIndex));
             }    
         }
 
