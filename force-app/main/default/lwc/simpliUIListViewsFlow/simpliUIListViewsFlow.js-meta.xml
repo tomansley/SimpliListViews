@@ -3,5 +3,5 @@
     <apiVersion>52.0</apiVersion>
     <description>Screen Flow</description>
     <isExposed>true</isExposed>
-    <masterLabel>ListViewAnything Flow (Do Not Use)</masterLabel>
+    <masterLabel>Simpli List Views Flow (Do Not Use)</masterLabel>
 </LightningComponentBundle>

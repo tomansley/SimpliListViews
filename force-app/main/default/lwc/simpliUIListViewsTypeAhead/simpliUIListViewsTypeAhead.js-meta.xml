@@ -2,7 +2,7 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>57.0</apiVersion>
     <isExposed>true</isExposed>
-    <masterLabel>ListViewAnything Type-Ahead Search</masterLabel>
+    <masterLabel>Simpli List Views Type-Ahead Search</masterLabel>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__RecordPage</target>
