@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 01-15-2025
+ * @last modified on  : 03-12-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -25,7 +25,6 @@ global with sharing class ListViewHelper
 {
     public static String LATEST_QUERY = '';
     private static Boolean hasEnterprise = null;
-    private static Map<String, ListViewFunction2> functions = new Map<String, ListViewFunction2>();
     public static final Id coreRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Core').getRecordTypeId();
     public static final Id customRTId = Schema.SObjectType.List_View__c.getRecordTypeInfosByDeveloperName().get('Custom').getRecordTypeId();
    
@@ -106,19 +105,13 @@ global with sharing class ListViewHelper
     public static Object processFunction(String apexClass, Object value, Map<String, Object> context)
     {
         //if (!ListViewHelper.hasEnterprise()) return value;
-
-        ListViewFunction2 function;
-        if (ListViewHelper.functions.containsKey(apexClass)) { //get from cache if possible
-            function = ListViewHelper.functions.get(apexClass);
-        } else {
-            try {
-                Type t = HelperSchema.getClassType(apexClass);
-                function = (ListViewFunction2) t.newInstance();
-            } catch (Exception e) {
-                System.debug(LoggingLevel.ERROR, e.getMessage() + ' - ' + e.getStackTraceString());
-                throw new ListViewException('The ' + apexClass + ' could not be found when trying to process a column function.');
-            }
-            ListViewHelper.functions.put(apexClass, function);
+        ListViewFunction2 function ;
+        try {
+            Type t = HelperSchema.getClassType(apexClass);
+            function = (ListViewFunction2) t.newInstance();
+        } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, e.getMessage() + ' - ' + e.getStackTraceString());
+            throw new ListViewException('The ' + apexClass + ' could not be found when trying to process a column function.');
         }
 
         return function.get(value, context);
@@ -605,7 +598,7 @@ global with sharing class ListViewHelper
 
                 updatedListViews.put(simpliListView.Primary_Key__c, simpliListView);
 
-                System.debug(LoggingLevel.FINE, 'Updated ListViewAnything - ' + simpliListView);
+                System.debug(LoggingLevel.FINE, 'Updated Simpli List Views - ' + simpliListView);
 
                 //use the metadata API to try and enrich the listview data.
                 enrichListViewFromMetadata(simpliListView);
@@ -1546,10 +1539,12 @@ global with sharing class ListViewHelper
 
     /*
         System.debug(LoggingLevel.DEBUG, 'RESULT - ' + ListViewHelper.getCustomListViewQuery('SELECT Name, v2sales__V2_Path_Stage_Name__c, v2sales__V2_Action_Name__c, v2sales__Is_Completed__c, v2sales__Is_Opp_At_Stage__c FROM v2sales__V2_Action_Instance__c WHERE v2sales__Is_Opp_At_Stage__c = true', null, new List<ListViewHelper.ColumnSortData>(), '', new Set<String>(), true, -1));
+        System.debug(LoggingLevel.DEBUG, 'RESULT - ' + ListViewHelper.getCustomListViewQuery('SELECT Id, Name, AccountId, Account.Name, CloseDate, Amount, StageName, (SELECT Id, Product2Id, Product2.Name, UnitPrice, Quantity, TotalPrice FROM OpportunityLineItems WHERE UnitPrice > 10000) FROM Opportunity WHERE CloseDate > TODAY AND Id IN (SELECT OpportunityId FROM OpportunityLineItem WHERE UnitPrice > 10000)', null, new List<ListViewHelper.ColumnSortData>(), '', new Set<String>(), true, -1));
      */
     public static String getCustomListViewQuery(String soql, ListViewAbstract.ListViewConfigWrapper lvConfig, List<ListViewHelper.ColumnSortData> sortData, String joinFieldName, Set<String> joinRecordIds, Boolean example, Integer offset)
     {
 
+        String originalSOQL = String.valueOf(soql);
         String debug = '\n\n------------------------- GET SOQL QUERY -------------------------\n';
         debug += 'soql                            - ' + soql + '\n';
         debug += 'lvConfig                        - ' + lvConfig + '\n';
@@ -1577,110 +1572,168 @@ global with sharing class ListViewHelper
         soql = HelperString.toUpperCaseExceptLiterals(HelperString.scrubSOQL(soql));
         debug += 'Query after upper casing and scrubbing - ' + soql + '\n';
         
+        //====================================================================================================
+        HelperSOQL parser = new HelperSOQL();
+        HelperSOQL.SOQLTokenList tokens = parser.parseSOQL(soql);
+        
+        debug += '----- BEFORE SCRUBBING -----';
+        debug += tokens.printTokens();
+
+        //remove the limit if it exists
+        if (tokens.limitIndex != -1) {
+            Integer tmpIndex = tokens.limitIndex; //get index as it gets reset after removing the LIMIT keyword
+            tokens.remove(tmpIndex); //remove LIMIT
+            tokens.remove(tmpIndex); //remove the number
+        }
+        //remove the order if it exists
+        if (tokens.orderIndex != -1) {
+            tokens.removeFrom(tokens.orderIndex);
+        }
+
+        //remove the using clause if it exists
+        if (tokens.usingIndex != -1) {
+            Integer tmpIndex = tokens.usingIndex; //get index as it gets reset after removing the USING keyword
+            tokens.remove(tmpIndex);
+            tokens.remove(tmpIndex);
+            tokens.remove(tmpIndex); //need to do it 3 times because (USING SCOPE Everything) is 3 tokens
+        }
+
+        debug += '----- AFTER SCRUBBING -----';
+        debug += tokens.printTokens();
+
+        //====================================================================================================
+
+
         //OBJECT NAME
-        String objectName = soql.replaceAll('\\(.*?\\)', '').substringAfterLast(' FROM '); //get rid of everything inside brackets and then get expression after FROM
-        if (objectName.contains(' '))                                                      //if expression contains stuff after object then remove it.
-            objectName = objectName.substringBefore(' ');
-        debug += 'OBJNAME                         - ' + objectName + '\n';
+        Integer index = tokens.indexOf('KEYWORD', 'FROM');
+        String objectName = tokens.get(index+1).value;
+        debug += 'OBJNAME                   - ' + objectName + '\n';
+
+
+
 
 
         //SELECT
-        String selectStr = soql.substringBefore(' FROM ' + objectName + ' WHERE');
-        if (selectStr == soql) //not sure this is needed.
-            selectStr = soql.substringBefore(' FROM ' + objectName);
+        if (HelperSchema.isValidSFDCFieldName(objectName, 'RecordTypeId') && !tokens.contains('IDENTIFIER', 'RECORDTYPEID')) {
+            tokens.add(1, new HelperSOQL.SOQLToken(',', 'OPERATOR'));
+            tokens.add(1, new HelperSOQL.SOQLToken('RECORDTYPEID', 'IDENTIFIER'));
+        }
 
-        if (HelperSchema.isValidSFDCFieldName(objectName, 'RecordTypeId') && !selectStr.contains('RECORDTYPEID'))
-            selectStr = selectStr + ', RECORDTYPEID';
 
-        debug += 'SELECT                          - ' + selectStr + '\n';
+
+
+
 
         //SCOPE
-        String scopeStr = 'USING SCOPE ';
+        index = tokens.indexOf('KEYWORD', 'FROM');
+
         if (!String.isEmpty(lvConfig?.getListView().Filter_Scope__c))
-            scopeStr += lvConfig.getListView().Filter_Scope__c;
+            tokens.add(index+2, new HelperSOQL.SOQLToken(lvConfig.getListView().Filter_Scope__c, 'IDENTIFIER')); 
         else
-            scopeStr += 'Everything';
-        debug += 'SCOPE                           - ' + scopeStr + '\n';
+            tokens.add(index+2, new HelperSOQL.SOQLToken('Everything', 'IDENTIFIER')); 
+        tokens.add(index+2, new HelperSOQL.SOQLToken('SCOPE', 'KEYWORD'));
+        tokens.add(index+2, new HelperSOQL.SOQLToken('USING', 'KEYWORD'));
+
+
+
 
 
         //WHERE
-        String whereStr = 'WHERE ' + soql.substringAfter(' FROM ' + objectName).substringAfter(' WHERE ');
-        if (whereStr == 'WHERE ') 
-            whereStr = '';
-        if (whereStr.containsIgnoreCase(' ORDER BY '))
-            whereStr = whereStr.substringBeforeLast(' ORDER BY ');
-
         if (joinFieldName != '' && joinRecordIds?.size() > 0)
         {
+            index = tokens.indexOf('KEYWORD', 'WHERE'); //find the WHERE clause
+            Boolean hasWhere = true;
+            if (index == -1) {      //if we don't have a WHERE clause
+                hasWhere = false; 
+                index = tokens.indexOf('KEYWORD', 'ORDER'); //check if we have an ORDER clause
+                if (index == -1) index = tokens.size(); //if no ORDER clause then go to end of tokens
+            }
             //if we already have a WHERE clause then place brackets around the entire clause so that it doesn't break when adding more logic.
-            if (whereStr.containsIgnoreCase('WHERE '))
+            if (hasWhere)
             {
-                whereStr = whereStr.replace('WHERE ', ' WHERE (');
-                whereStr += ') AND ' + joinFieldName + ' IN :joinRecordIds';
+                tokens.add(index+1, new HelperSOQL.SOQLToken('(', 'OPEN_PAREN'));
+
+                index = tokens.indexOf('KEYWORD', 'ORDER'); //check if we have an ORDER clause
+                if (index == -1) index = tokens.size(); //if no ORDER clause then go to end of tokens
+
+                tokens.add(index+1, new HelperSOQL.SOQLToken(')', 'CLOSE_PAREN'));
+                tokens.add(index+2, new HelperSOQL.SOQLToken('AND', 'KEYWORD'));
+                tokens.add(index+3, new HelperSOQL.SOQLToken(joinFieldName, 'IDENTIFIER'));
+                tokens.add(index+4, new HelperSOQL.SOQLToken(' IN ', 'OPERATOR'));
+                tokens.add(index+5, new HelperSOQL.SOQLToken(':joinRecordIds', 'IDENTIFIER'));
+
             } else {
-                whereStr += ' WHERE ' + joinFieldName + ' IN :joinRecordIds';
+                tokens.add(index, new HelperSOQL.SOQLToken('WHERE', 'KEYWORD'));
+                tokens.add(index+1, new HelperSOQL.SOQLToken(joinFieldName, 'IDENTIFIER'));
+                tokens.add(index+2, new HelperSOQL.SOQLToken(' IN ', 'OPERATOR'));
+                tokens.add(index+3, new HelperSOQL.SOQLToken(':joinRecordIds', 'IDENTIFIER'));
             }
         }
 
-        //SLV substitutions
-        if (whereStr.contains('$$CURRENT_USER$$'))
-            whereStr = whereStr.replace('$$CURRENT_USER$$', '\'' + UserInfo.getUserId() + '\'');
 
-        debug += 'WHERE                           - ' + whereStr + '\n';
+
+        
+        //SLV substitutions
+        tokens.replace('IDENTIFIER', '$$CURRENT_USER$$', '\'' + UserInfo.getUserId() + '\'');
+
+
+
+
 
 
         //ORDER BY
-        String orderByStr = soql.substringAfterLast(' FROM ').substringAfterLast(' ORDER BY ').substringBeforeLast(' LIMIT ');
-        
         if (sortData?.size() > 0)
-        {
-            System.debug(LoggingLevel.FINE, 'Sort data - ' + sortData);
-            orderByStr = ' ORDER BY ';
-            
+        {           
+            Boolean isFirst = true;
             for (ListViewHelper.ColumnSortData columnSortData: sortData)
             {
                 //make sure the field name is valid if we are not dealing with an API callout
                 if (lvConfig?.getListView().Subtype__c == ListViewHelper.SUBTYPE_TOOLING || HelperSchema.isValidSFDCFieldName(objectName, columnSortData.fieldName))
                 {
-                    orderByStr += columnSortData.fieldName + ' ';
-                    if (columnSortData.sortDirection == true)
-                        orderByStr += 'ASC NULLS LAST, ';
-                    else
-                        orderByStr += 'DESC NULLS FIRST, ';
+                    if (!isFirst) { //have to check this way since we don't know if we are adding another field until it happens
+                        tokens.add(new HelperSOQL.SOQLToken(',', 'OPERATOR'));
+                    } else {
+                        tokens.add(new HelperSOQL.SOQLToken('ORDER', 'KEYWORD'));
+                        tokens.add(new HelperSOQL.SOQLToken('BY', 'KEYWORD'));            
+                        isFirst = false;
+                    }
+                    tokens.add(new HelperSOQL.SOQLToken(columnSortData.fieldName, 'IDENTIFIER'));
+
+                    if (columnSortData.sortDirection == true) {
+                        tokens.add(new HelperSOQL.SOQLToken('ASC', 'KEYWORD'));
+                        tokens.add(new HelperSOQL.SOQLToken('NULLS', 'KEYWORD'));
+                        tokens.add(new HelperSOQL.SOQLToken('LAST', 'KEYWORD'));
+                    } else {
+                        tokens.add(new HelperSOQL.SOQLToken('DESC', 'KEYWORD'));
+                        tokens.add(new HelperSOQL.SOQLToken('NULLS', 'KEYWORD'));
+                        tokens.add(new HelperSOQL.SOQLToken('FIRST', 'KEYWORD'));
+                    }
+
                 } else {
-                    System.debug(LoggingLevel.FINE, 'Sort column not valid - ' + columnSortData.fieldName);
+                    System.debug(LoggingLevel.DEBUG, 'Sort column not valid - ' + columnSortData.fieldName);
                 }
             }
-
-            orderByStr = orderByStr.removeEnd(', ').removeEnd('ORDER BY ');
-        } else {
-            if (orderByStr != '')
-                orderByStr = ' ORDER BY ' + orderByStr;
         }
-        debug += 'ORDER                           - ' + orderByStr + '\n';
+
+
+
+
 
         //LIMIT
-        String limitStr = '';
-        if (soql.containsIgnoreCase(' LIMIT '))
-            limitStr = soql.substring(soql.lastIndexOf('LIMIT'));
-
-        //if we are getting join records then do not use a limit
-        if (joinRecordIds?.size() > 0)
-        {
-            limitStr = '';
-        
-        } else {
-
+        //if we are not getting join records then do not use a limit
+        if (joinRecordIds == null || joinRecordIds.isEmpty())
+        {    
             //if we only need an example record
             if (example)
             {
-                limitStr = ' LIMIT 1';
+                tokens.add(new HelperSOQL.SOQLToken('LIMIT', 'KEYWORD'));
+                tokens.add(new HelperSOQL.SOQLToken('1', 'NUMBER'));
                 
             //if we have a list view limit then use it
             } else if (lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE) != null)
             {
                 Integer returnSize = Integer.valueOf(lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE));
-                limitStr = ' LIMIT ' + returnSize;
+
                 if (offset == null) offset = -1;
 
                 //if we have an offset or we are returning LARGE datasets
@@ -1694,9 +1747,7 @@ global with sharing class ListViewHelper
 
                     //if we DO have an offset then increase it but not above the return size max
                     } else {
-                        System.debug(LoggingLevel.FINE, 'Offset - ' + offset);
-                        System.debug(LoggingLevel.FINE, 'returnSize - ' + returnSize);
-                        
+
                         //if we have NOT hit the max
                         if ((offset + rowLimit) < returnSize)
                         {
@@ -1708,40 +1759,55 @@ global with sharing class ListViewHelper
                             rowLimit = returnSize - offset;
                         }
                     }
-                    limitStr = ' LIMIT ' + rowLimit + ' OFFSET ' + offset;
+                    tokens.add(new HelperSOQL.SOQLToken('OFFSET', 'KEYWORD'));
+                    tokens.add(new HelperSOQL.SOQLToken(String.valueOf(offset), 'NUMBER'));
 
                     ListViewHelper.offset = offset; //set the offset as static to be used up the stack.
-                }
+                } else {
+                    tokens.add(new HelperSOQL.SOQLToken('LIMIT', 'KEYWORD'));
+                    tokens.add(new HelperSOQL.SOQLToken(String.valueOf(returnSize), 'NUMBER'));
+                    }
 
             //otherwise use 100
             } else {
-                limitStr = ' LIMIT 100';
+                tokens.add(new HelperSOQL.SOQLToken('LIMIT', 'KEYWORD'));
+                tokens.add(new HelperSOQL.SOQLToken('100', 'NUMBER'));
             }
         }
-        debug += 'LIMIT                           - ' + limitStr + '\n';
+
+
+
 
         //------------------------------------------------------
-        // Handle the ALL ROWS statement
+        // ALL ROWS
         //------------------------------------------------------
-        String allRowsStr = '';
         if (offset == -1                                                   //Cannot use ALL ROWS with OFFSET
             && lvConfigParams.get(ListViewHelper.PARAM_ALL_ROWS) != null                       //if we have AllRows variable
             && lvConfigParams.get(ListViewHelper.PARAM_ALL_ROWS) == ListViewHelper.TTRUE                     //if AllRows = true
             && lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE) != null                    //if we have ReturnSize variable
             && (Integer.valueOf(lvConfigParams.get(ListViewHelper.PARAM_RETURN_SIZE)) < 750))  //if ReturnSize < 750
         {
-            allRowsStr += ' ALL ROWS';
+            tokens.add(new HelperSOQL.SOQLToken('ALL ', 'KEYWORD'));
+            tokens.add(new HelperSOQL.SOQLToken('ROWS', 'KEYWORD'));
+
         }
-        debug += 'ALLROWS                         - ' + allRowsStr + '\n';
+
+
+
+
 
         //------------------------------------------------------
         // Put the query back together again
         //------------------------------------------------------
-        soql = selectStr + ' FROM ' + objectName + ' ' + scopeStr + ' ' + whereStr + orderByStr + limitStr + allRowsStr;
-        debug += '\nFINAL SOQL LAYOUT               - SELECT + \' FROM \' + OBJNAME + \' \' + SCOPE + \' \' + WHERE + ORDER + LIMIT + ALLROWS\n';
-        debug += 'FINAL SOQL                      - ' + soql + '\n';
+        soql = HelperSOQL.reassembleSOQL(tokens);
+        
+        debug += '\n\n------------------------- UPDATED SOQL QUERIES -------------------------\n';
+        debug += 'Original SOQL       - ' + originalSOQL + '\n';
+        debug += 'Reconstructed SOQL  - ' + soql + '\n\n';
+        debug += tokens.printTokens();
+        debug += '----------------------------------------------------------------------------------\n\n';
 
-        System.debug(LoggingLevel.FINE, debug);
+        System.debug(LoggingLevel.DEBUG, debug);
         ListViewErrorHelper.addLog('ListViewHelper(getCustomListViewQuery)', debug);
 
         //put the query string into a static variable for use across the app (for debugging purposes)
@@ -2864,6 +2930,7 @@ global with sharing class ListViewHelper
     * @param isShell indicates whether the request should only retrieve the rowwrapper without data or all the data
     * @return ListViewAbstract.RowsWrapper 
     **/
+    
     public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String compType, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, Boolean isShell, String textSearchStr)
     {
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewHelper.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ', ' + isShell + ', ' + textSearchStr + ')');
@@ -2908,7 +2975,7 @@ global with sharing class ListViewHelper
 
     public static ListViewAbstract getListViewProcessor(String pageName, String compType, String objectName, String listViewName, Integer offset, Boolean isShell, String textSearchStr)
     {
-        System.debug(LoggingLevel.DEBUG, 'Starting ListViewHelper.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + isShell + ', ' + textSearchStr + ')');
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewHelper.getListViewProcessor(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + offset + ',' + isShell + ', ' + textSearchStr + ')');
         ListViewAbstract lvLogic = null;
 
         //------------------------------------------------------------------------------------------
@@ -3010,19 +3077,46 @@ global with sharing class ListViewHelper
 
     public static String updateObjectListViews(String objectType)
     {
-        //update the list view
-        Boolean result = ListViewHelper.updateListViewsFromObj(objectType);
+        String response = SUCCESS + ':';
+        List<ListView> lvs = ListViewHelper.getCoreListViews(objectType);
+        Set<Id> listViewIds = new Set<Id>();
+        for (ListView lv: lvs)
+            listViewIds.add(lv.Id);
 
-        //remove cache so that list views are refetched
-        CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
+        //if there are more than 50 list views to process then do it in batches
+        if (listViewIds.size() > 50)
+        {
+            //run the batch job
+            ListViewProcessBatch job = new ListViewProcessBatch(listViewIds);
+            job.execute(null);
 
-        return SUCCESS;
+            //get the job id
+            List<AsyncApexJob> jobs = HelperScheduler.getCurrentlyRunningJobs();
+
+            if (jobs.size() > 0)
+            {
+                response += 'Async:' + jobs[0].Id;
+            } else {
+                response += 'A batch job has been started to update the ' + objectType + ' list views.\n The list views will be updated shortly. \nPlease refresh the page to see the changes.';
+            }
+
+        //if less than 50 then do immediately.
+        } else {
+            //update the list view
+            Boolean result = ListViewHelper.updateListViewsFromObj(objectType);
+
+            //remove cache so that list views are refetched
+            CacheHelper.clearCache(UserInfo.getUserId().removeStart('005'));
+
+            response += 'Immediate';
+        }
+        return response;
     }
 
     public static String updateAllListViews()
     {
 
-        Simpli_lv.ListViewPreProcessBatch b = new Simpli_lv.ListViewPreProcessBatch();
+        ListViewPreProcessBatch b = new ListViewPreProcessBatch();
         
         Id jobId = null;
         
@@ -3625,6 +3719,21 @@ global with sharing class ListViewHelper
         return response;
     }
 
+    global static List<NameValuePair> getSOQLTokens(String soql)
+    {
+        HelperSOQL h = new HelperSOQL();
+        HelperSOQL.SOQLTokenList tokenList = h.parseSOQL(soql);
+        List<NameValuePair> tokens = new List<NameValuePair>();
+        for (HelperSOQL.SOQLToken token: tokenList.tokens)
+        {
+            NameValuePair nv = new NameValuePair();
+            nv.name = token.type;
+            nv.value = token.value;
+            tokens.add(nv);
+        }
+        return tokens;        
+    }
+
     global class StandAloneListView {
         @AuraEnabled
         global List<ListViewHelper.StandAloneColumn> columns {get; set;}
@@ -3663,6 +3772,11 @@ global with sharing class ListViewHelper
         public StandAloneField(String value) {
             this.value = value;
         }
+    }
+
+    global class NameValuePair {
+        global String name {get; set;}
+        global String value {get; set;}
     }
 
 
