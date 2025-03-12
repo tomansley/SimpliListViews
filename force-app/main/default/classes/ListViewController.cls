@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-30-2025
+ * @last modified on  : 03-10-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -626,7 +626,7 @@ public with sharing class ListViewController
     **/
     public static ListViewAbstract.RowsWrapper getListViewData(String pageName, String compType, String objectName, String listViewName, String sortData, String joinFieldName, String joinData, Integer offset, Boolean isShell, String textSearchStr)
     {
-        System.debug(LoggingLevel.ERROR, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ', ' + isShell + ', ' + textSearchStr + ')');
+        System.debug(LoggingLevel.ERROR, 'Starting ListViewController.getListViewData(' + pageName + ', ' + objectName + ', ' + listViewName + ',' + sortData + ',' + joinFieldName + ',' + joinData + ', ' + offset + ', ' + isShell + ', ' + textSearchStr + ')');
         return ListViewHelper.getListViewData(pageName, compType, objectName, listViewName, sortData, joinFieldName, joinData, offset, isShell, textSearchStr);
     }
 

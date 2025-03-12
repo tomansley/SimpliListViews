@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-11-2025
+ * @last modified on  : 03-10-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -292,7 +292,7 @@ public with sharing class ListViewCore extends ListViewAbstract {
                                                                     Boolean isShell)
     {
         Long startTime = System.now().getTime();
-        System.debug(LoggingLevel.FINE, 'Starting ListViewCore.handleRowsToWrapper - ' + startTime);
+        System.debug(LoggingLevel.FINE, 'Starting ListViewCore.handleRowsToWrapper - ' + startTime + ', ' + offset);
 
         Map<String, ListViewHelper.ColumnSortData> sortDataByFieldName = new Map<String, ListViewHelper.ColumnSortData>();
         for (ListViewHelper.ColumnSortData columnData: sortData)
@@ -478,7 +478,6 @@ public with sharing class ListViewCore extends ListViewAbstract {
         if (lvConfig != null
             && lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS) != null 
             && !String.isEmpty(lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMNS).getValue())
-            && offset == -1
             && !isShell)
         {
 

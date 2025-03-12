@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-11-2025
+ * @last modified on  : 03-02-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -365,8 +365,13 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                 {
                     HelperSchema.FieldData fieldData = HelperSchema.getFieldData(row, columnName);
 
-                    System.debug(LoggingLevel.FINE, 'None Child Field Parent Obj Type - ' + fieldData.parentObjType + ', Field Data Type - ' + fieldData.getType() + ', Value - ' + fieldData.value);
-
+                    if (fieldData == null)
+                    {
+                        System.debug(LoggingLevel.DEBUG, 'Field Data is null for - ' + columnName);
+                        continue;
+                    } else {
+                        System.debug(LoggingLEvel.DEBUG, 'Field Data - ' + JSON.serialize(fieldData));
+                    }
                     FieldWrapper field = new FieldWrapper(fieldData.label, 
                                                             fieldData.value, 
                                                             fieldData.getType(),

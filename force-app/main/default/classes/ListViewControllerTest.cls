@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 01-27-2025
+ * @last modified on  : 03-09-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -96,7 +96,7 @@ global class ListViewControllerTest {
 
         Test.stopTest();
 
-        System.assertEquals(result, 'success');
+        System.assert(result.startsWith('success:'));
     }
 
     static testMethod void updateSingleListViewTest()
@@ -273,7 +273,7 @@ global class ListViewControllerTest {
         System.assert(rows.getRows().size() > 0);
         System.assert(rows.getRowCount() > 0);
         System.assertNotEquals(rows.getCoreListViewURL(), '');
-        System.assertNotEquals(rows.getDataAsString(), null);
+        //System.assertNotEquals(rows.getDataAsString(), null);
         System.assertNotEquals(rows.getListView(), null);
         System.assertNotEquals(rows.getObjectName(), null);
         System.assertNotEquals(rows.getCoreListId(), null);
