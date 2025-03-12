@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 02-11-2025
+  @last modified on  : 03-09-2025
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -183,12 +183,12 @@
                         <template if:true={listViewData}>
                             <template if:true={displayExportButton}>
                                 <lightning-layout-item title={label.Export_All} style="height:32px; padding-left:10px; display: flex; justify-content: center; align-items: center;">
-                                    {label.Rows}:&nbsp;<a onclick={handleDownloadData}>{listViewDataRowsSize}</a>
+                                    {label.Rows}:&nbsp;<a onclick={handleDownloadData}>{listViewDisplayedRowsSize}</a>
                                 </lightning-layout-item>
                             </template>
                             <template if:false={displayExportButton}>
                                 <lightning-layout-item style="height:32px; padding-left:10px; display: flex; justify-content: center; align-items: center;">
-                                    {label.Rows}: {listViewDataRowsSize}
+                                    {label.Rows}: {listViewDisplayedRowsSize}
                                 </lightning-layout-item>
                             </template>
                         </template>

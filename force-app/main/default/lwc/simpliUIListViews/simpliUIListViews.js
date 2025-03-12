@@ -198,6 +198,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track listViewData;                //holds the set of data returned for a given object and list view.
     @track listViewDataRows;            //holds ALL PAGES of data that are returned.
     @track listViewDataRowsSize;        //holds total for ALL PAGES of data that are returned.
+    @track listViewDisplayedRowsSize = 0;   //holds the number of rows that are actually displayed
     @track hasListViewDataRows = false; //identifies if the list view has data rows or not.
     @track selectedAction;              //holds the selected action complex object if one is chosen.
     @track selectedActionKey;           //holds the selected action API name if one is chosen.
@@ -294,7 +295,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
      */
     async renderedCallback() {
         if (this.pageName === '') {
-            this.dispatchEvent(SLVHelper.createToast('error', '', 'List View Configuration Error', 'A page/component name must be provided for all ListViewAnything view components.', false));
+            this.dispatchEvent(SLVHelper.createToast('error', '', 'List View Configuration Error', 'A page/component name must be provided for all Simpli List Views view components.', false));
             return;
         }
         console.log('Starting simpliUIListViews.renderedCallback for ' + this.pageName);
@@ -489,6 +490,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.listViewData.listView = listview;
         this.listViewDataRows = this.rowData;
         let index = 1;
+        this.listViewDisplayedRowsSize = 0;
         this.listViewDataRows.forEach(row => {
             row.isEdited = false;
             row.isDeleted = false;
@@ -496,6 +498,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 row.sfdcId = index;
             }
             if (row.isDisplayed === undefined) row.isDisplayed = true;
+            if (row.isDisplayed) this.listViewDisplayedRowsSize++;
             if (row.isTotals === undefined) row.isTotals = false;
             if (row.highlightColor === undefined) row.highlightColor = '';
             row.salesforceId = row.sfdcId;
@@ -720,6 +723,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         try {
             this.offset = -1;
             this.selectedRecordCount = 0;
+            this.listViewDisplayedRowsSize = 0;
             this.isEdited = false;
             this.hoverIsDisplayed = false;
             let selectedRows = this.template.querySelectorAll('lightning-input');
@@ -745,7 +749,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 let listViewDataResult = await getListViewData({ pageName: this.pageName, compType: this.mode, objectName: this.selectedObject, listViewName: this.selectedListView, sortData: this.columnSortDataStr, joinFieldName: this.joinFieldName, joinData: this.joinData, offset: this.offset, textSearchStr: this.textSearchText });
                 this.handleListViewDataPage(listViewDataResult);
 
-                this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'refreshData', status: 'finished', count: this.listViewDataRowsSize, object: this.selectedObject, listView: this.selectedListView } }));
+                this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'refreshData', status: 'finished', count: this.listViewDisplayedRowsSize, object: this.selectedObject, listView: this.selectedListView } }));
                 this.spinnerOff('getListViewDataPage');
             }
         } catch (error) {
@@ -759,17 +763,47 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('JSON Result - ' + JSON.stringify(listViewDataResult));
         console.log('List View Query - ' + listViewDataResult.queryString);
         console.log('Starting refreshListViewData - ' + this.pageName + ' - ' + this.selectedObject + ' - ' + this.selectedListView + ' - ' + this.joinFieldName + ' - ' + this.offset + ' for ' + this.pageName);
+        
         //if this is the first time we are initializing the list view data OR we are refreshing the data.
         if (this.listViewData === undefined || this.listViewData.coreListId !== listViewDataResult.coreListId || this.offset === -1 || (this.offset === this.listViewData.listView.offset && this.offset === -1)) {
             //initialize list view info
             this.listViewData = listViewDataResult;
             //initialize list view row data
             this.listViewDataRows = listViewDataResult.rows;
-            //else add the new data to the existing data
+        
+        //else add the new data to the existing data
         } else {
+
+            //if we have totals rows and we are paging we need to update the totals row with the aggregated values
+            if (this.listViewData.hasTotalsRow) {
+                let totalsOldRow = this.listViewDataRows.pop(); //remove the old totals row
+                let totalsNewRow = listViewDataResult.rows[listViewDataResult.rows.length - 1]; //get the new totals tow
+
+                //we always get an empty totals row at the end so need to deal with it.
+                if (totalsNewRow.fields.length !== 0) {
+
+                    //go thru new fields on totals row
+                    totalsNewRow.fields.forEach(newField => {
+                        //go thru old fields on totals row
+                        totalsOldRow.fields.forEach(oldField => {
+                            //if fields are the same then aggregate.
+                            if (newField.name === oldField.name && !SLVHelper.isEmpty(newField.value) && newField.value !== 'TOTALS') {
+                                newField.prettyValue = parseFloat(newField.prettyValue) + parseFloat(oldField.prettyValue);
+                                newField.value = parseFloat(newField.value) + parseFloat(oldField.value);
+                            }
+                        });
+                    });
+
+                //if we are at the end then pop the empty totals row and push the updated totals row.
+                } else {
+                    listViewDataResult.rows.pop(); //replace the empty totals row
+                    listViewDataResult.rows.push(totalsOldRow); //with the updated totals row
+                }
+            }
             this.listViewDataRows = this.listViewDataRows.concat(listViewDataResult.rows);
         }
         let oldDataRowsSize = this.listViewDataRowsSize;
+
         //update the data rows size.
         this.listViewDataRowsSize = this.listViewDataRows.length;
         if (this.listViewData.hasTotalsRow) {
@@ -791,8 +825,11 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('listViewDataResult.listView.rowLimit - ' + listViewDataResult.listView.rowLimit + ' for ' + this.pageName);
         console.log('this.offset                          - ' + this.offset + ' for ' + this.pageName);
         console.log('listViewDataResult.listView.offset   - ' + listViewDataResult.listView.offset + ' for ' + this.pageName);
+
         //if we have not reached our max limit
         if (this.listViewDataRows.length < listViewDataResult.listView.rowLimit) {
+            
+            this.listViewDisplayedRowsSize += listViewDataResult.displayedRowsCount;
             //if the offset has not changed or the row size has not changed then we are done.
             if (this.offset === listViewDataResult.listView.offset || oldDataRowsSize === this.listViewDataRowsSize) {
                 this.dataSpinnerOff();
@@ -809,6 +846,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dataSpinnerOff();
         }
         console.log('List view data retrieval successful - ' + this.offset + ' of ' + this.rowLimit + ' records retrieved for ' + this.pageName);
+        
+        //count number of rows to be displayed
+
         //sets the last modified text if the component has been configured to show the data.
         if (this.displayModified === true) {
             this.modifiedText = this.listViewData.listView.lastModifiedText;
@@ -1182,7 +1222,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             if (value === 'all') {
                 selectedRows.forEach((element) => { element.checked = checked });
                 if (checked === true) {
-                    this.selectedRecordCount = this.listViewDataRowsSize;
+                    this.selectedRecordCount = this.listViewDisplayedRowsSize;
                 } else {
                     this.selectedRecordCount = 0;
                 }
@@ -1465,8 +1505,21 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('Updating OBJECT list views for ' + this.pageName);
             console.log(this.pageName + ' CALLOUT - updateObjectListViews - ' + this.calloutCount++);
             updateObjectListViews({ objectType: this.selectedObject }).then(result => {
-                if (result === 'success') {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', this.selectedObject + ' List Views Updated', this.selectedObject + ' list views have been updated successfully.', false));
+                if (result.startsWith('success:')) {
+                    let successResult = result.substring(8);
+                    if (successResult === 'Immediate')
+                        this.dispatchEvent(SLVHelper.createToast('success', '', this.selectedObject + ' List Views Updated', 'The ' + this.selectedObject + ' list views have been updated.', false));
+                    else if (successResult.startsWith('Async')) {
+                        console.log('SUCCESS RESULT - ' + successResult);
+
+                        let jobId = successResult.substring(6);
+                        console.log('JOB ID - ' + jobId);
+                        if (!SLVHelper.isEmpty(jobId))
+                            this.batchId = jobId;
+                        else
+                            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Processing', 'List view processing has started for ' + this.selectedObject + ' list views. Refresh page after completion to see changes.', false));  
+                    }
+
                     this.dispatchEvent(new CustomEvent('processlistviewclick'));
                     this.getListViewsForObject();
                     this.spinnerOff('handleProcessListViewsButtonClick3');
@@ -1475,6 +1528,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     this.spinnerOff('handleProcessListViewsButtonClick4');
                 }
             }).catch(error => {
+                console.log('Exception - ' + JSON.stringify(error));
                 this.dispatchEvent(SLVHelper.createToast('error', error, 'Processing Error', 'Error processing the ' + this.selectedObject + ' list views.', true));
                 this.spinnerOff('handleProcessListViewsButtonClick5');
             });
