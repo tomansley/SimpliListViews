@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 02-11-2025
+ * @last modified on  : 03-12-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -189,8 +189,14 @@ public with sharing abstract class ListViewAbstract {
         sortStr = '';
         Boolean isDefaultSort = false;
 
+        //3 things could get passed in
+        //1. No sorting data from the UI - comes in as []
+        //2. Sorting data from the UI - comes in as [XXX]
+        //3. Default sorting data from the list view - comes in as empty string
+
+
         //if sorting is provided from the UI then use it first
-        if (sortData != null && sortData.length() > 2) //the value when empty can be "[]"
+        if (!String.isEmpty(sortData))
         {
             //below is a bit of a mess at the moment because Map objects cannot be stringified
             //in Javascript. So we end up with a list of list!!
@@ -324,7 +330,8 @@ public with sharing abstract class ListViewAbstract {
         private ListViewConfigWrapper lvConfig = null;
         public String compType = '';
         public String queryString = ''; //the query string that was used to perform the query on the row data.
-        
+        public Integer displayedRowsSize = 0;
+
         public RowsWrapper(List_View__c listView, ListViewConfigWrapper lvConfig)
         {
             this.lvConfig = lvConfig;
@@ -455,13 +462,26 @@ public with sharing abstract class ListViewAbstract {
         }
 
         @AuraEnabled(cacheable=true)
-        public Integer getColumnCount(){
+        public Integer getColumnCount() {
             return fieldMetaData.size();
         }
 
         @AuraEnabled(cacheable=true)
-        public Integer getUIColumnCount(){
+        public Integer getUIColumnCount() {
             return fieldMetaData.size() + 1; //includes extra column for checkbox column
+        }
+
+        @AuraEnabled(cacheable=true)
+        public Integer getDisplayedRowsCount() {
+            
+            Integer count = 0;
+            for (RowWrapper row: rows)
+            {
+                if (row.getIsDisplayed() && !row.getIsTotals())
+                    count++;
+            }
+
+            return count;
         }
 
         @AuraEnabled(cacheable=true)
@@ -473,7 +493,7 @@ public with sharing abstract class ListViewAbstract {
         /*
          * Method to retrieve the data in CSV format.
          */
-        @AuraEnabled(cacheable=true)
+/*        @AuraEnabled(cacheable=true)
         public String getDataAsString()
         {
             String dataStr = getHeadersAsCSVString();
@@ -483,11 +503,14 @@ public with sharing abstract class ListViewAbstract {
 
             //for each row of data
             for (RowWrapper row: rows)
-                dataStr += row.getDataAsCSVString();
+            {
+                if (row.getIsDisplayed())
+                    dataStr += row.getDataAsCSVString();
+            }
 
             return dataStr;
         }
-
+*/
         @AuraEnabled(cacheable=true)
         public String getHeadersAsCSVString()
         {
@@ -788,11 +811,12 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public String getDataAsCSVString()
         {
-            if (parentWrapper.compType == ListViewHelper.MODE_SPLIT) return ''; //to reduce time for processing.
+            if (parentWrapper.compType == ListViewHelper.MODE_SPLIT
+                || !this.getIsDisplayed()) return ''; //to reduce time for processing.
 
             String dataStr = '';
 
-            if (!this.getIsTotals())
+            if (!this.getIsTotals() && this.getIsDisplayed())
             {
                 //get the field data. We make sure to escape delimiter
                 for (FieldWrapper fieldData: getFields())
@@ -1073,7 +1097,7 @@ public with sharing abstract class ListViewAbstract {
         @AuraEnabled(cacheable=true)
         public Boolean getIsString()
         {
-            if (this.type == ListViewHelper.TYPE_STRING) return true;
+            if (this.type == ListViewHelper.TYPE_STRING || this.type == ListViewHelper.TYPE_ID) return true;
             return false;    
         }
         
@@ -1231,6 +1255,7 @@ public with sharing abstract class ListViewAbstract {
         public String cssStyle;        //the css style that should be applied to this field based on the column styles configured
         public String functionApexClass;//if the field is to be calculated based on a provided function this is the apex class to use
         public String highlightCol;     //indicates whether a conditional color should be used instead of style and what color it is.
+        private Boolean hasRunFunction = false; //indicates whether the function has been applied or not.
 
         public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
         {
@@ -1462,14 +1487,15 @@ public with sharing abstract class ListViewAbstract {
             String strValue = '';
             
             //if we have a function we turn the object value into another value
-            if (hasFunction()) {
+            if (hasFunction() && !hasRunFunction) {
                 System.debug(LoggingLevel.DEBUG, 'Before function - ' + this.objValue);
                 Map<String, Object> context = new Map<String, Object>();
                 context.put('SObject', this.fieldObj);
                 this.objValue = ListViewHelper.processFunction(this.getFunction(), this.objValue, context);
                 System.debug(LoggingLevel.DEBUG, 'After function - ' + this.objValue);
+                hasRunFunction = true;
             } else {
-                System.debug(LoggingLevel.DEBUG, 'No function');
+                System.debug(LoggingLevel.DEBUG, 'No function or already run!');
             }
 
             //No Value!
