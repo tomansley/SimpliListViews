@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 12-17-2024
+ * @last modified on  : 03-14-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -242,6 +242,7 @@ global with sharing class ListViewActionHelper {
          Security.stripInaccessible(AccessType.READABLE,
                 [SELECT Label__c,
                         Apex_Class_Name__c,
+                        Available_In_Stand_Alone_Mode__c,
                         Object_Type__c,
                         Primary_Key__c,
                         Subtype__c,
@@ -280,6 +281,7 @@ global with sharing class ListViewActionHelper {
          Security.stripInaccessible(AccessType.READABLE,
             [SELECT Label__c,
                     Apex_Class_Name__c,
+                    Available_In_Stand_Alone_Mode__c,
                     Object_Type__c,
                     Primary_Key__c,
                     Subtype__c,
@@ -322,6 +324,7 @@ global with sharing class ListViewActionHelper {
          Security.stripInaccessible(AccessType.READABLE,
                 [SELECT Label__c,
                         Apex_Class_Name__c,
+                        Available_In_Stand_Alone_Mode__c,
                         Object_Type__c,
                         Primary_Key__c,
                         Subtype__c,
@@ -363,6 +366,7 @@ global with sharing class ListViewActionHelper {
          Security.stripInaccessible(AccessType.READABLE,
                 [SELECT Label__c,
                         Apex_Class_Name__c,
+                        Available_In_Stand_Alone_Mode__c,
                         Object_Type__c,
                         Primary_Key__c,
                         Subtype__c,
@@ -401,13 +405,44 @@ global with sharing class ListViewActionHelper {
     }
 
     /**
+    * @description Method to retrieve the actions associated with an object and component. This is used for STAND ALONE MODE only
+    * @author tom@ansleyllc.com | 03-15-2025
+    * @return Map<String, String> the primary key of the action and the action name
+    **/
+    public static List<ListViewActionWrapper> getListViewStandAloneActions(String objectType, String componentName)
+    {
+        debugString += 'getListViewStandAloneActions(' + objectType + ', ' + componentName + ')\n';
+
+        List<ListViewActionWrapper> actions = new List<ListViewActionWrapper>();
+
+        //get the actions
+        List<List_View_Action__c> lvActions = ListViewActionHelper.getListViewActions();
+
+        for (List_View_Action__c action: lvActions)
+        {
+            if (action.Available_In_Stand_Alone_Mode__c
+                    && (action.Object_Type__c == objectType
+                || (String.isEmpty(objectType) 
+                    && String.isEmpty(action.Object_Type__c)))) {
+                if (canPerformAction(objectType, componentName, action)) {
+                    actions.add(new ListViewActionWrapper(action));       
+                }
+            }
+        }
+
+        System.debug(LoggingLevel.DEBUG, debugString);
+        ListViewErrorHelper.addLog('ListViewActionHelper(getListViewStandAloneActions)', debugString);
+        return actions;
+    }
+
+    /**
     * @description Method to retrieve the actions associated with an object and list view.
     * @author tom@ansleyllc.com | 08-15-2021 
     * @return Map<String, String> the primary key of the action and the action name
     **/
     public static List<ListViewActionWrapper> getListViewActions(String objectType, String listViewName, String componentName)
     {
-        debugString += 'getListViewActions(' + objectType + ', ' + listViewName + ')\n';
+        debugString += 'getListViewActions(' + objectType + ', ' + listViewName + ', ' + componentName + ')\n';
 
         List<ListViewActionWrapper> actions = new List<ListViewActionWrapper>();
 
@@ -467,6 +502,7 @@ global with sharing class ListViewActionHelper {
             Security.stripInaccessible(AccessType.READABLE,
                 [SELECT Label__c,
                         Apex_Class_Name__c,
+                        Available_In_Stand_Alone_Mode__c,
                         Object_Type__c,
                         Primary_Key__c,
                         Subtype__c,

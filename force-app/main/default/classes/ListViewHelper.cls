@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-12-2025
+ * @last modified on  : 03-14-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -628,6 +628,9 @@ global with sharing class ListViewHelper
 
     private static List_View__c enrichListViewFromMetadata(List_View__c coreListView)
     {
+        //user must have ModifyAllData to use the Metadata API
+        if (!FeatureManagement.checkPermission('ModifyAllData')) return coreListView;
+
         ListViewMetadataAPIService.MetadataPort service = ListViewMetadataAPIService.createService();
 
         ListViewMetadataAPIService.ListView listView = null;
@@ -3756,11 +3759,11 @@ global with sharing class ListViewHelper
         @AuraEnabled
         global List<StandAloneField> fields {get; set;}
 
-        public StandAloneRow() {
+        global StandAloneRow() {
             fields = new List<StandAloneField>();
         }
 
-        public void addField(String value) {
+        global void addField(String value) {
             fields.add(new StandAloneField(value));
         }
     }

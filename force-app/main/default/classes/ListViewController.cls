@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-10-2025
+ * @last modified on  : 03-14-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -114,6 +114,16 @@ public with sharing class ListViewController
         ListViewErrorHelper.processLogs(true);
 
         return configListOptions;
+    }
+
+    @AuraEnabled
+    public static Boolean canUpsertListViews()
+    {
+        if (HelperSchema.isObject('simpli_lv__List_View__c'))
+            return HelperSchema.checkObjectCreateable('simpli_lv__List_View__c', false) && HelperSchema.checkObjectUpdateable('simpli_lv__List_View__c', false);
+        else 
+            return HelperSchema.checkObjectCreateable('List_View__c', false) && HelperSchema.checkObjectUpdateable('List_View__c', false);
+
     }
 
     @AuraEnabled
@@ -411,6 +421,18 @@ public with sharing class ListViewController
         System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewActions(' + objectType + ', ' + listViewName + ', ' + componentName + ')');
         
         List<ListViewActionWrapper> actions = ListViewActionHelper.getListViewActions(objectType, listViewName, componentName);
+
+        ListViewErrorHelper.processLogs(true);
+
+        return actions;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<ListViewActionWrapper> getListViewStandAloneActions(String objectType, String componentName)
+    {
+        System.debug(LoggingLevel.DEBUG, 'Starting ListViewController.getListViewStandAloneActions(' + objectType + ', ' + componentName + ')');
+        
+        List<ListViewActionWrapper> actions = ListViewActionHelper.getListViewStandAloneActions(objectType, componentName);
 
         ListViewErrorHelper.processLogs(true);
 
