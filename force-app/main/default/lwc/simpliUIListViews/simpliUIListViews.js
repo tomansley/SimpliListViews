@@ -30,11 +30,13 @@ import Save_Row_Data from '@salesforce/label/c.Save_Row_Data';
 import Search_List_Dot from '@salesforce/label/c.Search_List_Dot';
 import Reset_Row_Data from '@salesforce/label/c.Reset_Row_Data';
 import hasModifyAll from '@salesforce/apex/ListViewController.hasModifyAll';
+import canUpsertListViews from '@salesforce/apex/ListViewController.canUpsertListViews';
 import hasEnterprise from '@salesforce/apex/ListViewController.hasEnterprise';
 import getListViewObjects from '@salesforce/apex/ListViewController.getListViewObjects';
 import getObjectListViews from '@salesforce/apex/ListViewController.getObjectListViews';
 import getListViewData from '@salesforce/apex/ListViewController.getListViewData';
 import getListViewActions from '@salesforce/apex/ListViewController.getListViewActions';
+import getListViewStandAloneActions from '@salesforce/apex/ListViewController.getListViewStandAloneActions';
 import updateAllListViews from '@salesforce/apex/ListViewController.updateAllListViews';
 import updateSingleListView from '@salesforce/apex/ListViewController.updateSingleListView';
 import updateObjectListViews from '@salesforce/apex/ListViewController.updateObjectListViews';
@@ -146,8 +148,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('canReprocess= ', value);
     }
     get canReprocess() {
-        if (SLVHelper.toBool(this.displayReprocess) === true && this.isCoreListView
-            || SLVHelper.toBool(this.displayReprocess) === true && this.selectedObject === undefined && this.selectedListView === undefined && this.isInitialized === true) {
+        if (SLVHelper.toBool(this.displayReprocess) === true && this.isCoreListView && this.canUpsertListViews
+            || SLVHelper.toBool(this.displayReprocess) === true && this.selectedObject === undefined && this.canUpsertListViews && this.selectedListView === undefined && this.isInitialized === true) {
             return true;
         }
         return false;
@@ -183,6 +185,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track tablestyle = 'slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols tablenohorizontalscroll'; //the style applied to the list view table
     @track relatedRecordId;             //holds the record Id if set by the API.
     @track hasEnterprise = false;  //indicates if the salesforce org has the enterprise edition of SLV
+    @track canUpsertListViews = false; //indicates if the user is able to update list views. Users need CREATE and UPDATE permissions
     @track hasModifyAll = false;  //indicates whether the current user is allowed to modify all data.
     @track textSearchText = '';         //holds the current value for text searching.
     @track joinData = '';     //holds the join data coming in from an external list view.....if it exists.
@@ -328,6 +331,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             //get component config
             console.log(this.pageName + ' CALLOUT - getComponentConfig - ' + this.calloutCount++);
             this.componentConfig = await getComponentConfig({ compName: this.pageName });
+            this.canUpsertListViews = await canUpsertListViews({});
             this.hasEnterprise = await hasEnterprise({});
             this.hasModifyAll = await hasModifyAll({});
             this.handleComponentConfig();
@@ -538,6 +542,9 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         if (this.virtual) {
             this.listwrapperstyle = 'virtualapplistscrollwrapper';
         }
+        if (this.mode === 'Stand Alone') { //cannot use isModeStandAlone because this might get called before the renderedCallback method!
+            this.getListViewStandAloneActions();
+        }
         this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'standAloneRendering', status: 'finished' } }));
         this.spinnerOff('handleStandAloneRowData');
     }
@@ -669,6 +676,22 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         } catch (error) {
             SLVHelper.showErrorMessage(error);
         }
+    }
+
+    getListViewStandAloneActions() {
+        console.log('Starting getListViewStandAloneActions');
+        console.log(this.pageName + ' CALLOUT - getListViewStandAloneActions - ' + this.calloutCount++);
+        getListViewStandAloneActions({ objectType: this.singleListViewObject, componentName: this.pageName }).then(result => {
+            console.log(this.pageName + ' CALLOUT - getListViewStandAloneActions - ' + this.calloutCount++);
+            this.objectActionList = result;
+            console.log('Stand Alone Actions - ' + JSON.stringify(result));
+            this.handleListViewActions(0);
+            this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'refreshActions', status: 'finished', listView: this.selectedListView, object: this.selectedObject, count: this.displayedActionList.length } }));
+        }).catch(error => {
+            this.objectActionList = undefined;
+            this.spinnerOff('getListViewStandAloneActions');
+            this.dispatchEvent(SLVHelper.createToast('error', error, 'Error Retrieving Actions', 'Error retrieving the stand alone list view actions.', true));
+        });
     }
 
     async getListViewActions() {
