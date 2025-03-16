@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-12-2025
+ * @last modified on  : 03-14-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -123,47 +123,52 @@ public with sharing class HelperTest {
         return pricebook;
     }
     
-    public static User insertUser(String lastname, String profileName, String roleName, String userName, boolean insertRec){
-        User u = new User(
-             ProfileId         = [SELECT Id FROM Profile WHERE Name = :profileName].Id,
-             UserRoleId        = [SELECT Id FROM UserRole WHERE Name = :roleName].Id,
-             LastName          = lastname,
-             Email             = userName+'@ansleyllc.com',
-             Username          = userName+'@ansleyllc.com' + System.currentTimeMillis(),
-             CompanyName       = 'Ansley LLC',
-             Title             = 'Mr',
-             Alias             = userName.left(8),
-             TimeZoneSidKey    = 'America/Los_Angeles',
-             EmailEncodingKey  = 'UTF-8',
-             LanguageLocaleKey = 'en_US',
-             LocaleSidKey      = 'en_US'
-        );
-        if(insertRec)
-        {
-            insert u;
+    public static User getUser(String lastname, String profileName, String roleName, String userName, boolean admin){
+        List<User> users = [SELECT Id FROM User WHERE LastName = :lastname LIMIT 1];
+        User testUser = null;
+        if (!users.isEmpty())
+            testUser = users[0];
+        else {
+            testUser = new User(ProfileId         = [SELECT Id FROM Profile WHERE Name = :profileName].Id,
+                                LastName          = lastname,
+                                Email             = userName+'@ansleyllc.com',
+                                Username          = userName+'@ansleyllc.com' + System.currentTimeMillis(),
+                                CompanyName       = 'Ansley LLC',
+                                Title             = 'Mr',
+                                Alias             = userName.left(8),
+                                TimeZoneSidKey    = 'America/Los_Angeles',
+                                EmailEncodingKey  = 'UTF-8',
+                                LanguageLocaleKey = 'en_US',
+                                LocaleSidKey      = 'en_US'
+                            );
+
+            if (roleName != null)
+                testUser.UserRoleId = [SELECT Id FROM UserRole WHERE Name = :roleName].Id;
+
+            testUser = (User) HelperDatabase.insertRecord(testUser);
         }
-        return u;
+
+        System.runAs(new User(Id = UserInfo.getUserId())) //need to do this otherwise we hit a MIXED_DML_OPERATION issue
+        {
+            String permName = 'Simpli List Views User';
+            if (admin)
+                permName = 'Simpli List Views Super User';
+            PermissionSet p = [SELECT Id FROM PermissionSet WHERE Label = :permName];
+
+            List<PermissionSetAssignment> psaList = [SELECT Id FROM PermissionSetAssignment WHERE PermissionSetId = :p.Id AND AssigneeId = :testUser.Id];
+
+            if (psaList.isEmpty())
+            {
+                PermissionSetAssignment psa = new PermissionSetAssignment(PermissionSetId = p.Id, AssigneeId = testUser.Id);
+                insert psa;
+            }
+        }
+        return testUser;
+
     }
 
-    public static User insertUser(String lastname, String profileName, String userName, boolean insertRec){
-        User u = new User(
-             ProfileId         = [SELECT Id FROM Profile WHERE Name =:profileName].Id,
-             LastName          = lastname,
-             Email             = userName+'@ansleyllc.com',
-             Username          = userName+'@ansleyllc.com' + System.currentTimeMillis(),
-             CompanyName       = 'Ansley LLC',
-             Title             = 'Mr',
-             Alias             = userName.left(8),
-             TimeZoneSidKey    = 'America/Los_Angeles',
-             EmailEncodingKey  = 'UTF-8',
-             LanguageLocaleKey = 'en_US',
-             LocaleSidKey      = 'en_US'
-        );
-        if(insertRec)
-        {
-            insert u;
-        }
-        return u;
+    public static User insertUser(String lastname, String profileName, String userName, boolean admin){
+        return getUser(lastname, profileName, null, userName, admin);
     }
 
     public static List<List_View__c> createCoreListViews()
