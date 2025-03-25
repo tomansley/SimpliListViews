@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 09-18-2024
+ * @last modified on  : 03-18-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -75,14 +75,58 @@ global with sharing class ScriptInstall implements InstallHandler {
         for (List_View_Config_Parameter__c param: orgWideConfig.List_View_Config_Parameters__r)
             orgParams.put(param.Parameter_Name__c, param);
 
-        if (orgParams.get('AllowImmediateRefresh') == null)
+        if (orgParams.get('AllowHorizontalScrolling') == null)
         {
             List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
             param.List_View_Config__c = orgWideConfig.Id;
-            param.Parameter_Name__c   = 'AllowImmediateRefresh';
+            param.Parameter_Name__c   = 'AllowHorizontalScrolling';
             param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
             param.Parameter_Value__c  = ListViewHelper.FFALSE;
-            param.Parameter_Label__c  = 'Allow Immediate Refresh';
+            param.Parameter_Label__c  = 'Allow Horizontal Scrolling';
+            orgParams.put(param.Parameter_Name__c, param);
+        }
+
+        if (orgParams.get('TypeAheadObjectSearch') == null)
+        {
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = orgWideConfig.Id;
+            param.Parameter_Name__c   = 'TypeAheadObjectSearch';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Use Type-Ahead For Object Search';
+            orgParams.put(param.Parameter_Name__c, param);
+        }
+
+        if (orgParams.get('DisplayAllRelatedRecords') == null)
+        {
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = orgWideConfig.Id;
+            param.Parameter_Name__c   = 'DisplayAllRelatedRecords';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.FFALSE;
+            param.Parameter_Label__c  = 'Display All Related Records';
+            orgParams.put(param.Parameter_Name__c, param);
+        }
+
+        if (orgParams.get('NoSorting') == null)
+        {
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = orgWideConfig.Id;
+            param.Parameter_Name__c   = 'NoSorting';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Do Not Allow Sorting';
+            orgParams.put(param.Parameter_Name__c, param);
+        }
+
+        if (orgParams.get('UseSimpleSorting') == null)
+        {
+            List_View_Config_Parameter__c param = new List_View_Config_Parameter__c();
+            param.List_View_Config__c = orgWideConfig.Id;
+            param.Parameter_Name__c   = 'UseSimpleSorting';
+            param.Parameter_Type__c   = ListViewHelper.TYPE_BOOLEAN;
+            param.Parameter_Value__c  = ListViewHelper.TTRUE;
+            param.Parameter_Label__c  = 'Use Standard Single Column Sorting';
             orgParams.put(param.Parameter_Name__c, param);
         }
 
