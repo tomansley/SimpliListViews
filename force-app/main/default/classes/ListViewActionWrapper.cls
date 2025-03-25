@@ -257,9 +257,9 @@ public with sharing class ListViewActionWrapper {
         public ActionParameterWrapper(String label, String fieldAPIName, String defaultValue)
         {
             displayOrder = -1;
-            label = label;
-            fieldAPIName = fieldAPIName;
-            defaultValue = defaultValue;
+            this.label = label;
+            this.fieldAPIName = fieldAPIName;
+            this.defaultValue = defaultValue;
             paramType = ListViewHelper.TYPE_STRING;
         }
 
@@ -291,7 +291,7 @@ public with sharing class ListViewActionWrapper {
         @AuraEnabled(cacheable=true)
         public String getAPIName()
         {
-            return fieldAPIName;
+            return fieldAPIName != null ? fieldAPIName : '';
         }
 
         @AuraEnabled(cacheable=true)
