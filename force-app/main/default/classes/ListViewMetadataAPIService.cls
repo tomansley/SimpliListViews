@@ -183,23 +183,18 @@ global class ListViewMetadataAPIService {
             Map<String, ListViewMetadataAPIService.IReadResponseElement> response_map_x = new Map<String, ListViewMetadataAPIService.IReadResponseElement>();
             response_map_x.put('response_x', response_x);
 
-            if (Test.isRunningTest())
-            {
-
-            } else {
-                WebServiceCallout.invoke(
-                this,
-                request_x,
-                response_map_x,
-                new String[]{endpoint_x,
-                '',
-                SOAP_M_URI,
-                'readMetadata',
-                SOAP_M_URI,
-                'readMetadataResponse',
-                'ListViewMetadataAPIService.read' + type_x + 'Response_element'}
-                );
-            }
+            WebServiceCallout.invoke(
+            this,
+            request_x,
+            response_map_x,
+            new String[]{endpoint_x,
+            '',
+            SOAP_M_URI,
+            'readMetadata',
+            SOAP_M_URI,
+            'readMetadataResponse',
+            'ListViewMetadataAPIService.read' + type_x + 'Response_element'}
+            );
             response_x = response_map_x.get('response_x');
             System.debug(LoggingLevel.FINE, 'RESPONSE_X - ' + response_x);
             return response_x.getResult();

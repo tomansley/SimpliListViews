@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 12-03-2024
+ * @last modified on  : 03-24-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -109,6 +109,31 @@ global class ListViewAdminControllerTest {
         System.assertEquals(actionsSize+1, actionsSize2);
 
         List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('SendEmailFromTemplateTest-Active-Core:ListViewActionEmail:Core:null');
+
+        System.assert(action != null);
+    }
+
+    @IsTest
+    static void createActionLWCComponentTest()
+    {
+        ListViewHelper.insertCoreConfiguration();
+
+        List<List_View_Action__c> actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize = actions.size();
+
+        String jsonStr = '[["actionRecordType","Core"],["actionType","LightningComponent"],["actionSubType",""],["actionLabel","Display LWC Component"],["actionIsActive","false"],["lwcComponentAPIName","c__myComponent"],["actionHasObject","false"],["actionObjectType",""],["actionHasComponent","false"],["actionComponentName",""],["actionRecordVisible","Always Displayed"],["actionUserPermissions",""]]';
+
+        Test.startTest();
+            String response = ListViewAdminController.createAction(jsonStr);
+        Test.stopTest();
+
+        actions = ListViewActionHelper.getListViewActions();
+        Integer actionsSize2 = actions.size();
+
+        System.assertEquals('success', response);
+        System.assertEquals(actionsSize+1, actionsSize2);
+
+        List_View_Action__c action = ListViewActionHelper.getListViewActionByKey('DisplayLWCComponent:ListViewActionLWC:Core:null');
 
         System.assert(action != null);
     }
