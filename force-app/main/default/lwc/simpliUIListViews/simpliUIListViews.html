@@ -3,7 +3,7 @@
   @description       : The main LWC for displaying the list views.
   @author            : tom@ansleyllc.com
   @group             : 
-  @last modified on  : 03-13-2025
+  @last modified on  : 03-23-2025
   @last modified by  : tom@ansleyllc.com
   Modifications Log 
   Ver   Date         Author              Modification
@@ -901,14 +901,18 @@
     <!-- ---------------------------------------------------------------------------------- -->
     <!-- The modal view if a SCREENS FLOW action is selected                                -->
     <!-- ---------------------------------------------------------------------------------- -->
-    <c-simpli-u-i-list-views-flow-frame show-modal={showFlowModal}
-                                        record-ids={selectedRecordIds}
-                                        action-api-name={selectedActionKey}
-                                        onprocessed={processFlowModal}
-                                        oncancelled={cancelFlowModal}
-                                        onfinished={finishFlowModal}>
-    </c-simpli-u-i-list-views-flow-frame>
-
+    <template if:true={showFlowModal}>
+        <c-simpli-u-i-list-views-flow-frame show-modal={showFlowModal}
+                                            record-ids={selectedRecordIds}
+                                            list-view-object-a-p-i-name={selectedObject}
+                                            list-view-a-p-i-name={selectedListView}
+                                            action-parameters={selectedActionParameters}
+                                            action-api-name={selectedActionKey}
+                                            onprocessed={processFlowModal}
+                                            oncancelled={cancelFlowModal}
+                                            onfinished={finishFlowModal}>
+        </c-simpli-u-i-list-views-flow-frame>
+    </template>
     <!-- ---------------------------------------------------------------------------------- -->
     <!-- The modal view if the ACTION button is pressed and we need to display something    -->
     <!-- ---------------------------------------------------------------------------------- -->

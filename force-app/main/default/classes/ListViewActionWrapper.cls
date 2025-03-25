@@ -4,7 +4,16 @@ public with sharing class ListViewActionWrapper {
     public List<ActionParameterWrapper> displayParameters;
     public List<ActionParameterWrapper> nonDisplayParameters;
 
+    public static final String PARAM_OBJ_TYPE = 'objectType';
+    public static final String PARAM_LIST_VIEW_NAME = 'listViewName';
+    public static final String PARAM_COMP_NAME = 'componentName';
+
     public ListViewActionWrapper(List_View_Action__c action)
+    {
+        this(action, null, null, null);
+    }
+    
+    public ListViewActionWrapper(List_View_Action__c action, String objectType, String listViewName, String componentName)
     {
         this.action = new Action(action);
         displayParameters = new List<ActionParameterWrapper>();
@@ -17,6 +26,9 @@ public with sharing class ListViewActionWrapper {
             else
                 nonDisplayParameters.add(wrapper);
         }
+        if (!String.isEmpty(objectType)) nonDisplayParameters.add(new ActionParameterWrapper('Object Type', PARAM_OBJ_TYPE, objectType));
+        if (!String.isEmpty(listViewName)) nonDisplayParameters.add(new ActionParameterWrapper('List View Name', PARAM_LIST_VIEW_NAME, listViewName));
+        if (!String.isEmpty(componentName)) nonDisplayParameters.add(new ActionParameterWrapper('Component Name', PARAM_COMP_NAME, componentName));
     }
 
     @AuraEnabled(cacheable=true)
@@ -89,6 +101,12 @@ public with sharing class ListViewActionWrapper {
     public Boolean getIsFlow()
     {
         return action.isFlow;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public String getLWCComponentAPIName()
+    {
+        return action.lwcComponentAPIName;
     }
 
     @AuraEnabled(cacheable=true)
@@ -186,6 +204,7 @@ public with sharing class ListViewActionWrapper {
         public Boolean isHyperlink;
         public Boolean isActive;
         public Boolean isFlow;
+        public String lwcComponentAPIName;
         public String flowAPIName;
         public String flowFrameHeight;
         public String flowFrameWidth;
@@ -208,6 +227,7 @@ public with sharing class ListViewActionWrapper {
             isHyperlink = action.Is_Hyperlink__c;
             isActive = action.Is_Active__c;
             isFlow = action.Is_Flow__c;
+            lwcComponentAPIName = action.LWC_Component_API_Name__c;
             flowAPIName = action.Flow_API_Name__c;
             flowFrameHeight = action.Flow_Frame_Height__c;
             flowFrameWidth = action.Flow_Frame_Width__c;
@@ -233,6 +253,15 @@ public with sharing class ListViewActionWrapper {
 
         private Object defaultValue = null;
         public String parentObjType;   //the API name of the object that this field looks up to
+
+        public ActionParameterWrapper(String label, String fieldAPIName, String defaultValue)
+        {
+            displayOrder = -1;
+            label = label;
+            fieldAPIName = fieldAPIName;
+            defaultValue = defaultValue;
+            paramType = ListViewHelper.TYPE_STRING;
+        }
 
         public ActionParameterWrapper(List_View_Action_Parameter__c param)
         {

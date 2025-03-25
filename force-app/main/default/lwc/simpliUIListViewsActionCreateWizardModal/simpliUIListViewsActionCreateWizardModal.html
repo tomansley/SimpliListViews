@@ -2,7 +2,7 @@
 <!--
   @description       : 
   @author            : tom@ansleyllc.com
-  @last modified on  : 11-22-2024
+  @last modified on  : 03-24-2025
   @last modified by  : tom@ansleyllc.com
 -->
 <template>
@@ -218,6 +218,25 @@
                                         </lightning-input>
                                     </lightning-layout-item>
                                 </lightning-layout> 
+                            </template>
+
+                            <!-- LWC COMPONENT -->
+                            <template if:true={isLightningComponent}>
+                                <lightning-layout horizontal-align="spread">
+                                    
+                                    <lightning-layout-item flexibility="grow" padding="horizontal-small">
+                                        <lightning-input type="text" 
+                                                        label="Lightning Component API Name" 
+                                                        placeholder="Enter lightning component API name here - ex. c__myComponent"
+                                                        field-level-help="Specifies the API name of the lightning component to be launched. Note that the prefix must be provided and the component must have the lightning__UrlAddressable target." 
+                                                        onchange={handleActionParameterAdded}
+                                                        data-param-name="lwcComponentAPIName"
+                                                        minlength="2"
+                                                        required
+                                                        style="padding-top: 10px;">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+                                </lightning-layout>
                             </template>
 
                             <!-- AUTO-LAUNCHED FLOW -->

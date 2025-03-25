@@ -204,6 +204,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track listViewDisplayedRowsSize = 0;   //holds the number of rows that are actually displayed
     @track hasListViewDataRows = false; //identifies if the list view has data rows or not.
     @track selectedAction;              //holds the selected action complex object if one is chosen.
+    @track selectedActionParameters;    //holds any parameters associated with the action.
     @track selectedActionKey;           //holds the selected action API name if one is chosen.
     @track selectedActionLabel;         //holds the selected action label if one is chosen.
     @track objectActionList;            //holds the (Complex Object) list of available actions for the selected object
@@ -1761,6 +1762,42 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         });
                     }
                 }
+
+            //LWC PAGE
+            } else if (this.selectedAction.className === 'ListViewActionLWC') {
+                
+                let state = {};
+
+                state.c__listViewAPIName = this.selectedListView;
+                state.c__listViewObjectAPIName = this.selectedObject;
+
+                //handle selected record ids
+                let recordIdStr = '';
+                this.selectedRecordIds.forEach(recordId => {
+                    recordIdStr = recordIdStr + recordId + '%2C'; //%2C = encoded comma
+                });
+                recordIdStr = recordIdStr.slice(0, -3); //remove last "%2C"
+                state.c__recordIds = recordIdStr;
+
+                //handle action parameters
+                this.selectedAction.nonDisplayParameters.forEach(param => {
+                    let fieldName = 'c__' + param.aPIName;
+                    state[fieldName] = param.value;
+                });
+
+                console.log('State - ' + JSON.stringify(state));
+                this[NavigationMixin.GenerateUrl]({
+                    type: 'standard__component',
+                    attributes: {
+                        componentName: this.selectedAction.lWCComponentAPIName
+                    },
+                    state: state
+                }).then(url => {
+                    console.log('URL - ' + url);
+                    window.open(url, "_blank");
+                });
+
+
                 //GENERATE PDF
             } else if (this.selectedAction.className === 'ListViewActionPDF') {
                 this.spinnerOn('ListViewActionPDF');
@@ -1791,6 +1828,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 //SCREEN FLOW (AUTOMATED FLOWS HAPPEN IN CUSTOM)
             } else if (this.selectedAction.isFlow === true && this.selectedAction.flowType === 'Screen Flow' && !this.virtual) {
                 this.selectedActionLabel = 'Label ' + this.selectedAction.label;
+                this.selectedActionParameters = this.selectedAction.allParameters;
                 this.showFlowModal = true;
                 //CREATE/NEW
             } else if (this.selectedAction.className === 'ListViewActionCreate' && !this.virtual) {

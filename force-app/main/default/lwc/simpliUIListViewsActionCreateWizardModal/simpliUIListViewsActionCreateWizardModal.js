@@ -38,6 +38,7 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
     get isSendEmailTemplate() { return this.selectedActionType === "EmailTemplate"; }
     get isHyperlink() { return this.selectedActionType === "Hyperlink"; }
     get isLaunchFlow() { return this.selectedActionType === "LaunchFlow"; }
+    get isLightningComponent() { return this.selectedActionType === "LightningComponent"; }
     get isScreenFlow() { return this.selectedActionType === "ScreenFlow"; }
     get isManageData() { return this.selectedActionType === "ManageData"; }
     get isSaveToPDF() { return this.selectedActionType === "SaveToPDF"; }
@@ -109,6 +110,7 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
             { label: 'Hyperlink', value: 'Hyperlink' },
             { label: 'Auto-Launch Flow', value: 'LaunchFlow' },
             { label: 'Screen Flow', value: 'ScreenFlow' },
+            { label: 'Display Lightning Component', value: 'LightningComponent' },
             { label: 'Manage Data (create, edit, delete, clone)', value: 'ManageData' },
             { label: 'Save To PDF', value: 'SaveToPDF' },
             { label: 'Custom Action', value: 'Custom' },
@@ -224,6 +226,7 @@ export default class SimpliUIListViewsActionCreateWizardModal extends LightningE
             || (this.selectedActionType === 'EmailTemplate' && this.actionParams.get('sendEmailTemplateFolderName') === undefined)
             || (this.selectedActionType === 'LaunchFlow' && this.actionParams.get('launchFlowAPIName') === undefined)
             || (this.selectedActionType === 'ScreenFlow' && this.actionParams.get('screenFlowAPIName') === undefined)
+            || (this.selectedActionType === 'LightningComponent' && this.actionParams.get('lwcComponentAPIName') === undefined)
             || (this.selectedActionType === 'Custom' && this.actionParams.get('customApexClassName') === undefined)
         ) {
             this.dispatchEvent(SLVHelper.createToast('error', '', 'Required Field Missing', 'A required field is missing', false));

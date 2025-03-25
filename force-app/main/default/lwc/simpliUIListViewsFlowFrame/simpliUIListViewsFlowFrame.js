@@ -12,8 +12,63 @@ export default class SimpliUIListViewsFlowFrame extends LightningElement {
     @api actionApiName;             //the flow that was selected.
     @track listViewAction;          //holds the action data for the provided action API name.
     @track isInitialized = false;  //identifies if the frame has been initialized
+    flowInputVariables = [];            //holds the input variables for the flow
 
-    _recordIds;
+    _listViewObjectAPIName;            //action parameters that have been configured and have a value.
+    @api set listViewObjectAPIName(value)
+    {
+        this._listViewObjectAPIName = value;
+
+        if (!SLVHelper.isEmpty(value)) {
+            this.flowInputVariables.push({
+                name: 'listViewObjectAPIName',
+                type: 'String',
+                value: this._listViewObjectAPIName
+            })
+        }
+    }
+    get listViewObjectAPIName() 
+    { 
+        return this._listViewObjectAPIName; 
+    }
+
+    _actionParameters;            //action parameters that have been configured and have a value.
+    @api set actionParameters(value)
+    {
+        this._actionParameters = JSON.parse(JSON.stringify(value));
+
+        if (!SLVHelper.isEmpty(value)) {
+            this.flowInputVariables.push({
+                name: 'actionParameters',
+                type: 'String',
+                value: this._actionParameters
+            })
+        }
+    }
+    get actionParameters() 
+    { 
+        return this._actionParameters; 
+    }
+
+    _listViewAPIName;             //the list view API name that is being used.
+    @api set listViewAPIName(value)
+    {
+        this._listViewAPIName = value;
+
+        if (!SLVHelper.isEmpty(value)) {
+            this.flowInputVariables.push({
+                name: 'listViewAPIName',
+                type: 'String',
+                value: this._listViewAPIName
+            })
+        }
+    }
+    get listViewAPIName() 
+    { 
+        return this._listViewAPIName; 
+    }
+
+    _recordIds;             //the record ids that are being used.
     @api set recordIds(value) 
     { 
         //the record ids come through as a set. So we need to change it to an array
@@ -25,14 +80,12 @@ export default class SimpliUIListViewsFlowFrame extends LightningElement {
         }
 
         if (this._recordIds.length > 0)
-        {
-            //the LWC object that is required for the lightning-flow component
-            this._recordIds = [{
+        {        
+            this.flowInputVariables.push({
                 name: 'recordIds',
                 type: 'String',
                 value: this._recordIds
-            }];
-        
+            });
         }
     }
     

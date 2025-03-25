@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-14-2025
+ * @last modified on  : 03-25-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -112,6 +112,11 @@ global with sharing class ListViewActionHelper {
                 if (!String.isEmpty(actionFields.get('sendEmailTemplateWhatIdField')))
                     actionParams.add(createActionParameter('EmailTemplateWhatIdField', 'EmailTemplateWhatIdField', 'string', -1, actionFields.get('sendEmailTemplateWhatIdField')));     
 
+            } else if (actionType == 'LightningComponent')
+            {
+                action.Apex_Class_Name__c = 'ListViewActionLWC';
+                action.LWC_Component_API_Name__c = actionFields.get('lwcComponentAPIName');
+            
             } else if (actionType == 'LaunchFlow')
             {
                 action.Apex_Class_Name__c = 'ListViewActionFlow';
@@ -252,6 +257,7 @@ global with sharing class ListViewActionHelper {
                         Is_Hyperlink__c,
                         Is_Active__c,
                         Is_Flow__c,
+                        LWC_Component_API_Name__c,
                         Flow_API_Name__c,
                         Flow_Frame_Height__c,
                         Flow_Frame_Width__c,
@@ -291,6 +297,7 @@ global with sharing class ListViewActionHelper {
                     Is_Hyperlink__c,
                     Is_Active__c,
                     Is_Flow__c,
+                    LWC_Component_API_Name__c,
                     Flow_API_Name__c,
                     Flow_Frame_Height__c,
                     Flow_Frame_Width__c,
@@ -335,6 +342,7 @@ global with sharing class ListViewActionHelper {
                         Is_Active__c,
                         Is_Flow__c,
                         Flow_Type__c,
+                        LWC_Component_API_Name__c,
                         Flow_API_Name__c,
                         Flow_Frame_Height__c,
                         Flow_Frame_Width__c,
@@ -377,6 +385,7 @@ global with sharing class ListViewActionHelper {
                         Is_Active__c,
                         Is_Flow__c,
                         Flow_Type__c,
+                        LWC_Component_API_Name__c,
                         Flow_API_Name__c,
                         Flow_Frame_Height__c,
                         Flow_Frame_Width__c,
@@ -425,7 +434,7 @@ global with sharing class ListViewActionHelper {
                 || (String.isEmpty(objectType) 
                     && String.isEmpty(action.Object_Type__c)))) {
                 if (canPerformAction(objectType, componentName, action)) {
-                    actions.add(new ListViewActionWrapper(action));       
+                    actions.add(new ListViewActionWrapper(action, objectType, null, componentName));       
                 }
             }
         }
@@ -461,7 +470,7 @@ global with sharing class ListViewActionHelper {
         {
             List_View_Action__c action = lvActions.get(actionName);
             if (canPerformAction(objectType, componentName, action))
-                actions.add(new ListViewActionWrapper(action));       
+                actions.add(new ListViewActionWrapper(action, objectType, listViewName, componentName));       
         }
 
         System.debug(LoggingLevel.DEBUG, debugString);
@@ -513,6 +522,7 @@ global with sharing class ListViewActionHelper {
                         Is_Active__c,
                         Is_Flow__c,
                         Flow_Type__c,
+                        LWC_Component_API_Name__c,
                         Flow_API_Name__c,
                         Flow_Frame_Height__c,
                         Flow_Frame_Width__c,

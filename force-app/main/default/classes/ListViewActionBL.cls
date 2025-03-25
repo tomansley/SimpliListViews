@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 08-01-2024
+ * @last modified on  : 03-24-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -9,7 +9,7 @@
 **/
 public with sharing class ListViewActionBL {
     
-    private static final Set<String> bogusClassNames = new Set<String>{'ListViewActionNull', 'ListViewActionPDF', 'ListViewActionMassCreate', 'ListViewActionCreate', 'ListViewActionClone', 'ListViewActionEdit', 'ListViewActionEditAll', 'ListViewActionHyperLink' };
+    private static final Set<String> bogusClassNames = new Set<String>{'ListViewActionNull', 'ListViewActionLWC', 'ListViewActionPDF', 'ListViewActionMassCreate', 'ListViewActionCreate', 'ListViewActionClone', 'ListViewActionEdit', 'ListViewActionEditAll', 'ListViewActionHyperLink' };
     /*
      * Method to set the primary key of the action based on the following -
      */
