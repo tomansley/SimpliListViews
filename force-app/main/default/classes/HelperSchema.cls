@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 07-30-2024
+ * @Last Modified On   : 03-25-2025
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -860,7 +860,11 @@ public with sharing class HelperSchema {
                         if (addObjName == ListViewHelper.TTRUE && fieldName.contains('.'))
                             label = objType + ' ' + fieldDesc.getLabel();
 
-                        data = new FieldData(field, label, fieldDesc.getType(), currentObj.get(field), currentObj);
+                        Object fieldValue;
+                        if (currentObj.isSet(field)) //we might have an object with no data so we need to check if the field is set
+                            fieldValue = currentObj.get(field);
+
+                        data = new FieldData(field, label, fieldDesc.getType(), fieldValue, currentObj);
 						data.parentObjType = getObjectType(currentObj);
                         //data.objValueId = objValueId;
                         data.isEditable = fieldDesc.isUpdateable();

@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-12-2025
+ * @last modified on  : 03-25-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -885,7 +885,7 @@ public with sharing abstract class ListViewAbstract {
          */
         private void calculateHighlightConditionFiltering(List<ListViewCondition> filterConditions)
         {
-            System.debug(LoggingLevel.FINE, 'Calculating filtering for row!');
+            System.debug(LoggingLevel.DEBUG, 'Calculating filtering for row!');
 
             if (filterConditions.isEmpty()) return;
 
@@ -893,17 +893,17 @@ public with sharing abstract class ListViewAbstract {
             Boolean isValidRow = false;
             for (ListViewCondition condition: filterConditions)
             {
-                System.debug(LoggingLevel.FINE, 'Working with - ' + condition.getFieldName());
 
                 //go through each field
-                for (FieldWrapper field: fields.values())
+                for (FieldWrapper field: fields.values()) 
                 {
+                    System.debug(LoggingLevel.DEBUG, 'Working with - ' + condition.getFieldName() + ' and ' + field.name);
 
                     //if we have a match between field name and condition field name
                     if (condition.getFieldName() == field.name.toLowerCase() || condition.getFieldName() == field.getLongName().toLowerCase())
                     {
 
-                        System.debug(LoggingLevel.FINE, 'We have a matching condition!');
+                        System.debug(LoggingLevel.DEBUG, 'We have a matching condition!');
 
                         if (ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, condition.getCondition()))
                         {
@@ -938,11 +938,10 @@ public with sharing abstract class ListViewAbstract {
             //for each condition
             for (ListViewCondition condition: revConditions)
             {
-                System.debug(LoggingLevel.FINE, 'Working with - ' + condition.getFieldName());
-
                 //go through each field
                 for (FieldWrapper field: fields.values())
                 {
+                    System.debug(LoggingLevel.DEBUG, 'Working with - ' + condition.getFieldName() + ' and ' + field.name);
 
                     String condField = condition.getFieldName();
                     
@@ -953,13 +952,13 @@ public with sharing abstract class ListViewAbstract {
                     if (condField == field.name.toLowerCase() || condField == field.getLongName().toLowerCase())
                     {
 
-                        System.debug(LoggingLevel.FINE, 'We have a matching condition!');
+                        System.debug(LoggingLevel.DEBUG, 'We have a matching condition!');
 
                         String color = '';
                         if (ListViewConfigHelper.validateFieldCondition(field.getValue(), field.type, condition.getCondition()))
                             color = condition.getColor();
 
-                        System.debug(LoggingLevel.FINE, 'Condition validation result = ' + color);
+                        System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + color);
 
                         if (color != '') {
                             if (condition.highlightCellOnly) {
@@ -2294,7 +2293,6 @@ public with sharing abstract class ListViewAbstract {
 
             for (List_View_Config_Condition__c condition: listViewConfig.List_View_Config_Conditions__r)
             {
-
                 ListViewColumn column = this.columns.get(condition.Field_Name__c);
                 if (column == null) continue;
 
