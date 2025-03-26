@@ -14,7 +14,47 @@
     </targets>
     <!-- Configuring the design attributes -->
     <targetConfigs>
-        <targetConfig targets="lightning__UtilityBar,lightning__RecordPage,lightning__HomePage,lightning__AppPage,lightningCommunity__Default">
+        <targetConfig targets="lightning__RecordPage,lightning__HomePage,lightning__AppPage">
+            <property name="pageName" type="String" default="My_Component_Name" required="true" label="Component Name" description="Unique string used to identify the list view component and its corresponding user configuration. Names should NEVER be changed."/>
+            <property name="mode" type="String" datasource="App Page,Single List View,Single Object List View,Related List View,Split View" required="true" default="App Page" label="Component Mode" description="Indicates the mode the component should be displayed in."/>
+            <property name="singleListViewObject" type="String" default="" required="false" label="Single List View Object" datasource="apex://simpli_lv.ListViewConfigPicklistObjectTypes" description="The parent list view object displayed if displaying the component in SINGLE or RELATED list view mode."/>        
+            <property name="singleListViewApiName" type="String" required="false" label="Single List View API Name" description="The API name of the list view to use if displaying the component in SINGLE or RELATED list view mode."/>
+            <property name="mainTitle" type="String" default="My List View Title" label="Title" description="String used if the title is displayed. Names should be distinct within a lightning page."/>
+            <property name="hasMainTitle" type="Boolean" default="true" label="Display Title" description="Indicates whether the name should be displayed or not."/>
+            <property name="displayActions" type="Boolean" default="true" label="Display Actions" description="Indicates whether the actions dropdown should be displayed."/>
+            <property name="allowAdmin" type="Boolean" default="true" label="Display Admin Button" description="Indicates whether the admin button should be displayed."/>
+            <property name="displayTextSearch" type="Boolean" default="true" label="Display Text Search" description="Indicates whether text search of the returned data should be available."/>
+            <property name="displayReprocess" type="Boolean" default="true" label="Display List View Reprocessing Button" description="Indicates whether the list view reprocessing button should be displayed."/>
+            <property name="displayURL" type="Boolean" default="true" label="Display Original List View Button" description="Indicates whether to display the button which links to the original related Salesforce list view."/>
+            <property name="displayRowCount" type="Boolean" default="true" label="Display Row Count" description="Indicates whether the row count should be displayed."/>
+            <property name="displaySelectedCount" type="Boolean" default="true" label="Display Selected Count" description="Indicates whether the selected row count should be displayed."/>
+            <property name="displayModified" type="Boolean" default="true" label="Display Modified Details" description="Indicates whether the last modified date and user should be displayed."/>
+            <property name="displayExportButton" type="Boolean" default="true" label="Allow Data Export" description="Indicates whether the list view data should be made available for download as a CSV file."/>
+            <property name="typeAheadListSearch" type="Boolean" default="false" label="Use Type-Ahead For List View Search" description="Indicates whether type-ahead searching functionality should be used when selecting list views. This is useful if your org has a larger number of list views than can be displayed ordinarily."/>
+            <property name="typeAheadObjectSearch" type="Boolean" default="false" label="Use Type-Ahead For Object Search" description="Indicates whether type-ahead searching functionality should be used when selecting the object of the list view. This is useful if your org has a large number of objects that are displayed."/>
+            <property name="displayRecordPopovers" type="Boolean" default="true" label="Display Record Popovers" description="Indicates whether the record detail popover should be displayed when the user moves the mouse over the record URL or name."/>
+            <property name="excludedRecordPopoverTypes" type="String" default="" label="Excluded Record Popover Types" description="Indicates those object types for which record detail popovers should not be displayed when the user moves the mouse over the record URL or name."/>
+            <property name="allowRefresh" type="Boolean" default="true" label="Allow Automatic Data Refresh" description="Indicates whether the data refresh checkbox should be made available. This checkbox allows the user to automatically have the page data refreshed. Use with caution!"/>
+            <property name="allowImmediateRefresh" type="Boolean" default="false" label="Allow Immediate Refresh" description="Indicates whether list views can be configured to automatically start refreshing as soon as its displayed."/>
+            <property name="immediatelyRefresh" type="Boolean" default="false" label="Immediately Refresh" description="Indicates whether this component will automatically start refreshing as soon as its displayed."/>
+            <property name="allowInlineEditing" type="Boolean" default="true" label="Allow Inline Editing" description="Indicates whether inline editing should be allowed for the list view rows."/>
+            <property name="allowHorizontalScrolling" type="Boolean" default="true" label="Allow Horizontal Scrolling" description="Indicates whether horizontal scrolling is allowed on the list view."/>
+            <property name="displayAllRelatedRecords" type="Boolean" default="false" label="Display All Related Records" description="Related List View Mode Only: Indicates whether all records should be displayed or scrolling should be used."/>
+            <property name="useSimpleSorting" type="Boolean" default="false" label="Use Standard Single Column Sorting" description="Indicates whether the standard sorting mechanism available in Salesforce should be used."/>
+            <property name="noSorting" type="Boolean" default="false" label="Do Not Allow Sorting" description="Indicates if sorting should not be enabled."/>
+            <property name="includedObjects" type="String" default="" label="Included Objects" description="A comma delimited list of API object names that are to be included on the page. If blank, all objects are included."/>
+            <property name="excludedObjects" type="String" default="" label="Excluded Objects" description="A comma delimited list of API object names that are to be excluded from the page. If blank, no objects are excluded."/>
+            <property name="joinFieldName" type="String" default="" label="Joined Field Name" description="The API field name of the field that should be used by this component if it receives ids from another component. If blank, no joining takes place."/>
+            <property name="useMessageChannel" type="Boolean" default="true" label="Use Message Channel" description="Indicates whether the component should send messages when records are selected. This value only needs to be false in situations where many list view components are on the same page. If unsure....set to true!"/>
+            <property name="joinCriteria" type="String" default="" label="Join Criteria Data" description="Only used for LWC development. Holds the external Id criteria used to filter the list view. (comma delimited)"/>
+            <property name="singleListViewObject2" type="String" default="" required="false" label="Single List View Object (Large Orgs)" description="The list view object to use if displaying the component in SINGLE list view mode. Use this value in large orgs where the other single list view object field does not get populated."/>        
+            <property name="singleListViewApiName2" type="String" default="" required="false" label="Single List View API Name (Large Orgs)" description="The standard list view API name to use if displaying the component in SINGLE list view mode. Use this value in large orgs where the other single list view object field does not get populated."/>
+            <supportedFormFactors>
+                <supportedFormFactor type="Small" />
+                <supportedFormFactor type="Large" />
+            </supportedFormFactors>
+        </targetConfig>
+        <targetConfig targets="lightning__UtilityBar,lightningCommunity__Default">
             <property name="pageName" type="String" default="My_Component_Name" required="true" label="Component Name" description="Unique string used to identify the list view component and its corresponding user configuration. Names should NEVER be changed."/>
             <property name="mode" type="String" datasource="App Page,Single List View,Single Object List View,Related List View,Split View" required="true" default="App Page" label="Component Mode" description="Indicates the mode the component should be displayed in."/>
             <property name="singleListViewObject" type="String" default="" required="false" label="Single List View Object" datasource="apex://simpli_lv.ListViewConfigPicklistObjectTypes" description="The parent list view object displayed if displaying the component in SINGLE or RELATED list view mode."/>        
