@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-14-2025
+ * @last modified on  : 03-26-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -14,6 +14,43 @@
 public with sharing class HelperTest {
 
     public static Pricebook2 pricebook = null;
+
+    public static User getUser()
+    {
+        List<User> users = [SELECT Id FROM User WHERE Username = 'testy@cdq.testerson.com' LIMIT 1];
+        User testUser = null;
+        if (!users.isEmpty())
+            testUser = users[0];
+        else {
+            testUser = new User();
+            testUser.FirstName = 'Testy';
+            testUser.LastName = 'Testerson';
+            testUser.Email = 'testy@testerson.com';
+            testUser.Username = 'testy@cdq.testerson.com';
+            testUser.Alias = 'testy';
+            testUser.ProfileId = [SELECT Id FROM Profile WHERE Name = 'Standard User'].Id;
+            testUser.localesidkey='en_US';
+            testUser.emailencodingkey='UTF-8';
+            testUser.languagelocalekey='en_US';
+            testUser.localesidkey='en_US';
+            testUser.TimeZoneSidKey = 'America/Chicago';
+            testUser = (User) HelperDatabase.insertRecord(testUser);
+        }
+
+        System.runAs(new User(Id = UserInfo.getUserId())) //need to do this otherwise we hit a MIXED_DML_OPERATION issue
+        {
+            PermissionSet p = [SELECT Id FROM PermissionSet WHERE Label = 'Simpli List Views User'];
+
+            List<PermissionSetAssignment> psaList = [SELECT Id FROM PermissionSetAssignment WHERE PermissionSetId = :p.Id AND AssigneeId = :testUser.Id];
+
+            if (psaList.isEmpty())
+            {
+                PermissionSetAssignment psa = new PermissionSetAssignment(PermissionSetId = p.Id, AssigneeId = testUser.Id);
+                HelperDatabase.insertRecord(psa);
+            }
+        }
+        return testUser;
+    }
 
     public static Account createAccount(String name)
     {
