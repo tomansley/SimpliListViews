@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom.h.ansley@medtronic.com
- * @last modified on  : 08-02-2024
+ * @last modified on  : 05-08-2025
  * @last modified by  : tom@ansleyllc.com
 **/
 public with sharing class HelperScheduler {
@@ -49,7 +49,7 @@ public with sharing class HelperScheduler {
         Boolean isScheduled = true;
 
         //get the org wide config
-        String refreshJobConfig = ListViewConfigHelper.getOrgWideConfigParam('RefreshJob');
+        String refreshJobConfig = ListViewConfigHelper.getOrgWideConfigParam('RefreshJob', 'Not Scheduled');
 
         //UNSCHEDULE JOB
         if (String.isEmpty(refreshJobConfig) || refreshJobConfig == NOT_SCHEDULED)

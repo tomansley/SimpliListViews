@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 12-05-2024
+ * @Last Modified On   : 05-08-2025
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -41,7 +41,7 @@ global with sharing class ListViewErrorHelper {
     **/
     global static void addLog(String type, String className, String message, Boolean force)
     {
-        if (force || Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam(ListViewConfigHelper.DEBUG)))
+        if (force || Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam(ListViewConfigHelper.DEBUG, 'false')))
         {
             List_View_Error__c log   = new List_View_Error__c();
             log.Running_User__c  = UserInfo.getUserId();

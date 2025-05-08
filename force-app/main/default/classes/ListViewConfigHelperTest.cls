@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 02-07-2025
+ * @last modified on  : 05-08-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -28,7 +28,7 @@ private class ListViewConfigHelperTest {
             
         Test.stopTest();
 
-        String value = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
+        String value = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects', '');
 
         System.assert(value == 'Test Setting');
     }

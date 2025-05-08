@@ -1,7 +1,7 @@
 /**
  * @description       : 
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-24-2025
+ * @last modified on  : 05-08-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author                       Modification
@@ -431,13 +431,13 @@ global class ListViewAdminControllerTest {
     
         Test.startTest();
             
-            String allowRefresh = ListViewConfigHelper.getOrgWideConfigParam('AllowAutomaticDataRefresh');
+            String allowRefresh = ListViewConfigHelper.getOrgWideConfigParam('AllowAutomaticDataRefresh', 'true');
             System.assertEquals('true', allowRefresh);
 
             String result = ListViewAdminController.saveOrgWideConfig('[["ExcludedObjectTypes",["AIApplication"]],["AllowAutomaticDataRefresh","false"],["DisplayActionsButton","false"]]');
             System.assertEquals('Ok:', result);
 
-            allowRefresh = ListViewConfigHelper.getOrgWideConfigParam('AllowAutomaticDataRefresh');
+            allowRefresh = ListViewConfigHelper.getOrgWideConfigParam('AllowAutomaticDataRefresh', 'true');
             System.assertEquals('false', allowRefresh);
 
         Test.stopTest();

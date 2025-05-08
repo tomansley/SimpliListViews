@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 08-07-2024
+ * @Last Modified On   : 05-08-2025
  * @Modification Log   : 
  * Ver       Date            Author      		    Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -43,7 +43,7 @@ public with sharing class ListViewPostProcessBatch implements Database.AllowsCal
         try {
 
             //get objects that should always be excluded
-            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
+            String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes', '');
             Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
             
             if (!orgWideExcObjs.isEmpty())

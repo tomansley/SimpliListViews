@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 10-07-2024
+ * @last modified on  : 05-08-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -45,7 +45,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
 	/* IMPLEMENTS SCHEDULABLE INTERFACE */
 	global void execute(SchedulableContext sc)
 	{
-        String procSize = ListViewConfigHelper.getOrgWideConfigParam('ProcessingSize');
+        String procSize = ListViewConfigHelper.getOrgWideConfigParam('ProcessingSize', '20');
 
         if (!String.isEmpty(procSize))
             batchSize = Integer.valueOf(procSize);
@@ -62,7 +62,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             //------------------------------------------------------------------------
             //if there are included objects then only process those
             //------------------------------------------------------------------------
-            String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
+            String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes', '');
             Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
             Set<String> orgWideExcObjs = new Set<String>();
             
@@ -76,7 +76,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
                 //------------------------------------------------------------------------
                 //never get the excluded objects
                 //------------------------------------------------------------------------
-                String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
+                String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes', '');
                 orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
                 
                 if (!orgWideExcObjs.isEmpty())
@@ -86,7 +86,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             //------------------------------------------------------------------------
             //always exclude list views to be excluded by admin param
             //------------------------------------------------------------------------
-            List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews').split('\\|');
+            List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews', '').split('\\|');
 
             if (excStrings.size() == 1 && excStrings[0] != '') {
 
@@ -110,7 +110,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
             //------------------------------------------------------------------------
             if (processType == TYPE_PERIOD) {
                 
-                String refreshJobConfig = ListViewConfigHelper.getOrgWideConfigParam('RefreshJob');
+                String refreshJobConfig = ListViewConfigHelper.getOrgWideConfigParam('RefreshJob', 'Not Scheduled');
 
                 if (!String.isEmpty(refreshJobConfig) && refreshJobConfig == HelperScheduler.NOT_SCHEDULED)
                 {

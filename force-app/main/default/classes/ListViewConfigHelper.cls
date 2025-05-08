@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 02-06-2025
+ * @Last Modified On   : 05-08-2025
  * @Modification Log   : 
  * Ver       Date            Author         Modification
  * 1.0    6/11/2020   tom@ansleyllc.com     Initial Version
@@ -72,7 +72,7 @@ global with sharing class ListViewConfigHelper {
 
     public static Boolean isDebuggingOn()
     {
-        return Boolean.valueOf(getOrgWideConfigParam(DEBUG));
+        return Boolean.valueOf(getOrgWideConfigParam(DEBUG, 'false'));
     }
 
     /**
@@ -208,7 +208,7 @@ global with sharing class ListViewConfigHelper {
     {
         String soql = 'SELECT Id FROM List_View__c WHERE ';
 
-        List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews').split('\\|');
+        List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews', '').split('\\|');
 
         if (excStrings.size() > 0 && excStrings[0] != '')
         {
@@ -641,7 +641,7 @@ global with sharing class ListViewConfigHelper {
             try {
                 Integer size = Integer.valueOf(paramValue);
 
-                Integer maxRowsDisplayed = Integer.valueOf(ListViewConfigHelper.getOrgWideConfigParam('MaxRowsDisplayed'));
+                Integer maxRowsDisplayed = Integer.valueOf(ListViewConfigHelper.getOrgWideConfigParam('MaxRowsDisplayed', '1000'));
 
                 if (size > maxRowsDisplayed)
                 {
@@ -893,7 +893,6 @@ global with sharing class ListViewConfigHelper {
 
         } catch (Exception e) {
             String message = 'Exception during ListViewController.validateFieldCondition(' + value + ',' + type + ',' + condition + ')  ' + ListViewException.getExtendedString(e);
-            System.debug(LoggingLevel.DEBUG, 'XXX ' + message);
             if (!HelperLimits.hasReachedLimit('DMLStatements'))
                 ListViewErrorHelper.createFutureUsageError(message); 
         }

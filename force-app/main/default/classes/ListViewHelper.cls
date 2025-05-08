@@ -1,6 +1,6 @@
 /**
  * @author            : tom@ansleyllc.com
- * @last modified on  : 03-14-2025
+ * @last modified on  : 05-08-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -363,7 +363,7 @@ global with sharing class ListViewHelper
         }
 
         //always exclude list views to be excluded by admin param
-        List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews').split('\\|');
+        List<String> excStrings = ListViewConfigHelper.getOrgWideConfigParam('ExcludedListViews', '').split('\\|');
 
         if (excStrings.size() == 1 && excStrings[0] != '') {
 
@@ -796,7 +796,7 @@ global with sharing class ListViewHelper
 
         listViewObjects =  new Map<String, String>();
 
-        String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes');
+        String exclObjs = ListViewConfigHelper.getOrgWideConfigParam('ExcludedObjectTypes', '');
         debug += 'Org Wide Excluded Object Types - ' + exclObjs + '\n';
         Set<String> orgWideExcObjs = HelperString.getSetFromString(exclObjs, ',');
         debug += 'orgWideExcObjs size - ' + orgWideExcObjs.size() + '\n';
@@ -850,7 +850,7 @@ global with sharing class ListViewHelper
             //------------------------------------
             //CORE LIST VIEWS (CACHED)
             //------------------------------------
-            String lvObjsStr = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects');
+            String lvObjsStr = ListViewConfigHelper.getOrgWideConfigParam('ListViewObjects', '');
             Map<String, String> lvObjs = (Map<String, String>) JSON.deserialize(lvObjsStr, Map<String, String>.class);
     
             for (String objName: lvObjs.keySet())
@@ -886,7 +886,7 @@ global with sharing class ListViewHelper
         }
 
 
-        String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes');
+        String inclObjs = ListViewConfigHelper.getOrgWideConfigParam('IncludedObjectTypes', '');
         Set<String> orgWideIncObjs = HelperString.getSetFromString(inclObjs, ',');
 
         debug += 'pageWideIncObjs ' + pageWideIncObjs + '\n';
@@ -1413,7 +1413,7 @@ global with sharing class ListViewHelper
                 //if we have an offset or we are returning LARGE datasets
                 if (offset != -1 || returnSize > 500)
                 {
-                    Integer queryPagingSize = Integer.valueOf(ListViewConfigHelper.getOrgWideConfigParam('QueryPagingSize'));
+                    Integer queryPagingSize = Integer.valueOf(ListViewConfigHelper.getOrgWideConfigParam('QueryPagingSize', '250'));
                     Integer rowLimit = queryPagingSize;
                     //if we DO NOT have an offset then set to 0
                     if (offset == -1)

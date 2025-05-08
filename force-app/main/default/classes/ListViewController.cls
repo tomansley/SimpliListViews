@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : tom@ansleyllc.com
  * @group             : 
- * @last modified on  : 03-14-2025
+ * @last modified on  : 05-08-2025
  * @last modified by  : tom@ansleyllc.com
  * Modifications Log 
  * Ver   Date         Author              Modification
@@ -133,7 +133,7 @@ public with sharing class ListViewController
 
         Boolean isInitialized = false;
         try {
-            isInitialized = Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam('IsInitialized'));
+            isInitialized = Boolean.valueOf(ListViewConfigHelper.getOrgWideConfigParam('IsInitialized', 'false'));
         } catch(Exception e) {
             ListViewHelper.insertCoreGlobalConfig();
             isInitialized = true;
