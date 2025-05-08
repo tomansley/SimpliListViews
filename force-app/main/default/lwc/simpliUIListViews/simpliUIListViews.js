@@ -1382,7 +1382,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         this.isPinned = true;
         console.log(this.pageName + ' CALLOUT - updateUserConfig(pinnedListView) - ' + this.calloutCount++);
         updateUserConfig({ compName: this.pageName, configName: 'pinnedListView', value: this.selectedObject + ':' + this.selectedListView }).then(() => {
-            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Pinned', 'List view successfully pinned.', false));
+            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Pinned', '', false));
             this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'pinListView', status: 'finished', object: this.selectedObject, listView: this.selectedListView } }));
         }).catch(error => {
             this.dispatchEvent(SLVHelper.createToast('error', error, 'Pinning Error', 'Error during user configuration update.', true));
@@ -1396,7 +1396,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         updateUserConfig({ compName: this.pageName, configName: 'pinnedListView', value: '' }).then(result => {
             console.log('RESULT - ' + result);
             if (result === 'success') {
-                this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Unpinned', 'List view successfully unpinned.', false));
+                this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Unpinned', '', false));
                 this.isPinned = false;
                 this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'unpinListView', status: 'finished', object: this.selectedObject, listView: this.selectedListView } }));
             } else {
@@ -1511,7 +1511,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log(this.pageName + ' CALLOUT - updateSingleListView - ' + this.calloutCount++);
             updateSingleListView({ objectType: this.selectedObject, listViewName: this.selectedListView }).then(result => {
                 if (result === 'success') {
-                    this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Updated Successfully', 'List view has been updated and refreshed successfully.', false));
+                    this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Refreshed Successfully', '', false));
                     this.dispatchEvent(new CustomEvent('processlistviewclick'));
                     this.refreshAllListViewData();
                 } else {
@@ -1532,7 +1532,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 if (result.startsWith('success:')) {
                     let successResult = result.substring(8);
                     if (successResult === 'Immediate')
-                        this.dispatchEvent(SLVHelper.createToast('success', '', this.selectedObject + ' List Views Updated', 'The ' + this.selectedObject + ' list views have been updated.', false));
+                        this.dispatchEvent(SLVHelper.createToast('success', '', this.selectedObject + ' List Views Updated', '', false));
                     else if (successResult.startsWith('Async')) {
                         console.log('SUCCESS RESULT - ' + successResult);
 
@@ -1541,7 +1541,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                         if (!SLVHelper.isEmpty(jobId))
                             this.batchId = jobId;
                         else
-                            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Processing', 'List view processing has started for ' + this.selectedObject + ' list views. Refresh page after completion to see changes.', false));  
+                            this.dispatchEvent(SLVHelper.createToast('success', '', 'List View Processing Started', 'List view processing started for ' + this.selectedObject + ' list views. Refresh page after completion to see changes.', false));  
                     }
 
                     this.dispatchEvent(new CustomEvent('processlistviewclick'));
@@ -2081,7 +2081,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                     updateRecord({ rowId: rowId, rowData: rowDataStr }).then(result => {
                         console.log('Record update response - ' + result);
                         if (result === '') {
-                            this.dispatchEvent(SLVHelper.createToast('success', '', 'Success', 'Record saved successfully.', false));
+                            this.dispatchEvent(SLVHelper.createToast('success', '', 'Record saved successfully', '', false));
                             if (this.listViewDataRows?.length) {
                                 this.listViewDataRows.forEach(element => {
                                     if (element.rowId === rowId) {
