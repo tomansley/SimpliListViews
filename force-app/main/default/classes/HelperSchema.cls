@@ -4,7 +4,7 @@
  * @Author             : tom@ansleyllc.com
  * @Group              : 
  * @Last Modified By   : tom@ansleyllc.com
- * @Last Modified On   : 03-25-2025
+ * @Last Modified On   : 05-08-2025
  * @Modification Log   : 
  * Ver       Date            Author          Modification
  * 1.0    06/11/2020   tom@ansleyllc.com     Initial Version
@@ -807,7 +807,12 @@ public with sharing class HelperSchema {
 	   Account acc = [SELECT Name, Owner.Name, Owner.Alias, Owner.Profile.Name, Case__r.Status FROM Account WHERE Name LIKE 'Express%' LIMIT 1];
 	   HelperSchema.FieldData d = HelperSchema.getFieldData(acc, 'Case__r.Status');
 	   System.debug(LoggingLevel.FINE, 'Account Name - ' + d.name + ', ' + d.label + ', ' + d.getType() + ', ' + d.value);
-	 * 
+
+	   simpli_lv__List_View__c lv = [SELECT RecordType.Name FROM simpli_lv__List_View__c LIMIT 1];
+	   HelperSchema.FieldData d = HelperSchema.getFieldData(lv, 'RecordTypeId');
+	   System.debug(LoggingLevel.DEBUG, 'Account Name - ' + d.name + ', ' + d.label + ', ' + d.getType() + ', ' + d.value);
+
+     * 
      */
     public static FieldData getFieldData(SObject obj, String fieldName)
     {
@@ -831,6 +836,7 @@ public with sharing class HelperSchema {
             
             String objType = getObjectType(currentObj);
 
+            //label = getSFDCFieldLabel(objType, fieldName);
 			for (String field: fieldHierarchy)
 			{
                 
@@ -856,7 +862,7 @@ public with sharing class HelperSchema {
 					    label = fieldDesc.getLabel();
 					    
                         //if we have a lookup field then determine if we add the object name to the label
-                        String addObjName = ListViewConfigHelper.getOrgWideConfigParam('AddObjNameOnLookupLabels');
+                        String addObjName = ListViewConfigHelper.getOrgWideConfigParam('AddObjNameOnLookupLabels', 'false');
                         if (addObjName == ListViewHelper.TTRUE && fieldName.contains('.'))
                             label = objType + ' ' + fieldDesc.getLabel();
 
