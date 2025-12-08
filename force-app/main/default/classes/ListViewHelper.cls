@@ -2665,7 +2665,7 @@ global with sharing class ListViewHelper
             param.List_View_Config__c = config.Id;
             param.Parameter_Name__c   = 'ProcessingSize';
             param.Parameter_Type__c   = ListViewHelper.TYPE_NUMBER;
-            param.Parameter_Value__c  = '40';
+            param.Parameter_Value__c  = '20';
             param.Parameter_Label__c  = 'List View Processing Batch Size';
             params.add(param);
         }

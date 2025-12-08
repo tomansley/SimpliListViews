@@ -15,7 +15,7 @@ global with sharing class ListViewProcessBatch implements Database.AllowsCallout
     public static final String TYPE_PERIOD = 'period';
 
     private String query = 'SELECT Id, Name, SObjectType, DeveloperName, NamespacePrefix, CreatedById FROM ListView WHERE SObjectType != null';
-    private Integer batchSize = 40;
+    private Integer batchSize = 20;
     private Set<Id> listViewIds = null;
     private String processType = TYPE_ALL;
 
