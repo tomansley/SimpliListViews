@@ -9,534 +9,536 @@
   1.0   08-18-2021   tom@ansleyllc.com   Verbage updates
 -->
 <template>
+    <div style="height: calc(100vh - 200)">
 
-    <lightning-card>
-        <lightning-tabset style="min-height: 400px;background-color: white;">
+        <lightning-card>
+            <lightning-tabset style="min-height: 400px;background-color: white;">
 
-            <lightning-tab label="App Example 1">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+                <lightning-tab label="App Example 1">
+                    <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
 
-                    <!-- DESCRIPTION OF EXAMPLE -->
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            This example would get used where all list views for all objects should be displayed on one page. 
-                        </div>
+                        <!-- DESCRIPTION OF EXAMPLE -->
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                This example would get used where all list views for all objects should be displayed on one page. 
+                            </div>
 
-                        <!-- EXAMPLE HTML TAG -->
-                        <div class="codebox">
-                            <pre>
-                                &lt;c-simpli-u-i-list-views<br/>
-                                &#9;&#9;mode="App Page"<br/>
-                                &#9;&#9;page-name="App_Example_1"<br/>
-                                &#9;&#9;allow-horizontal-scrolling=false&gt;<br/>
-                                &lt;/c-simpli-u-i-list-views&gt;    
-                            </pre>
-                        </div>
-                    </lightning-card>
-                        
-                    <!-- WORKING EXAMPLE -->
-                    <div class="examplebox">
-                        <c-simpli-u-i-list-views mode="App Page"
-                                                data-id="Example 1"
-                                                page-name="App_Example_1"
-                                                allow-horizontal-scrolling=false>
-                        </c-simpli-u-i-list-views>
-                    </div>
-
-                </div>
-            </lightning-tab>
-        <!--
-            <lightning-tab label="Event Example 1">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
-
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            Event Example 1
-                        </div>
-
-                        <div class="codebox">
-                            <pre>
-                                &lt;c-simpli-u-i-list-views<br/>
-                                &#9;&#9;mode="App Page"<br/>
-                                &#9;&#9;page-name="App_Example_1"<br/>
-                                &#9;&#9;allow-horizontal-scrolling=false&gt;<br/>
-                                &lt;/c-simpli-u-i-list-views&gt;    
-                            </pre>
-                        </div>
-                    </lightning-card>
-                        
-                    <div class="examplebox">
-                        <lightning-button onclick={handleEventRequest} label="Refresh Data"></lightning-button>
-                        <c-simpli-u-i-list-views mode="App Page"
-                                                        page-name="My Button Event Test"
-                                                        oneventresponse={handleEventResponse}                                                        
-                                                        has-main-title=true
-                                                        main-title="My Refresh Button Test"
-                                                        use-message-channel=true>
-                        </c-simpli-u-i-list-views>
-                    </div>
-
-                </div>
-            </lightning-tab>
-        -->        
-            <lightning-tab label="App Example 2">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
-
-                    <!-- DESCRIPTION OF EXAMPLE -->
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            An example to show the different options available for the Simpli List Views list view LWC component. This example uses mode type App Page but all modes have the options below available to them.
-                        </div>
-                        
-                        <!-- EXAMPLE HTML TAG -->
-                        <div class="codebox">
-                            <pre>
-                                &lt;c-simpli-u-i-list-views<br/>
-                                &#9;&#9;mode="App Page"<br/>
-                                &#9;&#9;page-name="App_Example_2"<br/>
-                                &#9;&#9;has-main-title=true<br/>
-                                &#9;&#9;main-title="Everything List View!"<br/>
-                                &#9;&#9;use-message-channel=true<br/>
-                                &#9;&#9;display-actions=true<br/>
-                                &#9;&#9;display-reprocess=true<br/>
-                                &#9;&#9;display-u-r-l=true<br/>
-                                &#9;&#9;display-row-count=true<br/>
-                                &#9;&#9;display-selected-count=true<br/>
-                                &#9;&#9;display-record-popovers=true<br/>
-                                &#9;&#9;display-modified=true<br/>
-                                &#9;&#9;display-export-button=true<br/>
-                                &#9;&#9;allow-admin=true<br/>
-                                &#9;&#9;allow-refresh=true<br/>
-                                &#9;&#9;included-objects="Account,Contact,Opportunity"<br/>
-                                &#9;&#9;allow-inline-editing=true<br/>
-                                &#9;&#9;display-text-search=true&gt;<br/>
-                                &lt;/c-simpli-u-i-list-views&gt;    
-                            </pre>
-                        </div>
-                    </lightning-card>
-
-                    <!-- WORKING EXAMPLE -->
-                    <div class="examplebox">
-                        <c-simpli-u-i-list-views mode="App Page"
-                                                data-id="Example 2"
-                                                page-name="App_Example_2"
-                                                has-main-title=true
-                                                main-title="Everything List View!"
-                                                use-message-channel=true
-                                                display-actions=true
-                                                display-reprocess=true
-                                                display-u-r-l=true
-                                                display-row-count=true
-                                                display-selected-count=true
-                                                display-record-popovers=true
-                                                display-modified=true
-                                                display-export-button=true
-                                                allow-admin=true
-                                                allow-refresh=true
-                                                included-objects="Account,Contact,Opportunity"
-                                                allow-inline-editing=true
-                                                display-text-search=true>
-                        </c-simpli-u-i-list-views>
-                    </div>
-                </div>
-            </lightning-tab>
-
-            <lightning-tab label="Single Example 1">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
-
-                    <!-- DESCRIPTION OF EXAMPLE -->
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            This example would get used where a specific list view is to be displayed. Notice that the objects and list views are not available for searching. In this example a number of features are made available including inline editing, text search, actions and auto-refreshing
-                        </div>
-                                                
-                        <!-- EXAMPLE HTML TAG -->
-                        <div class="codebox">
-                            <pre>
-                                &lt;c-simpli-u-i-list-views<br/>
-                                &#9;&#9;mode="Single List View"<br/>
-                                &#9;&#9;has-main-title=true<br/>
-                                &#9;&#9;main-title="Platinum/Gold Customers!"<br/>
-                                &#9;&#9;<b>single-list-view-object="Account"</b><br/>
-                                &#9;&#9;<b>single-list-view-api-name="PlatinumandGoldSLACustomers"</b><br/>
-                                &#9;&#9;page-name="Single_Example_1"<br/>
-                                &#9;&#9;use-message-channel=true<br/>
-                                &#9;&#9;display-actions=true<br/>
-                                &#9;&#9;allow-refresh=true<br/>
-                                &#9;&#9;allow-inline-editing=true<br/>
-                                &#9;&#9;display-text-search=true&gt;<br/>
-                                &lt;/c-simpli-u-i-list-views&gt;    
-                            </pre>
-                        </div>
-                    </lightning-card>
-
-                    <!-- WORKING EXAMPLE -->
-                    <div class="examplebox">
-                        <c-simpli-u-i-list-views mode="Single List View"
-                                                data-id="Example 3"
-                                                has-main-title=true
-                                                main-title="Platinum/Gold Customers!"
-                                                single-list-view-object="Account"
-                                                single-list-view-api-name="PlatinumandGoldSLACustomers"
-                                                page-name="Single_Example_1"
-                                                use-message-channel=true
-                                                display-actions=true
-                                                allow-refresh=true
-                                                allow-inline-editing=true
-                                                display-text-search=true>
-                        </c-simpli-u-i-list-views>
-                    </div>
-                </div>
-            </lightning-tab>
-
-            <lightning-tab label="Related Example 1">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
-
-                    <!-- DESCRIPTION OF EXAMPLE -->
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            This example is coded similar to how an OOTB related list works. The user provides an account and all contacts associated with that account are displayed.
-                        </div>
-                                                
-                        <!-- EXAMPLE HTML TAG -->
-                        <div class="codebox">
-                            <b>HTML</b>
-                            <pre>
-                                &lt;c-simpli-u-i-list-views<br/>
-                                &#9;&#9;mode="Related List View"<br/>
-                                &#9;&#9;has-main-title=true<br/>
-                                &#9;&#9;main-title="Contact"<br/>
-                                &#9;&#9;single-list-view-object="Contact"<br/>
-                                &#9;&#9;single-list-view-api-name="AllContacts"<br/>
-                                &#9;&#9;page-name="Related_Example_1"<br/>
-                                &#9;&#9;join-field-name="AccountId"<br/>
-                                &#9;&#9;join-criteria={<b>selectedAccountId</b>}&gt;<br/>
-                                &lt;/c-simpli-u-i-list-views&gt;    
-                            </pre>
-                            <b>Controller</b>
-                            <pre>
-                                import &#123; LightningElement, track   &#125; from 'lwc';<br/>
-                                <br/>
-                                export default class SimpliUIListViewsTestComp extends LightningElement &#123;<br/>
-                                <br/>
-                                &#9;@track <b>selectedAccountId</b> = '';<br/>
-                                <br/>
-                                &#9;handleExample4DataChange(event) &#123;<br/>
-                                &#9;&#9;this.<b>selectedAccountId</b> = event.detail.selectedValue;<br/>
-                                &#9;&#125;<br/>
-                                &#125;<br/>
-                            </pre>
-                        </div>
-                    </lightning-card>
-
-                    <!-- WORKING EXAMPLE -->
-                    <div class="examplebox">
-                        Search for an Account:&nbsp;&nbsp;
-                        <c-simpli-u-i-list-views-lookup field-obj-name="Account"
-                                                        data-id="Example 4-1"
-                                                        onlookupchange={handleExample4DataChange}>
-                        </c-simpli-u-i-list-views-lookup>                        
-
-                        <c-simpli-u-i-list-views mode="Related List View"
-                                                data-id="Example 4-2"
-                                                has-main-title=true
-                                                main-title="Contacts"
-                                                single-list-view-object="Contact"
-                                                single-list-view-api-name="AllContacts"
-                                                page-name="Related_Example_1"
-                                                join-field-name="AccountId"
-                                                join-criteria={selectedAccountId}>
-                        </c-simpli-u-i-list-views>
-                    </div>
-                </div>
-            </lightning-tab>
-
-            <lightning-tab label="Split Example 1">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
-
-                    <!-- DESCRIPTION OF EXAMPLE -->
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            This example is similar to how a standard split view works. The user is provided a component on the left which shows records based on the selected list view configuration. When the user selects a row the details of that record are displayed on the right side component. In this case the right side component is a basic Simpli List Views component which displays the record based on the full page layout for that object. The record can be edited as well. Do not use the record details component in your own implementation as it is expected that this component will not be enhanced. Copy it and make your own, ensuring to include the messaging logic. The LWC component can be found <a target="_blank" href="https://github.com/tomansley/SimpliListViews/tree/master/force-app/main/default/lwc/simpliUIRecordDetail">here</a>
-                        </div>
-                                                
-                        <!-- EXAMPLE HTML TAG -->
-                        <div class="codebox">
-                            <pre>
-                                &lt;c-simpli-u-i-list-views mode="Split View"<br/> 
-                                &#9;&#9;&#9;page-name="Split_Example_1"<br/>    
-                                &#9;&#9;&#9;excluded-objects="Event,Task"&gt;<br/>    
-                            </pre>
-                        </div>
-                    </lightning-card>
-
-                    <!-- WORKING EXAMPLE -->
-                    <div>
-                        <div class="splitboxleft" style="width: 33%; float:left;">
-                            <c-simpli-u-i-list-views mode="Split View"
-                                                     data-id="Example 5"
-                                                     page-name="Split_Example_1"
-                                                     excluded-objects="Event,Task">
+                            <!-- EXAMPLE HTML TAG -->
+                            <div class="codebox">
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views<br/>
+                                    &#9;&#9;mode="App Page"<br/>
+                                    &#9;&#9;page-name="App_Example_1"<br/>
+                                    &#9;&#9;allow-horizontal-scrolling=false&gt;<br/>
+                                    &lt;/c-simpli-u-i-list-views&gt;    
+                                </pre>
+                            </div>
+                        </lightning-card>
+                            
+                        <!-- WORKING EXAMPLE -->
+                        <div class="examplebox">
+                            <c-simpli-u-i-list-views mode="App Page"
+                                                    data-id="Example 1"
+                                                    page-name="App_Example_1"
+                                                    allow-horizontal-scrolling=false>
                             </c-simpli-u-i-list-views>
                         </div>
-                        <div class="splitboxright" style="width: 66%; float:left;">
-                            <c-simpli-u-i-record-detail></c-simpli-u-i-record-detail>
-                        </div>
-                            
+
                     </div>
-                </div>
-            </lightning-tab>
+                </lightning-tab>
+            <!--
+                <lightning-tab label="Event Example 1">
+                    <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
 
-            <lightning-tab label="Split Example 2">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                Event Example 1
+                            </div>
 
-                    <!-- DESCRIPTION OF EXAMPLE -->
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            This example is similar to split example 1 except the object is provided. If the object is provided the drop down for the object is not displayed.
+                            <div class="codebox">
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views<br/>
+                                    &#9;&#9;mode="App Page"<br/>
+                                    &#9;&#9;page-name="App_Example_1"<br/>
+                                    &#9;&#9;allow-horizontal-scrolling=false&gt;<br/>
+                                    &lt;/c-simpli-u-i-list-views&gt;    
+                                </pre>
+                            </div>
+                        </lightning-card>
+                            
+                        <div class="examplebox">
+                            <lightning-button onclick={handleEventRequest} label="Refresh Data"></lightning-button>
+                            <c-simpli-u-i-list-views mode="App Page"
+                                                            page-name="My Button Event Test"
+                                                            oneventresponse={handleEventResponse}                                                        
+                                                            has-main-title=true
+                                                            main-title="My Refresh Button Test"
+                                                            use-message-channel=true>
+                            </c-simpli-u-i-list-views>
                         </div>
-                                                
-                        <!-- EXAMPLE HTML TAG -->
-                        <div class="codebox">
-                            <pre>
-                                &lt;c-simpli-u-i-list-views mode="Split View"<br/>
-                                &#9;&#9;&#9;single-list-view-object="Account"<br/>    
-                                &#9;&#9;&#9;page-name="Split_Example_2"&gt;<br/>    
-                            </pre>
-                        </div>
-                    </lightning-card>
 
-                    <!-- WORKING EXAMPLE -->
-                    <div>
-                        <div class="splitboxleft" style="width: 33%; float:left;">
-                            <lightning-card>
+                    </div>
+                </lightning-tab>
+            -->        
+                <lightning-tab label="App Example 2">
+                    <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                        <!-- DESCRIPTION OF EXAMPLE -->
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                An example to show the different options available for the Simpli List Views list view LWC component. This example uses mode type App Page but all modes have the options below available to them.
+                            </div>
+                            
+                            <!-- EXAMPLE HTML TAG -->
+                            <div class="codebox">
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views<br/>
+                                    &#9;&#9;mode="App Page"<br/>
+                                    &#9;&#9;page-name="App_Example_2"<br/>
+                                    &#9;&#9;has-main-title=true<br/>
+                                    &#9;&#9;main-title="Everything List View!"<br/>
+                                    &#9;&#9;use-message-channel=true<br/>
+                                    &#9;&#9;display-actions=true<br/>
+                                    &#9;&#9;display-reprocess=true<br/>
+                                    &#9;&#9;display-u-r-l=true<br/>
+                                    &#9;&#9;display-row-count=true<br/>
+                                    &#9;&#9;display-selected-count=true<br/>
+                                    &#9;&#9;display-record-popovers=true<br/>
+                                    &#9;&#9;display-modified=true<br/>
+                                    &#9;&#9;display-export-button=true<br/>
+                                    &#9;&#9;allow-admin=true<br/>
+                                    &#9;&#9;allow-refresh=true<br/>
+                                    &#9;&#9;included-objects="Account,Contact,Opportunity"<br/>
+                                    &#9;&#9;allow-inline-editing=true<br/>
+                                    &#9;&#9;display-text-search=true&gt;<br/>
+                                    &lt;/c-simpli-u-i-list-views&gt;    
+                                </pre>
+                            </div>
+                        </lightning-card>
+
+                        <!-- WORKING EXAMPLE -->
+                        <div class="examplebox">
+                            <c-simpli-u-i-list-views mode="App Page"
+                                                    data-id="Example 2"
+                                                    page-name="App_Example_2"
+                                                    has-main-title=true
+                                                    main-title="Everything List View!"
+                                                    use-message-channel=true
+                                                    display-actions=true
+                                                    display-reprocess=true
+                                                    display-u-r-l=true
+                                                    display-row-count=true
+                                                    display-selected-count=true
+                                                    display-record-popovers=true
+                                                    display-modified=true
+                                                    display-export-button=true
+                                                    allow-admin=true
+                                                    allow-refresh=true
+                                                    included-objects="Account,Contact,Opportunity"
+                                                    allow-inline-editing=true
+                                                    display-text-search=true>
+                            </c-simpli-u-i-list-views>
+                        </div>
+                    </div>
+                </lightning-tab>
+
+                <lightning-tab label="Single Example 1">
+                    <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                        <!-- DESCRIPTION OF EXAMPLE -->
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                This example would get used where a specific list view is to be displayed. Notice that the objects and list views are not available for searching. In this example a number of features are made available including inline editing, text search, actions and auto-refreshing
+                            </div>
+                                                    
+                            <!-- EXAMPLE HTML TAG -->
+                            <div class="codebox">
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views<br/>
+                                    &#9;&#9;mode="Single List View"<br/>
+                                    &#9;&#9;has-main-title=true<br/>
+                                    &#9;&#9;main-title="Platinum/Gold Customers!"<br/>
+                                    &#9;&#9;<b>single-list-view-object="Account"</b><br/>
+                                    &#9;&#9;<b>single-list-view-api-name="PlatinumandGoldSLACustomers"</b><br/>
+                                    &#9;&#9;page-name="Single_Example_1"<br/>
+                                    &#9;&#9;use-message-channel=true<br/>
+                                    &#9;&#9;display-actions=true<br/>
+                                    &#9;&#9;allow-refresh=true<br/>
+                                    &#9;&#9;allow-inline-editing=true<br/>
+                                    &#9;&#9;display-text-search=true&gt;<br/>
+                                    &lt;/c-simpli-u-i-list-views&gt;    
+                                </pre>
+                            </div>
+                        </lightning-card>
+
+                        <!-- WORKING EXAMPLE -->
+                        <div class="examplebox">
+                            <c-simpli-u-i-list-views mode="Single List View"
+                                                    data-id="Example 3"
+                                                    has-main-title=true
+                                                    main-title="Platinum/Gold Customers!"
+                                                    single-list-view-object="Account"
+                                                    single-list-view-api-name="PlatinumandGoldSLACustomers"
+                                                    page-name="Single_Example_1"
+                                                    use-message-channel=true
+                                                    display-actions=true
+                                                    allow-refresh=true
+                                                    allow-inline-editing=true
+                                                    display-text-search=true>
+                            </c-simpli-u-i-list-views>
+                        </div>
+                    </div>
+                </lightning-tab>
+
+                <lightning-tab label="Related Example 1">
+                    <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                        <!-- DESCRIPTION OF EXAMPLE -->
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                This example is coded similar to how an OOTB related list works. The user provides an account and all contacts associated with that account are displayed.
+                            </div>
+                                                    
+                            <!-- EXAMPLE HTML TAG -->
+                            <div class="codebox">
+                                <b>HTML</b>
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views<br/>
+                                    &#9;&#9;mode="Related List View"<br/>
+                                    &#9;&#9;has-main-title=true<br/>
+                                    &#9;&#9;main-title="Contact"<br/>
+                                    &#9;&#9;single-list-view-object="Contact"<br/>
+                                    &#9;&#9;single-list-view-api-name="AllContacts"<br/>
+                                    &#9;&#9;page-name="Related_Example_1"<br/>
+                                    &#9;&#9;join-field-name="AccountId"<br/>
+                                    &#9;&#9;join-criteria={<b>selectedAccountId</b>}&gt;<br/>
+                                    &lt;/c-simpli-u-i-list-views&gt;    
+                                </pre>
+                                <b>Controller</b>
+                                <pre>
+                                    import &#123; LightningElement, track   &#125; from 'lwc';<br/>
+                                    <br/>
+                                    export default class SimpliUIListViewsTestComp extends LightningElement &#123;<br/>
+                                    <br/>
+                                    &#9;@track <b>selectedAccountId</b> = '';<br/>
+                                    <br/>
+                                    &#9;handleExample4DataChange(event) &#123;<br/>
+                                    &#9;&#9;this.<b>selectedAccountId</b> = event.detail.selectedValue;<br/>
+                                    &#9;&#125;<br/>
+                                    &#125;<br/>
+                                </pre>
+                            </div>
+                        </lightning-card>
+
+                        <!-- WORKING EXAMPLE -->
+                        <div class="examplebox">
+                            Search for an Account:&nbsp;&nbsp;
+                            <c-simpli-u-i-list-views-lookup field-obj-name="Account"
+                                                            data-id="Example 4-1"
+                                                            onlookupchange={handleExample4DataChange}>
+                            </c-simpli-u-i-list-views-lookup>                        
+
+                            <c-simpli-u-i-list-views mode="Related List View"
+                                                    data-id="Example 4-2"
+                                                    has-main-title=true
+                                                    main-title="Contacts"
+                                                    single-list-view-object="Contact"
+                                                    single-list-view-api-name="AllContacts"
+                                                    page-name="Related_Example_1"
+                                                    join-field-name="AccountId"
+                                                    join-criteria={selectedAccountId}>
+                            </c-simpli-u-i-list-views>
+                        </div>
+                    </div>
+                </lightning-tab>
+
+                <lightning-tab label="Split Example 1">
+                    <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                        <!-- DESCRIPTION OF EXAMPLE -->
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                This example is similar to how a standard split view works. The user is provided a component on the left which shows records based on the selected list view configuration. When the user selects a row the details of that record are displayed on the right side component. In this case the right side component is a basic Simpli List Views component which displays the record based on the full page layout for that object. The record can be edited as well. Do not use the record details component in your own implementation as it is expected that this component will not be enhanced. Copy it and make your own, ensuring to include the messaging logic. The LWC component can be found <a target="_blank" href="https://github.com/tomansley/SimpliListViews/tree/master/force-app/main/default/lwc/simpliUIRecordDetail">here</a>
+                            </div>
+                                                    
+                            <!-- EXAMPLE HTML TAG -->
+                            <div class="codebox">
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views mode="Split View"<br/> 
+                                    &#9;&#9;&#9;page-name="Split_Example_1"<br/>    
+                                    &#9;&#9;&#9;excluded-objects="Event,Task"&gt;<br/>    
+                                </pre>
+                            </div>
+                        </lightning-card>
+
+                        <!-- WORKING EXAMPLE -->
+                        <div>
+                            <div class="splitboxleft" style="width: 33%; float:left;">
                                 <c-simpli-u-i-list-views mode="Split View"
-                                                         data-id="Example 6"
-                                                        single-list-view-object="Account"
-                                                        page-name="Split_Example_2">
+                                                        data-id="Example 5"
+                                                        page-name="Split_Example_1"
+                                                        excluded-objects="Event,Task">
                                 </c-simpli-u-i-list-views>
-                            </lightning-card>
-                        </div>
-                        <div class="splitboxright" style="width: 66%; float:left;">
-                            <lightning-card>
+                            </div>
+                            <div class="splitboxright" style="width: 66%; float:left;">
                                 <c-simpli-u-i-record-detail></c-simpli-u-i-record-detail>
-                            </lightning-card>
+                            </div>
+                                
                         </div>
+                    </div>
+                </lightning-tab>
+
+                <lightning-tab label="Split Example 2">
+                    <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                        <!-- DESCRIPTION OF EXAMPLE -->
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                This example is similar to split example 1 except the object is provided. If the object is provided the drop down for the object is not displayed.
+                            </div>
+                                                    
+                            <!-- EXAMPLE HTML TAG -->
+                            <div class="codebox">
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views mode="Split View"<br/>
+                                    &#9;&#9;&#9;single-list-view-object="Account"<br/>    
+                                    &#9;&#9;&#9;page-name="Split_Example_2"&gt;<br/>    
+                                </pre>
+                            </div>
+                        </lightning-card>
+
+                        <!-- WORKING EXAMPLE -->
+                        <div>
+                            <div class="splitboxleft" style="width: 33%; float:left;">
+                                <lightning-card>
+                                    <c-simpli-u-i-list-views mode="Split View"
+                                                            data-id="Example 6"
+                                                            single-list-view-object="Account"
+                                                            page-name="Split_Example_2">
+                                    </c-simpli-u-i-list-views>
+                                </lightning-card>
+                            </div>
+                            <div class="splitboxright" style="width: 66%; float:left;">
+                                <lightning-card>
+                                    <c-simpli-u-i-record-detail></c-simpli-u-i-record-detail>
+                                </lightning-card>
+                            </div>
+                                
+                        </div>
+                    </div>
+                </lightning-tab>
+
+                <lightning-tab label="Multi Example 1">
+                    <div class="slds-modal__content slds-var-p-around_xx-small">
+
+                        <!-- DESCRIPTION OF EXAMPLE -->
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                This example shows two list views interacting with each other. Selecting an account will display its associated contacts
+                            </div>
+                                                    
+                            <!-- EXAMPLE HTML TAG -->
+                            <div class="codebox">
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views mode="Split View"<br/>
+                                    &#9;&#9;&#9;single-list-view-object="Account"<br/>    
+                                    &#9;&#9;&#9;page-name="Split_Example_2"&gt;<br/>    
+                                </pre>
+                            </div>
+                        </lightning-card>
+
+                        <!-- WORKING EXAMPLE -->
+                        <lightning-layout multiple-rows style="max-height: calc(100vh - 210px)">
+                            <lightning-layout-item size="12" style="max-height: 50%;">
+
+                                    <c-simpli-u-i-list-views mode="Single List View"
+                                                            data-id="Example 8"
+                                                            use-message-channel=true
+                                                            single-list-view-object="Account"
+                                                            single-list-view-api-name="AllAccounts"
+                                                            has-main-title=true
+                                                            main-title="All Accounts"
+                                                            page-name="Multi_Example_1">
+                                    </c-simpli-u-i-list-views>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="12" style="max-height: 50%;">
+                                    <c-simpli-u-i-list-views mode="Single List View"
+                                                            data-id="Example 9"
+                                                            use-message-channel=true
+                                                            single-list-view-object="Contact"
+                                                            single-list-view-api-name="AllContacts"
+                                                            has-main-title=true
+                                                            main-title="Contacts For Above Selected Accounts"
+                                                            join-field-name="AccountId"
+                                                            page-name="Multi_Example_1">
+                                    </c-simpli-u-i-list-views>
+                            </lightning-layout-item>
+                                        
+                        </lightning-layout>
+                    </div>
+                </lightning-tab>
+
+                <lightning-tab label="Stand Alone Example 1">
+                    <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
+
+                        <!-- DESCRIPTION OF EXAMPLE -->
+                        <lightning-card>
+                            <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
+                                In this example data is injected into the component dynamically by the parent LWC page. This requires development and an understanding of LWC.  
+                            </div>
+
+                            <div class="codebox">
+                                <pre>
+                                    &#9;public with sharing class ListViewTestCompController {<br/>
+                                    <br/>
+                                    &#9;    // Access method for the LWC controller to retrieve the data<br/>
+                                    &#9;    // Notice the simpli_lv.ListViewHelper classes that are available.<br/>
+                                    &#9;    // They do not need to be used but the JSON structure that they provide must be identical<br/>
+                                    &#9;    @AuraEnabled(cacheable=true)<br/>
+                                    &#9;    public static simpli_lv.ListViewHelper.StandAloneListView getData()<br/>
+                                    &#9;    {<br/>
+                                    &#9;        simpli_lv.ListViewHelper.StandAloneListView lv = new simpli_lv.ListViewHelper.StandAloneListView();<br/>
+                                    &#9;        lv.columns = getColumns();<br/>
+                                    &#9;        lv.data = getRows(lv.columns);<br/>
+                                    &#9;        return lv;<br/>
+                                    &#9;    }<br/>
+                                    <br/>
+                                    &#9;    // Private method to show how columns for the list view are populated<br/>
+                                    &#9;    //------------------------------------------------------------------------<br/>
+                                    &#9;    // AVAILABLE COLUMN TYPES<br/>
+                                    &#9;    //------------------------------------------------------------------------<br/>
+                                    &#9;    //  id<br/>
+                                    &#9;    //  boolean<br/>
+                                    &#9;    //  double<br/>
+                                    &#9;    //  string<br/>
+                                    &#9;    //  decimal<br/>
+                                    &#9;    //  currency<br/>
+                                    &#9;    //  date<br/>
+                                    &#9;    //  datetime<br/>
+                                    &#9;    //  number<br/>
+                                    &#9;    //  percent<br/>
+                                    &#9;    //  time<br/>
+                                    &#9;    //  picklist<br/>
+                                    &#9;    //  multipicklist<br/>
+                                    &#9;    //  lookup<br/>
+                                    &#9;    //  textarea<br/>
+                                    &#9;    //  rich textarea<br/>
+                                    &#9;    //  url<br/>
+                                    &#9;    //  html<br/>
+                                    &#9;    //  email<br/>
+                                    &#9;    //  phone<br/>
+                                    &#9;    //  integer<br/>
+                                    &#9;    private static List&lt;simpli_lv.ListViewHelper.StandAloneColumn&gt; getColumns()<br/>
+                                    &#9;&#9;&#9;&#9;        {<br/>
+                                    &#9;        List&lt;simpli_lv.ListViewHelper.StandAloneColumn&gt; columns = new List&lt;simpli_lv.simpli_lv.ListViewHelper.StandAloneColumn&gt;();<br/>
+                                    <br/>
+                                    &#9;        simpli_lv.ListViewHelper.StandAloneColumn column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                    &#9;        column.columnIndex  = '0';<br/>
+                                    &#9;        column.label        = 'Account Name';<br/>
+                                    &#9;        column.name         = 'Name';<br/>
+                                    &#9;        column.type         = 'string';<br/>
+                                    &#9;        column.columnWidth  = '415px';<br/>
+                                    &#9;        columns.add(column);<br/>
+                                    <br/>
+                                    &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                    &#9;        column.columnIndex  = '1';<br/>
+                                    &#9;        column.label        = 'Account Site';<br/>
+                                    &#9;        column.name         = 'Site';<br/>
+                                    &#9;        column.type         = 'string';<br/>
+                                    &#9;        column.columnWidth  = '305px';<br/>
+                                    &#9;        columns.add(column);<br/>
+                                    <br/>
+                                    &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                    &#9;        column.columnIndex  = '2';<br/>
+                                    &#9;        column.label        = 'Billing State/Province';<br/>
+                                    &#9;        column.name         = 'BillingState';<br/>
+                                    &#9;        column.type         = 'string';<br/>
+                                    &#9;        column.columnWidth  = '294px';<br/>
+                                    &#9;        columns.add(column);<br/>
+                                    <br/>
+                                    &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                    &#9;        column.columnIndex  = '3';<br/>
+                                    &#9;        column.label        = 'Last Modified Date';<br/>
+                                    &#9;        column.name         = 'LastModifiedDate';<br/>
+                                    &#9;        column.type         = 'date';<br/>
+                                    &#9;        column.columnWidth  = '175px';<br/>
+                                    &#9;        columns.add(column);<br/>
+                                    <br/>
+                                    &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
+                                    &#9;        column.columnIndex  = '4';<br/>
+                                    &#9;        column.label        = 'Active';<br/>
+                                    &#9;        column.name         = 'Active';<br/>
+                                    &#9;        column.type         = 'picklist';<br/>
+                                    &#9;        column.columnWidth  = '90px';<br/>
+                                    &#9;        columns.add(column);<br/>
+                                    <br/>
+                                    &#9;        return columns;<br/>
+                                    &#9;    }<br/>
+                                    <br/>
+                                    &#9;    // Private method to show how row data for the list view is populated<br/>
+                                    &#9;    private static List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt; getRows()<br/>
+                                    &#9;        {<br/>
+                                    &#9;        List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt; rows = new List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt;();<br/>
+                                    <br/>
+                                    &#9;        simpli_lv.ListViewHelper.StandAloneRow row = new simpli_lv.ListViewHelper.StandAloneRow();<br/>
+                                    <br/>
+                                    &#9;        //Note the following:<br/>
+                                    &#9;        //addField() method currently takes a string only. For example date would be 1673989622000 to represent 1/17/2023<br/>
+                                    &#9;        row.addField('Express Logistics and Transport', columns[0]);<br/>
+                                    &#9;        row.addField('Site 1', columns[1]);<br/>
+                                    &#9;        row.addField('TX', columns[2]);<br/>
+                                    &#9;        row.addField('1673989622000', columns[3]);<br/>
+                                    &#9;        row.addField('No', columns[4]);<br/>
+                                    &#9;        rows.add(row);<br/>
+                                    <br/>
+                                    &#9;        row = new simpli_lv.ListViewHelper.StandAloneRow();<br/>
+                                    &#9;        row.addField('Other Logistics', columns[0]);<br/>
+                                    &#9;        row.addField('Other Site 1', columns[1]);<br/>
+                                    &#9;        row.addField('FL', columns[2]);<br/>
+                                    &#9;        row.addField('1674189622000', columns[3]);<br/>
+                                    &#9;        row.addField('Yes', columns[4]);<br/>
+                                    &#9;        rows.add(row);<br/>
+                                    <br/>
+                                    &#9;        return rows;<br/>
+                                    &#9;    }<br/>
+                                    <br/>
+                                    &#9;}<br/>
+                                    <br/>                        
+                                </pre>
+
+                            </div>
+
+                            <!-- EXAMPLE HTML TAG -->
+                            <div class="codebox">
+                                <pre>
+                                    &lt;c-simpli-u-i-list-views<br/>
+                                    &#9;&#9;mode="Stand Alone"<br/>
+                                    &#9;&#9;page-name="App_Example_1"<br/>
+                                    &#9;&#9;row-data="{standAloneJSONData}"<br/>
+                                    &#9;&#9;allow-horizontal-scrolling=false&gt;<br/>
+                                    &lt;/c-simpli-u-i-list-views&gt;    
+                                </pre>
+                            </div>
+                        </lightning-card>
                             
+                        <!-- WORKING EXAMPLE -->
+                        <div class="examplebox">
+                            <c-simpli-u-i-list-views mode="Stand Alone"
+                                                    data-id="Example 7"
+                                                    display-actions=true
+                                                    has-main-title=true
+                                                    main-title="Stand Alone Example"
+                                                    page-name="Stand_Alone_Example_1"
+                                                    row-data={standAloneData}
+                                                    oneventresponse={handleEventResponse}
+                                                    allow-horizontal-scrolling=false>
+                            </c-simpli-u-i-list-views>
+                        </div>
+
                     </div>
-                </div>
-            </lightning-tab>
-
-            <lightning-tab label="Multi Example 1">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
-
-                    <!-- DESCRIPTION OF EXAMPLE -->
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            This example shows two list views interacting with each other. Selecting an account will display its associated contacts
-                        </div>
-                                                
-                        <!-- EXAMPLE HTML TAG -->
-                        <div class="codebox">
-                            <pre>
-                                &lt;c-simpli-u-i-list-views mode="Split View"<br/>
-                                &#9;&#9;&#9;single-list-view-object="Account"<br/>    
-                                &#9;&#9;&#9;page-name="Split_Example_2"&gt;<br/>    
-                            </pre>
-                        </div>
-                    </lightning-card>
-
-                    <!-- WORKING EXAMPLE -->
-                    <div>
-                        <div style="max-height:300px;">
-                            <lightning-card>
-                                <c-simpli-u-i-list-views mode="Single List View"
-                                                         data-id="Example 8"
-                                                         use-message-channel=true
-                                                         single-list-view-object="Account"
-                                                         single-list-view-api-name="AllAccounts"
-                                                         has-main-title=true
-                                                         main-title="All Accounts"
-                                                         page-name="Multi_Example_1">
-                                </c-simpli-u-i-list-views>
-                            </lightning-card>
-                        </div>
-                        <div style="max-height:300px;">
-                            <lightning-card>
-                                <c-simpli-u-i-list-views mode="Single List View"
-                                                         data-id="Example 9"
-                                                         use-message-channel=true
-                                                         single-list-view-object="Contact"
-                                                         single-list-view-api-name="AllContacts"
-                                                         has-main-title=true
-                                                         main-title="Contacts For Above Selected Accounts"
-                                                         join-field-name="AccountId"
-                                                         page-name="Multi_Example_1">
-                                </c-simpli-u-i-list-views>
-                            </lightning-card>
-                        </div>
-                            
-                    </div>
-                </div>
-            </lightning-tab>
-
-            <lightning-tab label="Stand Alone Example 1">
-                <div class="slds-modal__content slds-var-p-around_xx-small" style="min-height: 600px;">
-
-                    <!-- DESCRIPTION OF EXAMPLE -->
-                    <lightning-card>
-                        <div slot="title" style="font-size: 0.8rem; font-weight: normal; white-space: break-spaces;">
-                            In this example data is injected into the component dynamically by the parent LWC page. This requires development and an understanding of LWC.  
-                        </div>
-
-                        <div class="codebox">
-                            <pre>
-                                &#9;public with sharing class ListViewTestCompController {<br/>
-                                <br/>
-                                &#9;    // Access method for the LWC controller to retrieve the data<br/>
-                                &#9;    // Notice the simpli_lv.ListViewHelper classes that are available.<br/>
-                                &#9;    // They do not need to be used but the JSON structure that they provide must be identical<br/>
-                                &#9;    @AuraEnabled(cacheable=true)<br/>
-                                &#9;    public static simpli_lv.ListViewHelper.StandAloneListView getData()<br/>
-                                &#9;    {<br/>
-                                &#9;        simpli_lv.ListViewHelper.StandAloneListView lv = new simpli_lv.ListViewHelper.StandAloneListView();<br/>
-                                &#9;        lv.data = getRows();<br/>
-                                &#9;        lv.columns = getColumns();<br/>
-                                &#9;        return lv;<br/>
-                                &#9;    }<br/>
-                                <br/>
-                                &#9;    // Private method to show how columns for the list view are populated<br/>
-                                &#9;    //------------------------------------------------------------------------<br/>
-                                &#9;    // AVAILABLE COLUMN TYPES<br/>
-                                &#9;    //------------------------------------------------------------------------<br/>
-                                &#9;    //  id<br/>
-                                &#9;    //  boolean<br/>
-                                &#9;    //  double<br/>
-                                &#9;    //  string<br/>
-                                &#9;    //  decimal<br/>
-                                &#9;    //  currency<br/>
-                                &#9;    //  date<br/>
-                                &#9;    //  datetime<br/>
-                                &#9;    //  number<br/>
-                                &#9;    //  percent<br/>
-                                &#9;    //  time<br/>
-                                &#9;    //  picklist<br/>
-                                &#9;    //  multipicklist<br/>
-                                &#9;    //  lookup<br/>
-                                &#9;    //  textarea<br/>
-                                &#9;    //  rich textarea<br/>
-                                &#9;    //  url<br/>
-                                &#9;    //  html<br/>
-                                &#9;    //  email<br/>
-                                &#9;    //  phone<br/>
-                                &#9;    //  integer<br/>
-                                &#9;    private static List&lt;simpli_lv.ListViewHelper.StandAloneColumn&gt; getColumns()<br/>
-                                &#9;&#9;&#9;&#9;        {<br/>
-                                &#9;        List&lt;simpli_lv.ListViewHelper.StandAloneColumn&gt; columns = new List&lt;simpli_lv.simpli_lv.ListViewHelper.StandAloneColumn&gt;();<br/>
-                                <br/>
-                                &#9;        simpli_lv.ListViewHelper.StandAloneColumn column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
-                                &#9;        column.label        = 'Account Name';<br/>
-                                &#9;        column.name         = 'Name';<br/>
-                                &#9;        column.type         = 'string';<br/>
-                                &#9;        column.columnWidth  = '415px';<br/>
-                                &#9;        columns.add(column);<br/>
-                                <br/>
-                                &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
-                                &#9;        column.label        = 'Account Site';<br/>
-                                &#9;        column.name         = 'Site';<br/>
-                                &#9;        column.type         = 'string';<br/>
-                                &#9;        column.columnWidth  = '305px';<br/>
-                                &#9;        columns.add(column);<br/>
-                                <br/>
-                                &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
-                                &#9;        column.label        = 'Billing State/Province';<br/>
-                                &#9;        column.name         = 'BillingState';<br/>
-                                &#9;        column.type         = 'string';<br/>
-                                &#9;        column.columnWidth  = '294px';<br/>
-                                &#9;        columns.add(column);<br/>
-                                <br/>
-                                &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
-                                &#9;        column.label        = 'Last Modified Date';<br/>
-                                &#9;        column.name         = 'LastModifiedDate';<br/>
-                                &#9;        column.type         = 'date';<br/>
-                                &#9;        column.columnWidth  = '175px';<br/>
-                                &#9;        columns.add(column);<br/>
-                                <br/>
-                                &#9;        column = new simpli_lv.ListViewHelper.StandAloneColumn();<br/>
-                                &#9;        column.label        = 'Active';<br/>
-                                &#9;        column.name         = 'Active';<br/>
-                                &#9;        column.type         = 'picklist';<br/>
-                                &#9;        column.columnWidth  = '90px';<br/>
-                                &#9;        columns.add(column);<br/>
-                                <br/>
-                                &#9;        return columns;<br/>
-                                &#9;    }<br/>
-                                <br/>
-                                &#9;    // Private method to show how row data for the list view is populated<br/>
-                                &#9;    private static List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt; getRows()<br/>
-                                &#9;        {<br/>
-                                &#9;        List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt; rows = new List&lt;simpli_lv.ListViewHelper.StandAloneRow&gt;();<br/>
-                                <br/>
-                                &#9;        simpli_lv.ListViewHelper.StandAloneRow row = new simpli_lv.ListViewHelper.StandAloneRow();<br/>
-                                <br/>
-                                &#9;        //Note the following:<br/>
-                                &#9;        //1. Fields must be in order of columns<br/>
-                                &#9;        //2. addField() method takes a string only. For example date would be 1673989622000 to represent 1/17/2023<br/>
-                                &#9;        row.addField('Express Logistics and Transport');<br/>
-                                &#9;        row.addField('Site 1');<br/>
-                                &#9;        row.addField('TX');<br/>
-                                &#9;        row.addField('1673989622000');<br/>
-                                &#9;        row.addField('No');<br/>
-                                &#9;        rows.add(row);<br/>
-                                <br/>
-                                &#9;        row = new simpli_lv.ListViewHelper.StandAloneRow();<br/>
-                                &#9;        row.addField('Other Logistics');<br/>
-                                &#9;        row.addField('Other Site 1');<br/>
-                                &#9;        row.addField('FL');<br/>
-                                &#9;        row.addField('1674189622000');<br/>
-                                &#9;        row.addField('Yes');<br/>
-                                &#9;        rows.add(row);<br/>
-                                <br/>
-                                &#9;        return rows;<br/>
-                                &#9;    }<br/>
-                                <br/>
-                                &#9;}<br/>
-                                <br/>                        
-                            </pre>
-
-                        </div>
-
-                        <!-- EXAMPLE HTML TAG -->
-                        <div class="codebox">
-                            <pre>
-                                &lt;c-simpli-u-i-list-views<br/>
-                                &#9;&#9;mode="Stand Alone"<br/>
-                                &#9;&#9;page-name="App_Example_1"<br/>
-                                &#9;&#9;row-data="{standAloneJSONData}"<br/>
-                                &#9;&#9;allow-horizontal-scrolling=false&gt;<br/>
-                                &lt;/c-simpli-u-i-list-views&gt;    
-                            </pre>
-                        </div>
-                    </lightning-card>
-                        
-                    <!-- WORKING EXAMPLE -->
-                    <div class="examplebox">
-                        <c-simpli-u-i-list-views mode="Stand Alone"
-                                                data-id="Example 7"
-                                                display-actions=true
-                                                has-main-title=true
-                                                main-title="Stand Alone Example"
-                                                page-name="Stand_Alone_Example_1"
-                                                row-data={standAloneData}
-                                                oneventresponse={handleEventResponse}
-                                                allow-horizontal-scrolling=false>
-                        </c-simpli-u-i-list-views>
-                    </div>
-
-                </div>
-            </lightning-tab>
-        
-        </lightning-tabset>
-    </lightning-card>
-
+                </lightning-tab>
+            
+            </lightning-tabset>
+        </lightning-card>
+        </div>
 </template>
