@@ -12,6 +12,8 @@ private class CacheHelperTest {
 	{
         Test.startTest();
 
+            CacheHelper.clearAllCache();
+
             String debug = '\n\n------ 1 ------\n' + CacheHelper.debugCache();
 
             System.assertEquals(0, CacheHelper.getCacheKeys().size()); //show cache is empty
