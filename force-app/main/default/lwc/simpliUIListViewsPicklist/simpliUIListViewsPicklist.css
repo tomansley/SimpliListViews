@@ -1,7 +1,26 @@
 .picklist-container {
-
+    position: relative;
+    overflow: visible;
 }
 
 .multi-picklist-container {
-    
+    position: relative;
+    overflow: visible;
+}
+
+/* Ensure the lightning-combobox dropdown is not clipped */
+.picklist-container lightning-combobox {
+    position: relative;
+}
+
+/* Ensure the dropdown portal is above other elements */
+.picklist-container lightning-combobox::part(dropdown) {
+    overflow: visible !important;
+}
+
+/* For cases where the parent container has overflow hidden */
+.picklist-container {
+}
+
+.multi-picklist-container {
 }
