@@ -3737,6 +3737,15 @@ global with sharing class ListViewHelper
         return tokens;        
     }
 
+    global class NameValuePair {
+        global String name {get; set;}
+        global String value {get; set;}
+    }
+
+
+    /*
+        Classes that handle the stand alone list view.
+     */
     global class StandAloneListView {
         @AuraEnabled
         global List<ListViewHelper.StandAloneColumn> columns {get; set;}
@@ -3753,33 +3762,60 @@ global with sharing class ListViewHelper
         global String name {get; set;}
         @AuraEnabled
         global String type {get; set;}
+        @AuraEnabled
+        global String columnIndex {get; set;}
     }
 
     global class StandAloneRow {
         @AuraEnabled
         global List<StandAloneField> fields {get; set;}
 
+        private List<ListViewHelper.StandAloneColumn> columns;
+
         global StandAloneRow() {
             fields = new List<StandAloneField>();
         }
 
+        global StandAloneRow(List<ListViewHelper.StandAloneColumn> columns) {
+            fields = new List<StandAloneField>();
+            this.columns = columns;
+        }
+
+        global void addField(String value, ListViewHelper.StandAloneColumn column) {
+            StandAloneField field = new StandAloneField(value, column);
+            fields.add(field);
+        }
+
         global void addField(String value) {
-            fields.add(new StandAloneField(value));
+            StandAloneField field = new StandAloneField(value);
+            fields.add(field);
         }
     }
 
     global class StandAloneField {
         @AuraEnabled
         global String value {get; set;}
+        private ListViewHelper.StandAloneColumn column;
 
-        public StandAloneField(String value) {
+        public StandAloneField(String value, ListViewHelper.StandAloneColumn column) {
             this.value = value;
+            this.column = column;
         }
-    }
 
-    global class NameValuePair {
-        global String name {get; set;}
-        global String value {get; set;}
+        /* DEPRECATED */
+        public StandAloneField(String value) {
+        }
+
+        @AuraEnabled
+        global String getWidth() {
+            return column.columnWidth;
+        }
+
+        @AuraEnabled
+        global String getColumnIndex() {
+            return column.columnIndex;
+        }
+
     }
 
 
