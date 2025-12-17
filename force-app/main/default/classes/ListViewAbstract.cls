@@ -249,6 +249,7 @@ public with sharing abstract class ListViewAbstract {
     {
         public Integer offset   = -1;
         public Integer rowLimit = -1;
+        public Integer pageSize = Integer.valueOf(ListViewConfigHelper.getOrgWideConfigParam('QueryPagingSize', '250'));     //holds the max page size that was requested
         public List_View__c listView;
     
         public ListViewWrapper(List_View__c listView)
@@ -260,6 +261,12 @@ public with sharing abstract class ListViewAbstract {
         public Integer getOffset()
         {
             return offset;
+        }
+
+        @AuraEnabled(cacheable=false)
+        public Integer getPageSize()
+        {
+            return pageSize;
         }
 
         @AuraEnabled(cacheable=false)
@@ -716,6 +723,15 @@ public with sharing abstract class ListViewAbstract {
             return highlightColor;
         }
 
+        @AuraEnabled(cacheable=true)
+        public String getHighlightColorCSS()
+        {
+            if (!String.isEmpty(highlightColor))
+                return 'background: ' + highlightColor + ';';
+            else
+                return '';
+        }
+
         private FieldWrapper getFieldByAPIName(String apiName)
         {
             FieldWrapper field = null;
@@ -961,9 +977,11 @@ public with sharing abstract class ListViewAbstract {
                         System.debug(LoggingLevel.DEBUG, 'Condition validation result = ' + color);
 
                         if (color != '') {
-                            if (condition.highlightCellOnly) {
-                                field.highlightCol = color;
-                            } else {
+                            
+                            field.highlightCol = color;
+                            
+                            //if we are highlighting the whole row
+                            if (!condition.highlightCellOnly) {
                                 highlightColor = color;
                                 highlightRow = true;
                             }
@@ -972,6 +990,13 @@ public with sharing abstract class ListViewAbstract {
                     }
 
                 }
+
+            }
+
+            //if we have a row highlight then ensure to update all fields
+            if (highlight && highlightRow) {
+                for (FieldWrapper field: fields.values())
+                    field.highlightCol = highlightColor;
             }
 
         }
@@ -1001,14 +1026,11 @@ public with sharing abstract class ListViewAbstract {
                     {
                         field.setCSSStyle(style.getCSSString()); //this only sets the styles for the COLUMN
 
-                        //if we are not highlighting the row and we are not highlighting the field and we have a background color
                         if (!highlightRow && String.isBlank(field.highlightCol) && !String.isBlank(style.getBackgroundColor())) {
                             field.cssStyle += 'background:' + style.getBackgroundColor() + ';';
-                        
-                        //if we are not highlighting the row and we are highlighting the field
-                        } else if (!highlightRow && !String.isBlank(field.highlightCol)) {
-                            field.cssStyle += 'background:' + field.highlightCol + ';';
-                        }             
+                        } else {
+                            field.cssStyle += 'background:' + field.highlightCol + ';';     
+                        }
                     }
 
                 }
@@ -1033,9 +1055,7 @@ public with sharing abstract class ListViewAbstract {
 
                 //if we do not have a style then we set the highlight color by itself if there is a highlight to set
                 if (!hasStyle) {
-                    if (!highlightRow && !String.isBlank(field.highlightCol)) {
-                        field.cssStyle += 'background:' + field.highlightCol + ';';
-                    }      
+                    field.cssStyle += 'background:' + field.highlightCol + ';';
                 }
 
             }
@@ -1246,14 +1266,14 @@ public with sharing abstract class ListViewAbstract {
         public String sortIndex;
         public Integer columnIndex;    //identifies the column that this field is a part of
         public String key;
-        public Boolean isSortable;     //identifies whether the field is sortable.
-        public Boolean isEditable;     //identifies whether the field can be edited inline.
-        public String parentObjType;   //the API name of the object that this field looks up to
-        public Boolean isTotalsRow;    //identifies whether the row this field is a part of is a totals row.
-        public String columnWidth = '200';     //indicates the preset column width.
-        public String cssStyle;        //the css style that should be applied to this field based on the column styles configured
-        public String functionApexClass;//if the field is to be calculated based on a provided function this is the apex class to use
-        public String highlightCol;     //indicates whether a conditional color should be used instead of style and what color it is.
+        public Boolean isSortable;              //identifies whether the field is sortable.
+        public Boolean isEditable;              //identifies whether the field can be edited inline.
+        public String parentObjType;            //the API name of the object that this field looks up to
+        public Boolean isTotalsRow;             //identifies whether the row this field is a part of is a totals row.
+        public String columnWidth = '200';      //indicates the preset column width.
+        public String cssStyle;                 //the css style that should be applied to this field based on the column styles configured
+        public String functionApexClass;        //if the field is to be calculated based on a provided function this is the apex class to use
+        public String highlightCol = 'FFFFFF';  //indicates whether a conditional color should be used instead of style and what color it is. Default = White
         private Boolean hasRunFunction = false; //indicates whether the function has been applied or not.
 
         public FieldWrapper(String label, Object objValue, String type, String name, Integer columnIndex, String parentObjType)
@@ -1332,6 +1352,13 @@ public with sharing abstract class ListViewAbstract {
             return cssStyle;
         }
 
+        @AuraEnabled(cacheable=true)
+        public String getAllCssStyle()
+        {
+            System.debug(LoggingLevel.DEBUG, 'FIELD ALL CSS STYLE - ' + getCssStyle() + getColumnWidth());
+            return getCssStyle() + getColumnWidth();
+        }
+
         public void setIsTotalsRow(Boolean isTotalsRow)
         {
             this.isTotalsRow = isTotalsRow;
@@ -1346,10 +1373,11 @@ public with sharing abstract class ListViewAbstract {
         public String getColumnWidth()
         {
             if (!String.isEmpty(columnWidth))
-                return 'width: ' + columnWidth + 'px;';
+                return 'flex: 0 0 ' + columnWidth + 'px;';
             else
                 return '';
         }
+
 
         public void setColumnWidth(String columnWidth)
         {

@@ -1,5 +1,157 @@
-.mainwrapper {
+.table-container {
+    border: 1px solid #d8dde6;
+    background-color: #ffffff;
+    width:100%; 
+    display: block; 
+    overflow-x: auto; 
+    overflow-y:hidden; 
+    white-space: nowrap;
+}
+
+
+
+.table-header {
+    position: sticky;       /* THIS makes it sticky */
+    top: 0;                  /* THIS makes it sticky */
+    z-index: 1;
+    display: flex;           /* ensures we control flex behavior */
+    min-width: max-content;  /* row can be wider than container */
+    flex-wrap: nowrap;       /* THIS stops wrapping */
+}
+
+.header-cell {
+    padding: 4px;
+    border-right: 1px solid #e5e5e5;
     position: relative;
+    height: 30px;
+    background-color: #f3f3f3;
+    border-bottom: 2px solid #d8dde6;
+    font-weight: 600;
+}
+
+
+
+.table-row {
+    display: flex;           /* ensures we control flex behavior */
+    flex-wrap: nowrap;       /* THIS stops wrapping */
+    min-width: max-content;  /* row can be wider than container */
+}
+
+.table-row:hover {
+    background-color: #f3f3f3;
+}
+
+.data-cell {
+    border-bottom: 1px solid #e5e5e5;
+    padding: 4px;
+    position: relative;
+    height: 30px;
+}
+
+.split-data-cell-top {
+    padding: 4px;
+    position: relative;
+    height: 30px;
+}
+
+.split-data-cell-bottom {
+    padding: 4px;
+    position: relative;
+    height: 30px;
+    border-bottom: 1px solid rgb(159, 159, 159);
+}
+
+.edited-cell {
+    padding: 4px;
+    position: relative;
+    height: 40px;
+}
+
+.cell-content {
+    padding: 12px;
+    overflow: visible;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.header-label {
+    flex: 1;
+    color:#494949;
+    text-transform:uppercase;
+    letter-spacing:0.0625em;
+}
+
+.resize-handle {
+    position: absolute;
+    right: -6px;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: col-resize;
+    background-color: transparent;
+    z-index: 10;
+}
+
+.resize-handle:hover {
+    background-color: #0176d3;
+    opacity: 0.3;
+}
+
+.edit-input {
+    width:98%; 
+    padding-right: 4px;
+}
+
+.data-cell .cell-content .edited-cell {
+    cursor: pointer;
+}
+
+.dynamic-col {
+    flex: 0 0 140px; /* basis: 140px; no grow, no shrink. This is set dynamically at runtime in code */
+
+}
+
+.del-data {
+    color: red
+}
+
+.cell-edit-buttons {
+    flex: 0 0 60px;
+}
+
+.cell-header-edit-buttons {
+    flex: 0 0 60px;
+    border-bottom: 2px solid #d8dde6;
+    background-color: #f3f3f3;
+}
+
+.cell-center {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.main-wrapper {
+    position: relative;
+    max-height: calc(100vh - 210px);
+    display: flex;
+    flex-direction: column;
+}
+
+.main-wrapper-related {
+    position: relative;
+    min-height: 80px;
+    max-height: 300px;
+}
+
+.main-wrapper-related-all {
+    position: relative;
+    min-height: 80px;
+    max-height: calc(100vh - 210px);
 }
 
 .header {
@@ -8,7 +160,7 @@
     border-radius: 5px 5px 0px 0px;
     padding-left: 10px;
     padding-right: 5px;
-    padding-bottom: 2px;
+    padding-bottom: 4px;
 }
 
 .virtualtext {
@@ -29,10 +181,7 @@
     padding-right: 5px; 
     padding-top: 3px;
     padding-left: 5px;
-}
-
-.button-short {
-    line-height: inherit;
+    padding-bottom: 2px;
 }
 
 .toastMessage.forceActionsText {
@@ -57,19 +206,6 @@
     z-index: 100;
 }
 
-.applistscrollwrapper {
-    width: 100%;
-    overflow-y: auto;
-    max-height: 60vh;
-}
-
-.virtualapplistscrollwrapper {
-    width: 100%;
-    overflow-y: auto;
-    border-top: red solid 4px;
-    max-height: 60vh;
-}
-
 .tablehorizontalscroll {
     width: max-content;
 }
@@ -79,136 +215,75 @@
     min-width: 100%;
 }
 
-.relatedlistscrollwrapper {
-    width: 100%;
-    min-height: 80px;
-    max-height: 300px;
-    border-bottom: 1px solid #ddd;
-    border-left: 1px solid #ddd;
-    overflow: auto;
-}
 
-.relatedlistdisplayallwrapper {
-    width: 100%;
-    min-height: 80px;
-    border-bottom: 1px solid #ddd;
-    border-left: 1px solid #ddd;
-    overflow: auto;
-}
 
-.splitviewscrollwrapper {
-    width: 100%;
-    min-height: 80px;
-    max-height: 67vh;
-    border-bottom: 1px solid #ddd;
-    border-left: 1px solid #ddd;
-    overflow: auto;
-}
-
-.splitviewobjectlistdropdown {
-    width: 100%;
-    padding-bottom: 5px;
-    padding-right: 5px;
-}
-
-.regularobjectlistdropdown {
-    min-width: 20%;
-}
-
-.splitviewlistviewdropdown {
-    width: 70%;
-    padding-left: 5px;
-}
-
-.regularlistviewdropdown {
-    min-width: 20%;
-}
-
-thead th {
-    position: sticky;
-    top: 0;
-}
-
-th {
-    z-index: 1;
-}
-
-.slds-card__header {
-    padding-top: 0px;
-}
-
-.mainwrapper {
-    position: relative;
-}
-
-.button-short {
-    line-height: inherit;
-}
-
-.toastMessage.forceActionsText {
-    white-space: pre-line !important;
-}
-
-.pageSpinnerHolder {
-    position: absolute;
-    min-height: 180px;
-    min-width: 180px;
-    z-index: 100;
-}
 
 .applistscrollwrapper {
     width: 100%;
-    overflow-y: auto;
-    max-height: 60vh;
+    border: 1px solid #d8dde6; 
+    background-color: #ffffff; 
+    display: block; 
+    overflow-x: auto; 
+    overflow-y: auto; 
+    white-space: nowrap;
+    flex: 1 1 auto;           /* fills remaining height */
+    min-height: 0;            /* IMPORTANT if you want inner scrolling */
 }
 
 .virtualapplistscrollwrapper {
     width: 100%;
-    overflow-y: auto;
     border-top: red solid 4px;
     max-height: 60vh;
-}
 
-.tablehorizontalscroll {
-    width: max-content;
-}
-
-.tablenohorizontalscroll {
-    width: auto;
-    min-width: 100%;
+    border: 1px solid #d8dde6; 
+    background-color: #ffffff; 
+    display: block; 
+    overflow-x: auto; 
+    overflow-y:auto; 
+    white-space: nowrap;
 }
 
 .relatedlistscrollwrapper {
     width: 100%;
     min-height: 80px;
-    max-height: 300px;
-    border-bottom: 1px solid #ddd;
-    border-left: 1px solid #ddd;
+    max-height: 259px; /* 300 - header (41) */
     overflow: auto;
+    border: 1px solid #d8dde6; 
+    background-color: #ffffff; 
+    display: block; 
+    white-space: nowrap;
 }
 
 .relatedlistdisplayallwrapper {
     width: 100%;
     min-height: 80px;
-    border-bottom: 1px solid #ddd;
-    border-left: 1px solid #ddd;
     overflow: auto;
+    border: 1px solid #d8dde6; 
+    background-color: #ffffff; 
+    display: block; 
+    white-space: nowrap;
 }
 
 .splitviewscrollwrapper {
     width: 100%;
     min-height: 80px;
     max-height: 67vh;
-    border-bottom: 1px solid #ddd;
-    border-left: 1px solid #ddd;
-    overflow: auto;
+    background-color: #ffffff; 
+    display: block; 
+    overflow: auto; 
+    white-space: nowrap;
+    border-top: 1px solid rgb(159, 159, 159);
+    border-bottom: 1px solid rgb(159, 159, 159);
 }
+
+
+
 
 .splitviewobjectlistdropdown {
     width: 100%;
     padding-bottom: 5px;
-    padding-left: 5px;
     padding-right: 5px;
+    padding-left: 5px;
 }
 
 .regularobjectlistdropdown {
@@ -226,21 +301,6 @@ th {
     min-width: 20%;
 }
 
-thead th {
-    position: sticky;
-    top: 0;
-}
-
-th {
-    z-index: 1;
-}
-
 .slds-card__header {
     padding-top: 0px;
-}
-
-.cell-truncate {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
 }

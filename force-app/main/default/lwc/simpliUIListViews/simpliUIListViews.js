@@ -181,6 +181,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track isModeStandAlone = false;  //indicates whether the current mode is STANDALONE. This indicates that data is passed into the component at initialization
     @track listviewdropdownstyle = 'regularlistviewdropdown';
     @track objectlistdropdownstyle = 'regularobjectlistdropdown';
+    @track mainwrapperstyle = 'main-wrapper';
     @track listwrapperstyle = 'applistscrollwrapper';
     @track tablestyle = 'slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols tablenohorizontalscroll'; //the style applied to the list view table
     @track relatedRecordId;             //holds the record Id if set by the API.
@@ -265,6 +266,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
     @track oldWidth;
     @track parentObj;
     @track mouseDownColumn;
+    @track isResizing;                      //indicates whether a column is being resized or not.
+
     //for handling sorting
     @track listViewSortData = new Map();
     @track columnSortData = new Map();
@@ -387,8 +390,10 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 this.isModeRelated = true;
                 if (this.displayAllRelatedRecords) {
                     this.listwrapperstyle = 'relatedlistdisplayallwrapper';
+                    this.mainwrapperstyle = 'main-wrapper-related-all';
                 } else {
                     this.listwrapperstyle = 'relatedlistscrollwrapper';
+                    this.mainwrapperstyle = 'main-wrapper-related';
                 }
                 this.selectedObject = this.singleListViewObject;
                 this.selectedListView = this.singleListViewApiName;
@@ -520,6 +525,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
                 if (field.uIValue === undefined) field.uIValue = field.value;
                 field = SLVHelper.setFieldTypes(column.type, field);
                 if (field.cssStyle === undefined) field.cssStyle = '';
+                field.allCssStyle = 'flex: 0 0 ' + field.width + 'px;'; //CSS
                 if (field.currencyCode === undefined) field.currencyCode = 'USD';
                 fieldIndex++;
             });
@@ -528,7 +534,7 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         index = 0;
         if (this.listViewData?.fieldMetaData?.length) {
             this.listViewData.fieldMetaData.forEach(column => {
-                if (column.columnWidth !== undefined) column.columnWidth = 'width: ' + column.columnWidth + ';'; //CSS
+                if (column.columnWidth !== undefined) column.columnWidth = 'flex: 0 0 ' + column.columnWidth + 'px;'; //CSS
                 if (column.sortDir === undefined) column.sortDir = false;
                 if (column.sortIndex === undefined) column.sortIndex = index;
                 if (column.sortIndexDisplay === undefined) column.sortIndexDisplay = index + 1;
@@ -850,12 +856,20 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
         console.log('this.offset                          - ' + this.offset + ' for ' + this.pageName);
         console.log('listViewDataResult.listView.offset   - ' + listViewDataResult.listView.offset + ' for ' + this.pageName);
 
+        this.listViewDisplayedRowsSize += listViewDataResult.displayedRowsCount;
+
         //if we have not reached our max limit
         if (this.listViewDataRows.length < listViewDataResult.listView.rowLimit) {
             
-            this.listViewDisplayedRowsSize += listViewDataResult.displayedRowsCount;
             //if the offset has not changed or the row size has not changed then we are done.
-            if (this.offset === listViewDataResult.listView.offset || oldDataRowsSize === this.listViewDataRowsSize) {
+            console.log('================================================================================');
+            console.log('this.offset                          - ' + this.offset);
+            console.log('listViewDataResult.listView.offset   - ' + listViewDataResult.listView.offset);
+            console.log('oldDataRowsSize                      - ' + oldDataRowsSize);
+            console.log('this.listViewDataRowsSize            - ' + this.listViewDataRowsSize);
+            console.log('listViewDataResult.listView.pageSize - ' + listViewDataResult.listView.pageSize);
+            console.log('================================================================================');
+            if (this.offset === listViewDataResult.listView.offset || listViewDataResult.listView.pageSize > this.listViewDataRowsSize || oldDataRowsSize === this.listViewDataRowsSize) {
                 this.dataSpinnerOff();
             
             //update offset (which will trigger another request for data)
@@ -1580,14 +1594,16 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             this.dispatchEvent(new CustomEvent('eventresponse', { detail: { type: 'processAllListViews', status: 'finished' } }));
         }
     }
-    calculateWidth(event) {
+    onMouseDownWidth(event) {
+        console.log('Starting onMouseDownWidth');
         try {
+            this.isResizing = true;
             const { target, clientX } = event;
             const childObj = target;
             let parObj = childObj.parentNode;
             const mouseStart = clientX;
             this.mouseDownColumn = event.currentTarget.dataset.index;
-            while (parObj.tagName !== 'TH') {
+            while (parObj.tagName !== 'LIGHTNING-LAYOUT-ITEM') {
                 parObj = parObj.parentNode;
             }
             this.mouseStart = mouseStart;
@@ -1603,15 +1619,52 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             SLVHelper.showErrorMessage(error);
         }
     }
-    setNewWidth(event) {
+
+    onMouseMoveWidth(event) {
+        if (!this.isResizing) {
+            return;
+        }
+        console.log('&&& Starting onMouseMoveWidth');
         try {
             if (this.mouseStart === undefined) return;
             const { clientX } = event;
             console.log('event.clientX - ' + clientX);
             let newWidth = clientX - parseFloat(this.mouseStart) + parseFloat(this.oldWidth);
             console.log('New width - ' + newWidth);
-            this.parentObj.style.width = newWidth + 'px';
+            this.parentObj.style.flex = '0 0 ' + newWidth + 'px';
+
+            //update all fields (on the client) in that column with the new width. This is not the greatest solution as I am hacking the CSS strings.
+            this.listViewDataRows.forEach(row => {
+                row.fields.forEach(field => {
+                    if (field.columnIndex == this.mouseDownColumn)
+                    {
+                        field.columnWidth = 'flex: 0 0 ' + newWidth + 'px';
+                        field.allCssStyle = field.allCssStyle.split('flex:')[0] + field.columnWidth;
+                    }
+                })
+            });
+
+        } catch (error) {
+            SLVHelper.showErrorMessage(error);
+        }
+
+    }
+
+    onMouseUpWidth(event) {
+        if (!this.isResizing) {
+            return;
+        }
+        console.log('Starting onMouseUpWidth');
+        try {
+            this.isResizing = false;
+            if (this.mouseStart === undefined) return;
+            const { clientX } = event;
+            console.log('event.clientX - ' + clientX);
+            let newWidth = clientX - parseFloat(this.mouseStart) + parseFloat(this.oldWidth);
+            console.log('New width - ' + newWidth);
             this.mouseStart = undefined;
+
+            //save the new width to the database for next time.
             this.saveColumnWidth(newWidth, this.mouseDownColumn);
         } catch (error) {
             SLVHelper.showErrorMessage(error);

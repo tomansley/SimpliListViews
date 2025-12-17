@@ -13,7 +13,7 @@
 
 -->
 <template>
-    <div class="mainwrapper">
+    <div class={mainwrapperstyle}>
         <template if:true={spinner}>
              <c-simpli-u-i-list-views-spinner text={label.Loading}></c-simpli-u-i-list-views-spinner>
         </template>
@@ -314,571 +314,574 @@
                 </template>
 
                 <template if:false={isModeSplitView}>
-
+                    
+                    <!-- THE ENTIRE TABLE -->
                     <div class={listwrapperstyle}>
-                        <table id="datatable" class={tablestyle} role="grid" style="overflow: hidden;">
+                        
+                        <!-- ------------------------------------------------------------------------------ -->
+                        <!-- Header Row -->
+                        <!-- ------------------------------------------------------------------------------ -->
+                        <!-- DO NOT PUT CELL STYLE INTO LAYOUT AS IT BREAKS EVERYTHING OUT OF MAIN WINDOW -->
+                        <lightning-layout class="table-header" multiple-rows="false">
 
-                            <!-- ------------------------- -->
-                            <!-- HEADER DATA               -->
-                            <!-- ------------------------- -->
-                            <thead style="position:relative">
-                                <tr class="slds-line-height_reset">
-                                    <th class="slds-text-align_right" scope="col" style="width: 32px;">
-                                        <div class="slds-th__action slds-th__action_form">
-                                            <div class="slds-checkbox">
+                            <!-- The SELECT ALL checkbox -->
+                            <template if:true={hasListViewDataRows}> 
+                                <lightning-layout-item class="header-cell slds-truncate slds-text-align_right" style="min-width: 32px; width: 32px; max-width: 32px">
+                                    <lightning-input type="checkbox" 
+                                                    variant="label-hidden" 
+                                                    value="all" 
+                                                    onchange={handleRecordSelectChange}>
+                                    </lightning-input>
+                                </lightning-layout-item>
+                            </template>
+
+                            <!-- The column names -->
+                            <template for:each={listViewData.fieldMetaData} for:item="field">
+                                <lightning-layout-item 
+                                    key={field.name}
+                                    class="header-cell slds-truncate"
+                                    style={field.columnWidth}
+                                    onmouseup={onMouseUpWidth}
+                                    onmousemove={onMouseMoveWidth}>
+                                    <div class="cell-content">
+
+                                        <template if:true={field.sortable}>
+                                            <template if:false={isNoSorting}>
+                                                <a class="slds-text-link_reset" value={field.name}>
+                                                    <span class="header-label slds-truncate" 
+                                                            title={field.sortingTooltip} 
+                                                            onclick={sortColumns} 
+                                                            data-sortdir={field.sortDir}
+                                                            data-name={field.name}
+                                                            data-sortindex={field.sortIndex}>{field.label}</span>
+
+                                                    <!-- SORTING -->
+                                                    <span if:true={field.sortIndex}>
+                                                        <span if:true={field.sortDir}>
+                                                            <template if:true={listViewData.isDefaultSort}>
+                                                                &nbsp;(&#9660;)
+                                                            </template>
+                                                            <template if:false={listViewData.isDefaultSort}>
+                                                                &nbsp;(&#9660;{field.sortIndexDisplay})
+                                                            </template>
+                                                        </span>
+                                                        <span if:false={field.sortDir}>
+                                                            <template if:true={listViewData.isDefaultSort}>
+                                                                &nbsp;(&#9650;)
+                                                            </template>
+                                                            <template if:false={listViewData.isDefaultSort}>
+                                                                &nbsp;(&#9650;{field.sortIndexDisplay})
+                                                            </template>
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            </template>
+                                            <template if:true={isNoSorting}>
+                                                <span class="header-label slds-truncate" title={field.label}>{field.label}</span>
+                                            </template>
+                                        </template>
+                                        <template if:false={field.sortable}>
+                                            <span class="header-label slds-truncate" title={field.label}>{field.label}</span>
+                                        </template>
+
+                                        <!-- The resize handle -->
+                                        <div class="resize-handle" onmousedown={onMouseDownWidth} data-index={field.columnIndex}></div>
+                                    </div>
+                                </lightning-layout-item>
+                            </template>
+
+                            <!-- Action Buttons when Editing -->
+                            <template if:true={isEdited}>
+                                <lightning-layout-item class="header-cell slds-truncate cell-header-edit-buttons">
+                                    <div class="cell-center">
+                                        <lightning-button-icon title={label.Save_All_Data}
+                                                                size="small" 
+                                                                icon-name="utility:check" 
+                                                                onclick={handleAllRowDataSave}>
+                                        </lightning-button-icon>
+                                        <lightning-button-icon title={label.Reset_All_Data} 
+                                                                size="small" 
+                                                                icon-name="utility:recycle_bin_empty" 
+                                                                onclick={handleAllRowDataReset}>
+                                        </lightning-button-icon>
+                                    </div>
+                                </lightning-layout-item>
+                            </template>
+
+                        </lightning-layout>
+
+
+                        <!-- ------------------------------------------------------------------------------ -->
+                        <!-- Data Rows -->
+                        <!-- ------------------------------------------------------------------------------ -->
+                        
+                        <!-- NO ROWS -->
+                        <template if:false={hasListViewDataRows}> 
+                            <lightning-layout class="table-row" multiple-rows="false">
+                                <lightning-layout-item class="data-cell" size=12>
+                                    <div style="text-align:center;">No rows available to be displayed</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </template>
+
+                        <!-- WE HAVE ROWS -->
+                        <template if:true={hasListViewDataRows}>
+                            <template for:each={listViewDataRows} for:item="rowData">
+
+                                <!-- Is the row to be displayed? -->
+                                <template if:true={rowData.isDisplayed}>
+
+                                    <!-- DO NOT PUT CELL STYLE INTO LAYOUT AS IT BREAKS EVERYTHING OUT OF MAIN WINDOW -->
+                                    <lightning-layout key={rowData.rowId} class="table-row" style={rowData.highlightColorCSS} multiple-rows="false">
+
+                                        <!-- The SELECT ROW checkbox -->
+                                        <lightning-layout-item class="data-cell slds-truncate slds-text-align_right" style="min-width: 32px; width: 32px; max-width: 32px">
+                                            <template if:false={rowData.isTotals}>
                                                 <lightning-input type="checkbox" 
                                                                 variant="label-hidden" 
-                                                                value="all" 
+                                                                name={rowData.checkBoxId} 
+                                                                value={rowData.rowId} 
                                                                 onchange={handleRecordSelectChange}>
                                                 </lightning-input>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <template for:each={listViewData.fieldMetaData} for:item="field">
-                                        <th key={field.label} 
-                                            class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc" 
-                                            scope="col"
-                                            style={field.columnWidth} 
-                                            onmouseup={setNewWidth}>
+                                            </template>
+                                        </lightning-layout-item>                                    
 
-                                            <div class="slds-resizable">
+                                        <template for:each={rowData.fields} for:item="fieldData">
 
-                                                <!-- -------------------- -->
-                                                <!-- SORTING              -->
-                                                <!-- -------------------- -->
-                                                <div class="slds-cell-fixed">
-                                                    <template if:true={field.sortable}>
-                                                        <template if:false={isNoSorting}>
-                                                            <a class="slds-th__action slds-text-link_reset" tabindex="0" value={field.name}>
-                                                                <span class="slds-assistive-text">{label.Sort_By}: </span>
-                                                                <span class="slds-truncate" 
-                                                                    title={field.sortingTooltip} 
-                                                                    onclick={sortColumns} 
-                                                                    data-sortdir={field.sortDir}
-                                                                    data-name={field.name}
-                                                                    data-sortindex={field.sortIndex}>{field.label}</span>
-                                                                <div if:true={field.sortIndex}>
-                                                                    <div if:true={field.sortDir}>
-                                                                        <template if:true={listViewData.isDefaultSort}>
-                                                                            &nbsp;(&#9660;)
-                                                                        </template>
-                                                                        <template if:false={listViewData.isDefaultSort}>
-                                                                            &nbsp;(&#9660;{field.sortIndexDisplay})
-                                                                        </template>
-                                                                    </div>
-                                                                    <div if:false={field.sortDir}>
-                                                                        <template if:true={listViewData.isDefaultSort}>
-                                                                            &nbsp;(&#9650;)
-                                                                        </template>
-                                                                        <template if:false={listViewData.isDefaultSort}>
-                                                                            &nbsp;(&#9650;{field.sortIndexDisplay})
-                                                                        </template>
-                                                                    </div>
-                                                                </div>
-                                                            </a>
-                                                        </template>
-                                                        <template if:true={isNoSorting}>
-                                                            <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                                                <span class="slds-truncate" title={field.label}>
-                                                                    {field.label}
-                                                                </span>
-                                                            </div>
-                                                        </template>
-                                                    </template>
-                                                    <template if:false={field.sortable}>
-                                                        <div class="slds-th__action slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                                            <span class="slds-truncate" title={field.label}>
-                                                                {field.label}
-                                                            </span>
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                                <input type="range" min="20" max="1000" class="slds-assistive-text" id={field.label} tabindex="0" />
-                                                <span class="slds-resizable__handle" onmousedown={calculateWidth} data-index={field.columnIndex}>
-                                                    <span class="slds-resizable__divider"></span>
-                                                </span>
-                                            </div>
-
-                                        </th>
-                                    </template>
-
-                                    <!-- -------------------- -->
-                                    <!-- ACTION BUTTONS       -->
-                                    <!-- -------------------- -->
-                                    <template if:true={isEdited}>
-                                        <th class="slds-is-resizable slds-is-sortable slds-text-title_caps slds-is-sorted slds-is-sorted_asc slds-text-align_center" 
-                                            style="width: 60px"
-                                            scope="col">
-                                            <div>
-                                                <lightning-button-icon title={label.Save_All_Data}
-                                                                        size="small" 
-                                                                        icon-name="utility:check" 
-                                                                        onclick={handleAllRowDataSave}>
-                                                </lightning-button-icon>
-                                                <lightning-button-icon title={label.Reset_All_Data} 
-                                                                        size="small" 
-                                                                        icon-name="utility:recycle_bin_empty" 
-                                                                        onclick={handleAllRowDataReset}>
-                                                </lightning-button-icon>
-                                            </div>
-                                        </th>
-                                    </template>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template if:false={hasListViewDataRows}>
-                                    <tr style="height: 30px;">
-                                        <td style="text-align:center;" colspan={listViewData.uIColumnCount}>No rows available to be displayed</td>
-                                    </tr>
-                                </template>
-                                <template if:true={hasListViewDataRows}>
-                                    <template for:each={listViewDataRows} for:item="rowData">
-                                        <template if:true={rowData.isDisplayed}>
-                                            <tr key={rowData.rowId} style="height: 30px;" bgcolor={rowData.highlightColor}>
-                                                
-                                                <!-- ---------------------- -->
-                                                <!-- ROW SELECTION CHECKBOX -->
-                                                <!-- ---------------------- -->
-                                                <td class="slds-text-align_right" style="width: 32px;">
-                                                    <div class="slds-checkbox">
-                                                        <template if:false={rowData.isTotals}>
-                                                            <lightning-input type="checkbox" 
-                                                                            variant="label-hidden" 
-                                                                            name={rowData.checkBoxId} 
-                                                                            value={rowData.rowId} 
-                                                                            onchange={handleRecordSelectChange}>
-                                                            </lightning-input>
-                                                        </template>
+                                            <!-- ROW DELETED -->
+                                            <template if:true={rowData.isDeleted}>
+                                                <td key={fieldData.key} data-label={fieldData.label}>
+                                                    <div id={rowData.rowId} class="del-data slds-truncate cell-center" title={fieldData.value}>
+                                                        {fieldData.value}
                                                     </div>
                                                 </td>
+                                            </template>
 
-                                                <!-- -------------------- -->
-                                                <!-- NON-EDITED ROW LOGIC -->
-                                                <!-- -------------------- -->
+                                            <!-- ROW NOT DELETED -->
+                                            <template if:false={rowData.isDeleted}>
+
+                                                <!-- ROW IS NOT EDITED -->
                                                 <template if:false={rowData.isEdited}>
-                                                    <template for:each={rowData.fields} for:item="fieldData">
-                                                        <template if:true={rowData.isDeleted}>
-                                                            <td key={fieldData.key} data-label={fieldData.label}>
-                                                                <div id={rowData.rowId} style="color:red;" class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                    {fieldData.value}
-                                                                </div>
-                                                            </td>
-                                                        </template>
-                                                        <template if:false={rowData.isDeleted}>
-                                                            <td id={rowData.rowId} key={fieldData.key} data-label={fieldData.label} ondblclick={setRowEdited} style={fieldData.cssStyle}>
-                                                                <template if:true={fieldData.hasURL}>
-                                                                    <div id={rowData.rowId} 
-                                                                        class="slds-truncate cell-truncate"
-                                                                        title={fieldData.value}>
-                                                                        <a href={fieldData.uRL} onmouseover={displayHoverDetails} 
-                                                                                                data-sfdc-id={fieldData.objValueId} 
-                                                                                                data-api-name={fieldData.fieldObjName}
-                                                                                                data-label-name={fieldData.fieldObjLabel}
-                                                                                                target={fieldData.uRLTarget} 
-                                                                                                value={rowData.rowId} 
-                                                                                                onclick={handleURLClick} 
-                                                                                                rel="noreferrer">{fieldData.value}</a>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:false={fieldData.hasURL}>
-                                                                    <template if:true={fieldData.isId}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick} rel="noreferrer">{fieldData.value}</a>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isString}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            {fieldData.value}
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isRichTextArea}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-rich-text value={fieldData.value}  id={rowData.rowId} data-label={fieldData.label} ondblclick={setRowEdited}></lightning-formatted-rich-text>
-                                                                        </div>
-                                                                    </template>
-                                                                        <template if:true={fieldData.isLookup}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            {fieldData.value}
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isTextArea}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            {fieldData.value}
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isDate}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate">
-                                                                            <lightning-formatted-date-time value={fieldData.value} year="numeric" month="numeric" day="numeric"></lightning-formatted-date-time>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isDateTime}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate">
-                                                                            <lightning-formatted-date-time time-zone={listViewData.userTimeZone} value={fieldData.value} year="numeric" month="numeric" day="numeric" hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isTime}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate">
-                                                                            <lightning-formatted-date-time value={fieldData.value} hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isInteger}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            {fieldData.value}
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isDecimal}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-number value={fieldData.value}></lightning-formatted-number>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isBoolean}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate">
-                                                                            <template if:true={fieldData.uIValue}>
-                                                                                <lightning-icon size="x-small" icon-name="utility:check" alternative-text="True" title="True"></lightning-icon>
-                                                                            </template>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isCurrency}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-number value={fieldData.value} format-style="currency" currency-code={fieldData.currencyCode}></lightning-formatted-number>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isPhone}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-phone value={fieldData.value}></lightning-formatted-phone>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isEmail}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-email value={fieldData.value}></lightning-formatted-email>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isDouble}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-number value={fieldData.value}></lightning-formatted-number>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isPercent}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-number value={fieldData.value} format-style="percent-fixed" maximum-fraction-digits="2"></lightning-formatted-number>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isURL}>
-                                                                        <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                            <lightning-formatted-url value={fieldData.value} tooltip="Go to" target="_blank"></lightning-formatted-url>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isPicklist}>
-                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate cell-truncate">
-                                                                            {fieldData.value}
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isHTML}>
-                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate cell-truncate" style="text-align:left;">
-                                                                            <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isImage}>
-                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate cell-truncate" style="text-align:center;">
-                                                                            <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
-                                                                        </div>
-                                                                    </template>
-                                                                    <template if:true={fieldData.isMultiPicklist}>
-                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate cell-truncate" style="text-align:center;">
-                                                                            {fieldData.value}
-                                                                        </div>
-                                                                    </template>
-                                                                </template>
-                                                            </td>
-                                                        </template>
-                                                    </template>
-                                                </template>
 
-                                                <!-- -------------------- -->
-                                                <!-- EDITED ROW LOGIC     -->
-                                                <!-- -------------------- -->
-                                                <template if:true={rowData.isEdited}>
-                                                    <template for:each={rowData.fields} for:item="fieldData">
-                                                        <td key={fieldData.key} data-label={fieldData.label}>
-                                                            <template if:false={fieldData.isEditable}>
-                                                                <template if:true={fieldData.isLookup}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        {fieldData.value}
-                                                                    </div>
-                                                                </template>
+                                                    <lightning-layout-item key={fieldData.key}
+                                                                           class="data-cell slds-truncate"
+                                                                           style={fieldData.allCssStyle}>
+
+                                                        <div id={rowData.rowId}
+                                                                class="cell-content" 
+                                                                data-label={fieldData.label}
+                                                                ondblclick={setRowEdited}>
+                                                                <!-- NO FIELD URL -->
+                                                                <template if:true={fieldData.hasURL}>
+                                                                <div id={rowData.rowId} 
+                                                                    class="slds-truncate"
+                                                                    title={fieldData.value}>
+                                                                    <a href={fieldData.uRL} onmouseover={displayHoverDetails} 
+                                                                                            data-sfdc-id={fieldData.objValueId} 
+                                                                                            data-api-name={fieldData.fieldObjName}
+                                                                                            data-label-name={fieldData.fieldObjLabel}
+                                                                                            target={fieldData.uRLTarget} 
+                                                                                            value={rowData.rowId} 
+                                                                                            onclick={handleURLClick} 
+                                                                                            rel="noreferrer">{fieldData.value}</a>
+                                                                </div>
+                                                            </template>
+                                                            <!-- FIELD HAS URL -->
+                                                            <template if:false={fieldData.hasURL}>
                                                                 <template if:true={fieldData.isId}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick} rel="noreferrer">{fieldData.value}</a>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isString}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         {fieldData.value}
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isRichTextArea}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        <lightning-formatted-rich-text value={fieldData.value}  id={rowData.rowId} data-label={fieldData.label} ondblclick={setRowEdited}></lightning-formatted-rich-text>
+                                                                    </div>
+                                                                </template>
+                                                                    <template if:true={fieldData.isLookup}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
+                                                                        {fieldData.value}
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isTextArea}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         {fieldData.value}
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isDate}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate">
+                                                                    <div id={rowData.rowId} class="slds-truncate">
                                                                         <lightning-formatted-date-time value={fieldData.value} year="numeric" month="numeric" day="numeric"></lightning-formatted-date-time>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isDateTime}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate">
+                                                                    <div id={rowData.rowId} class="slds-truncate">
                                                                         <lightning-formatted-date-time time-zone={listViewData.userTimeZone} value={fieldData.value} year="numeric" month="numeric" day="numeric" hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isTime}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate">
+                                                                    <div id={rowData.rowId} class="slds-truncate">
                                                                         <lightning-formatted-date-time value={fieldData.value} hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isInteger}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         {fieldData.value}
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isDecimal}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <lightning-formatted-number value={fieldData.value}></lightning-formatted-number>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isBoolean}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate">
+                                                                    <div id={rowData.rowId} class="slds-truncate">
                                                                         <template if:true={fieldData.uIValue}>
                                                                             <lightning-icon size="x-small" icon-name="utility:check" alternative-text="True" title="True"></lightning-icon>
                                                                         </template>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isCurrency}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <lightning-formatted-number value={fieldData.value} format-style="currency" currency-code={fieldData.currencyCode}></lightning-formatted-number>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isPhone}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <lightning-formatted-phone value={fieldData.value}></lightning-formatted-phone>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isEmail}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <lightning-formatted-email value={fieldData.value}></lightning-formatted-email>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isDouble}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <lightning-formatted-number value={fieldData.value}></lightning-formatted-number>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isPercent}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <lightning-formatted-number value={fieldData.value} format-style="percent-fixed" maximum-fraction-digits="2"></lightning-formatted-number>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isURL}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
+                                                                    <div id={rowData.rowId} class="slds-truncate" title={fieldData.value}>
                                                                         <lightning-formatted-url value={fieldData.value} tooltip="Go to" target="_blank"></lightning-formatted-url>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isPicklist}>
-                                                                    <div id={rowData.rowId} title={fieldData.value} class="slds-truncate cell-truncate">
+                                                                    <div id={rowData.rowId} title={fieldData.value} class="slds-truncate">
                                                                         {fieldData.value}
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isHTML}>
-                                                                    <div id={rowData.rowId} title={fieldData.value} class="slds-truncate cell-truncate" style="text-align:center;">
+                                                                    <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:left;">
+                                                                        <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                    </div>
+                                                                </template>
+                                                                <template if:true={fieldData.isImage}>
+                                                                    <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
                                                                         <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
                                                                     </div>
                                                                 </template>
                                                                 <template if:true={fieldData.isMultiPicklist}>
-                                                                    <div class="slds-truncate cell-truncate">
-                                                                        <div id={rowData.rowId} title={fieldData.value} class="slds-truncate cell-truncate" style="text-align:center;">
-                                                                            {fieldData.value}
-                                                                        </div>
+                                                                    <div id={rowData.rowId} title={fieldData.value} class="slds-truncate" style="text-align:center;">
+                                                                        {fieldData.value}
                                                                     </div>
                                                                 </template>
                                                             </template>
-                                                            <template if:true={fieldData.isEditable}>
-                                                                <template if:true={fieldData.isString}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name="input0" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isRichTextArea}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isTextArea}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isDate}>
-                                                                    <div id={rowData.rowId} title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} date-style="short" data-field={fieldData.name} variant=label-hidden type="date" name="input1" value={fieldData.uIValue} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isDateTime}>
-                                                                    <div id={rowData.rowId} title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} date-style="short" data-field={fieldData.name} variant=label-hidden type="datetime" name="input2" value={fieldData.uIValue} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isTime}>
-                                                                    <div id={rowData.rowId} title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} date-style="short" data-field={fieldData.name} variant=label-hidden type="time" name="input21" value={fieldData.uIValue} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isInteger}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" name="input3" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isDecimal}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" name="input4" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isBoolean}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="checkbox" name="input5" checked={fieldData.uIValue} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isCurrency}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" name="input6" formatter="currency" step="0.01" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isPhone}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="tel" name="input7" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isEmail}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="email" name="input8" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isDouble}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" name="input9" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isPercent}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" step="0.01" formatter="percent-fixed" name="input10" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isURL}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="url" name="input11" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isPicklist}>
-                                                                    <div id={rowData.rowId} title={fieldData.value}>
-                                                                        <c-simpli-u-i-list-views-picklist type="picklist"
-                                                                                                        row-id={rowData.rowId} 
-                                                                                                        sfdc-id={rowData.salesforceId}
-                                                                                                        record-type-id={rowData.recordTypeId}
-                                                                                                        object-api-name={listViewData.objectName} 
-                                                                                                        selected-value={fieldData.value}  
-                                                                                                        pick-list-field-api-name={fieldData.name}
-                                                                                                        onpicklistchange={handleFieldDataChange}
-                                                                                                        variant=label-hidden>
-                                                                        </c-simpli-u-i-list-views-picklist>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isMultiPicklist}>
-                                                                    <div id={rowData.rowId} class="slds-truncate cell-truncate" title={fieldData.value}>
-                                                                        <lightning-input data-type={fieldData.type} data-object={listViewData.objectName} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
-                                                                    </div>
-                                                                </template>
-                                                                <template if:true={fieldData.isLookup}>
-                                                                    <div id={rowData.rowId} title={fieldData.value}>
-                                                                        <c-simpli-u-i-list-views-lookup field-name={fieldData.name} 
-                                                                                                        row-id={rowData.rowId} 
-                                                                                                        initial-name={fieldData.value}
-                                                                                                        initial-id={fieldData.objValueId}
-                                                                                                        field-obj-name={fieldData.fieldObjName}
-                                                                                                        onlookupchange={handleFieldDataChange}>
-                                                                        </c-simpli-u-i-list-views-lookup>
-                                                                    </div>
-                                                                </template>
-                                                            </template>
-                                                        </td>
-                                                    </template>
-                                                    <!-- -------------------- -->
-                                                    <!-- ROW ACTION BUTTONS   -->
-                                                    <!-- -------------------- -->
-                                                    <td class="slds-text-align_center" style="width:3.75rem">
-                                                        <div>
-                                                            <lightning-button-icon title={label.Save_Row_Data}
-                                                                                    value={rowData.rowId}
-                                                                                    size="small" 
-                                                                                    icon-name="utility:check" 
-                                                                                    onclick={handleRowDataSave}>
-                                                            </lightning-button-icon>
-                                                            <lightning-button-icon title={label.Reset_Row_Data} 
-                                                                                    value={rowData.rowId}
-                                                                                    size="small" 
-                                                                                    icon-name="utility:recycle_bin_empty" 
-                                                                                    onclick={handleRowDataReset}>
-                                                            </lightning-button-icon>
                                                         </div>
-                                                    </td>
+                                                    </lightning-layout-item>
                                                 </template>
-                                            </tr>
+
+                                                <!-- ROW IS EDITED -->
+                                                <template if:true={rowData.isEdited}>
+
+                                                    <lightning-layout-item key={fieldData.key}
+                                                                           class="edited-cell"
+                                                                           style={fieldData.allCssStyle}>
+
+                                                        <!-- FIELD IS EDITABLE -->
+                                                        <template if:false={fieldData.isEditable}>
+                                                            <template if:true={fieldData.isLookup}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    {fieldData.value}
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isId}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <a href={fieldData.uRL} target={fieldData.uRLTarget} value={rowData.rowId} onclick={handleURLClick} rel="noreferrer">{fieldData.value}</a>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isString}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    {fieldData.value}
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isRichTextArea}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isTextArea}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    {fieldData.value}
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isDate}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center">
+                                                                    <lightning-formatted-date-time value={fieldData.value} year="numeric" month="numeric" day="numeric"></lightning-formatted-date-time>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isDateTime}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center">
+                                                                    <lightning-formatted-date-time time-zone={listViewData.userTimeZone} value={fieldData.value} year="numeric" month="numeric" day="numeric" hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isTime}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center">
+                                                                    <lightning-formatted-date-time value={fieldData.value} hour="2-digit" minute="2-digit" second="2-digit"></lightning-formatted-date-time>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isInteger}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    {fieldData.value}
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isDecimal}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <lightning-formatted-number value={fieldData.value}></lightning-formatted-number>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isBoolean}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center">
+                                                                    <template if:true={fieldData.uIValue}>
+                                                                        <lightning-icon size="x-small" icon-name="utility:check" alternative-text="True" title="True"></lightning-icon>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isCurrency}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <lightning-formatted-number value={fieldData.value} format-style="currency" currency-code={fieldData.currencyCode}></lightning-formatted-number>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isPhone}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <lightning-formatted-phone value={fieldData.value}></lightning-formatted-phone>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isEmail}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <lightning-formatted-email value={fieldData.value}></lightning-formatted-email>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isDouble}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <lightning-formatted-number value={fieldData.value}></lightning-formatted-number>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isPercent}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <lightning-formatted-number value={fieldData.value} format-style="percent-fixed" maximum-fraction-digits="2"></lightning-formatted-number>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isURL}>
+                                                                <div id={rowData.rowId} class="cell-content slds-truncate cell-center" title={fieldData.value}>
+                                                                    <lightning-formatted-url value={fieldData.value} tooltip="Go to" target="_blank"></lightning-formatted-url>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isPicklist}>
+                                                                <div id={rowData.rowId} title={fieldData.value} class="cell-content slds-truncate cell-center">
+                                                                    {fieldData.value}
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isHTML}>
+                                                                <div id={rowData.rowId} title={fieldData.value} class="cell-content slds-truncate cell-center" style="text-align:center;">
+                                                                    <lightning-formatted-rich-text value={fieldData.value}></lightning-formatted-rich-text>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isMultiPicklist}>
+                                                                <div class="cell-content slds-truncate cell-center">
+                                                                    <div id={rowData.rowId} title={fieldData.value} class="cell-content slds-truncate cell-center" style="text-align:center;">
+                                                                        {fieldData.value}
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                        </template>
+
+                                                        <!-- FIELD IS EDITABLE -->
+                                                        <template if:true={fieldData.isEditable}>
+                                                            <template if:true={fieldData.isString}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name="input0" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isRichTextArea}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isTextArea}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isDate}>
+                                                                <div id={rowData.rowId} class="slds-truncate edit-input" title={fieldData.value} style="width:98%; padding-right: 4px;">
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} date-style="short" data-field={fieldData.name} variant=label-hidden type="date" name="input1" value={fieldData.uIValue} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isDateTime}>
+                                                                <div id={rowData.rowId} class="edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} date-style="short" data-field={fieldData.name} variant=label-hidden type="datetime" name="input2" value={fieldData.uIValue} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isTime}>
+                                                                <div id={rowData.rowId} class="edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} date-style="short" data-field={fieldData.name} variant=label-hidden type="time" name="input21" value={fieldData.uIValue} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isInteger}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" name="input3" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isDecimal}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" name="input4" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isBoolean}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="checkbox" name="input5" checked={fieldData.uIValue} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isCurrency}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" name="input6" formatter="currency" step="0.01" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isPhone}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="tel" name="input7" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isEmail}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="email" name="input8" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isDouble}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" name="input9" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isPercent}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="number" step="0.01" formatter="percent-fixed" name="input10" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isURL}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="url" name="input11" value={fieldData.value} onchange={handleFieldDataChange}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isPicklist}>
+                                                                <div id={rowData.rowId} title={fieldData.value} class="edit-input" style="overflow: visible !important;">
+                                                                    <c-simpli-u-i-list-views-picklist type="picklist"
+                                                                                                    row-id={rowData.rowId} 
+                                                                                                    sfdc-id={rowData.salesforceId}
+                                                                                                    record-type-id={rowData.recordTypeId}
+                                                                                                    object-api-name={listViewData.objectName} 
+                                                                                                    selected-value={fieldData.value}  
+                                                                                                    pick-list-field-api-name={fieldData.name}
+                                                                                                    onpicklistchange={handleFieldDataChange}
+                                                                                                    variant=label-hidden>
+                                                                    </c-simpli-u-i-list-views-picklist>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isMultiPicklist}>
+                                                                <div id={rowData.rowId} class="slds-truncate cell-center edit-input" title={fieldData.value}>
+                                                                    <lightning-input data-type={fieldData.type} data-object={listViewData.objectName} data-row-id={rowData.rowId} data-field={fieldData.name} variant=label-hidden type="text" name={fieldData.key} value={fieldData.value} onkeydown={handleQuickDataKeyDown} onclick={handleQuickDataClicked}></lightning-input>
+                                                                </div>
+                                                            </template>
+                                                            <template if:true={fieldData.isLookup}>
+                                                                <div id={rowData.rowId} title={fieldData.value} class="edit-input cell-center">
+                                                                    <c-simpli-u-i-list-views-lookup field-name={fieldData.name} 
+                                                                                                    row-id={rowData.rowId} 
+                                                                                                    initial-name={fieldData.value}
+                                                                                                    initial-id={fieldData.objValueId}
+                                                                                                    field-obj-name={fieldData.fieldObjName}
+                                                                                                    onlookupchange={handleFieldDataChange}>
+                                                                    </c-simpli-u-i-list-views-lookup>
+                                                                </div>
+                                                            </template>
+                                                        </template>
+                                                    </lightning-layout-item>
+                                                </template>
+                                            </template>
                                         </template>
-                                    </template>        
-                                </template>    
-                            </tbody>
-                        </table>
+
+                                        <!-- -------------------- -->
+                                        <!-- ROW ACTION BUTTONS   -->
+                                        <!-- -------------------- -->
+                                        <template if:true={rowData.isEdited}>
+                                            <lightning-layout-item class="edited-cell slds-truncate cell-edit-buttons" 
+                                                                   style={rowData.highlightColorCSS}>
+                                                <div class="cell-center">
+                                                    <lightning-button-icon title={label.Save_Row_Data}
+                                                                            value={rowData.rowId}
+                                                                            size="small" 
+                                                                            icon-name="utility:check" 
+                                                                            onclick={handleRowDataSave}>
+                                                    </lightning-button-icon>
+                                                    <lightning-button-icon title={label.Reset_Row_Data} 
+                                                                            value={rowData.rowId}
+                                                                            size="small" 
+                                                                            icon-name="utility:recycle_bin_empty" 
+                                                                            onclick={handleRowDataReset}>
+                                                    </lightning-button-icon>
+                                                </div>
+                                            </lightning-layout-item>
+                                        </template>
+
+                                    </lightning-layout>
+                                </template>
+                            </template>
+                        </template>
                     </div>
                 </template>
                 <template if:true={isModeSplitView}>
                     <div class={listwrapperstyle}>
-                        <table id="splitviewdatatable" class="slds-table slds-table_bordered slds-table_fixed-layout " role="grid">
 
-                            <tbody>
-                                <template if:false={hasListViewDataRows}>
-                                    <tr style="height: 30px;">
-                                        <td style="text-align:center;" colspan={listViewData.uIColumnCount}>No rows available to be displayed</td>
-                                    </tr>
+                        <template if:false={hasListViewDataRows}>
+                            <lightning-layout class="table-row" multiple-rows="false">
+                                <lightning-layout-item class="data-cell" size=12>
+                                    <div style="text-align:center;">No rows available to be displayed</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </template>
+
+                        <template if:true={hasListViewDataRows}>
+                            <template for:each={listViewDataRows} for:item="rowData">
+                                <template if:true={rowData.isDisplayed}>
+                                    <!-- DO NOT PUT CELL STYLE INTO LAYOUT AS IT BREAKS EVERYTHING OUT OF MAIN WINDOW -->
+                                    <lightning-layout multiple-rows key={rowData.rowId} data-row-id={rowData.salesforceId} style={rowData.highlightColorCSS} onclick={handleSplitViewClick}>
+                                        <lightning-layout-item size=6 class="split-data-cell-top slds-truncate">{rowData.splitColumnOne}</lightning-layout-item>
+                                        <lightning-layout-item size=6 class="split-data-cell-top slds-truncate">{rowData.splitColumnTwo}</lightning-layout-item>
+                                        <lightning-layout-item size=6 class="split-data-cell-bottom slds-truncate">{rowData.splitColumnThree}</lightning-layout-item>
+                                        <lightning-layout-item size=6 class="split-data-cell-bottom slds-truncate">{rowData.splitColumnFour}</lightning-layout-item>
+                                    </lightning-layout>
+
                                 </template>
-                                <template if:true={hasListViewDataRows}>
-                                    <template for:each={listViewDataRows} for:item="rowData">
-                                        <template if:true={rowData.isDisplayed}>
-                                            <tr key={rowData.rowId} data-row-id={rowData.salesforceId} style="height: 50px;" bgcolor={rowData.highlightColor} onclick={handleSplitViewClick}>                                                
-                                                <td>
-                                                    <div class="slds-truncate" style="padding-bottom: 3px;">
-                                                        <b>{rowData.splitColumnOne}</b>
-                                                    </div>
-                                                    <div class="slds-truncate">
-                                                        {rowData.splitColumnTwo}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="slds-truncate" style="text-align:right; padding-bottom: 3px;">
-                                                        {rowData.splitColumnThree}
-                                                    </div>
-                                                    <div class="slds-truncate" style="text-align:right">
-                                                        {rowData.splitColumnFour}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </template>
-                                    </template>        
-                                </template>    
-                            </tbody>
-                        </table>
+                            </template>
+                        </template>
                     </div>
                 </template>
             </template>

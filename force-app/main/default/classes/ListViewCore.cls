@@ -442,8 +442,10 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 field.setIsEditable(fieldData.isEditable);
 
                 //also set the editable state into the column data
-                if (rows.getFieldMetaData(field.getName()) != null)
+                if (rows.getFieldMetaData(field.getName()) != null) {
                     rows.getFieldMetaData(field.getName()).setIsEditable(fieldData.isEditable);
+                    field.setColumnWidth(rows.getFieldMetaData(field.getName()).columnWidth);
+                }
 
                 System.debug(LoggingLevel.FINE, 'Field - ' + field);
 
@@ -491,9 +493,9 @@ public with sharing class ListViewCore extends ListViewAbstract {
 
             RowWrapper totalWrapper = new RowWrapper('000000000000000000', rows);
             totalWrapper.highlight = true;
-            if (lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) != null)
+            if (lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR) != null) {
                 totalWrapper.highlightColor = lvConfig.getParameter(ListViewHelper.PARAM_TOTAL_COLUMN_COLOR).getValue();
-            else
+            } else
                 totalWrapper.highlightColor = '#FFFFFF';
             totalWrapper.isTotals = true;
 
@@ -536,6 +538,11 @@ public with sharing class ListViewCore extends ListViewAbstract {
                                                       fieldWrapper.columnIndex,
                                                       '');
                         totalField.setIsTotalsRow(true);
+                        totalField.highlightCol = totalWrapper.highlightColor;
+
+                        if (rows.getFieldMetaData(totalField.getName()) != null)
+                            totalField.setColumnWidth(rows.getFieldMetaData(totalField.getName()).columnWidth);
+
 
                         System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
 
@@ -574,6 +581,12 @@ public with sharing class ListViewCore extends ListViewAbstract {
                 }
 
 
+            }
+
+            if (lvConfig != null && !isShell) {
+                totalWrapper.calcRowCSS(lvConfig);
+            } else {
+                System.debug(LoggingLevel.DEBUG, 'No LV Config');
             }
 
         }

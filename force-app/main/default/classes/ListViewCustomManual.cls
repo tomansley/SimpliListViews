@@ -384,8 +384,10 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                     field.setFunction(columnMetaData.getFunction());
 
                     //also set the editable state into the column data
-                    if (rows.getFieldMetaData(field.getName()) != null)
+                    if (rows.getFieldMetaData(field.getName()) != null) {
                         rows.getFieldMetaData(field.getName()).setIsEditable(fieldData.isEditable);
+                        field.setColumnWidth(rows.getFieldMetaData(field.getName()).columnWidth);
+                    }
 
                     //if field metadata shows its a lookup and the lookup records id is available then set it
                     if (fieldData.objValueId != null)
@@ -567,6 +569,11 @@ public with sharing class ListViewCustomManual extends ListViewCustomManualAbstr
                                                       '');
                         totalField.setIsTotalsRow(true);
                         totalField.setFunction(fieldWrapper.getFunction());
+                        totalField.highlightCol = totalWrapper.highlightColor;
+
+                        if (rows.getFieldMetaData(totalField.getName()) != null)
+                            totalField.setColumnWidth(rows.getFieldMetaData(totalField.getName()).columnWidth);
+
 
                         System.debug(LoggingLevel.DEBUG, 'Added total field - ' + totalField);
 
