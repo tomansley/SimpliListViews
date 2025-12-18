@@ -869,7 +869,8 @@ export default class simpliUIListViews extends NavigationMixin(LightningElement)
             console.log('this.listViewDataRowsSize            - ' + this.listViewDataRowsSize);
             console.log('listViewDataResult.listView.pageSize - ' + listViewDataResult.listView.pageSize);
             console.log('================================================================================');
-            if (this.offset === listViewDataResult.listView.offset || listViewDataResult.listView.pageSize > this.listViewDataRowsSize || oldDataRowsSize === this.listViewDataRowsSize) {
+
+            if (this.offset === listViewDataResult.listView.offset || listViewDataResult.listView.pageSize > listViewDataResult.rowCount) {
                 this.dataSpinnerOff();
             
             //update offset (which will trigger another request for data)
